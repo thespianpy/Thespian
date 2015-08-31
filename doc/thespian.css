@@ -1,0 +1,13 @@
+pre.src-python-old {background-color:hsl(0,70%,99%)}
+pre.src-python {background-color:hsl(108,50%,95%)}
+
+pre span.builtin {color:#7a378b}
+pre span.keyword {color:#a020f0}
+pre span.string  {color:#008000}
+pre span.variable-name {color:#ba36a5}
+pre span.function-name {color:#006699}
+pre span.type {color:#6434a3}
+pre span.preprocessor {color:#808080;font-weight:bold;}
+pre span.constant {color:#d0372d}
+pre span.comment-delimiter {color:#8d8d84}
+pre span.comment {color:#b22222}

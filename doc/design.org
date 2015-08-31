@@ -1,0 +1,378 @@
+
+
+                 ActorSystem                                   Admin                 Actor
+                      |                                          |                     |
+        ----------------------- ...                              |                     |
+        |            |     |                                     |                ActorManager
+    simpleSystemBase |     |                                     |                     .transport
+                     |     |                                     |                     |
+    multiprocessSystemBase |                                     |                     |
+     .addressManager       |                                     |                     |
+     .socketaddressManager |                                     |                     |
+     .admin                |                                     |                     |
+     .manager      _______/|\__________________                  |                     |
+                  /        |                   \                 |                     |
+    multiprocQueueBase  multiprocTCPBase   multiprocUDPBase      |                     |
+                  \_______ | __________________/                 |                     |
+                          \|/                                    |                     |
+                           |                                     |                     |
+                  multiprocessCommon ....>....>....>....>....>...|...> replicator      |
+                           |                                     @ <....../\.........> @
+                           |                                     |                     |
+                       systemBase                           AdminCore.....        ActorManager
+                           .transport                        .transport  :         :  .transport
+                             |                                     |     :         :       |
+                             `------------------------,            |     v         v       |
+                                                      |            |  ActorAddressManager  |
+                                                     /             |                      /
+                                                  |<'             /                      /
+    multiprocessQueueTransport <------------------|              /                      /
+                                                  |<------------'                      /
+    multiprocessQueueTransport <------------------|                                   /
+                                                  |<---------------------------------'
+    multiprocessTCPTransport <--------------------|
+                                                  |
+    multiprocessUDPTransport <--------------------|
+                                                  ...
+
+
+* Primary Components
+
+** ActorSystem
+
+   Two concepts:
+     1. The interface between the external, non-actor environment and Actors
+     2. The system/framework providing support for running Actors
+
+** Admin
+
+    A per-system (usu. per-host) entity providing centralized
+    management of the ActorSystem it administrates.  A Pseudo-Actor
+    that knows most (but not necessarily all) of the Actors and
+    elements in the current ActorSystem.  Only one of these is
+    instantiated per ActorSystem.
+
+** Actor
+
+    The computational unit provided by the user and which operates in
+    the context of the ActorSystem framework.  Each Actor has an
+    ActorManager which provides the management functionality for that
+    Actor and supports the interaction between that Actor and the
+    ActorSystem (and Admin).
+
+* Support Components
+
+** SystemBase
+
+    Provides the interface between a specific ActorSystem
+    implementation and the generic external environment.  This is the
+    origination source for the ActorSystem and therefore specifies the
+    components utilized by the remaining elements (see below).
+
+*** simpleSystemBase
+
+    Useful primarily for unit testing.  Runs all Actors in a
+    synchronous manner.  Very simplistic implementation.
+
+*** multiprocessSystemBase
+
+    Uses the Python `multiprocess' library to implement the
+    ActorSystem.  This is an early implementation of the ActorSystem
+    and therefore contains all other components (Admin, Manager,
+    Transport, etc.) in a big muddled mess.
+
+    The multiprocessSystemBase uses the socketAddressManager for a
+    combination of address generation, socket management, and message
+    passing.  It is the only SystemBase utilizing the
+    socketAddressManager.
+
+*** ActorAddressManager
+
+    This is a sub-component used to track Actor Addresses and
+    distinguish between local-only addresses and publicly useable
+    addresses, dynamically forming the association between the former
+    and the latter.
+
+    This sub-component is used by all SystemBase implementations
+    except for the simpleSystemBase (but including the
+    multiprocessSystemBase).
+
+    For more details on the use of this component, see [[*Address%20Management][Address Management]].
+
+*** Transport
+
+    There is a Transport implementation provided for each type of
+    transport.  The specific Transport implementation used is
+    determined by the SystemBase, but a SystemBase may use a number of
+    Transports.  For example, all of the multiproc SystemBase family
+    instances can utilize any of tme multiprocess Transports (like
+    Queue, UDP, TCP, etc.).
+
+    Most Transports are coupled to the SystemBase type (e.g. multiproc).
+
+    Note that the simpleSystemBase has no Transport, and the
+    multiprocessSystemBase uses the socketaddressManager for its
+    transport needs.
+
+*** Replicator
+
+    The Replicator is responsible for replicating child Actors; the
+    instance of the Replicator is dictated by the SystemBase selected.
+    For example, the multiproc SystemBase family will use a replicator
+    that will create a new sub-process, whereas the multithread
+    SystemBase family's replicator will create new threads.
+
+
+* Flow
+** Transmit
+
+  1. send calls ActorManager
+  2. ActorManager creates a TransmitIntent and initiates an internal send
+  3. Intent passed to transport's scheduleTransmit
+  4. scheduleTransmit does one of:
+     a. Pickles address and message to ensure it can be sent
+        i. If unpickleable address, throws CannotPickleAddress message
+     b. Transmits message (perhaps via internal queueing) and discards it
+     c. Throws other exception
+  5. ActorManager caller then does:
+     a. If unpickleable address, ActorManager saves on _transmitPending under the unpickleable address for later retry.
+     b. If other exception, puts message on _recevieQueue to send back to self as PoisonMessage
+     c. returns
+
+
+*** TODO Test: call scheduleTransmit with message containing local address
+*** TODO Test: call scheduleTransmit with target as local address
+  
+* Functionality Details
+
+** Supervision
+
+Parents are implicit supervisors of their children.  This differs from
+Erlang's system where supervisors must explicitly register for pid
+events, but any Actor holding a pid (ActorAddress) can become a
+supervisor for that target.
+
+The Thespian method becomes complicated in the multi-host scenario
+where the Admin is involved:
+
+  * The local Admin acts as a surrogate parent for the child Actor: it
+    creates it and it is notified when the child exits.  The Admin
+    will forward the child exit request to the original, requesting
+    Actor (which thinks it is the parent).
+
+  * Globally-named Actors have the Admin as a parent (because they
+    cannot have multiple other Actors as parents).
+
+  * Because the local Admin administers the local system, when that
+    Admin exits, the entire system must be shutdown, including all
+    Actors in that system even if their requesting parent is remote
+    (this still fits the paradigm).
+
+
+** Global Actors
+
+Global Actors are truly global: the registered name is known/used by
+all Admins, and the attempt to start one will check with the Admin to
+ensure a global of that name has not already been created.
+
+The "parent" for a Global Actor is the Admin itself, not the actor
+that requested it.  The requestor is notified when creation completes,
+but all subsequent lifecycle management for the Global Actor is handed
+by the Admin.
+
+** Dead Letter Handler
+
+A special Global Actor, treated like other Global Actors but unnamed:
+there is only one Dead Letter handler active for the entire
+ActorSystem Convention at any one time, although there may be a
+transition period when the Dead Letter assignment is changed during
+which messages may be delivered to either Dead Letter handler.
+
+Considerations for implementing Dead Letter handling:
+
+  * It may not be possible to force a process to register for a
+    specific address, so trying to get something like the Admin to
+    register for individual dead addresses may not be possible.  In
+    addition, this might lead to that element having registered an
+    excessive number of resources (e.g. sockets) and reaching system
+    limits.
+
+  * It is very difficult to track the export and import of addresses
+    throughout the system, especially since both an Actor and its
+    Parent know the address of that Actor and can pass it to other
+    actors.  Therefore it's not possible to determine the limit of the
+    scope of knowledge of a particular ActorAddress.
+
+  * Trying to notify all Actors (in a possible Convention scenario) of
+    which addresses are dead is a very difficult task and also
+    involves race conditions where Actors may attempt to send messages
+    after the target has died but before the dead letter notification
+    reaches them.
+
+  * Due to the above, it is deemed better to allow the transport layer
+    to determine when it is having trouble accessing a remote node and
+    (locally) declare the remote node to be dead at that point.  This
+    "dead" state can be cached to optimize future handling.
+
+Dead letter handling is implemented by a notification from the
+ActorSystem Transport that it is unable to deliver a message to the
+intended target by returning a ~SendStatus_DeadAddress~.  When the
+Actor (or Admin) receives this result it will call the
+[[*ActorAddressManager][ActorAddressManager]] to notify it of the failure sending to the target
+address.  The ActorAddressManager records the address as being dead
+and any future sending address translations made to the
+ActorAddressManager will return the Admin address instead; sending the
+message to the Admin will forward it to any currently registered Dead
+Letter Handler.
+
+It is possible that an address can be re-used for a new Actor.  To
+handle this scenario, any incoming address registered with the
+ActorAddressManager is removed from the dead address list.
+
+** Address Management
+
+Actors are referenced in Thespian by an ActorAddress; every Actor has
+a unique ActorAddress and this is used to identify the Actor (e.g. for
+message delivery).
+
+The ActorAddress has a public component (defined in the
+~thespian.actors~ import) and an opaque, private component that is
+determined by the ActorSystem implementation and underlying transport.
+The latter component is available to ActorSystem internals as the
+~.addressDetails~ member of the ActorAddress; this member should never
+be referenced by actual Actor code.
+
+Actors and their corresponding ActorAddress are always generated by a
+~createActor()~ call to either the ActorSytem or the Actor object
+itself.  This ~createActor()~ call could be made synchronous (blocking
+until the Actor is created) or asynchronous.  In Thespian, the
+~createActor()~ call is asynchronous because a synchronous call would
+become a significant throttling point due to the possible lengthy
+process of creating a new Actor process on a remote Host, and this
+would adversely affect implementations of Factory-pattern Actors.
+
+Because the ~createActor()~ call is asynchronous and non-blocking, it
+must return a placeholder ActorAddress to the Actor code to represent
+the to-be-created Actor.  This placeholder must be a long-lived value
+as well: the Actor code will probably store it internally for future
+communications with the created Actor.  This raises a couple of challenges:
+
+  1. These "local" addresses cannot be sent to other Actors; any
+     outgoing message must contain a fully-realized ActorAddress, so
+     the actual transmit must be delayed until the Actor has been
+     created and the actual ActorAddress is known.
+
+  1. When the actual ActorAddress becomes known, it must be
+     correlated back to the original request to provide a (permanent)
+     translation for the local Address.
+
+  1. When the actual ActorAddress is obtained, all pending transmits
+     waiting on that address must be retried, substituting the actual
+     ActorAddress instead of the local form.
+
+  1. The actual ActorAddress must compare as "equal" to the previously
+     obtained local address, regardless of where the actual Address
+     was received (e.g. in a message received by the Actor).
+
+  1. The Actor code itself must be unaware of these issues and any
+     complications that arise from them.
+
+The [[*ActorAddressManager][ActorAddressManager]] is designed to provide common functionality to
+help address these challenges for ActorSystem implementations.
+
+  * ~createLocalAddress()~ generates a new, unique local address to
+    use as a return value from ~createActor()~.
+
+  * ~associateUseableAddress()~ registers the association between the
+    local address and the actual address once the latter is known.
+    This establishes equality between the local and actual addresses
+    by overridding the ~__eq__()~ method for the ActorAddresses.
+
+  * ~registerUseableAddress()~ is called for each incoming actual
+    address to establish the ~__eq__()~ method override that allows
+    that incoming actual address to properly match any associated
+    local address.
+
+  * ~deadAddress()~ notes that the specified address is no longer
+    valid: it should be called by the ActorSystem when a
+    ChildActorExited message is received.
+
+  * ~isDeadAddress()~ will return True if the specified address was
+    previously declared dead by a call to the ~deadAddress()~ method.
+
+  * ~sendingAddress()~ will convert any local ActorAddress into its
+    non-local associated Address.  If passed a non-local address, it
+    will return that address untouched.  If there is no association
+    yet for the local address, it will return None.  This method
+    should be called for any target Address being exported.
+
+  * Any Local ActorAddress will generate a ~CannotPickleAddress~
+    exception if it is part of an outgoing message.  The ActorSystem
+    should postpone transmission of any message that encounters this
+    error during serialization, retrying that message when a
+    corresponding notification of a PendingActorResponse message
+    allows an association to be made via ~associateUseableAddress()~.
+
+
+* File and Directory Layout
+
+  * thespian/
+    * actors.py  -- primary (and usually only) module imported by Actors
+    * shell.py   -- interactive shell for querying and testing Actors
+    * system/    -- contains all implementation aspects
+      * actorManager.py  -- base code encapsulating an Actor and regulating its behavior
+      * addressManager.py -- manages addresses and translation from local to external addresses
+      * dictconfig.py -- backport of logging.dictconfig for use in Python2.6
+      * logdirector.py -- provides external logging process for multiprocess system bases
+      * multiprocCommon.py -- common code for multiprocess system bases
+      * multiprocessSystemBase.py -- older Thespian 1.0 multiprocess
+        system base with TCP communications.  Widely used, but now
+        deprecated in favor of newer system bases.
+      * systemBase.py  -- common elements for the [[*SystemBase][SystemBase]] implementation
+      * multiprocCommon.py -- common elements for starting Admins or
+        Actors as separate processes.
+      * transport/  -- details for different underlying transports
+        * TCPTransport.py -- simple TCP transport.  Robust.
+        * UDPTransport.py -- simple UDP transport.  Robust with
+          limitations.
+        * MultiprocessQueueTransport.py -- uses multiprocess.Queue for
+          transport. Limited to the current system and suffers from
+          occasional deadlocks.
+      * admin/
+
+        Implementation of the system Admin
+
+        * adminCore.py   -- common elements for all Admin implementations
+        * globalNames.py -- handling for Actors with global names (across all admins)
+        * convention.py  -- convention management for multi-system cooperating ActorSystems.
+
+      * messages/
+
+        Simple definitions of various messages that can be sent
+        between or by ActorSystems.  This is generally in addition to
+        the primary Actor messages defined in the thespian/actors.py
+        (Actors may import these additional message files, but are not
+        expected to normally need to do so).
+
+      * transport/
+
+        Implementation of transport layer for system bases.  Each
+        system base will select a transport to use to communicate between Actors.
+
+    * test/    -- contains most functional tests
+      * 00README.txt -- description of tests and how to run them
+
+
+* Future
+
+Create clumps of topologically close actors, with local leaders
+deferring to the main convention leader.  All state (Global Actors,
+Dead Letter Handlers) is shared amongst all actors allowing failover
+or--if necessary--partitioning.
+
+* Misc
+
+** MultiprocQueueSystem
+  * Does not support Conventions because this is a local-system-only
+    configuration and so it's not worth the effort to support multiple
+    ActorSystems on the same host.

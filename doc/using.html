@@ -1,0 +1,3376 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+<title>Thespian Actors User's Guide</title>
+<!-- 2015-05-26 Tue 05:16 -->
+<meta  http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<meta  name="generator" content="Org-mode" />
+<meta  name="author" content="Kevin Quick &lt;kquick@godaddy.com&gt;" />
+<style type="text/css">
+ <!--/*--><![CDATA[/*><!--*/
+  .title  { text-align: center; }
+  .todo   { font-family: monospace; color: red; }
+  .done   { color: green; }
+  .tag    { background-color: #eee; font-family: monospace;
+            padding: 2px; font-size: 80%; font-weight: normal; }
+  .timestamp { color: #bebebe; }
+  .timestamp-kwd { color: #5f9ea0; }
+  .right  { margin-left: auto; margin-right: 0px;  text-align: right; }
+  .left   { margin-left: 0px;  margin-right: auto; text-align: left; }
+  .center { margin-left: auto; margin-right: auto; text-align: center; }
+  .underline { text-decoration: underline; }
+  #postamble p, #preamble p { font-size: 90%; margin: .2em; }
+  p.verse { margin-left: 3%; }
+  pre {
+    border: 1px solid #ccc;
+    box-shadow: 3px 3px 3px #eee;
+    padding: 8pt;
+    font-family: monospace;
+    overflow: auto;
+    margin: 1.2em;
+  }
+  pre.src {
+    position: relative;
+    overflow: visible;
+    padding-top: 1.2em;
+  }
+  pre.src:before {
+    display: none;
+    position: absolute;
+    background-color: white;
+    top: -10px;
+    right: 10px;
+    padding: 3px;
+    border: 1px solid black;
+  }
+  pre.src:hover:before { display: inline;}
+  pre.src-sh:before    { content: 'sh'; }
+  pre.src-bash:before  { content: 'sh'; }
+  pre.src-emacs-lisp:before { content: 'Emacs Lisp'; }
+  pre.src-R:before     { content: 'R'; }
+  pre.src-perl:before  { content: 'Perl'; }
+  pre.src-java:before  { content: 'Java'; }
+  pre.src-sql:before   { content: 'SQL'; }
+
+  table { border-collapse:collapse; }
+  caption.t-above { caption-side: top; }
+  caption.t-bottom { caption-side: bottom; }
+  td, th { vertical-align:top;  }
+  th.right  { text-align: center;  }
+  th.left   { text-align: center;   }
+  th.center { text-align: center; }
+  td.right  { text-align: right;  }
+  td.left   { text-align: left;   }
+  td.center { text-align: center; }
+  dt { font-weight: bold; }
+  .footpara:nth-child(2) { display: inline; }
+  .footpara { display: block; }
+  .footdef  { margin-bottom: 1em; }
+  .figure { padding: 1em; }
+  .figure p { text-align: center; }
+  .inlinetask {
+    padding: 10px;
+    border: 2px solid gray;
+    margin: 10px;
+    background: #ffffcc;
+  }
+  #org-div-home-and-up
+   { text-align: right; font-size: 70%; white-space: nowrap; }
+  textarea { overflow-x: auto; }
+  .linenr { font-size: smaller }
+  .code-highlighted { background-color: #ffff00; }
+  .org-info-js_info-navigation { border-style: none; }
+  #org-info-js_console-label
+    { font-size: 10px; font-weight: bold; white-space: nowrap; }
+  .org-info-js_search-highlight
+    { background-color: #ffff00; color: #000000; font-weight: bold; }
+  /*]]>*/-->
+</style>
+<link rel="stylesheet" type="text/css" href="http://www.pirilampo.org/styles/bigblow/css/htmlize.css"/>
+<link rel="stylesheet" type="text/css" href="http://www.pirilampo.org/styles/bigblow/css/bigblow.css"/>
+<link rel="stylesheet" type="text/css" href="http://www.pirilampo.org/styles/bigblow/css/hideshow.css"/>
+<script type="text/javascript" src="http://www.pirilampo.org/styles/bigblow/js/jquery-1.11.0.min.js"></script>
+<script type="text/javascript" src="http://www.pirilampo.org/styles/bigblow/js/jquery-ui-1.10.2.min.js"></script>
+<script type="text/javascript" src="http://www.pirilampo.org/styles/bigblow/js/jquery.localscroll-min.js"></script>
+<script type="text/javascript" src="http://www.pirilampo.org/styles/bigblow/js/jquery.scrollTo-1.4.3.1-min.js"></script>
+<script type="text/javascript" src="http://www.pirilampo.org/styles/bigblow/js/jquery.zclip.min.js"></script>
+<script type="text/javascript" src="http://www.pirilampo.org/styles/bigblow/js/bigblow.js"></script>
+<script type="text/javascript" src="http://www.pirilampo.org/styles/bigblow/js/hideshow.js"></script>
+<script type="text/javascript" src="http://www.pirilampo.org/styles/lib/js/jquery.stickytableheaders.min.js"></script>
+<link href="thespian.css" rel="stylesheet">
+<script type="text/javascript">
+/*
+@licstart  The following is the entire license notice for the
+JavaScript code in this tag.
+
+Copyright (C) 2012-2013 Free Software Foundation, Inc.
+
+The JavaScript code in this tag is free software: you can
+redistribute it and/or modify it under the terms of the GNU
+General Public License (GNU GPL) as published by the Free Software
+Foundation, either version 3 of the License, or (at your option)
+any later version.  The code is distributed WITHOUT ANY WARRANTY;
+without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE.  See the GNU GPL for more details.
+
+As additional permission under GNU GPL version 3 section 7, you
+may distribute non-source (e.g., minimized or compacted) forms of
+that code without the copy of the GNU GPL normally required by
+section 4, provided you include this license notice and a URL
+through which recipients can access the Corresponding Source.
+
+
+@licend  The above is the entire license notice
+for the JavaScript code in this tag.
+*/
+<!--/*--><![CDATA[/*><!--*/
+ function CodeHighlightOn(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(null != target) {
+     elem.cacheClassElem = elem.className;
+     elem.cacheClassTarget = target.className;
+     target.className = "code-highlighted";
+     elem.className   = "code-highlighted";
+   }
+ }
+ function CodeHighlightOff(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(elem.cacheClassElem)
+     elem.className = elem.cacheClassElem;
+   if(elem.cacheClassTarget)
+     target.className = elem.cacheClassTarget;
+ }
+/*]]>*///-->
+</script>
+</head>
+<body>
+<div id="content">
+<h1 class="title">Thespian Actors User's Guide</h1>
+<div id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#sec-1">1. Actor Overview</a>
+<ul>
+<li><a href="#sec-1-1">1.1. Actors</a></li>
+<li><a href="#sec-1-2">1.2. Actor Addresses</a></li>
+<li><a href="#sec-1-3">1.3. ActorSystem</a>
+<ul>
+<li><a href="#sec-1-3-1">1.3.1. Different Implementations</a></li>
+<li><a href="#sec-1-3-2">1.3.2. Multiple Systems</a></li>
+</ul>
+</li>
+<li><a href="#sec-1-4">1.4. External Communications</a></li>
+<li><a href="#sec-1-5">1.5. Effects</a></li>
+<li><a href="#sec-1-6">1.6. Comparisons</a>
+<ul>
+<li><a href="#sec-1-6-1">1.6.1. Message Bus (Pub/Sub) Architecture</a></li>
+<li><a href="#sec-1-6-2">1.6.2. Logging Systems</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#sec-2">2. Using Thespian</a>
+<ul>
+<li><a href="#sec-2-1">2.1. Starting an Actor System</a></li>
+<li><a href="#sec-2-2">2.2. Actor Lifecycle</a>
+<ul>
+<li><a href="#sec-2-2-1">2.2.1. Creating a Top-Level Actor</a></li>
+<li><a href="#sec-2-2-2">2.2.2. Creating an Actor</a></li>
+<li><a href="#sec-2-2-3">2.2.3. Killing an Actor</a></li>
+<li><a href="#sec-2-2-4">2.2.4. Parent Actor</a></li>
+<li><a href="#sec-2-2-5">2.2.5. Actor Failure</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#sec-3">3. Guidelines for Actors and their messages</a></li>
+<li><a href="#sec-4">4. Thespian Actor Feature Extensions</a>
+<ul>
+<li><a href="#sec-4-1">4.1. Message Delivery</a></li>
+<li><a href="#sec-4-2">4.2. Dead Letter Handling</a></li>
+<li><a href="#sec-4-3">4.3. Non-startable Actors</a></li>
+<li><a href="#sec-4-4">4.4. PoisonMessage Returns</a></li>
+<li><a href="#sec-4-5">4.5. Top-Level Actors</a></li>
+<li><a href="#sec-4-6">4.6. Named Actors</a></li>
+<li><a href="#sec-4-7">4.7. Timer Messages</a></li>
+<li><a href="#sec-4-8">4.8. Actor Troupes</a></li>
+<li><a href="#sec-4-9">4.9. ActorSystem Capabilities</a></li>
+<li><a href="#sec-4-10">4.10. Other Actor Systems</a></li>
+<li><a href="#sec-4-11">4.11. Logging</a></li>
+<li><a href="#sec-4-12">4.12. Actor Code Distribution</a></li>
+</ul>
+</li>
+<li><a href="#sec-5">5. Actor API</a>
+<ul>
+<li><a href="#sec-5-1">5.1. myAddress</a></li>
+<li><a href="#sec-5-2">5.2. receiveMessage</a></li>
+<li><a href="#sec-5-3">5.3. createActor</a>
+<ul>
+<li><a href="#sec-5-3-1">5.3.1. globalName</a></li>
+<li><a href="#sec-5-3-2">5.3.2. Actor Creation Gotchas</a></li>
+</ul>
+</li>
+<li><a href="#sec-5-4">5.4. send</a></li>
+<li><a href="#sec-5-5">5.5. wakeupAfter</a></li>
+<li><a href="#sec-5-6">5.6. handleDeadLetters</a></li>
+<li><a href="#sec-5-7">5.7. notifyOnSystemRegistrationChanges</a></li>
+<li><a href="#sec-5-8">5.8. registerSourceAuthority</a></li>
+<li><a href="#sec-5-9">5.9. actorSystemCapabilityCheck</a>
+<ul>
+<li><a href="#sec-5-9-1">5.9.1. requireCapability decorator</a></li>
+</ul>
+</li>
+<li><a href="#sec-5-10">5.10. updateCapability</a></li>
+</ul>
+</li>
+<li><a href="#sec-6">6. ActorSystem API</a>
+<ul>
+<li><a href="#sec-6-1">6.1. Exceptions</a></li>
+<li><a href="#sec-6-2">6.2. ActorSystem</a></li>
+<li><a href="#sec-6-3">6.3. ActorSystem.createActor</a></li>
+<li><a href="#sec-6-4">6.4. tell</a></li>
+<li><a href="#sec-6-5">6.5. ask</a>
+<ul>
+<li><a href="#sec-6-5-1">6.5.1. Gotchas</a></li>
+</ul>
+</li>
+<li><a href="#sec-6-6">6.6. updateCapability</a></li>
+<li><a href="#sec-6-7">6.7. loadActorSource</a>
+<ul>
+<li><a href="#sec-6-7-1">6.7.1. Source Loading Issues</a></li>
+<li><a href="#sec-6-7-2">6.7.2. Security Considerations</a></li>
+</ul>
+</li>
+<li><a href="#sec-6-8">6.8. unloadActorSource</a></li>
+</ul>
+</li>
+<li><a href="#sec-7">7. ActorSystem Messages</a>
+<ul>
+<li><a href="#sec-7-1">7.1. PoisonMessage</a>
+<ul>
+<li><a href="#sec-7-1-1">7.1.1. Attributes</a></li>
+</ul>
+</li>
+<li><a href="#sec-7-2">7.2. WakeupMessage</a>
+<ul>
+<li><a href="#sec-7-2-1">7.2.1. Attributes</a></li>
+</ul>
+</li>
+<li><a href="#sec-7-3">7.3. ActorExitRequest</a>
+<ul>
+<li><a href="#sec-7-3-1">7.3.1. Attributes</a></li>
+</ul>
+</li>
+<li><a href="#sec-7-4">7.4. ChildActorExited</a>
+<ul>
+<li><a href="#sec-7-4-1">7.4.1. Attributes</a></li>
+</ul>
+</li>
+<li><a href="#sec-7-5">7.5. DeadEnvelope</a>
+<ul>
+<li><a href="#sec-7-5-1">7.5.1. Attributes</a></li>
+</ul>
+</li>
+<li><a href="#sec-7-6">7.6. ActorSystemConventionUpdate</a>
+<ul>
+<li><a href="#sec-7-6-1">7.6.1. Attributes</a></li>
+</ul>
+</li>
+<li><a href="#sec-7-7">7.7. ValidateSource</a>
+<ul>
+<li><a href="#sec-7-7-1">7.7.1. Attributes</a></li>
+</ul>
+</li>
+<li><a href="#sec-7-8">7.8. ValidatedSource</a>
+<ul>
+<li><a href="#sec-7-8-1">7.8.1. Attributes</a></li>
+</ul>
+</li>
+<li><a href="#sec-7-9">7.9. Thespian_StatusReq</a>
+<ul>
+<li><a href="#sec-7-9-1">7.9.1. Attributes</a></li>
+</ul>
+</li>
+<li><a href="#sec-7-10">7.10. Thespian_SystemStatusResponse</a></li>
+<li><a href="#sec-7-11">7.11. Thespian_ActorStatusResponse</a></li>
+</ul>
+</li>
+<li><a href="#sec-8">8. ActorSystem Implementations</a>
+<ul>
+<li><a href="#sec-8-1">8.1. Common Capabilities</a></li>
+<li><a href="#sec-8-2">8.2. simpleSystemBase</a></li>
+<li><a href="#sec-8-3">8.3. multiprocQueueBase</a></li>
+<li><a href="#sec-8-4">8.4. multiprocTCPBase</a></li>
+<li><a href="#sec-8-5">8.5. multiprocUDPBase</a></li>
+</ul>
+</li>
+<li><a href="#sec-9">9. Deploying Actor-based Projects</a>
+<ul>
+<li><a href="#sec-9-1">9.1. Overall Security Considerations</a>
+<ul>
+<li><a href="#sec-9-1-1">9.1.1. Security Scenarios</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-sec-1" class="outline-2">
+<h2 id="sec-1"><span class="section-number-2">1</span> Actor Overview</h2>
+<div class="outline-text-2" id="text-1">
+</div><div id="outline-container-sec-1-1" class="outline-3">
+<h3 id="sec-1-1"><span class="section-number-3">1.1</span> Actors</h3>
+<div class="outline-text-3" id="text-1-1">
+<p>
+At the core, an Actor system is very simple.  An Actor is a standalone
+entity that receives messages from other Actors and does one of three
+things:
+</p>
+
+<ol class="org-ol">
+<li>Changes internal state
+</li>
+<li>Creates other Actors
+</li>
+<li>Sends a finite number of messages to other Actors
+</li>
+</ol>
+
+<p>
+Importantly, an Actor cannot access internals of other Actors, and it
+should not access any globals.  Any information used by the Actor
+should be passed to the Actor via a message or else generated
+internally.
+</p>
+
+<p>
+Actors may only communicate with other Actors by sending messages to
+those Actors, using known addresses for those target Actors.
+</p>
+
+<p>
+Note that messages are unidirectional: there is no required
+acknowledgement from an Actor that it has received an Actor.  Actors
+are free to exchange whatever messages their implementation dictates
+however, including sending acknowledgement messages back to the
+sender.
+</p>
+
+<p>
+In practice, an Actor will perform some sort of application-specific
+processing when a message is received.
+</p>
+</div>
+</div>
+
+<div id="outline-container-sec-1-2" class="outline-3">
+<h3 id="sec-1-2"><span class="section-number-3">1.2</span> Actor Addresses</h3>
+<div class="outline-text-3" id="text-1-2">
+<p>
+All Actors have an Address which identifies them uniquely within the
+ActorSystem.  The Address of an Actor is assigned by the ActorSystem
+and should be treated by the Actor as an opaque value.
+</p>
+
+<p>
+Actors will communicate with other Actors using the ActorAddress of
+the other actors.  ActorAddress values cannot be synthesized.  The
+ActorAddress of other actors can be obtained in one of two ways:
+</p>
+
+<ol class="org-ol">
+<li>The return value from an Actor create request is an ActorAddress
+</li>
+<li>Receiving an ActorAddress in a message from another Actor
+</li>
+</ol>
+
+<p>
+The actual value of an ActorAddress is determined by the ActorSystem,
+and varies with the implementation of the ActorSystem and the
+transport mechanism used.  Actors may print the string form of
+ActorAddresses, and they may compare ActorAddresses for equality or
+inequality and use them as hash values (e.g. for dictionary keys), but
+they should not otherwise depend on or attempt to utilize the value of
+an ActorAddress.
+</p>
+
+<p>
+An Actor can refer to its own ActorAddress using the <code>.myAddress</code>
+property.
+</p>
+</div>
+</div>
+
+<div id="outline-container-sec-1-3" class="outline-3">
+<h3 id="sec-1-3"><span class="section-number-3">1.3</span> ActorSystem</h3>
+<div class="outline-text-3" id="text-1-3">
+<p>
+The ActorSystem is the framework within which the Actors reside.  The
+ActorSystem is responsible for Actor lifecycle management (creating
+and terminating Actors) and message delivery functions.
+</p>
+
+
+<div class="figure">
+<p><img src="fig1.png" alt="fig1.png" />
+</p>
+</div>
+</div>
+
+
+<div id="outline-container-sec-1-3-1" class="outline-4">
+<h4 id="sec-1-3-1"><span class="section-number-4">1.3.1</span> Different Implementations</h4>
+<div class="outline-text-4" id="text-1-3-1">
+<p>
+There maybe several different types of ActorSystem implementations.
+Switching from one system to another can be done without requiring
+any changes to the Actors that run in those systems: the ActorSystem
+cleanly abstracts the scheduling and message delivery to allow the
+Actors to be oblivious to those elements.
+</p>
+
+<p>
+Each implementation may require a different type of addressing, but
+as described previously in <a href="#sec-1-2">Actor Addresses</a> the Actors themselves
+should treat the ActorAddress objects as opaque.  In addition, an
+Actor cannot generate an ActorAddress; it must be given to the Actor
+as a result of creating an Actor or in a message passed by another
+Actor.
+</p>
+
+<p>
+Not all implementations are equivalent, however.  Although all
+ActorSystem implementations must support the standard Actor API for
+Actors to use, some implementations do not support specific features
+or functionality, and some implementations are not suitable for use
+with the type of applications the Actors implement.
+</p>
+
+<p>
+As an example, some ActorSystems will run Actors as multiple
+threads, whereas other ActorSystems will run Actors as multiple
+processes.
+</p>
+
+<p>
+Another example is an ActorSystem that uses TCP networking to
+communicate between Actors v.s. a system that uses local
+shared-memory queue structures.
+</p>
+
+<p>
+The <a href="#sec-8">ActorSystem Implementations</a> section provides detailed
+information about the known ActorSystem implementations including
+their level of feature support and any known issues.
+</p>
+</div>
+</div>
+
+<div id="outline-container-sec-1-3-2" class="outline-4">
+<h4 id="sec-1-3-2"><span class="section-number-4">1.3.2</span> Multiple Systems</h4>
+<div class="outline-text-4" id="text-1-3-2">
+<p>
+There can be more than one ActorSystem running on the current host
+system, and there can be ActorSystems running on other host systems
+that can coordinate activities with the current ActorSystem.
+</p>
+
+<p>
+When Actors are created, they can be created within "remote"
+ActorSystems.  This locality flexibility does not affect each Actor
+implementation at all: the ActorAddress of an Actor can indicate
+either a remote or local Actor but the ActorAddress itself is opaque
+to the Actor.
+</p>
+
+
+<div class="figure">
+<p><img src="fig2.png" alt="fig2.png" />
+</p>
+</div>
+
+<p>
+This facility allows for location independence and also provides for
+essentially unlimited scalability of the underlying support environment.
+</p>
+</div>
+</div>
+</div>
+
+<div id="outline-container-sec-1-4" class="outline-3">
+<h3 id="sec-1-4"><span class="section-number-3">1.4</span> External Communications</h3>
+<div class="outline-text-3" id="text-1-4">
+<p>
+Actors run in an ActorSystem and communicate with each other using the
+message sending capability, but it is also typically necessary for the
+external world to communicate with Actors to initiate activity by
+those Actors and obtain the corresponding results.  This can be done
+by the external system using the following operations on the
+ActorSystem itself:
+</p>
+
+<ul class="org-ul">
+<li><b>tell</b> &#x2013; sends a message to a target Actor (as specified by the
+target Actor's ActorAddress)
+</li>
+
+<li><b>ask</b> &#x2013; sends a message to a target Actor and waits for a
+message to be sent back.
+</li>
+
+<li><b>createActor</b> &#x2013; creates a new Actor.  There is no <a href="#sec-2-2-4">Parent Actor</a>
+for the newly created Actor, so it is referred to as a "top-level
+Actor" and it will be managed by the ActorSystem itself and no
+other Actor will be notified if the top-level Actor exits.
+</li>
+</ul>
+
+<p>
+To the Actor's themselves the messages delivered via the <code>tell</code> or
+<code>ask</code> operations appear to have come from another Actor with an
+ActorAddress.  The Actor is unaware that these messages originated
+from external code.
+</p>
+
+
+<div class="figure">
+<p><img src="fig3.png" alt="fig3.png" />
+</p>
+</div>
+
+
+<p>
+More details on the ActorSystem operations can be found in the
+<i>ActorSystem API</i> section.
+</p>
+</div>
+</div>
+
+<div id="outline-container-sec-1-5" class="outline-3">
+<h3 id="sec-1-5"><span class="section-number-3">1.5</span> Effects</h3>
+<div class="outline-text-3" id="text-1-5">
+<p>
+Using an Actor system like Thespian tends to be a transformative
+experience in code generation.  Aspects which were previously
+difficult to work with: multi-processing, concurrency, inter-process
+communications and networking, scalability, fault tolerance and
+recovery, &#x2026; &#x2014; all of these are handled by the Actor System itself,
+allowing the Actors to focus on the primary needs of the application
+itself.
+</p>
+</div>
+</div>
+
+<div id="outline-container-sec-1-6" class="outline-3">
+<h3 id="sec-1-6"><span class="section-number-3">1.6</span> Comparisons</h3>
+<div class="outline-text-3" id="text-1-6">
+</div><div id="outline-container-sec-1-6-1" class="outline-4">
+<h4 id="sec-1-6-1"><span class="section-number-4">1.6.1</span> Message Bus (Pub/Sub) Architecture</h4>
+<div class="outline-text-4" id="text-1-6-1">
+<p>
+The Actor model provides a higher level of abstraction than a Message
+Bus architecture (also known as a "pub/sub" architecture).  An Actor
+system can be implemented on top of a message-bus architecture; the
+Actors themselves are completely unaware of this implementation
+method.
+</p>
+</div>
+</div>
+
+<div id="outline-container-sec-1-6-2" class="outline-4">
+<h4 id="sec-1-6-2"><span class="section-number-4">1.6.2</span> Logging Systems</h4>
+<div class="outline-text-4" id="text-1-6-2">
+<p>
+Log-based architectures (e.g. Kafka) are fundamentally "pub/sub"
+architectures that use persistent storage for the published messages.
+As noted in the <i>Message Bus (Pub/Sub) Architecture</i>, the Actor model is
+a higher-level abstraction layer that encompasses the pub/sub
+functionality. The Actor model therefore also abstracts a Logging
+System with the exception of the persistent storage/replay
+functionality of the latter.
+</p>
+
+<p>
+It is possible to implement message persistence and/or replay
+functionality for an Actor system by using Actors specifically
+designed to provide this functionality.  The Actor model can thus
+easily be extended to mimic a Logging System.
+</p>
+</div>
+</div>
+</div>
+</div>
+
+
+<div id="outline-container-sec-2" class="outline-2">
+<h2 id="sec-2"><span class="section-number-2">2</span> Using Thespian</h2>
+<div class="outline-text-2" id="text-2">
+<p>
+In order to use Thespian, it must be installed in the current Python
+environment.  Once installed, all Thespian features are available
+within Python by simply importing the <code>actors</code> module from the <code>thespian</code>
+package:
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-python">    &gt;&gt;&gt; import thespian
+</pre>
+</div>
+</div>
+
+<div id="outline-container-sec-2-1" class="outline-3">
+<h3 id="sec-2-1"><span class="section-number-3">2.1</span> Starting an Actor System</h3>
+<div class="outline-text-3" id="text-2-1">
+<p>
+An ActorSystem is created simply by instantiating an <code>ActorSystem()</code>
+object and specifying the type or "base" of the ActorSystem, as well
+as any optional capabilities of that system.  For example, to startup
+an ActorSystem using the "multiprocTCPBase":
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-python">    &gt;&gt;&gt; asys = ActorSystem('multiprocTCPBase')
+</pre>
+</div>
+
+<p>
+More details on the explicit parameters for this call are found in
+<a href="#sec-1-3">ActorSystem</a>, and the known system bases are describe in <i>ActorSystem
+Implementations</i>.
+</p>
+
+<p>
+Once created, the running ActorSystem reference is stored as a
+singleton for the current process.  This means that subsequent
+references can either use the direct reference (e.g. <code>asys</code> from the
+above) or another <code>ActorSystem()</code> instantiation with no parameters.
+</p>
+</div>
+</div>
+
+
+<div id="outline-container-sec-2-2" class="outline-3">
+<h3 id="sec-2-2"><span class="section-number-3">2.2</span> Actor Lifecycle</h3>
+<div class="outline-text-3" id="text-2-2">
+<p>
+Actors are created on demand and then persist until they are requested
+to exit.  Actors in a multiprocess System Base are independent of the
+process that created them and can outlive that process; Actors in a
+multi-threaded or synchronous System Base exist within the lifetime of
+the process itself.
+</p>
+
+<p>
+Actors exit when explicitly requested to exit, or when the ActorSystem
+itself is shutdown.
+</p>
+</div>
+
+<div id="outline-container-sec-2-2-1" class="outline-4">
+<h4 id="sec-2-2-1"><span class="section-number-4">2.2.1</span> Creating a Top-Level Actor</h4>
+<div class="outline-text-4" id="text-2-2-1">
+<p>
+Actors can be created by other Actors or by external applications
+making a request to the running ActorSystem.  In the former case, the
+Actor making the request becomes the "<i>Parent Actor</i>" of the newly
+created Actor, whereas there is no parent in the latter case and the
+newly created actor is therefore referred to as a "Top-Level" Actor.
+</p>
+
+<p>
+A Top-Level Actor is created via the <a href="#sec-6-3">ActorSystem.createActor</a> call:
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-python">    &gt;&gt;&gt; class MyFirstActor(Actor):
+    ...     def receiveMessage(self, message, sender):
+    ...         pass
+    ...
+    &gt;&gt;&gt; mfa_addr = asys.createActor(MyFirstActor)
+</pre>
+</div>
+
+<p>
+The result of the call is the ActorAddress which can be used with the
+ActorSystem's <a href="#sec-6-5">ask</a>() or <a href="#sec-6-4">tell</a>() methods to communicate with the created
+Actor.
+</p>
+</div>
+</div>
+
+<div id="outline-container-sec-2-2-2" class="outline-4">
+<h4 id="sec-2-2-2"><span class="section-number-4">2.2.2</span> Creating an Actor</h4>
+<div class="outline-text-4" id="text-2-2-2">
+<p>
+Within the ActorSystem, and Actor can create another Actor by making
+the request to the ActorSystem through the <a href="#sec-5-3">createActor</a>() method on its
+own instance:
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-python">    &gt;&gt;&gt; class Support(Actor):
+    ...     def receiveMessage(self, message, sender):
+    ...         pass
+    ...
+    &gt;&gt;&gt; class MyFirstActor(Actor):
+    ...     def receiveMessage(self, message, sender):
+    ...         if message == 'create another actor':
+    ...             newActor = self.createActor(Support)
+</pre>
+</div>
+
+<p>
+As with the creation of a Top-Level actor, the <code>createActor()</code> method
+returns an ActorAddress that can be used to communicate with the
+created Actor (using the current Actor's <a href="#sec-5-4">send</a>() method).
+</p>
+</div>
+</div>
+
+<div id="outline-container-sec-2-2-3" class="outline-4">
+<h4 id="sec-2-2-3"><span class="section-number-4">2.2.3</span> Killing an Actor</h4>
+<div class="outline-text-4" id="text-2-2-3">
+<p>
+Actors normally continue to exist and handle messages until they are
+explicitly killed.  To kill an Actor, it should be sent an
+<a href="#sec-7-3">ActorExitRequest</a> message.
+</p>
+
+<p>
+The Actor will receive that message directly on its
+<code>.receiveMessage()</code> method, which allows the Actor to make any
+preparations for its demise, but it cannot refuse to exit and it
+returns from the <code>.receiveMessage()</code>, the Actor will be killed by the
+ActorSystem.
+</p>
+
+<p>
+After the Actor has been killed, the Actor's Address is dead-lettered;
+any subsequent messages sent to the Actor's address will be handled as
+described in <i>Dead Letter Handling</i>.
+</p>
+</div>
+</div>
+
+
+<div id="outline-container-sec-2-2-4" class="outline-4">
+<h4 id="sec-2-2-4"><span class="section-number-4">2.2.4</span> Parent Actor</h4>
+<div class="outline-text-4" id="text-2-2-4">
+<p>
+An Actor which creates other Actors automatically becomes the
+"Parent" of the created Actor(s).  In the example in the <i>Creating
+an Actor</i> section above, the MyFirstActor Actor is the parent of
+any created Supporting Actor.
+</p>
+
+<p>
+The Parent is notified when any child Actors exit.  When the
+Parent is killed, the child Actors are killed by default unless
+the Parent indicates that they should not be.
+</p>
+
+<p>
+Notification of exited children is via the <code>ChildActorExited</code>
+message.  This message has the following attributes:
+</p>
+
+<ul class="org-ul">
+<li><code>.childAddress</code> to specify the ActorAddress of the child
+</li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-sec-2-2-5" class="outline-4">
+<h4 id="sec-2-2-5"><span class="section-number-4">2.2.5</span> Actor Failure</h4>
+<div class="outline-text-4" id="text-2-2-5">
+<p>
+If the Actor code handling a message fails, the ActorSystem will
+automatically handle that failure and restart the Actor.  For this
+reason, Actor-based code is typically much simpler than
+conventional code because it does not have the overhead of lots of
+exception checking and error condition handling.
+</p>
+
+<p>
+When writing Actor code, the general philosophy is "fail early";
+the ActorSystem itself will restart the Actor in the event of a
+failure and possibly retry the message or abort that specific
+message.  See <i>PoisonMessage Returns</i> for more details.
+</p>
+</div>
+</div>
+</div>
+</div>
+
+<div id="outline-container-sec-3" class="outline-2">
+<h2 id="sec-3"><span class="section-number-2">3</span> Guidelines for Actors and their messages</h2>
+<div class="outline-text-2" id="text-3">
+<ul class="org-ul">
+<li>All ActorSystem messages are derived from ActorSystemMessage.
+</li>
+
+<li>Actors should discard messages they do not recognize.
+</li>
+
+<li>Actors should allow unexpected or unreasonable exceptions and
+errors to cause them to fail.  The ActorSystem will restart the
+actor automatically to handle subsequent messages; the message
+that caused the failure will be returned to the sender.
+</li>
+
+<li>All messages sent by the ActorSystem to an Actor are derived from
+the ActorSystemMessage base class.  The messages that an
+ActorSystem can deliver to an Actor are:
+
+<ul class="org-ul">
+<li>ActorExitRequest   (see <i>Killing an Actor</i>)
+</li>
+<li>ChildActorExited   (see <i>Parent Actor</i>)
+</li>
+<li>PoisonMessage      (see <i>PoisonMessage Returns</i>)
+</li>
+<li>ActorSystemConventionUpdate  (see <i>Other Actor Systems</i>)
+</li>
+<li>WakeupMessage      (see <i>Timer Messages</i>)
+</li>
+</ul>
+<p>
+Most actors can be written very simply and can safely ignore any
+and all messages from the ActorSystem.  These messages are
+intended to be useable by more sophisticated Actors to handle
+unusual or out-of-band events.
+</p>
+</li>
+
+<li>Use simpleActorSystem for easy testing (and automated unit
+testing).  Then use MultiprocQueue for testing with multiple
+processes to ensure Actor isolation.
+</li>
+
+<li>It is a common practice to have an Actor probe for functional
+aspects of the current environment and update the ActorSystem
+capabilities based on the results of the probing (see
+<a href="#sec-5-10">updateCapability</a>).  Changing the existing capabilities <b>may</b>
+result in all existing actors being killed, including the Actor
+initiating the change.
+
+<p>
+If the probing Actor is restarted, it has no context regarding
+the previous probe, but presumably the probe will return the same
+result as previous, and an updateCapability call that does not
+actually change capability values does not impact currently
+running Actors in that ActorSystem.  Care should be taken to
+ensure that the probe Actor reaches a stable condition in this
+manner.
+</p>
+</li>
+</ul>
+</div>
+</div>
+
+
+<div id="outline-container-sec-4" class="outline-2">
+<h2 id="sec-4"><span class="section-number-2">4</span> Thespian Actor Feature Extensions</h2>
+<div class="outline-text-2" id="text-4">
+<p>
+The Thespian system provides several extended features not present
+in a simple definition of an Actor environment.  These features
+provide the additional functionality for error-handling,
+scalability, and enterprise-level deployment of Thespian-based code.
+</p>
+</div>
+
+<div id="outline-container-sec-4-1" class="outline-3">
+<h3 id="sec-4-1"><span class="section-number-3">4.1</span> Message Delivery</h3>
+<div class="outline-text-3" id="text-4-1">
+<p>
+Messages are delivered to Actors on a <i>best-effort</i> basis.  This
+means that under normal or even most abnormal circumstances, the
+ActorSystem effectively guarantees that an Actor's send will reach
+the intended recipient (eventually).  However, under extreme
+circumstances (grand-mal failure of a multiprocessing system
+environment, completely hung Actors, etc.) the ActorSystem may not
+deliver a message; this is why it is classified as <i>best-effort</i>
+instead of <i>guaranteed delivery</i>.
+</p>
+
+<p>
+When the recipient is busy, the send request is queued in the
+<i>sending</i> Actor's system space.  The sending Actor will retry the
+send periodically.  The sending Actor can have multiple messages
+queued for different targets, but each target is handled
+independently: messages queued for a target are ordered but messages
+queued to different targets are handled independently.  Eventually
+the Actor's <code>.send()</code> request <i>will</i> block if there are too many
+messages queued for the intended target.  This queueing mechanism
+provides a "back-pressure" mechanism throughout the system to
+prevent too many messages being held in limbo.
+</p>
+
+<p>
+If the recipient exits before the send can be completed, the message
+is redirected to <i>Dead Letter Handling</i>.
+</p>
+</div>
+</div>
+
+<div id="outline-container-sec-4-2" class="outline-3">
+<h3 id="sec-4-2"><span class="section-number-3">4.2</span> Dead Letter Handling</h3>
+<div class="outline-text-3" id="text-4-2">
+<p>
+If the ActorSystem is unable to deliver a message to the target
+Actor (usually because the target Actor has been killed or otherwise
+exited), the ActorSystem will route that message to Dead Letter
+handling.  The routed message will be wrapped in a <a href="#sec-7-5">DeadEnvelope</a>
+message to indicate it's disposition.
+</p>
+
+<p>
+By default, the Dead Letter handling will discard the message in
+question (possibly logging the event).
+</p>
+
+<p>
+It is possible for an Actor to register for handling Dead Letters.
+In this case, the dead-letter handling Actor receives all messages
+that could not be delivered to their target address.
+</p>
+
+<p>
+Dead letter handling should be considered as a fail-safe to prevent
+messages from getting lost, but it is recommended that Actors update
+their knowledge about other Actors that no longer exist and cease
+sending messages to those other Actors.  One reason for this is that
+the address of the Actor that no longer exists may&#x2014;at some
+point&#x2014;be assigned to a new and completely different Actor; if the
+original Actor persisted in sending messages to the dead Actor,
+those messages would eventually start being routed to the new Actor,
+which would undoubtably cause confusion.
+</p>
+</div>
+</div>
+
+<div id="outline-container-sec-4-3" class="outline-3">
+<h3 id="sec-4-3"><span class="section-number-3">4.3</span> Non-startable Actors</h3>
+<div class="outline-text-3" id="text-4-3">
+<p>
+Actors that cannot be started at all will be Dead Lettered by the
+ActorSystem.  If an Actor has registered for receiving Dead Letters
+(see <i>Dead Letter Handling</i>) then it can perform special actions to
+handle the non-starting Actor, but by default all messages sent to a
+non-starting Actor are discarded by the default Dead Letter Handling.
+</p>
+</div>
+</div>
+
+<div id="outline-container-sec-4-4" class="outline-3">
+<h3 id="sec-4-4"><span class="section-number-3">4.4</span> PoisonMessage Returns</h3>
+<div class="outline-text-3" id="text-4-4">
+<p>
+If an Actor experiences a failure (an uncaught exception) when
+processing a message, the ActorSystem will catch the exception and
+retry delivery of the message to the target Actor (as describe in
+<i>Actor Failure</i>).
+</p>
+
+<p>
+If the target Actor generates another exception when handling the
+message the second time, the ActorSystem will assume that the
+message has caused the failure and will wrap the message in a
+<code>PoisonMessage</code> wrapper object and send it back to the sender of
+the original message.  The Actor experiencing the exception is
+still live, and other messages will still be delivered to it.
+</p>
+
+<p>
+See <a href="#sec-7-1">PoisonMessage</a> for details on the <code>PoisonMessage</code> object.
+</p>
+</div>
+</div>
+
+<div id="outline-container-sec-4-5" class="outline-3">
+<h3 id="sec-4-5"><span class="section-number-3">4.5</span> Top-Level Actors</h3>
+<div class="outline-text-3" id="text-4-5">
+<p>
+Actors created by the external environment are called "Top-Level
+Actors" and are unique in that they have no "parent" Actor (see
+<i>Parent Actor</i>).  Since there is no Parent Actor, there is nowhere to
+send a ChildActorExited message when the Actor dies and therefore
+there is no allowance for restarting Top Level Actors.
+</p>
+
+<p>
+Messages sent to a Top Level Actor that has died will still be
+redirected to the Dead Letter Handler (see <i>Dead Letter Handling</i>).
+</p>
+</div>
+</div>
+
+<div id="outline-container-sec-4-6" class="outline-3">
+<h3 id="sec-4-6"><span class="section-number-3">4.6</span> Named Actors</h3>
+<div class="outline-text-3" id="text-4-6">
+<p>
+Most Actors are created and subsequently referenced by the
+ActorAddress. This ActorAddress can be used by any Actor in the
+system to send a message to that created Actor.
+</p>
+
+<p>
+At times, however, it may be convenient to very explicitly refer to
+a single Actor in the entire system&#x2014;a Singleton&#x2014;without knowing
+the Address of that Actor.  To support this, Thespian allows the
+creation of "Named Actors" where the name given uniquely identifies
+the Actor.
+</p>
+
+<p>
+The initial Actor creation request with the name will create the
+requested Actor, but the Actor System will remember the Actor
+associated with that name andall subsequent Actor creation requests
+with the same name will return the originally created Actor.
+</p>
+
+<p>
+It is possible to create any number of Named Actors in the system,
+although it is the responsibility of the creators to manage the
+namespace of those Actors.
+</p>
+
+<p>
+There are a couple of disadvantages to Named Actors that must be
+considered relative to their convenience:
+</p>
+
+<ol class="org-ol">
+<li>All Named Actors are similar to <i>Top-Level Actors</i> in that they
+are managed by the Actor System itself rather than a Parent
+Actor and therefore there is no notification when a Named Actor
+exits, and any messages sent to a Named Actor that has exited
+will be sent to the Dead Letter Handler.
+</li>
+
+<li>Interaction with Named Actors can be slower than for standard
+Actors because of the need to perform global lookup and
+coordination based on the name.
+</li>
+</ol>
+
+<p>
+It is recommended (but not required) that only the top-level,
+coordinating Actors be Named Actors and that most Actors in the
+system be
+</p>
+</div>
+</div>
+
+<div id="outline-container-sec-4-7" class="outline-3">
+<h3 id="sec-4-7"><span class="section-number-3">4.7</span> Timer Messages</h3>
+<div class="outline-text-3" id="text-4-7">
+<p>
+Normally Actors respond to messages sent to them by other Actors,
+but sometimes an Actor would like to run again after a timed delay.
+While it is possible for the Actor to sleep internally, this will
+prevent it from responding to other messages and cause messages to
+be queued causing eventual delivery failure (see <i>Message Delivery</i>).
+</p>
+
+<p>
+To avoid this, each Actor has a <code>.wakeupAfter()</code> method that can be
+called with a specified Python <code>timedelta</code> value.  The ActorSystem
+will schedule the delivery of a <code>WakeupMessage</code> after that time
+period has elapsed.  Multiple wakeups can be pending for an Actor at
+any single time, and the delivery of the <code>WakeupMessage</code> is
+interleaved into the normal incoming message stream for the Actor.
+</p>
+
+<p>
+There is no provision for cancelling a pending wakeup; the Actor
+should simply ignore the <code>WakeupMessage</code> when it is received.
+</p>
+</div>
+</div>
+
+<div id="outline-container-sec-4-8" class="outline-3">
+<h3 id="sec-4-8"><span class="section-number-3">4.8</span> Actor Troupes</h3>
+<div class="outline-text-3" id="text-4-8">
+<p>
+If specified appropriately, multiple instances of an Actor can be
+created which share the same ActorAddress; this is known as an
+Actor Troupe.
+</p>
+
+<ul class="org-ul">
+<li>Messages sent to the ActorAddress associated with the Troupe may
+be handled by any of the members of the Troupe, 
+</li>
+
+<li>A message will be delivered to only one member of the Troupe, but
+the handling of that message will be performed independently and
+asynchronously to any other message being handled by a member of
+the Troupe.
+</li>
+
+<li>All members of the Troupe are local to each other (i.e. exist
+under the same ActorSystem).
+</li>
+</ul>
+
+<p>
+The Actor Troupe allows for scalability and parallelization of
+individual Actor functionality.  Conversely, the use of a single
+Actor (instead of a Troupe) ensures single-threaded, synchronous
+handling of messages for that Actor.
+</p>
+</div>
+</div>
+
+<div id="outline-container-sec-4-9" class="outline-3">
+<h3 id="sec-4-9"><span class="section-number-3">4.9</span> ActorSystem Capabilities</h3>
+<div class="outline-text-3" id="text-4-9">
+<p>
+Actors can stipulate the requirements of the ActorSystem that they
+will run in by matching "Capabilities" of the ActorSystem.  Each
+ActorSystem has a set of Capabilities specified as a key/value
+dictionary.  This dictionary is passed to an Actor's
+<code>ActorSystemCapabilityCheck()</code> static method, which examines the
+capabilities and returns <code>True</code> or <code>False</code> to indicate whether or
+not the current ActorSystem is viable for the Actor.
+</p>
+
+<p>
+If the current ActorSystem is rejected for creating the Actor, the
+ActorSystem will pass the Actor Create request to other ActorSystems
+to see if any of those systems can create the requested Actor.
+</p>
+
+<p>
+The Capabilities of an ActorSystem are free form and the actual
+capability keys and values are determined by whatever agent
+specifies them.
+</p>
+
+<p>
+All Thespian ActorSystem instances automatically supply a set of
+common capabilities described in the <i>Common Capabilities</i> section.
+</p>
+</div>
+</div>
+
+<div id="outline-container-sec-4-10" class="outline-3">
+<h3 id="sec-4-10"><span class="section-number-3">4.10</span> Other Actor Systems</h3>
+<div class="outline-text-3" id="text-4-10">
+<p>
+The current ActorSystem can communicate with other ActorSystems to
+coordinate Actor activities as described in <i>Multiple Systems</i>.  To
+support this, the ActorSystems communicate on known transport
+addresses to form a "Convention" of ActorSystems.
+</p>
+
+<p>
+When new Actors are created, the <i>ActorSystem Capabilities</i> of the
+ActorSystems that are part of the Convention are used to determine
+where to start up the requested new Actor.
+</p>
+
+<p>
+Remote ActorSystem implementations can be different than the local
+ActorSystem as long as they properly handle communications between
+the two ActorSystems and the Actors contained therein.
+</p>
+
+<p>
+Actors can also register to be aware of when remote ActorSystems
+enter or exit the convention.  Registered Actors will receive an
+<a href="#sec-7-6">ActorSystemConventionUpdate</a> message for these events.  Actors
+register for these updates using the
+<a href="#sec-5-7">notifyOnSystemRegistrationChanges</a> API call.
+</p>
+
+<p>
+Not all ActorSystems support multi-system communications, and those
+that do are normally of the multi-process variety.
+</p>
+</div>
+</div>
+
+<div id="outline-container-sec-4-11" class="outline-3">
+<h3 id="sec-4-11"><span class="section-number-3">4.11</span> Logging</h3>
+<div class="outline-text-3" id="text-4-11">
+<p>
+The standard Python logging can be used with the Thespian Actor
+system, although there are some Thespian modifications to logging that
+improve the logging experience using Thespian.
+</p>
+
+<p>
+The 'logging' parameter of the system capabilities passed to the Actor
+System (see below) will specify the primary logging configuration for
+Thespian and corresponding Actors (regardless of where the logger is
+obtained).
+</p>
+
+<p>
+The functionality provided by logging in the Thespian environment
+possibly includes sending log messages to a central Logging actor.
+This is needed because the standard Python logging is not
+multi-process safe and attempts to use it as-is will result in missing
+or duplicated log messages.
+</p>
+
+<p>
+In addition, the Convention Manager Actor System receives all log
+messages from any conference member that is of <code>WARNING</code> level or above.
+</p>
+</div>
+</div>
+
+<div id="outline-container-sec-4-12" class="outline-3">
+<h3 id="sec-4-12"><span class="section-number-3">4.12</span> Actor Code Distribution</h3>
+<div class="outline-text-3" id="text-4-12">
+<p>
+The Thespian ActorSystem provides an feature to specify the code
+used for Actor implementations.
+</p>
+
+<p>
+By default, an Actor implementation is obtained by importing from
+the current environment and then passing that object to a
+<code>createActor()</code> call.  When used in this default manner, all of the
+<code>.py</code> sources used to implement Actors must be in the import path of
+the Thespian ActorSystem itself.
+</p>
+
+<p>
+With the Code Distribution feature provided by Thespian it is
+possible to load specific Actor code as provided by a (possibly
+encrypted) zipfile.  The zipfile can be dynamically loaded into an
+already-running Thespian ActorSystem.  This provides a number of
+advantages:
+</p>
+
+<ul class="org-ul">
+<li>The Thespian ActorSystem can be distributed and activated as a
+standalone element.  The code for Actors to be run within the
+system can be distributed separately.
+</li>
+
+<li>Actor implementation code can be protected by encryption,
+allowing that code to run only when the proper decryption key is
+provided.  This provides both distribution security (Python
+source files are not readable by anyone with access to the
+computer on which they are installed) and validation of
+authorization to interact with and execute the Actor code
+(especially in cases where the ActorSystem runs with elevated
+privileges).
+</li>
+
+<li>Multiple unrelated sets of Actors can share the same ActorSystem
+without adverse interactions.
+</li>
+
+<li>Running Actor implementations can be updated without requiring
+the entire ActorSystem to be stopped and restarted.  This is
+especially useful when the ActorSystem is hosting multiple
+different and independent sets of Actors.
+</li>
+
+<li>Multiple instances of the same set of Actors can be running in
+the same ActorSystem simultaneously.  This is especially useful
+when upgrading to a new version of a set of Actors where all new
+messages are directed to the new Actors while allowing all
+messages circulating between the older Actors to drain; in this
+scenario there is no downtime to customers when upgrading an
+Actor implementation.
+</li>
+</ul>
+
+<p>
+When the Thespian Actor Code Distribution mechanism is used in a
+multi-ActorSystem configuration (e.g. cooperating ActorSystems
+between several computers), it is only necessary to load the zipfile
+into one ActorSystem.  The different ActorSystems will automatically
+pull the zipfile from the source system to support a createActor
+operations that would occur in that other ActorSystems (e.g. due to
+system capabilities or actor requirements).  This mechanism allows
+the following additional benefits:
+</p>
+
+<ul class="org-ul">
+<li>Actor code distribution can be done by simply loading the new
+code version into a single ActorSystem (usually the convention
+leader) and all other ActorSystems will automatically update
+with that code on an as-needed basis.
+</li>
+
+<li>Actor implementation synchronization.  The createActor will
+automatically synchronize the current zipfile version to the
+target ActorSystem before instantiating the new Actor, thereby
+ensuring that the local Actor is communicating with an
+up-to-date version of the remote Actor.  There is no longer a
+risk that a newer version of an Actor will attempt to
+communicate with a remote Actor instance that is out-of-date and
+encounter version-related problems.
+</li>
+</ul>
+
+<p>
+The <a href="#sec-6-7">loadActorSource</a> operation describes this capability in more
+detail, including security protections associated with this feature.
+</p>
+</div>
+</div>
+</div>
+
+
+<div id="outline-container-sec-5" class="outline-2">
+<h2 id="sec-5"><span class="section-number-2">5</span> Actor API</h2>
+<div class="outline-text-2" id="text-5">
+<p>
+The Actor API is the set of operations that a running Actor can
+perform.  Thespian implements this API as a set of methods on an
+<code>Actor</code> baseclass that all running Actors should subclass.
+</p>
+
+<p>
+The Actor API is made available by importing the <code>thespian.actors</code>
+module.
+</p>
+
+<p>
+Each Actor is represented by an Actor baseclass:
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-python">    from thespian.actors import Actor
+
+    class MyActor(Actor): ...
+</pre>
+</div>
+
+<p>
+Versioning of the Actor API and the ActorSystem are described in
+<i>ActorSystem Capabilities</i>.
+</p>
+</div>
+
+<div id="outline-container-sec-5-1" class="outline-3">
+<h3 id="sec-5-1"><span class="section-number-3">5.1</span> myAddress</h3>
+<div class="outline-text-3" id="text-5-1">
+<div class="org-src-container">
+
+<pre class="src src-python">    self.myAddress
+</pre>
+</div>
+
+<p>
+This property is the ActorAddress of this Actor.
+</p>
+</div>
+</div>
+
+<div id="outline-container-sec-5-2" class="outline-3">
+<h3 id="sec-5-2"><span class="section-number-3">5.2</span> receiveMessage</h3>
+<div class="outline-text-3" id="text-5-2">
+<div class="org-src-container">
+
+<pre class="src src-python">    def receiveMessage(self, message, sender): ...
+</pre>
+</div>
+
+<p>
+This method is the primary entry point into the Actor to handle
+received messages.  Each subclass should override the base Actor
+receiveMessage() method as appropriate.  The <code>message</code> argument is
+the message being received, and the <code>sender</code> is the ActorAddress of
+the Actor (or <i>External Communications</i> endpoint) sending the
+message.
+</p>
+
+<p>
+The message can be discarded once it has been handled.  As
+described previously in <a href="#sec-1-1">Actors</a>, there are three things an Actor can
+do when handling a message:
+</p>
+<ol class="org-ol">
+<li>Update internal state
+</li>
+<li>Create a finite number of other Actors
+</li>
+<li>Send a finite number of messages to other Actors
+</li>
+</ol>
+
+<p>
+If the processing of the message causes an exception, the failure
+will be caught by the ActorSystem and the message may be retried or
+returned to the sender as described in <i>PoisonMessage Returns</i>.  Note
+that the <i>original</i> copy of the receive message is passed to the
+Actor with each attempt; if the Actor modifies the message before
+failing with an exception, the retried or Poison-returned version
+will contain the modifications made by the original attempt.
+</p>
+</div>
+</div>
+
+<div id="outline-container-sec-5-3" class="outline-3">
+<h3 id="sec-5-3"><span class="section-number-3">5.3</span> createActor</h3>
+<div class="outline-text-3" id="text-5-3">
+<div class="org-src-container">
+
+<pre class="src src-python">    newAddress = self.createActor(self, actorClass,
+                                  targetActorRequirements=None,
+                                  globalName=None)
+</pre>
+</div>
+
+<p>
+This method is called by the Actor to create a new Actor
+represented by the specified <code>actorClass</code>.  The <code>actorClass</code> may be
+specified as either a class object or as a module-qualified string
+(e.g. ~"foo.bar.BarActor"~ will search for <code>class BarActor</code> in the
+<code>bar.py</code> in the <code>foo</code> directory).  The InvalidActorSpecification
+exception will be thrown if the actorClass is not specified in a
+valid manner.
+</p>
+
+<p>
+The optional <code>targetActorRequirements</code> argument is a value that
+will be passed passed to the <a href="#sec-5-9">actorSystemCapabilityCheck</a> to use for
+validating whether the Actor can be started within the current
+ActorSystem environment (see <i>ActorSystem Capabilities</i>).  The value
+specified for this argument can be anything the target Actor's
+<code>actorSystemCapabilityCheck()</code> method can understand, although
+typically it is a Python dictionary.
+</p>
+
+<p>
+The <code>globalName</code> argument may be specified (as an arbitrary string)
+to create a <i>Named Actors</i> instance.
+</p>
+
+<p>
+The context for the created Actor will be the context under which
+the Thespian system was started.  <span class="underline">This means that if the Thespian
+system was started as root, then all Actors will run as root.</span>
+</p>
+
+<p>
+The source for the <code>actorClass</code> to be created is established by
+the current Actor, relative to any <a href="#sec-6-7">loadActorSource</a> operation that
+apply to the creating Actor itself:
+</p>
+
+<ul class="org-ul">
+<li>If an Actor class is specified directly, that class is obtained
+via import operations.  These import operations use the lookup
+search path that already use a searchpath that contains any
+loaded actor source operations.
+</li>
+
+<li>If a module-qualified string specifies the <code>actorClass</code>, then
+the lookup of that class will use the same source hash lookup
+path that the Actor itself came from.
+</li>
+
+<li>It is not possible to specify an alternate source file hash
+when performing a <code>createActor()</code> call from within an Actor
+(only the ActorSystem <code>createActor()</code> method can do that).
+</li>
+
+<li>If the target Actor must be instantiated in a separate
+ActorSystem and that ActorSystem does not have the
+loadActorSource for the target Actor available, it will
+automatically obtain that loadActorSource file from the current
+system and then start the target Actor from that source.  This
+can be used as a code distribution methodology for the
+ActorSystems' environment.
+</li>
+</ul>
+
+<p>
+The return value of this method is the ActorAddress of the
+newly-created Actor.  Note that this address may be provided even
+before the target Actor is instantiated and is ready for handling
+messages.  The ActorSystem will automatically buffer any messages
+sent to the new Actor until that Actor is ready; the creating Actor
+is free to send messages immediately on completion of this request
+and does not need to be concerned with the asynchronous startup
+aspect of the target Actor.  However, due to this asynchronous
+startup, it is possible that the new Actor cannot be started at
+all; in this event all messages intended for the new target Actor
+will be handled as described in the <i>Dead Letter Handling</i> section.
+</p>
+</div>
+
+
+<div id="outline-container-sec-5-3-1" class="outline-4">
+<h4 id="sec-5-3-1"><span class="section-number-4">5.3.1</span> globalName</h4>
+<div class="outline-text-4" id="text-5-3-1">
+<p>
+The parent for a Named Actor (created when the <code>globalName</code> argument
+is specified) is the ActorSystem itself, rather than the requesting
+Actor.  This is because there may be multiple createActor requests
+for the same global name and they should all return the Address of
+the same Actor, but an Actor cannot have multiple Parents.
+</p>
+
+<p>
+A Named Actor persists as long as it is not killed (via an
+ActorExitRequest) and can be referenced by any Actor requesting a
+create with the same globalName.
+</p>
+
+<p>
+When a Named Actor exits, only the ActorSystem is aware of the
+exit; there is no <a href="#sec-7-4">ChildActorExited</a> notification sent to any Actors
+that requested the creation of the Named Actor.
+</p>
+</div>
+</div>
+
+<div id="outline-container-sec-5-3-2" class="outline-4">
+<h4 id="sec-5-3-2"><span class="section-number-4">5.3.2</span> Actor Creation Gotchas</h4>
+<div class="outline-text-4" id="text-5-3-2">
+<p>
+There are a few issues to be aware of when creating Actors:
+</p>
+
+<ol class="org-ol">
+<li>When creating an actor using a string specification of the Actor
+Class, the name <b>must</b> be a fully-qualified module specification
+and not simply the name of an ActorClass in the current source.
+
+<p>
+While the latter would be convenient, it is not possible for
+remote processes to have access to the current source frame to
+load these Actors.  One solution is to use a class reference
+rather than a string (but see the next issue).
+</p>
+
+<p>
+The InvalidActorSpecification exception will be thrown if the
+actorClass is not specified in a valid manner.
+</p>
+</li>
+
+<li>Actor classes must either have been in the system path when the
+ActorSystem was created, or they must exist in a loaded Actor
+Source (see <a href="#sec-6-7">loadActorSource</a>).  Many ActorSystems use separate
+processes to manage and create new Actors, so any changes in the
+current process after the ActorSystem process is started up will
+not be visible to the latter.
+</li>
+</ol>
+</div>
+</div>
+</div>
+
+<div id="outline-container-sec-5-4" class="outline-3">
+<h3 id="sec-5-4"><span class="section-number-3">5.4</span> send</h3>
+<div class="outline-text-3" id="text-5-4">
+<div class="org-src-container">
+
+<pre class="src src-python">    self.send(self, targetAddress, message)
+</pre>
+</div>
+
+<p>
+This is the method used to send a message from the current Actor
+to another Actor as identified by the <code>targetAddress</code>.  The
+<code>message</code> can be anything the current Actor desires, although most
+ActorSystem implementations will require that the <code>message</code> can be
+pickled by the Python <code>pickle</code> utility.
+</p>
+
+<p>
+There is no response to the send, and the message is delivered to
+the target asynchronously.  There is no guarantee that the target
+has received the message by the time the <code>.send()</code> method returns.
+The ActorSystem delivers the message at some point by best-effort,
+sending the message to <i>Dead Letter Handling</i> if it cannot be
+delivered.
+</p>
+</div>
+</div>
+
+<div id="outline-container-sec-5-5" class="outline-3">
+<h3 id="sec-5-5"><span class="section-number-3">5.5</span> wakeupAfter</h3>
+<div class="outline-text-3" id="text-5-5">
+<div class="org-src-container">
+
+<pre class="src src-python">    self.wakeupAfter(self, timePeriod)
+</pre>
+</div>
+
+<p>
+The <code>timePeriod</code> specifies a Python <code>datetime.timedelta</code> period.
+When this time period has expired, the ActorSystem will deliver a
+<code>WakeupMessage</code> to the Actor via the normal <code>.receiveMessage()</code>
+entrypoint (the sender will be the Actor itself).  See <i>Timer
+Messages</i> for more information.
+</p>
+</div>
+</div>
+
+<div id="outline-container-sec-5-6" class="outline-3">
+<h3 id="sec-5-6"><span class="section-number-3">5.6</span> handleDeadLetters</h3>
+<div class="outline-text-3" id="text-5-6">
+<div class="org-src-container">
+
+<pre class="src src-python">    self.handleDeadLetters(self, startHandling=True)
+</pre>
+</div>
+
+<p>
+This method can be called to register or de-register this Actor for
+handling Dead Letters.
+</p>
+</div>
+</div>
+
+<div id="outline-container-sec-5-7" class="outline-3">
+<h3 id="sec-5-7"><span class="section-number-3">5.7</span> notifyOnSystemRegistrationChanges</h3>
+<div class="outline-text-3" id="text-5-7">
+<div class="org-src-container">
+
+<pre class="src src-python">    self.notifyOnSystemRegistrationChanges(self, startHandling=True)
+</pre>
+</div>
+
+<p>
+This method can be called to register or de-register this Actor for
+handling system registration events from other ActorSystems (see
+<i>Other Actor Systems</i>) via <code>ActorSystemConventionUpdate</code> messages.
+</p>
+</div>
+</div>
+
+<div id="outline-container-sec-5-8" class="outline-3">
+<h3 id="sec-5-8"><span class="section-number-3">5.8</span> registerSourceAuthority</h3>
+<div class="outline-text-3" id="text-5-8">
+<div class="org-src-container">
+
+<pre class="src src-python">    self.registerSourceAuthority(self)
+</pre>
+</div>
+
+<p>
+This method registers the current Actor as the Source Authority
+handler for the current Actor System as described in the <i>Security
+Considerations</i> section of the <a href="#sec-6-7">loadActorSource</a> Actor System API
+call.  Once registered, this Actor will receive <a href="#sec-7-7">ValidateSource</a>
+messages and be responsible for decrypting (if necessary) and
+determining authorization for loaded sources to run.
+</p>
+
+<p>
+The current Actor continues as the Source Authority until another
+Actor registers for this role.
+</p>
+</div>
+</div>
+
+<div id="outline-container-sec-5-9" class="outline-3">
+<h3 id="sec-5-9"><span class="section-number-3">5.9</span> actorSystemCapabilityCheck</h3>
+<div class="outline-text-3" id="text-5-9">
+<div class="org-src-container">
+
+<pre class="src src-python">    def actorSystemCapabilityCheck(capabilities, requirements=None):
+        return True
+</pre>
+</div>
+
+<p>
+This is a <b>static</b> method provided by the Actor object that is
+called to see if the Actor can be created within the context of the
+current ActorSystem.
+</p>
+
+<p>
+The <code>capabilities</code> argument specifies the key/value dictionary of
+capabilities of the current ActorSystem.  ActorSystem capabilities
+are free-form and are determined solely by agents specifying those
+capabilities (see <i>ActorSystem Capabilities</i>).
+</p>
+
+<p>
+The optional <code>requirements</code> argument specifies the additional
+requirements that the creating Actor specified in the
+<code>.createActor()</code> call.
+</p>
+
+<p>
+The <code>.actorSystemCapabilityCheck()</code> should return <code>True</code> to indicate
+that the Actor may be created in the current ActorSystem, or <code>False</code>
+to indicate otherwise.  It is free to base this decision on any,
+all, or none of the capabilities or requirements provided.
+</p>
+
+<p>
+This static method may also be called to re-validate the Actor's
+viability if the capabilities of its ActorSystem are updated (as
+described in the <a href="#sec-5-10">updateCapability</a> section), and if it returns False
+then the existing Actor will be killed with an <a href="#sec-7-3">ActorExitRequest</a>
+message.
+</p>
+</div>
+
+<div id="outline-container-sec-5-9-1" class="outline-4">
+<h4 id="sec-5-9-1"><span class="section-number-4">5.9.1</span> requireCapability decorator</h4>
+<div class="outline-text-4" id="text-5-9-1">
+<p>
+To facilitate easy specification of requirements, there is a
+<code>requireCapability</code> class decorator defined which can be used to
+specify that a capability must be present in the system capabilities
+and that it's value must be "truthy" (i.e. some expression that
+evaluates as truthful).  The decorator can be repeated multiple
+times for a single Actor and it may be used in conjunction with an
+actual <code>actorSystemCapabilityCheck()</code> method.
+</p>
+
+<p>
+For example:
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-python">    class MyActor(Actor):
+
+        @staticmethod
+        def actorSystemCapabilityCheck(capabilities, requirements):
+            return capabilities.get('Has Lightbulb', False) and \
+                   capabilities.get('Lit', False) and \
+                   capabilities.get('Color', 'none') == 'Yellow'
+
+        def receiveMessage(self, msg, sender): pass
+</pre>
+</div>
+
+<p>
+is equivalent to:
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-python">    @requireCapability('Has Lightbulb')
+    @requireCapability('Lit')
+    class MyActor(Actor):
+
+        @staticmethod
+        def actorSystemCapabilityCheck(capabilities, requirements):
+            return capabilities.get('Color', 'none') == 'Yellow'
+
+        def receiveMessage(self, msg, sender): pass
+</pre>
+</div>
+
+<p>
+In the above example, the <code>MyActor</code> Actor can be instantiated
+in an ActorSystem that had the capabilities of:
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-python">    {
+      'Has Lightbulb': 5,
+      'Lit': True,
+      'Color' : 'Yellow'
+    }
+</pre>
+</div>
+
+<p>
+Note that the value of 5 is "true", as compared to a value of 0
+that is "false".  Any value that would represent as true in an <b>if</b>
+expression is a valid value.
+</p>
+
+<p>
+An example of a much simpler case:
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-python">    class MyActor(Actor):
+
+        @staticmethod
+        def actorSystemCapabilityCheck(capabilities, requirements):
+            return capabilities.get('Has Lightbulb', False)
+
+        def receiveMessage(self, msg, sender): pass
+</pre>
+</div>
+
+<p>
+is equivalent to:
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-python">    @requireCapability('Has Lightbulb')
+    class MyActor(Actor):
+
+        def receiveMessage(self, msg, sender): pass
+</pre>
+</div>
+</div>
+</div>
+</div>
+<div id="outline-container-sec-5-10" class="outline-3">
+<h3 id="sec-5-10"><span class="section-number-3">5.10</span> updateCapability</h3>
+<div class="outline-text-3" id="text-5-10">
+<p>
+The <code>updateCapability()</code> method is used update the capabilities of
+the current ActorSystem this Actor is running in (there is a
+corresponding method on the ActorSystem for externally-specified
+updates; see the <i>ActorSystem API</i> for that version).
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-python">     self.updateCapability(self, capabilityName, capabilityValue=None)
+</pre>
+</div>
+
+<p>
+If the capability value is specified and is not None, the specified
+capability already exists, its value updated, otherwise it is
+created with the specified value.
+</p>
+
+<p>
+If the capability value is not specified or is None, the specified
+capability is removed from the ActorSystem if it exists.
+</p>
+
+<p>
+If the capabilities of the ActorSystem are modified by this method
+(i.e. the capability value is not already set as requested) then
+all Actors within that ActorSystem are re-validated by calling
+their <a href="#sec-5-9">actorSystemCapabilityCheck</a> static method and sending them an
+ActorExitRequest if the capability check call returns false.  This
+could result in killing the Actor that initiated the capability
+exchange, even if new capabilities are added.  Actors may be
+recreated as desired; the new Actors will validate against the new
+set of capabilities.
+</p>
+
+<p>
+The current set of ActorSystem capabilities can be obtained by
+issuing a <a href="#sec-7-9">Thespian_StatusReq</a> to the ActorSystem.
+</p>
+</div>
+</div>
+</div>
+
+
+<div id="outline-container-sec-6" class="outline-2">
+<h2 id="sec-6"><span class="section-number-2">6</span> ActorSystem API</h2>
+<div class="outline-text-2" id="text-6">
+<p>
+The ActorSystem is created or connected-to by instantiating the
+ActorSystem object.  External applications use the ActorSystem API
+to interact with Actors running within that system.
+</p>
+
+<p>
+The ActorSystem API is made available by importing the
+<code>thespian.actors</code> module:
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-python">     import thespian.actors
+</pre>
+</div>
+</div>
+
+<div id="outline-container-sec-6-1" class="outline-3">
+<h3 id="sec-6-1"><span class="section-number-3">6.1</span> Exceptions</h3>
+<div class="outline-text-3" id="text-6-1">
+<p>
+All exceptions generated by the ActorSystem itself are based on the
+<code>ActorSystemException</code> base class.
+</p>
+
+<p>
+Exceptions which are generated as a result of unexpected failures
+within calls to the ActorSystem are based on the
+<code>ActorSystemFailure</code> base class.  It is not expected that these are
+caused by an application error or that they can be retried and/or
+fixed by the application to expect a successful result.
+</p>
+
+<p>
+The following shows the heirarchy of defined Thespian exceptions:
+</p>
+
+<ul class="org-ul">
+<li><code>ActorSystemException</code>
+<ul class="org-ul">
+<li><code>InvalidActorAddress</code>
+</li>
+<li><code>NoCompatibleSystemForActor</code>
+</li>
+<li><code>ActorSystemFailure</code>
+<ul class="org-ul">
+<li><code>ActorSystemStartupFailure</code>
+</li>
+<li><code>ActorSystemRequestTimeout</code>
+</li>
+</ul>
+</li>
+<li><code>InvalidActorSourceHash</code>
+</li>
+<li><code>InvalidActorSpecification</code>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-sec-6-2" class="outline-3">
+<h3 id="sec-6-2"><span class="section-number-3">6.2</span> ActorSystem</h3>
+<div class="outline-text-3" id="text-6-2">
+<div class="org-src-container">
+
+<pre class="src src-python">      actorSys = ActorSystem(systemBase=None, capabilities=None)
+</pre>
+</div>
+
+<p>
+The <code>systemBase</code> argument should specify which ActorSystem
+implementation base should be used for this ActorSystem, as
+selected from those systems describe in the <i>ActorSystem
+Implementations</i> section. If <code>systemBase</code> is None, this call will
+check to see if there was a previous call to ActorSystem in the
+current process and if so, re-use the <code>systemBase</code> from the
+previous call. If there is no previous call, the default system
+base is the <code>simpleSystemBase</code> (see <a href="#sec-8-2">simpleSystemBase</a>).
+</p>
+
+<p>
+The <code>capabilities</code> argument should be a dictionary of capability
+keys and values as describe in the <i>ActorSystem Capabilities</i>
+section.  These capabilities form the initial set of capabilities
+for the ActorSystem if it is started; the capabilities are ignored
+if an ActorSystem is already running.
+</p>
+</div>
+</div>
+
+
+<div id="outline-container-sec-6-3" class="outline-3">
+<h3 id="sec-6-3"><span class="section-number-3">6.3</span> ActorSystem.createActor</h3>
+<div class="outline-text-3" id="text-6-3">
+<div class="org-src-container">
+
+<pre class="src src-python">    actorAddr = actorSys.createActor(actorClass,
+                                     targetActorRequirements = None,
+                                     globalName = None,
+                                     sourceHash = None)
+</pre>
+</div>
+
+<p>
+The <code>createActor()</code> method is used by external applications to
+request the creation of an Actor in the ActorSystem environment.
+This call is very similar to the <a href="#sec-5-3">createActor</a> Actor API call except
+that this version creates "Top-Level" Actors and will block until
+the Actor is created and throw an exception on failures.
+</p>
+
+<p>
+The <code>actorClass</code> argument can be specified either as a class object
+or as a module-qualified string identifying a class object
+(e.g. ~"foo.bar.BarActor"~ will search for <code>class BarActor</code> in the
+<code>bar.py</code> in the <code>foo</code> directory).
+</p>
+
+<p>
+The <code>targetActorRequirements</code> argument is a value that will be
+passed to the <a href="#sec-5-9">actorSystemCapabilityCheck</a> to use for validating
+whether the Actor can be started within the current ActorSystem
+environment (see <i>ActorSystem Capabilities</i>).  The value specified
+for this argument can be anything the target Actor's
+<code>actorSystemCapabilityCheck()</code> method can understand, although
+typically it is a Python dictionary.
+</p>
+
+<p>
+The <code>globalName</code> argument, if specified, should be a string
+specifying the "name" of the Actor within the ActorSystem.  As
+describe in <i>Named Actors</i>, this name allows the Actor to be uniquely
+identified and referenced in a manner additional to the
+ActorAddress of the actor.
+</p>
+
+<p>
+The <code>sourceHash</code> argument, if specified, indicates a source file
+which should be prepended to the import path when attempting to
+load the <code>actorClass</code> source and start the Actor.
+</p>
+<ul class="org-ul">
+<li>The source file must previously have been loaded by the
+<a href="#sec-6-7">loadActorSource</a> operation.
+</li>
+<li>If not specified, then the <code>actorClass</code> is expected to be found
+on the standard path.  If the <code>sourceHash</code> value does not match
+any loaded sources then an <code>InvalidActorSourceHash</code>
+exception will be thrown.
+</li>
+<li>If the <code>globalName</code> argument is already specified and an Actor
+is running under that name, this argument is ignored, even if
+the running Actor did not come from the specified source file;
+otherwise the Actor started and assigned the global name.
+</li>
+<li>The specified loaded source file is merely prepended to the
+search list.  If the loaded source file does not contain source
+for the specified <code>actorClass</code> but the standard path
+environment for the running Thespian ActorSystem <b>does</b> contain
+source for that <code>actorClass</code>, then the latter will be used to
+instantiate the new Actor.
+</li>
+<li>The source specified by the hash must have been loaded into the
+current Actor System, or previously have been obtained from a
+remote Actor System; this operation will <b>not</b> cause a query of
+remote actor systems to locate the source if the Actor cannot
+be found locally (the behavior of a <code>createActor()</code>
+call made by an Actor itself may be different).
+</li>
+</ul>
+
+<p>
+This method may throw the following exceptions:
+</p>
+
+<ul class="org-ul">
+<li><code>NoCompatibleSystemForActor</code> if it is unable to find an
+ActorSystem whose capabilities match the Actor's requirements.
+</li>
+
+<li><code>InvalidActorSourceHash</code> if a source hash is specified that does
+not match any currently loaded source.
+</li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-sec-6-4" class="outline-3">
+<h3 id="sec-6-4"><span class="section-number-3">6.4</span> tell</h3>
+<div class="outline-text-3" id="text-6-4">
+<p>
+Tell is used to inject a message into the Actor system (targeting a
+specific Actor) without waiting for any response message.
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-python">     actorSys.tell(targetAddr, message)
+</pre>
+</div>
+
+<p>
+The <code>targetAddr</code> must be an Actor Address known to the current
+application (global Actors are useful targets in this regard).
+</p>
+
+<p>
+The <code>message</code> may be anything that can be sent to a remote process
+(i.e. pickled).
+</p>
+
+<p>
+The <code>tell()</code> operation does not await a response, but it may block
+until the send is completed.
+</p>
+</div>
+</div>
+
+<div id="outline-container-sec-6-5" class="outline-3">
+<h3 id="sec-6-5"><span class="section-number-3">6.5</span> ask</h3>
+<div class="outline-text-3" id="text-6-5">
+<p>
+Ask is used to send a message to an Actor (injecting it into the
+Actor system) and wait for a response message.
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-python">     responseMessage = actorSys.ask(targetAddr, message[, timeout])
+</pre>
+</div>
+
+<p>
+As with the <code>tell()</code> operation, the target address must be a valid
+Actor Address and the <code>message</code> can be anything that can be sent.
+</p>
+
+<p>
+The "response message" is any message received by the local
+endpoint.  The local endpoint looks like a normal Actor with an
+ActorAddress to the rest of the system.  <b>Any</b> Actor sending a
+message to this address will complete the <code>ask()</code> operation with
+that message.
+</p>
+
+<p>
+If the <code>timeout</code> field specifies a non-None timeout value then the
+<code>ask()</code> will only block for the specified timeout period, returning
+a None value if the timeout has occurred.  The recommended manner
+of specifying a timeout period is as an instance of the
+datetime.timedelta class, although an integer or floating point
+value will be accepted as a specification of a number of seconds.
+</p>
+</div>
+
+<div id="outline-container-sec-6-5-1" class="outline-4">
+<h4 id="sec-6-5-1"><span class="section-number-4">6.5.1</span> Gotchas</h4>
+<div class="outline-text-4" id="text-6-5-1">
+<ul class="org-ul">
+<li>The response may come from a previous <code>tell()</code> (or <code>ask()</code> if that
+ask caused the Actor to send multiple messages to the requestor,
+not the message sent as part of this <code>ask()</code>.
+</li>
+
+<li>Each <code>ask()</code> call terminates with a single response; if Actors have
+sent multiple messages to the <code>ask()</code> endpoint, the additional
+messages may either be delivered on subsequent <code>ask()</code> calls, or
+discarded as failed message sends if this endpoint does not issue
+an <code>ask()</code> in a reasonable time period.
+</li>
+</ul>
+
+<p>
+These concerns can obviously make using <code>ask()</code> tricky if there are
+<code>tell()</code> calls that cause responses or multiple responses to an ask;
+the application must be prepared to use techniques like no-response
+<code>asks()</code> with timeouts and message identifiers to
+</p>
+</div>
+</div>
+</div>
+
+<div id="outline-container-sec-6-6" class="outline-3">
+<h3 id="sec-6-6"><span class="section-number-3">6.6</span> updateCapability</h3>
+<div class="outline-text-3" id="text-6-6">
+<p>
+The <code>updateCapability()</code> method is used update the capabilities of
+the ActorSystem.  This is the external interface to updating
+capabilities; Actors can issue capability updates as well.
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-python">     actorSys.updateCapability(capabilityName, capabilityValue=None)
+</pre>
+</div>
+
+<p>
+If the capability value is specified and is not None, the specified
+capability already exists, its value updated, otherwise it is
+created with the specified value.
+</p>
+
+<p>
+If the capability value is not specified or is None, the specified
+capability is removed from the ActorSystem if it exists.
+</p>
+
+<p>
+If the capabilities of the ActorSystem are modified by this method
+(i.e. the capability value is not already set as requested) then
+all Actors within that ActorSystem are re-validated by calling
+their <a href="#sec-5-9">actorSystemCapabilityCheck</a> static method and sending them an
+ActorExitRequest if the capability check call returns false.  _This
+could result in killing the Actor that initiated the capability
+exchange, even if new capabilities are added._ Actors may be
+recreated as desired; the new Actors will validate against the new
+set of capabilities.
+</p>
+
+<p>
+The current set of ActorSystem capabilities can be obtained by
+issuing a <a href="#sec-7-9">Thespian_StatusReq</a> to the ActorSystem.
+</p>
+</div>
+</div>
+
+
+<div id="outline-container-sec-6-7" class="outline-3">
+<h3 id="sec-6-7"><span class="section-number-3">6.7</span> loadActorSource</h3>
+<div class="outline-text-3" id="text-6-7">
+<div class="org-src-container">
+
+<pre class="src src-python">    sourceHash = actorSys.loadActorSource(filename)
+</pre>
+</div>
+
+<p>
+The <code>loadActorSource()</code> method is used to load a (possibly
+encrypted) zipfile containing Python source code in standard Python
+zipimport format (via PEP302<sup><a id="fnr.1" name="fnr.1" class="footref" href="#fn.1">1</a></sup> methodologies).  The return value
+is an internally-generated hash value identifying that loaded source
+zipfile that can be used in subsequent <a href="#sec-5-3">createActor</a> calls to
+instantiate Actors found in that sourcefile.
+</p>
+
+
+<p>
+Although a plaintext zipfile may be loaded, it is highly recommended
+that production environments encrypt the zipFile using some sort of
+encryption methodology.  The reasons for this are discussed in the
+<i>Security Considerations</i> section below; when an encrypted zipfile is
+loaded it is first decrypted and/or authorized as described therein.
+</p>
+
+<p>
+If the filename is invalid or specifies a corrupted source file,
+then the returned sourceHash it is not added to the list of
+available sources, but there is no other feedback (excepting perhaps
+the <code>/tmp/Thespian.log</code> logfile).
+</p>
+</div>
+
+<div id="outline-container-sec-6-7-1" class="outline-4">
+<h4 id="sec-6-7-1"><span class="section-number-4">6.7.1</span> Source Loading Issues</h4>
+<div class="outline-text-4" id="text-6-7-1">
+<p>
+Although the <code>loadActorSource()</code> functionality works quite well,
+there are a few scenarios that can cause difficulties:
+</p>
+
+<ol class="org-ol">
+<li>Loaded sources containing or relying on object libraries.  The
+<code>loadActorSource()</code> functionality affects the Python module
+lookup, but it does not affect object file lookups that would
+need to be performed for native object libraries.  In addition,
+object libraries are specific to their build environment and may
+not work in all target environments.  If the loaded source
+simply <b>refers</b> to an externally available library
+(e.g. PyOpenSSL python package refers to <code>/usr/lib/libssl.so</code>)
+then this may work if the proper object library has been
+installed on the target system by other means (i.e. not via the
+<code>loadActorSource()</code> call.
+</li>
+
+<li>Sources containing other PEP302 path importers may not work
+correctly when used in conjuction with the <code>loadActorSource()</code>
+PEP302 importer.  As an example, the <code>loadActorSource()</code>
+importer prefixes loaded modules with the Source Hash associated
+with those modules to ensure uniqueness.  This is not always
+compatible with other PEP302 importers.
+
+<ol class="org-ol">
+<li>The <code>six</code> package (providing Python2/Python3 compatibility)
+uses a PEP302 importer to manage moved packages.  This
+functionality of the <code>six</code> package is broken by the
+<code>loadActorSource()</code> Source Hash prefixing. To avoid this
+<code>loadActorSource()</code> processing handles <code>six</code> as a special
+case and <i>does not</i> prefix <code>six</code> with any Source Hash.
+
+<p>
+The assumption is that <code>six</code> is a mature and unchanging
+package and a global version is acceptable for all loaded
+sources (and that a working <code>six</code> importer is preferrable to
+a non-working importer).
+</p>
+</li>
+</ol>
+</li>
+
+<li>The <code>importlib</code> package has a subtle flaw that is not compatible
+with the Source Hash prefixing performed by <code>loadActorSource()</code>.
+To work around this problem Thespian provides an updated version
+of <code>importlib</code>; use " <code>import thespian.importlib as importlib</code> "
+instead of just " <code>import importlib</code> " in Actor sources that
+will be loaded via <code>loadActorSource()</code>.
+</li>
+</ol>
+</div>
+</div>
+
+<div id="outline-container-sec-6-7-2" class="outline-4">
+<h4 id="sec-6-7-2"><span class="section-number-4">6.7.2</span> Security Considerations</h4>
+<div class="outline-text-4" id="text-6-7-2">
+<p>
+When <code>loadActorSource()</code> is not used, the source for all
+instantiated Actors must come from the existing Python import path
+in the context of the Thespian ActorSystem.  In this configuration,
+it is the System Administrator's responsibility to provide
+reasonable security and protection against code injection attacks
+(e.g. by using a virtualenv in a protected directory environment).
+</p>
+
+<p>
+In order to prevent code injection attacks from being used with
+<code>loadActorSource()</code> techniques, the ActorSystem must be able to
+validate the following for each set of code loaded:
+</p>
+
+<ol class="org-ol">
+<li>The source file has not been tampered with.
+</li>
+<li>The source file is acceptable to run in this ActorSystem.
+</li>
+</ol>
+
+<p>
+To achieve this protection, an Actor can register itself with the
+system to handle authorization and/or description of
+<code>loadActorSource()</code> inputs.  This Actor is referred to as the Source
+Authority Actor.  Any input subsequently provided to
+<code>loadActorSource()</code> is first passed to this Source Authority Actor.
+The Source Authority Actor can perform any validation and/or
+decryption of the input that it would like to and then sends back
+either an error or the authorized source in a form that can be
+utilized by the local ActorSystem.
+</p>
+
+<p>
+There can be only one Source Authority Actor registered with an
+Actor System at any one time.  Any Actor can register itself as the
+new Source Authority; it is assumed that the previous authorization
+of that Actor validated that it is allowed to run in the system and
+therefore assume Source Authority responsibilities.  Note that in
+highly paranoid environments, the initial Source Authority can be
+used to authorize the next Source Authority, and this process can be
+repeated as indicated by the level of paranoia to further obfuscate
+the manner in which the Source Authority is established.
+</p>
+
+<p>
+By default, at Actor System startup time, there is no Source
+Authority, thus allowing any <code>loadActorSource()</code> input to be loaded
+and utilized.  This is convenient for debugging and simple local
+applications, but not recommended for production deployments.
+Typical best practices for production initialization of a Thespian
+environment are to startup the ActorSystem and then immediately load
+a Source Authority that will validate all subsequent sources loaded
+into that system.
+</p>
+
+<p>
+Note that it is possible to disable the <code>loadActorSource()</code>
+functionality entirely by registering an Actor as the Source
+Authority that will reject all loaded sources.
+</p>
+</div>
+
+<ol class="org-ol"><li><a id="sec-6-7-2-1" name="sec-6-7-2-1"></a>Multi-System Source Authorization<br  /><div class="outline-text-5" id="text-6-7-2-1">
+<p>
+The Source Authority registration is unique to an Actor System.
+Different Actor Systems in a <i>Multiple Systems</i> configuration can each
+have a separate Source Authority that may perform different
+authorization techniques.  However, as described in <i>Actor Code
+Distribution</i>, Actor Systems joined together in a Convention can
+exchange sources on demand to satisfy Actor creation requests.
+sources exchanged between Actor Systems in this manner are not
+subject to further <b>validation</b> after the initial load on the
+original system (although the local ActorSystem can choose the level
+of sharing it wishes to perform; see the <b>AllowRemoteActorSources</b>
+capability setting in the <i>Common Capabilities</i> section).
+</p>
+
+<p>
+This functionality allows for maximum flexibility in handling
+different deployment environments:
+</p>
+
+<ul class="org-ul">
+<li>In an environment where the Convention Leader ActorSystem is the
+centralized command-and-control system and sources should only be
+loaded on that system, the other ActorSystems can be initialized
+with a Source Authority that rejects all <code>loadActorSource()</code>
+attempts and therefore can run only sources provdied by the
+Convention Leader.
+</li>
+
+<li>In an environment where all ActorSystems are trusted equally and
+new Actor source can be loaded via any system, they can all
+utilize the same Source Authority as loaded into each Actor system
+at the time it is started.
+</li>
+
+<li>In a loose confederation of trusting ActorSystems, each
+ActorSystem can load its own Source Authority to control sources
+loaded via that system, while still sharing sources loaded on any
+system.
+</li>
+</ul>
+
+<p>
+It is important to note that in all configurations, different loaded
+sources are essentially independent, regardless of the method by
+which they are loaded and validated.  The only way for one source
+load to access code in another source load is by issuing a
+<code>createActor()</code> request using the known name of an Actor in the
+other source load, or by being passed the ActorAddress of an already
+running Actor in the other source load via independent means.
+</p>
+</div>
+</li></ol>
+</div>
+</div>
+
+<div id="outline-container-sec-6-8" class="outline-3">
+<h3 id="sec-6-8"><span class="section-number-3">6.8</span> unloadActorSource</h3>
+<div class="outline-text-3" id="text-6-8">
+<div class="org-src-container">
+
+<pre class="src src-python">    actorSys.unloadActorSource(sourceHash)
+</pre>
+</div>
+
+<p>
+The <code>unloadActorSource()</code> method is used to unload a source zipfile
+previously loaded by the <a href="#sec-6-7">loadActorSource</a> operation.
+</p>
+
+<p>
+This will not affect (i.e. stop) any remaining Actors running
+instances from that source, but it will prevent the creation of any
+new Actors from that source<sup><a id="fnr.2" name="fnr.2" class="footref" href="#fn.2">2</a></sup>.
+</p>
+
+
+<p>
+This effect of this call on running Actors' ability to access the
+unloaded source via imports or subseqeuent Actor creation is
+indeterminate: in some system bases this would fail, whereas in
+other bases this would succeed.
+</p>
+
+<p>
+The <code>sourceHash</code> argument should specify the return value from a
+previous <code>loadActorSource()</code> call; if there is no source loaded with
+that sourceHash this request does nothing silently.
+</p>
+</div>
+</div>
+</div>
+
+<div id="outline-container-sec-7" class="outline-2">
+<h2 id="sec-7"><span class="section-number-2">7</span> ActorSystem Messages</h2>
+<div class="outline-text-2" id="text-7">
+<p>
+The following Messages can be delivered to Actors by the ActorSystem
+as a result of events within the ActorSystem itself.
+</p>
+</div>
+
+<div id="outline-container-sec-7-1" class="outline-3">
+<h3 id="sec-7-1"><span class="section-number-3">7.1</span> PoisonMessage</h3>
+<div class="outline-text-3" id="text-7-1">
+<p>
+The <code>PoisonMessage</code> object is delivered to an Actor when a send
+attempt by that Actor has caused the target Actor to fail.  The
+<code>PoisonMessage</code> is a wrapper around the original message that
+caused the failure.  The originating Actor receives this poison
+message indication to allow it to perform any desired cleanup or
+alternative work based on the target Actor failure (see
+<i>PoisonMessage Returns</i>).
+</p>
+</div>
+
+<div id="outline-container-sec-7-1-1" class="outline-4">
+<h4 id="sec-7-1-1"><span class="section-number-4">7.1.1</span> Attributes</h4>
+<div class="outline-text-4" id="text-7-1-1">
+<ul class="org-ul">
+<li><code>.poisonMessage</code> is the original message causing the target Actor
+failures.
+</li>
+</ul>
+</div>
+</div>
+</div>
+
+<div id="outline-container-sec-7-2" class="outline-3">
+<h3 id="sec-7-2"><span class="section-number-3">7.2</span> WakeupMessage</h3>
+<div class="outline-text-3" id="text-7-2">
+<p>
+The <code>WakeupMessage</code> is delivered to the Actor by the ActorSystem as
+a result of a previous call to the Actor's <code>.wakeupAfter()</code> method
+call (see <i>Timer Messages</i>).
+</p>
+</div>
+
+<div id="outline-container-sec-7-2-1" class="outline-4">
+<h4 id="sec-7-2-1"><span class="section-number-4">7.2.1</span> Attributes</h4>
+<div class="outline-text-4" id="text-7-2-1">
+<ul class="org-ul">
+<li><code>.delayPeriod</code> which is the python <code>datetime.timedelta</code> value of
+the delay period that has expired.
+</li>
+</ul>
+</div>
+</div>
+</div>
+
+<div id="outline-container-sec-7-3" class="outline-3">
+<h3 id="sec-7-3"><span class="section-number-3">7.3</span> ActorExitRequest</h3>
+<div class="outline-text-3" id="text-7-3">
+<p>
+The <code>ActorExitRequest</code> object is sent to any Actor to request that
+Actor to exit.  The Actor's <code>receiveMessage()</code> is invoked with the
+<code>ActorExitRequest</code> object to allow the Actor to do any internal
+cleanup; the cleanup must be completed because when the Actor's
+<code>receiveMessage()</code> method exits from handling the
+<code>ActorExitRequest</code> object, the Actor is killed with no further
+functioning.
+</p>
+
+<p>
+The <code>ActorExitRequest</code> may be originated by the ActorSystem itself
+(e.g. a ActorSystem shutdown time) or it may be sent by any other
+Actor within the system.
+</p>
+</div>
+
+<div id="outline-container-sec-7-3-1" class="outline-4">
+<h4 id="sec-7-3-1"><span class="section-number-4">7.3.1</span> Attributes</h4>
+<div class="outline-text-4" id="text-7-3-1">
+<ul class="org-ul">
+<li><code>.isRecursive</code> indicates that this ActorExitRequest will
+automatically be propagated to all children of the current Actor
+following its processing by this Actor.
+</li>
+
+<li><code>.notRecursive()</code> updates this ActorExitRequest to disable recursive
+propagation to all child Actors.
+</li>
+</ul>
+</div>
+</div>
+</div>
+
+<div id="outline-container-sec-7-4" class="outline-3">
+<h3 id="sec-7-4"><span class="section-number-3">7.4</span> ChildActorExited</h3>
+<div class="outline-text-3" id="text-7-4">
+<p>
+The <code>ChildActorExited</code> object is delivered to the Parent Actor of
+an Actor when that Actor has exited.  This is delivered regardless
+of whether the exit was due to the receipt of an <a href="#sec-7-3">ActorExitRequest</a>
+message or if the Actor was killed by other means.
+</p>
+
+<p>
+The Parent of <i>Named Actors</i> is the ActorSystem itself; no
+other Actor will receive a <code>ChildActorExited</code> message when a
+Named Actor exits.
+</p>
+
+<p>
+Actors which were created by the external system via the
+ActorSystem interface will have no Parent; their exit is
+unremarked.
+</p>
+</div>
+
+<div id="outline-container-sec-7-4-1" class="outline-4">
+<h4 id="sec-7-4-1"><span class="section-number-4">7.4.1</span> Attributes</h4>
+<div class="outline-text-4" id="text-7-4-1">
+<ul class="org-ul">
+<li><code>.childAddress</code> is the address of the child Actor that exited.
+Note that this <code>.childAddress</code> may be different than the <code>sender</code>
+argument passed to the current Actor's <code>.receiveMessage()</code> method.
+</li>
+</ul>
+</div>
+</div>
+</div>
+
+<div id="outline-container-sec-7-5" class="outline-3">
+<h3 id="sec-7-5"><span class="section-number-3">7.5</span> DeadEnvelope</h3>
+<div class="outline-text-3" id="text-7-5">
+<p>
+The <code>DeadEnvelope</code> object is delivered to the Dead Letter handler as
+described in <i>Dead Letter Handling</i>.  The <code>DeadEnvelope</code> is a wrapper
+around the original message that could not be delivered to the
+target Actor because the target is no longer running.
+</p>
+</div>
+
+<div id="outline-container-sec-7-5-1" class="outline-4">
+<h4 id="sec-7-5-1"><span class="section-number-4">7.5.1</span> Attributes</h4>
+<div class="outline-text-4" id="text-7-5-1">
+<ul class="org-ul">
+<li><code>.deadMessage</code> &#x2013; the original, undeliverable message
+</li>
+<li><code>.deadAddress</code> &#x2013; the address to which the message could not be delivered
+</li>
+</ul>
+</div>
+</div>
+</div>
+
+<div id="outline-container-sec-7-6" class="outline-3">
+<h3 id="sec-7-6"><span class="section-number-3">7.6</span> ActorSystemConventionUpdate</h3>
+<div class="outline-text-3" id="text-7-6">
+<p>
+The <code>ActorSystemConventionUpdate</code> object is delivered to an Actor
+that has registered to be notified on changes in ActorSystem
+convention membership (as described in <i>Other Actor Systems</i>).  This
+message is generated by the ActorSystem itself.
+</p>
+</div>
+
+<div id="outline-container-sec-7-6-1" class="outline-4">
+<h4 id="sec-7-6-1"><span class="section-number-4">7.6.1</span> Attributes</h4>
+<div class="outline-text-4" id="text-7-6-1">
+<ul class="org-ul">
+<li><code>.remoteAdminAddress</code> &#x2013; Address of the Admin for the remote ActorSystem.
+</li>
+
+<li><code>.remoteCapabilities</code> &#x2013; The current capabilities of the remote ActorSystem.
+</li>
+
+<li><code>.remoteAdded</code> &#x2013; True if the ActorSystem is registering, False if
+it is actively de-registering or has been automatically
+de-registered for failing to checkin.
+</li>
+</ul>
+</div>
+</div>
+</div>
+
+<div id="outline-container-sec-7-7" class="outline-3">
+<h3 id="sec-7-7"><span class="section-number-3">7.7</span> ValidateSource</h3>
+<div class="outline-text-3" id="text-7-7">
+<p>
+The <code>ValidateSource</code> object is delivered to the registered Source
+Authority.  The contents are the source file provided via the
+<a href="#sec-6-7">loadActorSource</a> call to the ActorSystem.  The Actor receiving this
+message should decrypt and validate the source to ensure that the
+source is authorized to run in the context of the current
+ActorSystem.
+</p>
+
+<p>
+If the specified source is not authorized to run in the current
+ActorSystem, the Source Authority simply discards this message and
+takes no further action.
+</p>
+
+<p>
+If the specified source is valid for running in the current
+ActorSystem, the Source Authority should return a zipfile
+containing <b>compiled sources only</b> to the sender in a
+<a href="#sec-7-8">ValidatedSource</a> message.
+</p>
+
+<p>
+It is important to note that the sources provided to the
+<code>loadActorSource()</code> call are not actually available for use in
+<code>createActor()</code> calls until the Source Authority has responded with
+the ValidatedSource message.  If it is expected that the Source
+Authority will experience delays in validating the source, or that
+the attempts to use the loaded source will immediately follow the
+<code>loadActorSource()</code> call, the code calling the latter should
+implement a delay or an explicit validation of the results of the
+load via the <a href="#sec-7-9">Thespian_StatusReq</a> operation.
+</p>
+</div>
+
+<div id="outline-container-sec-7-7-1" class="outline-4">
+<h4 id="sec-7-7-1"><span class="section-number-4">7.7.1</span> Attributes</h4>
+<div class="outline-text-4" id="text-7-7-1">
+<ul class="org-ul">
+<li><code>.sourceHash</code> &#x2013; the hash associated with this loaded source.
+</li>
+<li><code>.sourceData</code> &#x2013; the input data (file contents) provided to the
+<a href="#sec-6-7">loadActorSource</a> call to the ActorSystem.
+</li>
+</ul>
+</div>
+</div>
+</div>
+
+<div id="outline-container-sec-7-8" class="outline-3">
+<h3 id="sec-7-8"><span class="section-number-3">7.8</span> ValidatedSource</h3>
+<div class="outline-text-3" id="text-7-8">
+<p>
+This message is not sent by the ActorSystem to an Actor, but is
+instead sent by the Source Authority Actor back to the system as
+the response to a <a href="#sec-7-7">ValidateSource</a> message.  The data associated with
+this response is a zipfile in zipimport format providing the
+<b>compiled sources only</b> that were extracted from the input data
+sent via the <code>ValidateSource</code> message.  By sending this message
+back to the sender, the Source Authority Actor is indicating that
+the associated contents are valid for running within the current
+ActorSystem environment (and any other Actor Systems that are part
+of the Convention).
+</p>
+
+<p>
+Only compiled objects are returned (with <code>.pyc</code> or <code>.pyo</code>
+extensions) in the returned zipimport file to further preserve
+security: an attacker with visibility into the memory of the
+ActorSystem would need to locate and de-compile the body of the
+zipfile instead of being granted access directly to the decrypted
+original sources.
+</p>
+</div>
+
+
+<div id="outline-container-sec-7-8-1" class="outline-4">
+<h4 id="sec-7-8-1"><span class="section-number-4">7.8.1</span> Attributes</h4>
+<div class="outline-text-4" id="text-7-8-1">
+<ul class="org-ul">
+<li><code>.sourceHash</code> &#x2013; the hash associated with the loaded source as
+provided in the <code>ValidateSource</code> input message.
+</li>
+<li><code>.sourceZip</code> &#x2013; the zipimport-format decrypted and validated
+compiled form of the originally provided source.
+</li>
+</ul>
+</div>
+</div>
+</div>
+
+<div id="outline-container-sec-7-9" class="outline-3">
+<h3 id="sec-7-9"><span class="section-number-3">7.9</span> Thespian_StatusReq</h3>
+<div class="outline-text-3" id="text-7-9">
+<p>
+The <code>Thespian_StatusReq</code> object can be sent to any Actor (or to the
+ActorSystem&#x2026;e.g. the Admin if the ActorSystem has one) to request
+Thespian-related status information.  The status information is
+information from within Thespian itself; the Actor does not receive
+or provide handling of this message itself.
+</p>
+
+<p>
+The response to the <code>Thespian_StatusReq</code> is either a
+<a href="#sec-7-10">Thespian_SystemStatusResponse</a> or a <a href="#sec-7-11">Thespian_ActorStatusResponse</a>
+message, depending on whether the <code>Thespian_StatusReq</code> was sent to
+an Actor or the ActorSystem.
+</p>
+</div>
+
+<div id="outline-container-sec-7-9-1" class="outline-4">
+<h4 id="sec-7-9-1"><span class="section-number-4">7.9.1</span> Attributes</h4>
+<div class="outline-text-4" id="text-7-9-1">
+<p>
+The <code>Thespian_StatusReq</code> object has no attributes.
+</p>
+</div>
+</div>
+</div>
+
+<div id="outline-container-sec-7-10" class="outline-3">
+<h3 id="sec-7-10"><span class="section-number-3">7.10</span> Thespian_SystemStatusResponse</h3>
+<div class="outline-text-3" id="text-7-10">
+<p>
+The <code>Thespian_SystemStatusResponse</code> object is returned by the
+ActorSystem with status information about that ActorSystem.  The
+information in this message is informational only and subject to
+change: relying on specific fields or values in this message is not
+recommended.
+</p>
+</div>
+</div>
+
+<div id="outline-container-sec-7-11" class="outline-3">
+<h3 id="sec-7-11"><span class="section-number-3">7.11</span> Thespian_ActorStatusResponse</h3>
+<div class="outline-text-3" id="text-7-11">
+<p>
+The <code>Thespian_SystemStatusResponse</code> object is returned by the
+ActorSystem with status information about that ActorSystem.  The
+information in this message is informational only and subject to
+change: relying on specific fields or values in this message is not
+recommended.
+</p>
+</div>
+</div>
+</div>
+
+
+<div id="outline-container-sec-8" class="outline-2">
+<h2 id="sec-8"><span class="section-number-2">8</span> ActorSystem Implementations</h2>
+<div class="outline-text-2" id="text-8">
+<p>
+One of the convenient aspects of an Actor architecture is that the
+Actors themselves are insulated from and agnostic to any particular
+transport type: the Actor System provides the message delivery and
+underlying Actor support functionality.
+</p>
+
+<ul class="org-ul">
+<li>The implementation of the Actor System can be changed or
+redesigned without the Actors themselves needing to change.
+</li>
+
+<li>Different implementations can be chosen for different circumstances
+to meet the needs of that particular circumstance.
+</li>
+</ul>
+
+<p>
+The Actors themselves interact with the ActorSystem via the normal
+<code>.send()</code>, <code>.createActor()</code>, <code>.receiveMessage()</code> methods defined for
+the Actor.
+</p>
+
+<p>
+The external environment can interact with the Actors by making
+requests via the ActorSystem object itself.  In addition, the Actor
+System must be initially created to provide an environment for all
+Actors that are subsequently run within that Actor System; this
+creation is the responsibility of code in this external environment.
+When external code calls the <code>ActorSystem()</code> constructor, an Actor
+System is started if one is not already running.
+</p>
+
+<p>
+An argument may be passed to the <a href="#sec-1-3">ActorSystem</a> constructor to specify
+the systemBase (a.k.a Actor System implementation) that should be used
+for starting the Actor System if one is not already running; if an
+Actor System is already running, this argument is ignored.  If no
+argument is specified and no Actor System is running, the default
+<a href="#sec-8-2">simpleSystemBase</a> Actor System will be started.
+</p>
+
+<p>
+The following table provides a summary of the different bases; more
+details are available in each section:
+</p>
+
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+
+
+<colgroup>
+<col  class="left" />
+
+<col  class="left" />
+</colgroup>
+<thead>
+<tr>
+<th scope="col" class="left">Base</th>
+<th scope="col" class="left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="left">simpleSystemBase</td>
+<td class="left">No parallelism. Primarily useful for unit testing. Default base.</td>
+</tr>
+
+<tr>
+<td class="left">multiprocQueueBase</td>
+<td class="left">Multiple processses using Python Queue for communications.  Cannot support conventions.</td>
+</tr>
+
+<tr>
+<td class="left">multiprocTCPBase</td>
+<td class="left">Multiprocessing using TCP communications.  Use this base if your are unsure of which base to choose.</td>
+</tr>
+
+<tr>
+<td class="left">multiprocUDPBase</td>
+<td class="left">Multiprocessing using UDP communications.  Lighter-weight than TCP version, but can drop packets.</td>
+</tr>
+</tbody>
+</table>
+</div>
+
+
+
+<div id="outline-container-sec-8-1" class="outline-3">
+<h3 id="sec-8-1"><span class="section-number-3">8.1</span> Common Capabilities</h3>
+<div class="outline-text-3" id="text-8-1">
+<p>
+As described in <i>ActorSystem Capabilities</i> each ActorSystem has a set of
+capabilities that describe that ActorSystem and which can be audited
+by the Actor's <a href="#sec-5-9">actorSystemCapabilityCheck</a> method to determine if the
+Actor is compatible with the ActorSystem.
+</p>
+
+<p>
+Each ActorSystem may specify capabilities unique to that ActorSystem
+and the application can add capabilities to that ActorSystem; in
+addition, the following common capabilities are defined for all
+ActorSystems:
+</p>
+
+<dl class="org-dl">
+<dt> <b>Python Version</b> </dt><dd>This is set to the tuple value of the Python
+version under which the ActorSystem is running (this is the same
+value supplied by <code>sys.version_info</code>).  Any Actors wishing to
+enforce any version restrictions use this capability to do so.
+</dd>
+
+<dt> <b>Thespian Generation</b> </dt><dd>This is the Thespian API functionality
+specifier as a tuple of two values: <code>(generation, enhancement)</code>.
+The first value is the <code>generation</code> and indicates a major
+functionality level (which is not necessarily backwards-compatible
+with the previous functionality level).  The second number is the
+<code>enhancement</code> value and is incremented when backwards-compatible
+functional enhancements have been added within the current
+<code>generation</code>.  The <code>generation</code> value is monotonically increasing,
+whereas the <code>enhancement</code> value monotonically increases within a
+<code>generation</code> but resets to zero when the generation changes. The
+Thespian Release Notes should be consulted to determine what
+features are supported in what generations.
+
+<p>
+This value is also available to current code in the <code>thespian.api</code>
+import as the <code>ThespianGeneration</code> value; if this local value is
+different than the ActorSystem provides in the capabilities
+</p>
+</dd>
+
+<dt> <b>Thespian Version</b> </dt><dd>This is the identifier for the version of
+Thespian running in the current environment.  This is a single
+numeric value where later releases will have a higher (but not
+necessarily successor) value.
+</dd>
+
+<dt> <b>Thespian ActorSystem Name</b> </dt><dd>This is the name of the running
+ActorSystem implementation.  It is encouraged that Actors are not
+written to be unique to any particular implementation, but this
+information is present to allow ActorSystem-specific capability
+verification.
+</dd>
+
+<dt> <b>Thespian ActorSystem Version</b> </dt><dd>This is the ActorSystem version
+as a single numeric value (similar to the <code>Thespian Version</code>
+capability.  This value may be incremented separately from the
+<code>Thespian Version</code> to indicate an update in the underlying
+ActorSystem implementation.  The value of a specific ActorSystem
+will increment, but different ActorSystems have different version
+namespaces and switching from one to another does not guarantee
+that the ActorSystem version will increment.
+</dd>
+
+<dt> <b>AllowRemoteActorSources</b> </dt><dd>This capability specifies whether or
+not this ActorSystem will accept sources loaded via remote
+Actor Systems as described in the <i>Actor Code Distribution</i>
+section.  Valid values for this capability are:
+
+<dl class="org-dl">
+<dt> <b>Yes</b> </dt><dd>Any Actor Source validated by a Source Authority
+on a remote system can be run on this system as
+well (this is the default).
+</dd>
+
+<dt> <b>No</b> </dt><dd>No Actor Sources from remote systems will be accepted locally.
+</dd>
+
+<dt> <b>LeaderOnly</b> </dt><dd>Only Actor Sources provided by the
+Convention Leader will be accepted locally.
+</dd>
+</dl>
+<p>
+Any unrecognized value will be treated as <b>No</b> and will
+disallow sources loaded on remote systems to be used in the
+current Actor System.  If this capability is not specified, the
+default is <b>Yes</b> which will accept sources loaded on any of the
+remote Actor Systems that are part of the Convention.
+</p>
+</dd>
+</dl>
+</div>
+</div>
+
+<div id="outline-container-sec-8-2" class="outline-3">
+<h3 id="sec-8-2"><span class="section-number-3">8.2</span> simpleSystemBase</h3>
+<div class="outline-text-3" id="text-8-2">
+<p>
+The simpleSystemBase implementation is primarily designed for Unit
+Testing and other very simplistic Actor environments:
+</p>
+
+<ul class="org-ul">
+<li>All Actors run synchronously in the context of the current
+process thread.
+</li>
+<li>The <a href="#sec-5-9">actorSystemCapabilityCheck</a> is not called for any Actors: all
+actors are created in the current ActorSystem regardless of
+their capability requirements.
+</li>
+<li>No support for <i>Multiple Systems</i> (e.g. Conventions)
+</li>
+</ul>
+
+<p>
+Specifically, whenever an ActorSystem <code>.tell()</code> or <code>.ask()</code> is
+called, the message is passed to the target Actor and any subsequent
+actorCreate or message sends performed by that Actor are run in
+sequence, etc. recursively.  When the <code>.tell()</code> or <code>.ask()</code>
+completes back to the caller, most messages have been propagated
+through the system and it has reached equilibrium.
+</p>
+
+<p>
+There is one exception to the equilibrium state: pending <a href="#sec-5-5">wakeupAfter</a>
+wakeups.  These wakups may still be pending when the <code>.tell()</code> or
+<code>.ask()</code> returns, and will not be delivered in the background
+subsequent to that return.  If the wakeup time period expires during
+a future call to <code>.tell()</code> or <code>.ask()</code> then the <code>WakeupMessage</code> will
+be delivered at that point.  Wakeup periods that expire in the
+interim are not acted upon until a future <code>.tell()</code> or <code>.ask()</code>, and
+if no future calls of this type are made then those wakeups are
+never delivered.
+</p>
+
+<p>
+The simpleSystemBase uses the following <i>ActorSystem Capabilities</i>:
+</p>
+
+<dl class="org-dl">
+<dt> <b>Thespian ActorSystem Name</b> </dt><dd>"simpleSystemBase"
+</dd>
+</dl>
+</div>
+</div>
+
+<div id="outline-container-sec-8-3" class="outline-3">
+<h3 id="sec-8-3"><span class="section-number-3">8.3</span> multiprocQueueBase</h3>
+<div class="outline-text-3" id="text-8-3">
+<p>
+The multiprocQueueBase runs each Actor in its own separate process
+for a truly asynchronous system.  The default Actor communication
+method is by utilizing multiprocess Queue objects.  The Actors are
+constrained to the current system, which is unique to the starting
+process. There is no inter-system communications possible, nor sharing
+of the Actor System with processes that are siblings of the starting
+process (i.e. not started by the ActorSystem itself).
+</p>
+
+<p>
+The multiprocQueueBase System Base is used between all processes
+that were created from the original creation of the SystemBase, but a
+new SystemBase is created by each initiating process and the Queues
+are unique between the different SystemBase elements.  The lifetime of
+the Actor System is limited to the lifetime of the process that
+created it.
+</p>
+
+<p>
+The multiprocQueueBase uses Python's multiprocess Queue objects, but
+due to the fact that these Queues can only be passed by direct process
+inheritance and not via pickling, this system base can be somewhat
+inefficent due to the manner in which this implementation must route
+messages through a chain of actor processes from source to
+destination.
+</p>
+
+<p>
+The multiprocQueueBase can only be used for communications on the
+current system and not for inter-system communications.  The
+multiprocQueueBase does not support the use of multiple ActorSystems
+in a Convention as described in <i>Multiple Systems</i>.
+</p>
+
+<p>
+The multiprocQueueBase uses the following <i>ActorSystem Capabilities</i>:
+</p>
+
+<dl class="org-dl">
+<dt> <b>Thespian ActorSystem Name</b> </dt><dd>"multiprocQueueBase"
+</dd>
+
+<dt> <b>Admin Address</b> </dt><dd>the address for the Admin queue. This is an
+arbitrary string value; the default is 'ThespianQ'.
+</dd>
+</dl>
+</div>
+</div>
+
+<div id="outline-container-sec-8-4" class="outline-3">
+<h3 id="sec-8-4"><span class="section-number-3">8.4</span> multiprocTCPBase</h3>
+<div class="outline-text-3" id="text-8-4">
+<p>
+The multiprocTCPBase runs each Actor in its own separate process
+for a truly asynchronous system.  The default Actor communication
+method is by utilizing TCP socket connections.
+</p>
+
+<p>
+The multiprocTCP SystemBase is shared between all processes that
+utilize the same Administrator coordinates, and can be used for
+inter-system communications.  The lifetime of the Actor System exceeds
+that of the process that started it and persists until an explicit
+shutdown.
+</p>
+
+<p>
+The multiprocTCPBase can be used for Actors on the same system or on
+other systems accessible via TCP/IPv4.
+</p>
+
+<p>
+The multiprocTCPBase uses the following <i>ActorSystem Capabilities</i>:
+</p>
+
+<dl class="org-dl">
+<dt> <b>Thespian ActorSystem Name</b> </dt><dd>"multiprocTCPBase"
+</dd>
+
+<dt> <b>Admin Port</b> </dt><dd>which specifies the TCP port number upon which the
+ActorSystem will listen for new communications.  Actors and the
+external systems do not need to access that port specifically:
+it specifies which port the ActorSystem uses internally for
+coordination of operations.
+
+<p>
+If a multiprocTCPBase ActorSystem is already listening at that
+port, then the existing system will be utilized; otherwise a new
+multiprocTCPBase ActorSystem will be started up.
+</p>
+
+<p>
+If not specified, the default Admin Port of 1900 is used.
+</p>
+</dd>
+
+<dt> <b>Convention Address.IPv4</b> </dt><dd>the IPv4 address of the convention
+leader's Admin.  This should be specified either as a tuple of
+<i>(hostname, portnum)</i> or as a string of the form
+"hostname:portnum".  The hostname may be a DNS name or a dotted
+quad IPv4 address (specified as a string) and references the
+host on which the Convention Leader Admin is to be found.  The
+portnum is the <b>Admin Port</b> upon which that Admin listens; if
+not specified (no colon is found) then the port num defaults to
+the <b>Admin Port</b> setting.
+</dd>
+</dl>
+</div>
+</div>
+
+
+<div id="outline-container-sec-8-5" class="outline-3">
+<h3 id="sec-8-5"><span class="section-number-3">8.5</span> multiprocUDPBase</h3>
+<div class="outline-text-3" id="text-8-5">
+<p>
+The multiprocUDPBase runs each Actor in its own separate process
+for a truly asynchronous system.  The default Actor communication
+method is by utilizing UDP messages.
+</p>
+
+<p>
+The multiprocUDP SystemBase is shared between all processes that
+utilize the same Administrator coordinates, and can be used for
+inter-system communications.  The lifetime of the Actor System
+exceeds that of the process that started it and persists until an
+explicit shutdown.
+</p>
+
+<p>
+As with most UDP-based exchanges, there is no guarantee that messages
+have been delivered.  One effect of this is that it is often difficult
+for the ActorSystem to recognize that Actors have exited and so Dead
+Letter delivery is unreliable at best for this system base.
+</p>
+
+<p>
+Additionally, the UDP-based ActorSystem can only exchange messages up
+to 64KiB in size.  Larger messages will fail.
+</p>
+
+<p>
+The multiprocUDPBase can be used for Actors on the same system or on
+other systems accessible via UDP/IP.
+</p>
+
+<p>
+The multiprocUDPBase uses the following <i>ActorSystem Capabilities</i>:
+</p>
+
+<dl class="org-dl">
+<dt> <b>Thespian ActorSystem Name</b> </dt><dd>"multiprocUDPBase"
+</dd>
+
+<dt> <b>Admin Port</b> </dt><dd>which specifies the UDP port number upon which the
+ActorSystem will listen for new communications.  Actors and the
+external systems do not need to access that port specifically:
+it specifies which port the ActorSystem uses internally for
+coordination of operations.
+
+<p>
+If a multiprocUDPBase ActorSystem is already listening at that
+port, then the existing system will be utilized; otherwise a new
+multiprocUDPBase ActorSystem will be started up.
+</p>
+
+<p>
+If not specified, the default Admin Port of 1029 is used.
+</p>
+</dd>
+
+<dt> <b>Convention Address.IPv4</b> </dt><dd>the IPv4 address of the convention
+leader's Admin.  See the description of the same capability in the
+<a href="#sec-8-4">multiprocTCPBase</a> for more details.
+</dd>
+</dl>
+</div>
+</div>
+</div>
+
+<div id="outline-container-sec-9" class="outline-2">
+<h2 id="sec-9"><span class="section-number-2">9</span> Deploying Actor-based Projects</h2>
+<div class="outline-text-2" id="text-9">
+<p>
+Possible Methods for deployment:
+</p>
+<ul class="org-ul">
+<li>Create a virtualenv via os-specific packaging (e.g. RPM) of all
+dependencies including Thespian.  This is a single, self-contained
+installation containing all needed elements and can be started and
+stopped distinctly.
+</li>
+
+<li>Distribute Thespian and a Source Authority via os-specific
+packaging to make the ActorSystem available.  This establishes the
+base service and other elements can be deployed via the
+loadActorSource() operation.
+</li>
+</ul>
+
+<p>
+The former method is a simpler method, but it means that the
+ActorSystem cannot be shared amongst separate applications, and that
+any deployment will completely shutdown the previous ActorSystem and
+Actors before starting the new one.
+</p>
+
+<p>
+Using the latter method is slightly more complicated from a
+packaging complexity perspective, but it allows the ActorSystem to
+be shared by multiple Actor-based applications, as well as providing
+for seamless upgrades of each application (because the new and old
+sources can be running simultaneously).
+</p>
+</div>
+
+<div id="outline-container-sec-9-1" class="outline-3">
+<h3 id="sec-9-1"><span class="section-number-3">9.1</span> Overall Security Considerations</h3>
+<div class="outline-text-3" id="text-9-1">
+<dl class="org-dl">
+<dt> <b>ActorSystem Startup</b> </dt><dd>ActorSystem startup will inherit the
+permissions of the starting user.  In many cases this is root
+to afford the actors the needed abilities to perform their
+operations.
+</dd>
+
+<dt> <b>ActorSystem Restart</b> </dt><dd>This is the process of stopping an
+ActorSystem and restarting a new one.  There are no
+restrictions placed on stopping an ActorSystem because this
+could result in unwarranted difficulties, and the ActorSystem
+can already be stopped in other ways (eg. process kill, etc.).
+Although it is possible for an attacker to stop the running
+ActorSystem and restart it, the resulting ActorSystem will only
+be running with the permissions it inherits from that starting
+user, and the protections detailed below still apply.  This is
+not an effective attack vector for the ActorSystem.
+</dd>
+
+<dt> <b>Actor Injection</b> </dt><dd>the use of the Source Authority (see
+<a href="#sec-5-8">registerSourceAuthority</a>) and associated sourceHash values
+prevent the ability to inject bad actors into the ActorSystem.
+</dd>
+
+<dt> <b>Message Injection</b> </dt><dd>Each Actor is responsible for any
+validation or verification of the messages it receives.
+</dd>
+
+<dt> <b>Message Interception</b> </dt><dd>To protect messages from snooping, a VPN
+should be used or the configuration should select an
+ActorSystem base should be used that provides ssl-secured
+communications
+</dd>
+
+<dt> <b>Convention Source Injection</b> </dt><dd>In this scenario, another member
+of the ActorSystem Convention that has been compromised
+attempts to inject bad Actor sources into the system.  This is
+prevented by using the <b>AllowRemoteActorSources</b> capability to
+prevent injection of sources from ActorSystem hosts that are
+subject to compromise.
+
+<p>
+It is often desireable to deploy the Convention Leader into a
+more protected environment than may be possible for the remote
+ActorSystem Convention members and to use the
+<b>AllowRemoteActorSources</b> capability to restrict the use of
+newly loaded Actor Sources to only those Sources loaded on the
+Convention Leader system.
+</p>
+</dd>
+
+<dt> <b>Actor Hijacking</b> </dt><dd>e.g. sql injection attacks, buffer overrun,
+etc.  These are the responsibility of the Actor developer, but
+remember the guideline: "Fail Early, Fail Often."
+</dd>
+</dl>
+</div>
+
+<div id="outline-container-sec-9-1-1" class="outline-4">
+<h4 id="sec-9-1-1"><span class="section-number-4">9.1.1</span> Security Scenarios</h4>
+<div class="outline-text-4" id="text-9-1-1">
+<p>
+On any particular host where an ActorSystem is running, the primary
+focus is on protecting that ActorSystem to prevent injection of code
+by malicious users.  It is assumed that the users do not have root
+access.
+</p>
+
+<p>
+On systems where a user has local root access but that user is not a
+trusted user for the entire environment, the user's influence through
+the ActorSystem should be restricted to only the system they have
+access to.  The <i>Convention Source Injection</i> protection describe
+above assists in this case.
+</p>
+</div>
+</div>
+</div>
+</div>
+<div id="footnotes">
+<h2 class="footnotes">Footnotes: </h2>
+<div id="text-footnotes">
+
+<div class="footdef"><sup><a id="fn.1" name="fn.1" class="footnum" href="#fnr.1">1</a></sup> <p class="footpara">
+The PEP302 Python extension specification defines the
+ability to add a custom package finder/loader that coordinates with
+the Python <code>import</code> statement.  The Thespian <code>loadActorSource</code>
+implements a PEP302-compliant package manager.  All loaded packages
+are prefixed with their source hash to ensure namespace uniqueness.
+</p></div>
+
+<div class="footdef"><sup><a id="fn.2" name="fn.2" class="footnum" href="#fnr.2">2</a></sup> <p class="footpara">
+Note that this can result in behavioral
+differences between in-process and multi-process ActorSystems:
+unloaded sources are still present in still-existing multi-process
+Actors and so import statements and other references will still
+succeed in those Actors even after the source has been unloaded.  In
+general it is recommended that all Actors running within a loaded
+source have exited before the source is unloaded, so this behavioral
+difference will remain unaddressed.
+</p></div>
+
+
+</div>
+</div></div>
+<div id="postamble" class="status">
+<p class="author">Author: Kevin Quick &lt;kquick@godaddy.com&gt;</p>
+<p class="date">Created: 2015-05-26 Tue 05:16</p>
+<p class="creator"><a href="http://www.gnu.org/software/emacs/">Emacs</a> 24.4.1 (<a href="http://orgmode.org">Org</a> mode 8.2.10)</p>
+<p class="validation"><a href="http://validator.w3.org/check?uri=referer">Validate</a></p>
+</div>
+</body>
+</html>
