@@ -158,7 +158,7 @@
 \def\tmpagefoot{%
 \fancyfoot[LE,RO]{{\small\@docdate\ Rev. \@docrev}\\\thepage\ of \pageref{LastPage}}
 \fancyfoot[RE,LO]{\small \@docid\\{\footnotesize PUBLIC DOMAIN}}
-\fancyfoot[C]{{\small\@product\ \componentfooter\@doctype}\\ \includegraphics[scale=0.08]{thesplogo-only.png}
+\fancyfoot[C]{{\small\@product\ \componentfooter\@doctype}\\ \includegraphics[scale=0.04]{thesplogo-only.jpg}
 }
 \renewcommand{\footrulewidth}{0.2pt}}
 
@@ -186,7 +186,7 @@
 \fontshape{n}\selectfont\thispagestyle{title}
 \flushright
 \vspace*{2.0em}
-\includegraphics[scale=0.3]{thesplogo-only.png}
+\includegraphics[scale=0.4]{thesplogo.jpg}
 \\\@doctype~~
 \vspace*{3.0em}
 \hrule

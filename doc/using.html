@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
 <title>Thespian Actors User's Guide</title>
-<!-- 2015-05-26 Tue 05:16 -->
+<!-- 2015-08-31 Mon 18:37 -->
 <meta  http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta  name="generator" content="Org-mode" />
 <meta  name="author" content="Kevin Quick &lt;kquick@godaddy.com&gt;" />
@@ -322,6 +322,7 @@ for the JavaScript code in this tag.
 </div>
 </div>
 
+
 <div id="outline-container-sec-1" class="outline-2">
 <h2 id="sec-1"><span class="section-number-2">1</span> Actor Overview</h2>
 <div class="outline-text-2" id="text-1">
@@ -622,7 +623,7 @@ package:
 
 <div class="org-src-container">
 
-<pre class="src src-python">    &gt;&gt;&gt; import thespian
+<pre class="src src-python">    &gt;&gt;&gt; <span class="org-keyword">import</span> thespian
 </pre>
 </div>
 </div>
@@ -639,7 +640,7 @@ an ActorSystem using the "multiprocTCPBase":
 
 <div class="org-src-container">
 
-<pre class="src src-python">    &gt;&gt;&gt; asys = ActorSystem('multiprocTCPBase')
+<pre class="src src-python">    &gt;&gt;&gt; <span class="org-variable-name">asys</span> = ActorSystem(<span class="org-string">'multiprocTCPBase'</span>)
 </pre>
 </div>
 
@@ -693,11 +694,11 @@ A Top-Level Actor is created via the <a href="#sec-6-3">ActorSystem.createActor<
 
 <div class="org-src-container">
 
-<pre class="src src-python">    &gt;&gt;&gt; class MyFirstActor(Actor):
-    ...     def receiveMessage(self, message, sender):
-    ...         pass
+<pre class="src src-python">    &gt;&gt;&gt; <span class="org-keyword">class</span> <span class="org-type">MyFirstActor</span>(Actor):
+    ...     <span class="org-keyword">def</span> <span class="org-function-name">receiveMessage</span>(<span class="org-keyword">self</span>, message, sender):
+    ...         <span class="org-keyword">pass</span>
     ...
-    &gt;&gt;&gt; mfa_addr = asys.createActor(MyFirstActor)
+    &gt;&gt;&gt; <span class="org-variable-name">mfa_addr</span> = asys.createActor(MyFirstActor)
 </pre>
 </div>
 
@@ -720,14 +721,14 @@ own instance:
 
 <div class="org-src-container">
 
-<pre class="src src-python">    &gt;&gt;&gt; class Support(Actor):
-    ...     def receiveMessage(self, message, sender):
-    ...         pass
+<pre class="src src-python">    &gt;&gt;&gt; <span class="org-keyword">class</span> <span class="org-type">Support</span>(Actor):
+    ...     <span class="org-keyword">def</span> <span class="org-function-name">receiveMessage</span>(<span class="org-keyword">self</span>, message, sender):
+    ...         <span class="org-keyword">pass</span>
     ...
-    &gt;&gt;&gt; class MyFirstActor(Actor):
-    ...     def receiveMessage(self, message, sender):
-    ...         if message == 'create another actor':
-    ...             newActor = self.createActor(Support)
+    &gt;&gt;&gt; <span class="org-keyword">class</span> <span class="org-type">MyFirstActor</span>(Actor):
+    ...     <span class="org-keyword">def</span> <span class="org-function-name">receiveMessage</span>(<span class="org-keyword">self</span>, message, sender):
+    ...         <span class="org-keyword">if</span> message == <span class="org-string">'create another actor'</span>:
+    ...             <span class="org-variable-name">newActor</span> = <span class="org-keyword">self</span>.createActor(Support)
 </pre>
 </div>
 
@@ -1355,9 +1356,9 @@ Each Actor is represented by an Actor baseclass:
 
 <div class="org-src-container">
 
-<pre class="src src-python">    from thespian.actors import Actor
+<pre class="src src-python">    <span class="org-keyword">from</span> thespian.actors <span class="org-keyword">import</span> Actor
 
-    class MyActor(Actor): ...
+    <span class="org-keyword">class</span> <span class="org-type">MyActor</span>(Actor): ...
 </pre>
 </div>
 
@@ -1372,7 +1373,7 @@ Versioning of the Actor API and the ActorSystem are described in
 <div class="outline-text-3" id="text-5-1">
 <div class="org-src-container">
 
-<pre class="src src-python">    self.myAddress
+<pre class="src src-python">    <span class="org-keyword">self</span>.myAddress
 </pre>
 </div>
 
@@ -1387,7 +1388,7 @@ This property is the ActorAddress of this Actor.
 <div class="outline-text-3" id="text-5-2">
 <div class="org-src-container">
 
-<pre class="src src-python">    def receiveMessage(self, message, sender): ...
+<pre class="src src-python">    <span class="org-keyword">def</span> <span class="org-function-name">receiveMessage</span>(<span class="org-keyword">self</span>, message, sender): ...
 </pre>
 </div>
 
@@ -1431,9 +1432,9 @@ will contain the modifications made by the original attempt.
 <div class="outline-text-3" id="text-5-3">
 <div class="org-src-container">
 
-<pre class="src src-python">    newAddress = self.createActor(self, actorClass,
-                                  targetActorRequirements=None,
-                                  globalName=None)
+<pre class="src src-python">    <span class="org-variable-name">newAddress</span> = <span class="org-keyword">self</span>.createActor(<span class="org-keyword">self</span>, actorClass,
+                                  targetActorRequirements=<span class="org-constant">None</span>,
+                                  globalName=<span class="org-constant">None</span>)
 </pre>
 </div>
 
@@ -1584,7 +1585,7 @@ not be visible to the latter.
 <div class="outline-text-3" id="text-5-4">
 <div class="org-src-container">
 
-<pre class="src src-python">    self.send(self, targetAddress, message)
+<pre class="src src-python">    <span class="org-keyword">self</span>.send(<span class="org-keyword">self</span>, targetAddress, message)
 </pre>
 </div>
 
@@ -1612,7 +1613,7 @@ delivered.
 <div class="outline-text-3" id="text-5-5">
 <div class="org-src-container">
 
-<pre class="src src-python">    self.wakeupAfter(self, timePeriod)
+<pre class="src src-python">    <span class="org-keyword">self</span>.wakeupAfter(<span class="org-keyword">self</span>, timePeriod)
 </pre>
 </div>
 
@@ -1631,7 +1632,7 @@ Messages</i> for more information.
 <div class="outline-text-3" id="text-5-6">
 <div class="org-src-container">
 
-<pre class="src src-python">    self.handleDeadLetters(self, startHandling=True)
+<pre class="src src-python">    <span class="org-keyword">self</span>.handleDeadLetters(<span class="org-keyword">self</span>, startHandling=<span class="org-constant">True</span>)
 </pre>
 </div>
 
@@ -1647,7 +1648,7 @@ handling Dead Letters.
 <div class="outline-text-3" id="text-5-7">
 <div class="org-src-container">
 
-<pre class="src src-python">    self.notifyOnSystemRegistrationChanges(self, startHandling=True)
+<pre class="src src-python">    <span class="org-keyword">self</span>.notifyOnSystemRegistrationChanges(<span class="org-keyword">self</span>, startHandling=<span class="org-constant">True</span>)
 </pre>
 </div>
 
@@ -1664,7 +1665,7 @@ handling system registration events from other ActorSystems (see
 <div class="outline-text-3" id="text-5-8">
 <div class="org-src-container">
 
-<pre class="src src-python">    self.registerSourceAuthority(self)
+<pre class="src src-python">    <span class="org-keyword">self</span>.registerSourceAuthority(<span class="org-keyword">self</span>)
 </pre>
 </div>
 
@@ -1689,8 +1690,8 @@ Actor registers for this role.
 <div class="outline-text-3" id="text-5-9">
 <div class="org-src-container">
 
-<pre class="src src-python">    def actorSystemCapabilityCheck(capabilities, requirements=None):
-        return True
+<pre class="src src-python">    <span class="org-keyword">def</span> <span class="org-function-name">actorSystemCapabilityCheck</span>(capabilities, requirements=<span class="org-constant">None</span>):
+        <span class="org-keyword">return</span> <span class="org-constant">True</span>
 </pre>
 </div>
 
@@ -1748,15 +1749,15 @@ For example:
 
 <div class="org-src-container">
 
-<pre class="src src-python">    class MyActor(Actor):
+<pre class="src src-python">    <span class="org-keyword">class</span> <span class="org-type">MyActor</span>(Actor):
 
-        @staticmethod
-        def actorSystemCapabilityCheck(capabilities, requirements):
-            return capabilities.get('Has Lightbulb', False) and \
-                   capabilities.get('Lit', False) and \
-                   capabilities.get('Color', 'none') == 'Yellow'
+        <span class="org-type">@staticmethod</span>
+        <span class="org-keyword">def</span> <span class="org-function-name">actorSystemCapabilityCheck</span>(capabilities, requirements):
+            <span class="org-keyword">return</span> capabilities.get(<span class="org-string">'Has Lightbulb'</span>, <span class="org-constant">False</span>) <span class="org-keyword">and</span> \
+                   capabilities.get(<span class="org-string">'Lit'</span>, <span class="org-constant">False</span>) <span class="org-keyword">and</span> \
+                   capabilities.get(<span class="org-string">'Color'</span>, <span class="org-string">'none'</span>) == <span class="org-string">'Yellow'</span>
 
-        def receiveMessage(self, msg, sender): pass
+        <span class="org-keyword">def</span> <span class="org-function-name">receiveMessage</span>(<span class="org-keyword">self</span>, msg, sender): <span class="org-keyword">pass</span>
 </pre>
 </div>
 
@@ -1766,15 +1767,15 @@ is equivalent to:
 
 <div class="org-src-container">
 
-<pre class="src src-python">    @requireCapability('Has Lightbulb')
-    @requireCapability('Lit')
-    class MyActor(Actor):
+<pre class="src src-python">    <span class="org-type">@requireCapability</span>(<span class="org-string">'Has Lightbulb'</span>)
+    <span class="org-type">@requireCapability</span>(<span class="org-string">'Lit'</span>)
+    <span class="org-keyword">class</span> <span class="org-type">MyActor</span>(Actor):
 
-        @staticmethod
-        def actorSystemCapabilityCheck(capabilities, requirements):
-            return capabilities.get('Color', 'none') == 'Yellow'
+        <span class="org-type">@staticmethod</span>
+        <span class="org-keyword">def</span> <span class="org-function-name">actorSystemCapabilityCheck</span>(capabilities, requirements):
+            <span class="org-keyword">return</span> capabilities.get(<span class="org-string">'Color'</span>, <span class="org-string">'none'</span>) == <span class="org-string">'Yellow'</span>
 
-        def receiveMessage(self, msg, sender): pass
+        <span class="org-keyword">def</span> <span class="org-function-name">receiveMessage</span>(<span class="org-keyword">self</span>, msg, sender): <span class="org-keyword">pass</span>
 </pre>
 </div>
 
@@ -1786,9 +1787,9 @@ in an ActorSystem that had the capabilities of:
 <div class="org-src-container">
 
 <pre class="src src-python">    {
-      'Has Lightbulb': 5,
-      'Lit': True,
-      'Color' : 'Yellow'
+      <span class="org-string">'Has Lightbulb'</span>: 5,
+      <span class="org-string">'Lit'</span>: <span class="org-constant">True</span>,
+      <span class="org-string">'Color'</span> : <span class="org-string">'Yellow'</span>
     }
 </pre>
 </div>
@@ -1805,13 +1806,13 @@ An example of a much simpler case:
 
 <div class="org-src-container">
 
-<pre class="src src-python">    class MyActor(Actor):
+<pre class="src src-python">    <span class="org-keyword">class</span> <span class="org-type">MyActor</span>(Actor):
 
-        @staticmethod
-        def actorSystemCapabilityCheck(capabilities, requirements):
-            return capabilities.get('Has Lightbulb', False)
+        <span class="org-type">@staticmethod</span>
+        <span class="org-keyword">def</span> <span class="org-function-name">actorSystemCapabilityCheck</span>(capabilities, requirements):
+            <span class="org-keyword">return</span> capabilities.get(<span class="org-string">'Has Lightbulb'</span>, <span class="org-constant">False</span>)
 
-        def receiveMessage(self, msg, sender): pass
+        <span class="org-keyword">def</span> <span class="org-function-name">receiveMessage</span>(<span class="org-keyword">self</span>, msg, sender): <span class="org-keyword">pass</span>
 </pre>
 </div>
 
@@ -1821,10 +1822,10 @@ is equivalent to:
 
 <div class="org-src-container">
 
-<pre class="src src-python">    @requireCapability('Has Lightbulb')
-    class MyActor(Actor):
+<pre class="src src-python">    <span class="org-type">@requireCapability</span>(<span class="org-string">'Has Lightbulb'</span>)
+    <span class="org-keyword">class</span> <span class="org-type">MyActor</span>(Actor):
 
-        def receiveMessage(self, msg, sender): pass
+        <span class="org-keyword">def</span> <span class="org-function-name">receiveMessage</span>(<span class="org-keyword">self</span>, msg, sender): <span class="org-keyword">pass</span>
 </pre>
 </div>
 </div>
@@ -1842,7 +1843,7 @@ updates; see the <i>ActorSystem API</i> for that version).
 
 <div class="org-src-container">
 
-<pre class="src src-python">     self.updateCapability(self, capabilityName, capabilityValue=None)
+<pre class="src src-python">     <span class="org-keyword">self</span>.updateCapability(<span class="org-keyword">self</span>, capabilityName, capabilityValue=<span class="org-constant">None</span>)
 </pre>
 </div>
 
@@ -1894,7 +1895,7 @@ The ActorSystem API is made available by importing the
 
 <div class="org-src-container">
 
-<pre class="src src-python">     import thespian.actors
+<pre class="src src-python">     <span class="org-keyword">import</span> thespian.actors
 </pre>
 </div>
 </div>
@@ -1949,7 +1950,7 @@ The following shows the heirarchy of defined Thespian exceptions:
 <div class="outline-text-3" id="text-6-2">
 <div class="org-src-container">
 
-<pre class="src src-python">      actorSys = ActorSystem(systemBase=None, capabilities=None)
+<pre class="src src-python">      <span class="org-variable-name">actorSys</span> = ActorSystem(systemBase=<span class="org-constant">None</span>, capabilities=<span class="org-constant">None</span>)
 </pre>
 </div>
 
@@ -1980,10 +1981,10 @@ if an ActorSystem is already running.
 <div class="outline-text-3" id="text-6-3">
 <div class="org-src-container">
 
-<pre class="src src-python">    actorAddr = actorSys.createActor(actorClass,
-                                     targetActorRequirements = None,
-                                     globalName = None,
-                                     sourceHash = None)
+<pre class="src src-python">    <span class="org-variable-name">actorAddr</span> = actorSys.createActor(actorClass,
+                                     targetActorRequirements = <span class="org-constant">None</span>,
+                                     globalName = <span class="org-constant">None</span>,
+                                     sourceHash = <span class="org-constant">None</span>)
 </pre>
 </div>
 
@@ -2112,7 +2113,7 @@ Actor system) and wait for a response message.
 
 <div class="org-src-container">
 
-<pre class="src src-python">     responseMessage = actorSys.ask(targetAddr, message[, timeout])
+<pre class="src src-python">     <span class="org-variable-name">responseMessage</span> = actorSys.ask(targetAddr, message[, timeout])
 </pre>
 </div>
 
@@ -2177,7 +2178,7 @@ capabilities; Actors can issue capability updates as well.
 
 <div class="org-src-container">
 
-<pre class="src src-python">     actorSys.updateCapability(capabilityName, capabilityValue=None)
+<pre class="src src-python">     actorSys.updateCapability(capabilityName, capabilityValue=<span class="org-constant">None</span>)
 </pre>
 </div>
 
@@ -2217,7 +2218,7 @@ issuing a <a href="#sec-7-9">Thespian_StatusReq</a> to the ActorSystem.
 <div class="outline-text-3" id="text-6-7">
 <div class="org-src-container">
 
-<pre class="src src-python">    sourceHash = actorSys.loadActorSource(filename)
+<pre class="src src-python">    <span class="org-variable-name">sourceHash</span> = actorSys.loadActorSource(filename)
 </pre>
 </div>
 
@@ -3368,8 +3369,8 @@ difference will remain unaddressed.
 </div></div>
 <div id="postamble" class="status">
 <p class="author">Author: Kevin Quick &lt;kquick@godaddy.com&gt;</p>
-<p class="date">Created: 2015-05-26 Tue 05:16</p>
-<p class="creator"><a href="http://www.gnu.org/software/emacs/">Emacs</a> 24.4.1 (<a href="http://orgmode.org">Org</a> mode 8.2.10)</p>
+<p class="date">Created: 2015-08-31 Mon 18:37</p>
+<p class="creator"><a href="http://www.gnu.org/software/emacs/">Emacs</a> 24.5.2 (<a href="http://orgmode.org">Org</a> mode 8.2.10)</p>
 <p class="validation"><a href="http://validator.w3.org/check?uri=referer">Validate</a></p>
 </div>
 </body>
