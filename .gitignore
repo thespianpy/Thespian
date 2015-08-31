@@ -250,11 +250,6 @@ scripts/virtualenv-*/
 #############
 # Project Misc
 #############
-olio/litter
-
-sqlite.db
-whoosh_index/
-
 .pydistutils.cfg
 .vagrant/
 .pip/
