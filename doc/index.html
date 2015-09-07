@@ -1,0 +1,591 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+<title>Thespian Python Actor</title>
+<!-- 2015-09-07 Mon 09:57 -->
+<meta  http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<meta  name="generator" content="Org-mode" />
+<meta  name="author" content="Kevin Quick &lt;kquick@godaddy.com&gt;" />
+<style type="text/css">
+ <!--/*--><![CDATA[/*><!--*/
+  .title  { text-align: center; }
+  .todo   { font-family: monospace; color: red; }
+  .done   { color: green; }
+  .tag    { background-color: #eee; font-family: monospace;
+            padding: 2px; font-size: 80%; font-weight: normal; }
+  .timestamp { color: #bebebe; }
+  .timestamp-kwd { color: #5f9ea0; }
+  .right  { margin-left: auto; margin-right: 0px;  text-align: right; }
+  .left   { margin-left: 0px;  margin-right: auto; text-align: left; }
+  .center { margin-left: auto; margin-right: auto; text-align: center; }
+  .underline { text-decoration: underline; }
+  #postamble p, #preamble p { font-size: 90%; margin: .2em; }
+  p.verse { margin-left: 3%; }
+  pre {
+    border: 1px solid #ccc;
+    box-shadow: 3px 3px 3px #eee;
+    padding: 8pt;
+    font-family: monospace;
+    overflow: auto;
+    margin: 1.2em;
+  }
+  pre.src {
+    position: relative;
+    overflow: visible;
+    padding-top: 1.2em;
+  }
+  pre.src:before {
+    display: none;
+    position: absolute;
+    background-color: white;
+    top: -10px;
+    right: 10px;
+    padding: 3px;
+    border: 1px solid black;
+  }
+  pre.src:hover:before { display: inline;}
+  pre.src-sh:before    { content: 'sh'; }
+  pre.src-bash:before  { content: 'sh'; }
+  pre.src-emacs-lisp:before { content: 'Emacs Lisp'; }
+  pre.src-R:before     { content: 'R'; }
+  pre.src-perl:before  { content: 'Perl'; }
+  pre.src-java:before  { content: 'Java'; }
+  pre.src-sql:before   { content: 'SQL'; }
+
+  table { border-collapse:collapse; }
+  caption.t-above { caption-side: top; }
+  caption.t-bottom { caption-side: bottom; }
+  td, th { vertical-align:top;  }
+  th.right  { text-align: center;  }
+  th.left   { text-align: center;   }
+  th.center { text-align: center; }
+  td.right  { text-align: right;  }
+  td.left   { text-align: left;   }
+  td.center { text-align: center; }
+  dt { font-weight: bold; }
+  .footpara:nth-child(2) { display: inline; }
+  .footpara { display: block; }
+  .footdef  { margin-bottom: 1em; }
+  .figure { padding: 1em; }
+  .figure p { text-align: center; }
+  .inlinetask {
+    padding: 10px;
+    border: 2px solid gray;
+    margin: 10px;
+    background: #ffffcc;
+  }
+  #org-div-home-and-up
+   { text-align: right; font-size: 70%; white-space: nowrap; }
+  textarea { overflow-x: auto; }
+  .linenr { font-size: smaller }
+  .code-highlighted { background-color: #ffff00; }
+  .org-info-js_info-navigation { border-style: none; }
+  #org-info-js_console-label
+    { font-size: 10px; font-weight: bold; white-space: nowrap; }
+  .org-info-js_search-highlight
+    { background-color: #ffff00; color: #000000; font-weight: bold; }
+  /*]]>*/-->
+</style>
+<link rel="stylesheet" type="text/css" href="http://www.pirilampo.org/styles/bigblow/css/htmlize.css"/>
+<link rel="stylesheet" type="text/css" href="http://www.pirilampo.org/styles/bigblow/css/bigblow.css"/>
+<link rel="stylesheet" type="text/css" href="http://www.pirilampo.org/styles/bigblow/css/hideshow.css"/>
+<script type="text/javascript" src="http://www.pirilampo.org/styles/bigblow/js/jquery-1.11.0.min.js"></script>
+<script type="text/javascript" src="http://www.pirilampo.org/styles/bigblow/js/jquery-ui-1.10.2.min.js"></script>
+<script type="text/javascript" src="http://www.pirilampo.org/styles/bigblow/js/jquery.localscroll-min.js"></script>
+<script type="text/javascript" src="http://www.pirilampo.org/styles/bigblow/js/jquery.scrollTo-1.4.3.1-min.js"></script>
+<script type="text/javascript" src="http://www.pirilampo.org/styles/bigblow/js/jquery.zclip.min.js"></script>
+<script type="text/javascript" src="http://www.pirilampo.org/styles/bigblow/js/bigblow.js"></script>
+<script type="text/javascript" src="http://www.pirilampo.org/styles/bigblow/js/hideshow.js"></script>
+<script type="text/javascript" src="http://www.pirilampo.org/styles/lib/js/jquery.stickytableheaders.min.js"></script>
+<link href="thespian.css" rel="stylesheet" type="text/css">
+<script type="text/javascript">
+/*
+@licstart  The following is the entire license notice for the
+JavaScript code in this tag.
+
+Copyright (C) 2012-2013 Free Software Foundation, Inc.
+
+The JavaScript code in this tag is free software: you can
+redistribute it and/or modify it under the terms of the GNU
+General Public License (GNU GPL) as published by the Free Software
+Foundation, either version 3 of the License, or (at your option)
+any later version.  The code is distributed WITHOUT ANY WARRANTY;
+without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE.  See the GNU GPL for more details.
+
+As additional permission under GNU GPL version 3 section 7, you
+may distribute non-source (e.g., minimized or compacted) forms of
+that code without the copy of the GNU GPL normally required by
+section 4, provided you include this license notice and a URL
+through which recipients can access the Corresponding Source.
+
+
+@licend  The above is the entire license notice
+for the JavaScript code in this tag.
+*/
+<!--/*--><![CDATA[/*><!--*/
+ function CodeHighlightOn(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(null != target) {
+     elem.cacheClassElem = elem.className;
+     elem.cacheClassTarget = target.className;
+     target.className = "code-highlighted";
+     elem.className   = "code-highlighted";
+   }
+ }
+ function CodeHighlightOff(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(elem.cacheClassElem)
+     elem.className = elem.cacheClassElem;
+   if(elem.cacheClassTarget)
+     target.className = elem.cacheClassTarget;
+ }
+/*]]>*///-->
+</script>
+</head>
+<body>
+<div id="content">
+<h1 class="title"><a href="http://thespianpy.com"><img src="thesplogo2.png" alt="Thespian" width="50%" display="inline" /></a> Python Actor</h1>
+<div id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#sec-1">1. Home</a></li>
+<li><a href="#sec-2">2. Quick Start</a>
+<ul>
+<li><a href="#sec-2-1">2.1. Simple Installation</a></li>
+<li><a href="#sec-2-2">2.2. Starting a Thespian Instance</a></li>
+<li><a href="#sec-2-3">2.3. Hello World</a></li>
+<li><a href="#sec-2-4">2.4. Hello World Redux</a></li>
+<li><a href="#sec-2-5">2.5. What Next?</a></li>
+</ul>
+</li>
+<li><a href="#sec-3">3. Documentation</a>
+<ul>
+<li><a href="#sec-3-1">3.1. Thespian Documentation</a></li>
+<li><a href="#sec-3-2">3.2. Background and Related Efforts</a></li>
+</ul>
+</li>
+<li><a href="#sec-4">4. Download</a></li>
+<li><a href="#sec-5">5. Contribute</a></li>
+<li><a href="#sec-6">6. News</a>
+<ul>
+<li><a href="#sec-6-1">6.1. Blogs and Success Stories</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-sec-1" class="outline-2">
+<h2 id="sec-1"><span class="section-number-2">1</span> Home</h2>
+<div class="outline-text-2" id="text-1">
+<div class="center">
+<p>
+<font size=+3>Introducing Thespian</font>
+</p>
+</div>
+
+<p>
+Thespian is a Python library providing a framework for developing
+concurrent, distributed, fault tolerant applications.
+</p>
+
+<p>
+Thespian is built on the <a href="http://wikipedia.org/wiki/Actor_model">Actor Model</a> which allows applications to be
+written as a group of indpendently executing but cooperating "Actors"
+which communicate via messages.  These Actors run within the Actor
+System provided by the Thespian library.
+</p>
+
+<dl class="org-dl">
+<dt> Concurrent </dt><dd>All Actors run independently within the Actor
+System.  The Actor System may run the Actors as
+threads, processes, or even sequential operations
+within the current process&#x2014;all with no change to
+the Actors themselves.
+</dd>
+
+<dt> Distributed </dt><dd>Actors run independently&#x2026;anywhere.  Multiple
+servers can each be running Thespian and an Actor
+can be run on any of these systems&#x2014;all with no
+change to the Actors themselves.  Thespian handles
+the communication between the Actors and the
+management process of distributing the Actors
+across the systems.
+</dd>
+
+<dt> Location Independent </dt><dd>Because Actors run independently anywhere,
+they run independently of their actual location.  A distributed
+Actor application may have part of it running on a local
+server, part running on a server in Amsterdam, and part running
+on a server in Singapore&#x2026; or not, with no change or awareness
+of this by the Actors themselves.
+</dd>
+
+<dt> Fault Tolerant </dt><dd>Individual Actors can fail and be
+restarted&#x2014;automatically&#x2014;without impact to
+the rest of the system.
+</dd>
+
+<dt> Scalable </dt><dd>The number of Actors in the system can be dynamically
+extended based on factors such as work volume, and
+systems added to the Distributed Actor System
+environment are automatically utilized.
+</dd>
+</dl>
+
+<p>
+One of the key aspects of the Actor Model is that it represents a
+higher level of abstraction than is provided by most frameworks.  When
+writing an Actor-based application, the concurrency and transport
+layers are completely abstracted, which both simplifies the design and
+allows the concurrency or transport to be changed in the future
+<i>without</i> requiring changes in the Actor-based application.
+</p>
+
+<p>
+The above qualities of Actor programming make it ideally suited for
+Cloud-based applications as well, where compute nodes are added and
+removed from the environment dynamically.
+</p>
+</div>
+</div>
+
+<div id="outline-container-sec-2" class="outline-2">
+<h2 id="sec-2"><span class="section-number-2">2</span> Quick Start</h2>
+<div class="outline-text-2" id="text-2">
+</div><div id="outline-container-sec-2-1" class="outline-3">
+<h3 id="sec-2-1"><span class="section-number-3">2.1</span> Simple Installation</h3>
+<div class="outline-text-3" id="text-2-1">
+<p>
+Install the Thespian library on your local host system using pip:
+</p>
+
+<pre class="example">
+$ pip install thespian
+</pre>
+</div>
+</div>
+
+<div id="outline-container-sec-2-2" class="outline-3">
+<h3 id="sec-2-2"><span class="section-number-3">2.2</span> Starting a Thespian Instance</h3>
+<div class="outline-text-3" id="text-2-2">
+<p>
+Start a default Thespian Actor System on the current host system:
+</p>
+
+<pre class="example">
+$ python
+&gt;&gt;&gt; from thespian import *
+&gt;&gt;&gt; ActorSystem("multiprocTCPBase")
+</pre>
+</div>
+</div>
+
+<div id="outline-container-sec-2-3" class="outline-3">
+<h3 id="sec-2-3"><span class="section-number-3">2.3</span> Hello World</h3>
+<div class="outline-text-3" id="text-2-3">
+<p>
+A Hello World example:
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-python" id="helloActor.py"><span class="linenr"> 1: </span><span class="org-keyword">from</span> thespian.actors <span class="org-keyword">import</span> *
+<span class="linenr"> 2: </span>
+<span class="linenr"> 3: </span><span class="org-keyword">class</span> <span class="org-type">Hello</span>(Actor):
+<span class="linenr"> 4: </span>    <span class="org-keyword">def</span> <span class="org-function-name">receiveMessage</span>(<span class="org-keyword">self</span>, message, sender):
+<span class="linenr"> 5: </span>        <span class="org-keyword">self</span>.send(sender, <span class="org-string">'Hello, World!'</span>)
+<span class="linenr"> 6: </span>
+<span class="linenr"> 7: </span><span class="org-keyword">if</span> <span class="org-builtin">__name__</span> == <span class="org-string">"__main__"</span>:
+<span class="linenr"> 8: </span>    <span class="org-variable-name">hello</span> = ActorSystem().createActor(Hello)
+<span class="linenr"> 9: </span>    <span class="org-keyword">print</span>(ActorSystem().ask(hello, <span class="org-string">'hi'</span>, 1))
+<span class="linenr">10: </span>    ActorSystem().tell(hello, ActorExitRequest())
+</pre>
+</div>
+
+<p>
+The above will create an Actor, send it a message and get a "Hello
+World" response, and then tell that Actor to exit because it is no
+longer needed.
+</p>
+
+<pre class="example">
+$ python helloActor.py
+Hello, World!
+$
+</pre>
+</div>
+</div>
+
+<div id="outline-container-sec-2-4" class="outline-3">
+<h3 id="sec-2-4"><span class="section-number-3">2.4</span> Hello World Redux</h3>
+<div class="outline-text-3" id="text-2-4">
+<p>
+It's easy to extend the Hello World example to include multiple actors
+which communicate with each other.  This example shows a number of
+additional details:
+</p>
+<ul class="org-ul">
+<li>the messages exchanged between the Actors can be anything that can
+be pickled.
+</li>
+<li>Actors can create other Actors dynamically
+</li>
+<li>Actor Addresses can be passed around
+</li>
+<li>Actors remain until they are removed by sending them an
+<code>ActorExitRequest()</code>
+</li>
+</ul>
+
+<div class="org-src-container">
+
+<pre class="src src-python" id="helloActor2.py"><span class="linenr"> 1: </span><span class="org-keyword">from</span> thespian.actors <span class="org-keyword">import</span> *
+<span class="linenr"> 2: </span>
+<span class="linenr"> 3: </span><span class="org-keyword">import</span> sys
+<span class="linenr"> 4: </span>
+<span class="linenr"> 5: </span><span class="org-keyword">class</span> <span class="org-type">Greeting</span>(<span class="org-builtin">object</span>):
+<span class="linenr"> 6: </span>    <span class="org-keyword">def</span> <span class="org-function-name">__init__</span>(<span class="org-keyword">self</span>, msg):
+<span class="linenr"> 7: </span>        <span class="org-keyword">self</span>.message = msg
+<span class="linenr"> 8: </span>    <span class="org-keyword">def</span> <span class="org-function-name">__str__</span>(<span class="org-keyword">self</span>): <span class="org-keyword">return</span> <span class="org-keyword">self</span>.message
+<span class="linenr"> 9: </span>
+<span class="linenr">10: </span><span class="org-keyword">class</span> <span class="org-type">Hello</span>(Actor):
+<span class="linenr">11: </span>    <span class="org-keyword">def</span> <span class="org-function-name">receiveMessage</span>(<span class="org-keyword">self</span>, message, sender):
+<span class="linenr">12: </span>        <span class="org-keyword">if</span> message == <span class="org-string">'hi'</span>:
+<span class="linenr">13: </span>            <span class="org-variable-name">greeting</span> = Greeting(<span class="org-string">'Hello'</span>)
+<span class="linenr">14: </span>            <span class="org-variable-name">world</span> = <span class="org-keyword">self</span>.createActor(World)
+<span class="linenr">15: </span>            <span class="org-variable-name">punct</span> = <span class="org-keyword">self</span>.createActor(Punctuate)
+<span class="linenr">16: </span>            <span class="org-variable-name">greeting.sendTo</span> = [punct, sender]
+<span class="linenr">17: </span>            <span class="org-keyword">self</span>.send(world, greeting)
+<span class="linenr">18: </span>
+<span class="linenr">19: </span><span class="org-keyword">class</span> <span class="org-type">World</span>(Actor):
+<span class="linenr">20: </span>    <span class="org-keyword">def</span> <span class="org-function-name">receiveMessage</span>(<span class="org-keyword">self</span>, message, sender):
+<span class="linenr">21: </span>        <span class="org-keyword">if</span> <span class="org-builtin">isinstance</span>(message, Greeting):
+<span class="linenr">22: </span>            <span class="org-variable-name">message.message</span> = message.message + <span class="org-string">", World"</span>
+<span class="linenr">23: </span>            <span class="org-variable-name">nextTo</span> = message.sendTo.pop(0)
+<span class="linenr">24: </span>            <span class="org-keyword">self</span>.send(nextTo, message)
+<span class="linenr">25: </span>
+<span class="linenr">26: </span><span class="org-keyword">class</span> <span class="org-type">Punctuate</span>(Actor):
+<span class="linenr">27: </span>    <span class="org-keyword">def</span> <span class="org-function-name">receiveMessage</span>(<span class="org-keyword">self</span>, message, sender):
+<span class="linenr">28: </span>        <span class="org-keyword">if</span> <span class="org-builtin">isinstance</span>(message, Greeting):
+<span class="linenr">29: </span>            <span class="org-variable-name">message.message</span> = message.message + <span class="org-string">"!"</span>
+<span class="linenr">30: </span>            <span class="org-variable-name">nextTo</span> = message.sendTo.pop(0)
+<span class="linenr">31: </span>            <span class="org-keyword">self</span>.send(nextTo, message)
+<span class="linenr">32: </span>
+<span class="linenr">33: </span><span class="org-keyword">if</span> <span class="org-builtin">__name__</span> == <span class="org-string">"__main__"</span>:
+<span class="linenr">34: </span>    <span class="org-variable-name">hello</span> = ActorSystem().createActor(Hello)
+<span class="linenr">35: </span>    <span class="org-keyword">print</span>(ActorSystem().ask(hello, <span class="org-string">'hi'</span>, 0.2))
+<span class="linenr">36: </span>    <span class="org-keyword">print</span>(ActorSystem().ask(hello, <span class="org-string">'hi'</span>, 0.2))
+<span class="linenr">37: </span>    ActorSystem().tell(hello, ActorExitRequest())
+<span class="linenr">38: </span>    <span class="org-keyword">print</span>(ActorSystem().ask(hello, <span class="org-string">'hi'</span>, 0.2))
+</pre>
+</div>
+
+<p>
+Running above will create an Actor and send it a message.  That Actor
+will create two other Actors, passing the message along to the first
+which then passes it to the second before finally sending the message
+back to the original requestor.
+</p>
+
+<p>
+The original requestor is code outside of the Actor environment.  This
+external requestor uses the <code>ask()</code> API call which assigns it an Actor
+Address just like any other Actor.
+</p>
+
+<pre class="example">
+$ python helloActor.py
+Hello, World!
+$
+</pre>
+
+<p>
+This is just a quick introduction to getting started with Thespian.
+Please see the examples section for more information.
+</p>
+</div>
+</div>
+
+
+<div id="outline-container-sec-2-5" class="outline-3">
+<h3 id="sec-2-5"><span class="section-number-3">2.5</span> What Next?</h3>
+<div class="outline-text-3" id="text-2-5">
+<p>
+This has just been a very simple introduction to using Thespian.  A
+more detailed introduction can be found in the <a href="in_depth.html">Thespian In-Depth
+Introduction</a> document, and <a href="using.html">Using Thespian</a> is the primary API and
+utilization document.
+</p>
+</div>
+</div>
+</div>
+
+<div id="outline-container-sec-3" class="outline-2">
+<h2 id="sec-3"><span class="section-number-2">3</span> Documentation</h2>
+<div class="outline-text-2" id="text-3">
+</div><div id="outline-container-sec-3-1" class="outline-3">
+<h3 id="sec-3-1"><span class="section-number-3">3.1</span> Thespian Documentation</h3>
+<div class="outline-text-3" id="text-3-1">
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+
+
+<colgroup>
+<col  class="left" />
+
+<col  class="left" />
+
+<col  class="left" />
+</colgroup>
+<thead>
+<tr>
+<th scope="col" class="left">TXT</th>
+<th scope="col" class="left">PDF</th>
+<th scope="col" class="left">HTML</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="left"><a href="using.txt">TXT</a></td>
+<td class="left"><a href="using.pdf">PDF</a></td>
+<td class="left"><a href="using.html">Using Thespian</a> is the main documentation reference for developers  writing and implementing Actor-based applications with Thespian.</td>
+</tr>
+
+<tr>
+<td class="left"><a href="developer.txt">TXT</a></td>
+<td class="left"><a href="developer.pdf">PDF</a></td>
+<td class="left"><a href="developer.html">Thespian Developer's Notes</a> provides documentation for developers working on Thespian itself.</td>
+</tr>
+
+<tr>
+<td class="left"><a href="releases.txt">TXT</a></td>
+<td class="left"><a href="releases.pdf">PDF</a></td>
+<td class="left">Release History is maintained in the <a href="releases.html">Thespian Release Notes</a>.</td>
+</tr>
+
+<tr>
+<td class="left"><a href="in_depth.txt">TXT</a></td>
+<td class="left"><a href="in_depth.pdf">PDF</a></td>
+<td class="left">An <a href="in_depth.html">In Depth Introduction to Thespian</a>.</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+
+
+<div id="outline-container-sec-3-2" class="outline-3">
+<h3 id="sec-3-2"><span class="section-number-3">3.2</span> Background and Related Efforts</h3>
+<div class="outline-text-3" id="text-3-2">
+<ul class="org-ul">
+<li>The <a href="http://wikipedia.org/wiki/Actor_model">Actor Model</a> at Wikipedia
+</li>
+<li><a href="http://c2.com/cgi/wiki?ActorsModel">http://c2.com/cgi/wiki?ActorsModel</a>
+</li>
+<li><a href="http://akka.io">Akka</a> is a popular Actor Library for Java and Scala; it is roughly
+the equivalent to Thespian for those languages.
+</li>
+<li><a href="http://getakka.net/">Akka.NET</a> is an implementation of Akka for the .NET and Mono environments making it useable for C# and F# applications.
+</li>
+<li>The <a href="http://www.erlang.org">Erlang</a> language has Actor support built-in (see
+<a href="http://www.erlang.org/doc/getting_started/conc_prog.html">http://www.erlang.org/doc/getting_started/conc_prog.html</a>).
+</li>
+</ul>
+</div>
+</div>
+</div>
+
+<div id="outline-container-sec-4" class="outline-2">
+<h2 id="sec-4"><span class="section-number-2">4</span> Download</h2>
+<div class="outline-text-2" id="text-4">
+<p>
+The recommended way to obtain Thespian is by using <code>pip</code> to download
+the latest copy from PyPi:
+</p>
+
+<pre class="example">
+$ pip install thespian
+</pre>
+
+<p>
+The PyPi page can be consulted directly at <a href="https://pypi.python.org/pypi/thespian">https://pypi.python.org/pypi/thespian</a>
+</p>
+
+<p>
+Thespian source and releases are also available from the
+<a href="https://github.com/godaddy/Thespian">https://github.com/godaddy/Thespian</a> github source maintenance
+location.
+</p>
+
+<p>
+Thespian may also be provided by your system's packaging tools
+(e.g. yum, rpm, apt-get, etc.).
+</p>
+</div>
+</div>
+
+<div id="outline-container-sec-5" class="outline-2">
+<h2 id="sec-5"><span class="section-number-2">5</span> Contribute</h2>
+<div class="outline-text-2" id="text-5">
+<p>
+Contributions to and involvement in Thespian development itself is
+welcomed.  The <a href="developer.html">Thespian Developer's Notes</a> document provides more
+details on how to get involved.
+</p>
+
+<ul class="org-ul">
+<li>Source Code: <a href="https://github.com/godaddy/Thespian">https://github.com/godaddy/Thespian</a>
+</li>
+<li>Mailing List: thespianpy@googlegroups.com
+</li>
+<li>Report a Bug: <a href="https://github.com/godaddy/Thespian/issues">https://github.com/godaddy/Thespian/issues</a>
+</li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-sec-6" class="outline-2">
+<h2 id="sec-6"><span class="section-number-2">6</span> News</h2>
+<div class="outline-text-2" id="text-6">
+<dl class="org-dl">
+<dt> 2015-08-31 </dt><dd>Thespian Publicly Released
+</dd>
+</dl>
+
+
+<p>
+Current and previous Thespian release information is available in
+the <a href="releases.html">Thespian Release Notes</a>.
+</p>
+</div>
+
+<div id="outline-container-sec-6-1" class="outline-3">
+<h3 id="sec-6-1"><span class="section-number-3">6.1</span> Blogs and Success Stories</h3>
+<div class="outline-text-3" id="text-6-1">
+<ul class="org-ul">
+<li><a href="http://engineering.godaddy.com/why-godaddy-built-an-actor-system-library">GoDaddy blog article</a>
+</li>
+</ul>
+
+<p>
+If you have a blog, article, or success story you would like
+published here, please contact one of the project administrators.
+</p>
+</div>
+</div>
+</div>
+</div>
+<div id="postamble" class="status">
+<p class="author">Author: Kevin Quick &lt;kquick@godaddy.com&gt;</p>
+<p class="date">Created: 2015-09-07 Mon 09:57</p>
+<p class="creator"><a href="http://www.gnu.org/software/emacs/">Emacs</a> 24.5.2 (<a href="http://orgmode.org">Org</a> mode 8.2.10)</p>
+<p class="validation"><a href="http://validator.w3.org/check?uri=referer">Validate</a></p>
+</div>
+</body>
+</html>
