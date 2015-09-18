@@ -1282,8 +1282,8 @@ messages from any conference member that is of ~WARNING~ level or above.
    The "response message" is any message received by the local
    endpoint.  The local endpoint looks like a normal Actor with an
    ActorAddress to the rest of the system.  *Any* Actor sending a
-   message to this address will complete the ~ask()~ operation with
-   that message.
+   message to this address will cause the ~ask()~ operation to
+   complete with that message.
 
    If the ~timeout~ field specifies a non-None timeout value then the
    ~ask()~ will only block for the specified timeout period, returning
@@ -1308,6 +1308,28 @@ messages from any conference member that is of ~WARNING~ level or above.
   ~tell()~ calls that cause responses or multiple responses to an ask;
   the application must be prepared to use techniques like no-response
   ~asks()~ with timeouts and message identifiers to
+
+** listen
+
+   Listen is used to wait for a message.
+
+#+begin_src python
+     responseMessage = actorSys.listen([timeout])
+#+end_src
+
+   The received message is any message received by the local endpoint.
+   The local endpoint looks like a normal Actor with an ActorAddress
+   to the rest of the system.  *Any* Actor sending a message to this
+   address will cause the ~listen()~ operation to complete with that
+   message.
+
+   If the ~timeout~ field specifies a non-None timeout value then the
+   ~listen()~ will only block for the specified timeout period,
+   returning a None value if the timeout has occurred.  The
+   recommended manner of specifying a timeout period is as an instance
+   of the datetime.timedelta class, although an integer or floating
+   point value will be accepted as a specification of a number of
+   seconds.
 
 ** updateCapability
 
