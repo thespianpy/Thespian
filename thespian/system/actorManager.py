@@ -109,7 +109,8 @@ class ActorManager(systemCommonBase):
 
         msg = envelope.message
 
-        thesplog('ACTOR got %s', envelope.identify(), level=logging.DEBUG)
+        import logging    # Need to re-iterate this for some reason, otherwise it's not found below
+        thesplog('ACTOR got %s', envelope.identify(), level = logging.DEBUG)
 
         handled, result = self._handleReplicatorMessages(envelope)
         if handled:
@@ -148,16 +149,23 @@ class ActorManager(systemCommonBase):
                     thesplog('Actor %s @ %s retryable exception on message %s: %s',
                              self._actorClass, self.transport.myAddress, msg,
                              traceback.format_exc(),
-                             level=logging.ERROR, exc_info=True)
+                             level = logging.WARNING)
+                    logging.getLogger(str(self._actorClass)) \
+                           .warning('Actor %s @ %s retryable exception on message %s',
+                                    self._actorClass, self.transport.myAddress, msg,
+                                    exc_info = True)
                     try:
                         self.actorInst.receiveMessage(copy.deepcopy(msg), envelope.sender)
                     except Exception:
                         self._sCBStats.inc('Actor.Message Received.Caused Secondary Exception')
-                        import traceback
                         thesplog('Actor %s @ %s second exception on message %s: %s',
                                  self._actorClass, self.transport.myAddress, msg,
                                  traceback.format_exc(),
-                                 level=logging.ERROR, exc_info=True)
+                                 level = logging.ERROR)
+                        logging.getLogger(str(self._actorClass)) \
+                               .error('Actor %s @ %s second exception on message %s',
+                                      self._actorClass, self.transport.myAddress, msg,
+                                      exc_info = True)
                         self._send_intent(
                             TransmitIntent(envelope.sender, PoisonMessage(msg)))
 
