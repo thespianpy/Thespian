@@ -21,6 +21,16 @@ from datetime import timedelta
 MAX_ADMIN_STARTUP_DELAY = timedelta(seconds=5)
 
 
+def detach_child(childref):
+    if hasattr(multiprocessing.process, '_children'):
+        # Python 3.4
+        multiprocessing.process._children.remove(childref)
+    if hasattr(multiprocessing.process, '_current_process'):
+        if hasattr(multiprocessing.process._current_process, '_children'):
+            # Python 2.6
+            multiprocessing.process._current_process._children.remove(childref)
+
+
 class multiprocessCommon(systemBase):
 
     def __init__(self, system, logDefs = None):
@@ -47,12 +57,10 @@ class multiprocessCommon(systemBase):
                                               capabilities,
                                               logDefs),
                                         name='ThespianAdmin')
-        admin.daemon = True
-        #multiprocessing.process._current_process._daemonic = True
         admin.start()
         # admin must be explicity shutdown and is not automatically
         # stopped when this current process exits.
-        multiprocessing.process._current_process._children.remove(admin)
+        detach_child(admin)
 
         self.transport.connectEndpoint(endpointPrep)
 
@@ -188,8 +196,6 @@ class MultiProcReplicator(object):
                                               self.capabilities,
                                               fileNumsToClose),
                                         name='Actor_%s__%s'%(childClass, str(childAddr)))
-        child.daemon = True
-        #multiprocessing.process._current_process._daemonic = True
         child.start()
         # Also note that while non-daemonic children cause the current
         # process to automatically join() those children on exit,
@@ -199,7 +205,7 @@ class MultiProcReplicator(object):
         # remove all children from the _current_process._children list
         # so that they are not automatically stopped when this process
         # stops.
-        multiprocessing.process._current_process._children.remove(child)
+        detach_child(child)
 
         if not hasattr(self, '_child_procs'): self._child_procs = []
         self._child_procs.append(child)
