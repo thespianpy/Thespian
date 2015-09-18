@@ -1,0 +1,17 @@
+pre.src-python {background-color:hsl(0,70%,97%)}
+// pre.src-python {background-color:hsl(108,25%,95%)}
+// pre.src-python { background-color:#606060 }
+
+pre span.builtin {color:#7a378b}
+pre span.keyword {color:#a020f0}
+pre span.string  {color:#008000}
+pre span.variable-name {color:#ba36a5}
+pre span.function-name {color:#006699}
+pre span.type {color:#6434a3}
+pre span.preprocessor {color:#808080;font-weight:bold;}
+pre span.constant {color:#d0372d}
+pre span.comment-delimiter {color:#8d8d84}
+pre span.comment {color:#b22222}
+
+// .title {background-color:#80d0f0}
+.title {background-color:#80b0f0}
