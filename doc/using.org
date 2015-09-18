@@ -1343,7 +1343,7 @@ messages from any conference member that is of ~WARNING~ level or above.
 ** loadActorSource
 
 #+begin_src python
-    sourceHash = actorSys.loadActorSource(filename)
+    sourceHash = actorSys.loadActorSource(fileref)
 #+end_src
 
   The ~loadActorSource()~ method is used to load a (possibly
@@ -1367,10 +1367,11 @@ messages from any conference member that is of ~WARNING~ level or above.
   [[*Security%20Considerations][Security Considerations]] section below; when an encrypted zipfile is
   loaded it is first decrypted and/or authorized as described therein.
 
-  If the filename is invalid or specifies a corrupted source file,
-  then the returned sourceHash it is not added to the list of
-  available sources, but there is no other feedback (excepting perhaps
-  the ~/tmp/Thespian.log~ logfile).
+  The ~fileref~ argument can be a string specifying an input file path
+  or it can be a file-like object.  If the ~fileref~ is invalid or
+  specifies a corrupted source file, then the returned sourceHash it
+  is not added to the list of available sources, but there is no other
+  feedback (excepting perhaps the ~/tmp/Thespian.log~ logfile).
 
 *** Source Loading Issues
 

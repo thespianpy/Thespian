@@ -288,7 +288,7 @@ class systemBase(object):
     def loadActorSource(self, fname):
         self._LOADFAILED = None
         loadLimit = ExpiryTime(MAX_LOAD_SOURCE_DELAY)
-        f = open(fname, 'rb')
+        f = fname if hasattr(fname, 'read') else open(fname, 'rb')
         try:
             d = f.read()
             import hashlib

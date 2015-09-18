@@ -2218,7 +2218,7 @@ issuing a <a href="#sec-7-9">Thespian_StatusReq</a> to the ActorSystem.
 <div class="outline-text-3" id="text-6-7">
 <div class="org-src-container">
 
-<pre class="src src-python">    <span class="org-variable-name">sourceHash</span> = actorSys.loadActorSource(filename)
+<pre class="src src-python">    <span class="org-variable-name">sourceHash</span> = actorSys.loadActorSource(fileref)
 </pre>
 </div>
 
@@ -2241,10 +2241,11 @@ loaded it is first decrypted and/or authorized as described therein.
 </p>
 
 <p>
-If the filename is invalid or specifies a corrupted source file,
-then the returned sourceHash it is not added to the list of
-available sources, but there is no other feedback (excepting perhaps
-the <code>/tmp/Thespian.log</code> logfile).
+The <code>fileref</code> argument can be a string specifying an input file path
+or it can be a file-like object.  If the <code>fileref</code> is invalid or
+specifies a corrupted source file, then the returned sourceHash it
+is not added to the list of available sources, but there is no other
+feedback (excepting perhaps the <code>/tmp/Thespian.log</code> logfile).
 </p>
 </div>
 

@@ -491,8 +491,9 @@ class TestASimpleSystem(ActorSystemTestCase):
         self.assertEqual('And MOO: great', self.systems['One'].ask(foo, ('discard', 'great')))
 
         # Update the foo sources
-        foo2zipFname = os.path.join(self.tmpdir, 'foo2src.zip')
-        foozip = zipfile.ZipFile(foo2zipFname, 'w')
+        import StringIO
+        zipdata = StringIO.StringIO()
+        foozip = zipfile.ZipFile(zipdata, 'a')
         foozip.writestr('foo.py', fooSource.replace('GOT:', 'TOG:'))
         foozip.writestr('frog.py', frogSource)
         foozip.writestr('toad.py', toadSource)
@@ -501,9 +502,10 @@ class TestASimpleSystem(ActorSystemTestCase):
         foozip.writestr('barn/cow/__init__.py', '')
         foozip.writestr('barn/cow/moo.py', mooSource.replace('And MOO:', '& MOO:'))
         foozip.close()
+        foo2zipSource = StringIO.StringIO(zipdata.getvalue())
 
         # Load the updated foo sources... next to the original
-        srchash2 = self.systems['One'].loadActorSource(foo2zipFname)
+        srchash2 = self.systems['One'].loadActorSource(foo2zipSource)
         self.assertIsNotNone(srchash2)
         self.assertNotEqual(srchash, srchash2)
 

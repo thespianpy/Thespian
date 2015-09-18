@@ -470,7 +470,7 @@ class ActorSystemBase:
 
     def loadActorSource(self, fname):
         import hashlib
-        f = open(fname, 'rb')
+        f = fname if hasattr(fname, 'read') else open(fname, 'rb')
         try:
             d = f.read()
         finally:
