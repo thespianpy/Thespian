@@ -318,6 +318,17 @@ class TestDirectZipfile(unittest.TestCase):
         self.assertRaises(InvalidActorAddress,
                           f.receiveMessage, "what", "sender")
 
+    def testSow(self):
+        sys.path.insert(0, self.foozipFname)
+        # First try to import barn top level and sow from the zipfile
+        print('path: %s'%str(sys.path))
+        import barn.sow
+        f = barn.sow.SowActor()
+        # calling the SowActor with a string causes some additional
+        # non-module-level imports to occur.
+        self.assertRaises(InvalidActorAddress,
+                          f.receiveMessage, "what", "sender")
+
 
 class TestASimpleSystem(ActorSystemTestCase, CreateTestSourceZips):
     testbase='Simple'
