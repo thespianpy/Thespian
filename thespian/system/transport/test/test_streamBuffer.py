@@ -15,7 +15,7 @@ class TestReceiveBufferReconstruct(unittest.TestCase):
 
     sampleBuffer = 'The struggle of today, is not altogether for today -- it is for a vast future also. -- Abraham Lincoln'
 
-    def finalTests(self, rcv, expectedBuf, descr, expectedExtra=''):
+    def finalTests(self, rcv, expectedBuf, descr, expectedExtra=None):
         self.assertTrue(rcv.isDone(), 'ReceiveBuffer isDone %s completed but isDone is False')
         self.assertEqual(rcv.remainingAmount(), 0,
                          'Checking if no remaining amount (%s) for %s'%(
@@ -26,10 +26,13 @@ class TestReceiveBufferReconstruct(unittest.TestCase):
                          'Checking if completed %s == %s for %s'%(str(completed),
                                                                   str(expectedBuf),
                                                                   descr))
-        self.assertEqual(extra, expectedExtra,
-                         'Checking if extra %s == %s for %s'%(str(extra),
-                                                              str(expectedExtra),
-                                                              descr))
+        if expectedExtra:
+            self.assertEqual(extra, expectedExtra,
+                             'Checking if extra %s == %s for %s'%(str(extra),
+                                                                  str(expectedExtra),
+                                                                  descr))
+        else:
+            self.assertFalse(extra, 'Verifying no extra in %s for %s'%(str(extra), descr))
 
     def partialTests(self, rcv, amount, totalAmount, descr):
         self.assertFalse(rcv.isDone(),
