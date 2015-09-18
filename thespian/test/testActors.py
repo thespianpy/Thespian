@@ -127,7 +127,11 @@ class TestASimpleSystem(ActorSystemTestCase):
         addresses = [asys.createActor(Juliet) for n in range(100)]
         uniqueAddresses = set(addresses)
         if len(addresses) != len(uniqueAddresses):
-            print('Duplicates: %s'%str([str(A) for A in uniqueAddresses if len([X for X in addresses if X == A]) > 1]))
+            duplicates = [A for A in uniqueAddresses if len([X for X in addresses if X == A]) > 1]
+            print('Duplicates: %s'%map(str, duplicates))
+            if duplicates:
+                for each in duplicates:
+                    print('... %s at: %s'%(str(each), str([N for N,A in enumerate(addresses) if A == each])))
             print('Note: if this is a UDPTransport test, be advised that Linux occasionally does seem to assign the same UDP port multiple times.  Linux bug?')
         self.assertEqual(len(addresses), len(uniqueAddresses))
 
