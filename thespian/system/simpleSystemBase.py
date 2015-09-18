@@ -231,7 +231,7 @@ class ActorSystemBase:
 
     def shutdown(self):
         while self._sources:
-            self.unloadActorSource(self._sources.keys()[0])
+            self.unloadActorSource(list(self._sources.keys())[0])
 
 
     def _realizeWakeups(self):
