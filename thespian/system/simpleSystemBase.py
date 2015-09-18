@@ -126,6 +126,7 @@ class PendingSend:
         self.toActor = toActor
         self.msg = msg
         self.attempts = 0
+    def __str__(self): return 'PendingSend(#%d %s -> %s: %s)'%(self.attempts, self.sender, self.toActor, self.msg)
 
 
 class BadActor(Actor):   # useable as a "null" Actor which does nothing.
