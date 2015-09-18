@@ -1,0 +1,257 @@
+#+TITLE: [[https://github.com/godaddy/Thespian][@@html:<img src="thesplogo2.png" alt="Thespian" width="50%" display="inline" />@@]] Python Actors
+#+AUTHOR: Kevin Quick <kquick@godaddy.com>
+#+SETUPFILE: /home/kquick/Public/org-html-themes/setup/theme-bigblow.setup
+#+HTML_HEAD: <link href="thespian.css" rel="stylesheet" type="text/css">
+#+LATEX_CLASS: thespian
+# #+LATEX_CLASS_OPTIONS: [a4paper]
+#+LATEX_HEADER: \product{Thespian}
+#+LATEX_HEADER: \component{Python Actor System}
+#+LATEX_HEADER: \doctype{Overview}
+#+LATEX_HEADER: \docrev{1.2}{2015 Sep 05}
+#+LATEX_HEADER: \docid{TheDoc-05}
+#+OPTIONS: ^:nil
+
+* Home
+
+#+BEGIN_CENTER
+@@html:<font size=+3>@@Introducing Thespian@@html:</font>@@
+#+END_CENTER
+
+Thespian is a Python library providing a framework for developing
+concurrent, distributed, fault tolerant applications.
+
+Thespian is built on the [[http://wikipedia.org/wiki/Actor_model][Actor Model]] which allows applications to be
+written as a group of indpendently executing but cooperating "Actors"
+which communicate via messages.  These Actors run within the Actor
+System provided by the Thespian library.
+
+  * Concurrent :: All Actors run independently within the Actor
+                  System.  The Actor System may run the Actors as
+                  threads, processes, or even sequential operations
+                  within the current process---all with no change to
+                  the Actors themselves.
+
+  * Distributed :: Actors run independently...anywhere.  Multiple
+                   servers can each be running Thespian and an Actor
+                   can be run on any of these systems---all with no
+                   change to the Actors themselves.  Thespian handles
+                   the communication between the Actors and the
+                   management process of distributing the Actors
+                   across the systems.
+
+  * Location Independent :: Because Actors run independently anywhere,
+       they run independently of their actual location.  A distributed
+       Actor application may have part of it running on a local
+       server, part running on a server in Amsterdam, and part running
+       on a server in Singapore... or not, with no change or awareness
+       of this by the Actors themselves.
+
+  * Fault Tolerant :: Individual Actors can fail and be
+                      restarted---automatically---without impact to
+                      the rest of the system.
+
+  * Scalable :: The number of Actors in the system can be dynamically
+                extended based on factors such as work volume, and
+                systems added to the Distributed Actor System
+                environment are automatically utilized.
+
+One of the key aspects of the Actor Model is that it represents a
+higher level of abstraction than is provided by most frameworks.  When
+writing an Actor-based application, the concurrency and transport
+layers are completely abstracted, which both simplifies the design and
+allows the concurrency or transport to be changed in the future
+/without/ requiring changes in the Actor-based application.
+
+The above qualities of Actor programming make it ideally suited for
+Cloud-based applications as well, where compute nodes are added and
+removed from the environment dynamically.
+
+* Quick Start
+
+** Simple Installation
+
+Install the Thespian library on your local host system using pip:
+
+#+BEGIN_EXAMPLE
+$ pip install thespian
+#+END_EXAMPLE
+
+** Starting a Thespian Instance
+
+Start a default Thespian Actor System on the current host system:
+
+#+BEGIN_EXAMPLE
+$ python
+>>> from thespian import *
+>>> ActorSystem("multiprocTCPBase")
+#+END_EXAMPLE
+
+** Hello World
+
+A Hello World example:
+
+#+NAME: helloActor.py
+#+BEGIN_SRC python -n
+from thespian.actors import *
+
+class Hello(Actor):
+    def receiveMessage(self, message, sender):
+        self.send(sender, 'Hello, World!')
+
+if __name__ == "__main__":
+    hello = ActorSystem().createActor(Hello)
+    print(ActorSystem().ask(hello, 'hi', 1))
+    ActorSystem().tell(hello, ActorExitRequest())
+#+END_SRC
+
+The above will create an Actor, send it a message and get a "Hello
+World" response, and then tell that Actor to exit because it is no
+longer needed.
+
+#+BEGIN_EXAMPLE
+$ python helloActor.py
+Hello, World!
+$
+#+END_EXAMPLE
+
+** Hello .. World
+
+It's easy to extend the Hello World example to include multiple actors
+which communicate with each other.  This example shows a number of
+additional details:
+  * the messages exchanged between the Actors can be anything that can
+    be pickled.
+  * Actors can create other Actors dynamically
+  * Actor Addresses can be passed around
+  * Actors remain until they are removed by sending them an
+    ~ActorExitRequest()~
+
+#+NAME: helloActor2.py
+#+BEGIN_SRC python -n
+from thespian.actors import *
+
+import sys
+
+class Greeting(object):
+    def __init__(self, msg):
+        self.message = msg
+    def __str__(self): return self.message
+
+class Hello(Actor):
+    def receiveMessage(self, message, sender):
+        if message == 'hi':
+            greeting = Greeting('Hello')
+            world = self.createActor(World)
+            punct = self.createActor(Punctuate)
+            greeting.sendTo = [punct, sender]
+            self.send(world, greeting)
+
+class World(Actor):
+    def receiveMessage(self, message, sender):
+        if isinstance(message, Greeting):
+            message.message = message.message + ", World"
+            nextTo = message.sendTo.pop(0)
+            self.send(nextTo, message)
+
+class Punctuate(Actor):
+    def receiveMessage(self, message, sender):
+        if isinstance(message, Greeting):
+            message.message = message.message + "!"
+            nextTo = message.sendTo.pop(0)
+            self.send(nextTo, message)
+
+if __name__ == "__main__":
+    hello = ActorSystem().createActor(Hello)
+    print(ActorSystem().ask(hello, 'hi', 0.2))
+    print(ActorSystem().ask(hello, 'hi', 0.2))
+    ActorSystem().tell(hello, ActorExitRequest())
+    print(ActorSystem().ask(hello, 'hi', 0.2))
+#+END_SRC
+
+Running above will create an Actor and send it a message.  That Actor
+will create two other Actors, passing the message along to the first
+which then passes it to the second before finally sending the message
+back to the original requestor.
+
+The original requestor is code outside of the Actor environment.  This
+external requestor uses the ~ask()~ API call which assigns it an Actor
+Address just like any other Actor.
+
+#+BEGIN_EXAMPLE
+$ python helloActor.py
+Hello, World!
+$
+#+END_EXAMPLE
+
+This is just a quick introduction to getting started with Thespian.
+Please see the examples section for more information.
+
+
+** What Next?
+
+This has just been a very simple introduction to using Thespian.  A
+more detailed introduction can be found in the [[file:in_depth.org][Thespian In-Depth
+Introduction]] document, and [[file:using.html][Using Thespian]] is the primary API and
+utilization document.
+
+* Documentation
+
+** Thespian Documentation
+
+  * [[file:using.html][Using Thespian]] is the main documentation reference for developers
+    writing and implementing Actor-based applications with Thespian.
+
+  * [[file:developer.html][Thespian Developer's Notes]] provides documentation for developers
+    working on Thespian itself.
+
+  * Release History is maintained in the [[file:releases.org][Thespian Release Notes]].
+
+** Background
+
+  * The [[http://wikipedia.org/wiki/Actor_model][Actor Model]] at Wikipedia
+  * http://c2.com/cgi/wiki?ActorsModel
+  * [[http://akka.io][Akka]] is a popular Actor Library for Java and Scala.
+
+* Download
+
+  The recommended way to obtain Thespian is by using ~pip~ to download
+  the latest copy from PyPi:
+
+#+BEGIN_EXAMPLE
+$ pip install thespian
+#+END_EXAMPLE
+
+  The PyPi page can be consulted directly at https://pypi.python.org/pypi/thespian
+
+  Thespian source and releases are also available from the
+  https://github.com/godaddy/Thespian github source maintenance
+  location.
+
+  Thespian may also be provided by your system's packaging tools
+  (e.g. yum, rpm, apt-get, etc.).
+
+* Contribute
+
+  Contributions to and involvement in Thespian development itself is
+  welcomed.  The [[file:developer.org][Thespian Developer's Notes]] document provides more
+  details on how to get involved.
+
+   * Source Code: https://github.com/godaddy/Thespian
+   * Mailing List: thespianpy@googlegroups.com
+   * Report a Bug: https://github.com/godaddy/Thespian/issues
+
+* News
+
+  * 2015-08-31 :: Thespian Publically Released
+
+
+  Current and prevoius Thespian release information is available in
+  the [[file:releases.org][Thespian Release Notes]].
+
+** Blogs and Success Stories
+
+  * [[http://engineering.godaddy.com/why-godaddy-built-an-actor-system-library][GoDaddy blog article]]
+
+  If you have a blog, article, or success story you would like
+  published here, please contact one of the project administrators.
+

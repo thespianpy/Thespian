@@ -253,7 +253,7 @@ By: \@author\hfill\@docdate\ (\#\@docrev)\par
 \doctype{Review}
 \docrev{{\it not versioned}}{{\it date unknown}}
 \docid{{\it uncontrolled}}
-\tmgroup{GoDaddy Hosting}
+\tmgroup{Thespian Project}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%

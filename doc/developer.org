@@ -1,0 +1,181 @@
+#+TITLE: [[https://github.com/godaddy/Thespian][@@html:<img src="thesplogo2.png" alt="Thespian" width="50%" display="inline" />@@]] Developers Notes
+#+AUTHOR: Kevin Quick <kquick@godaddy.com>
+#+DESCRIPTION: cool stuff
+#+SETUPFILE: /home/kquick/Public/org-html-themes/setup/theme-bigblow.setup
+#+HTML_HEAD: <link href="thespian.css" rel="stylesheet" type="text/css">
+#+LATEX_CLASS: thespian
+# #+LATEX_CLASS_OPTIONS: [a4paper]
+#+LATEX_HEADER: \product{Thespian}
+#+LATEX_HEADER: \component{Python Actor System}
+#+LATEX_HEADER: \doctype{Developers Notes}
+#+LATEX_HEADER: \docrev{1.2}{2015 Sep 05}
+#+LATEX_HEADER: \docid{TheDoc-03}
+#+OPTIONS: ^:nil
+
+* Source
+
+** Availability
+
+    Source code for Thespian is available at
+    https://github.com/godaddy/Thespian under the MIT license.
+
+** Documentation
+
+    Thespian documentation is maintained in the source tree under the
+    ~doc/~ directory.  Documentation is written in Emacs orgmode,
+    which allows export as PDF, HTML, text, and other formats.
+
+    HTML output uses the ~htmlize~ package for syntax coloring, and
+    the ~bigblow~ theme from Fabrice Niessen at
+    https://github.com/fniessen/org-html-themes.
+
+    Documentation should be generated using the ~doc/gen_html.sh~ or
+    ~doc/gen_pdf.sh~ bash script and specifying the source file for
+    the document to be generated; the results are generated in the
+    same ~doc/~ directory.
+
+#+BEGIN_EXAMPLE
+$ bash doc/gen_html.sh doc/using.org
+#+END_EXAMPLE
+
+** Issues
+
+    Any issues should be posted via the [[https://github.com/godaddy/Thespian][main Thespian github page]].
+
+** Contributions
+
+    Contributions (both source and documentation) should be in the
+    form of pull requests.  Contributions will not be accepted until
+    the contributor has agreed to the contributor's agreement.
+    Thespian uses the [[https://cla-assistant.io][cla-assistant.io]] which will automatically check
+    to see if a contributor has click-signed the contributor's
+    agreement; as a contributor you will automatically be given a link
+    to sign the agreement when you make your contribution.
+
+* Testing
+
+** Approach
+
+  While there are some Thespian tests that use mocking to reduce the
+  effects of external elements, the main focus of Thespian testing is
+  *functional* testing to make sure that the ActorSystem is providing
+  proper functionality for the Actors that will be running.  Writing
+  mock'ed unit tests for Thespian is still a welcome contribution, we
+  have just focused our primary efforts on the functional tests.
+
+  This functional approach means that the tests will actually create
+  threads or processes (depending on the systembase) and that all
+  systembases are tested on the same set of tests.
+
+** Test Duration
+
+  Because of the approach above running the tests can take some time.
+  Test can even can hang if there is bad code or if system resources
+  become exhausted (e.g. no more sockets available), and there can be
+  spurious effects from the real world (e.g. timing failures if the
+  local system is excessively busy).
+
+  Every effort is made to have tests run quickly and reliably, but
+  validating functionality is the most important goal.
+
+  As of Thespian 2.1.5, the ~run_main_functional_tests.sh~ duration is
+  430--650 seconds.
+
+** Testing System Bases
+
+  Because all systembases are tested, it is necessary to accomodate
+  the differences between those system bases.  For most Actors, there
+  should be no difference between systembases and they should be
+  unaware of which one is running, but it is not practical for all
+  systembases to support all features; the administrator starting the
+  ActorSystem is responsible for starting a system appropriate to the
+  task and Actors at hand.
+
+  Some of the system bases do not support some features (as detailed
+  [[http://godaddy.github.io/Thespian/doc/using.html#outline-container-sec-8][here in the Using Thespian guide]]) and so there are inputs provided
+  to the tests to indicate which are viable and/or stable.  More on
+  this in the Running Tests section below.
+
+** Running Tests
+
+  Tests are written to fairly conventional Python unittest standards
+  without relying on plugins.  Tests are normally run via ~nose~, and
+  the latter provides various testing controls.
+
+  For simple, direct runs of specific tests, direct nose invocation of
+  those tests is usually sufficient:
+
+#+BEGIN_EXAMPLE
+$ nosetests thespian/test/testSimpleActor.py:TestASimpleSystem
+#+END_EXAMPLE
+
+  As discussed above, all system bases are tested (by default) so the
+  ~simpleSystemBase~ is usually covered by the ~TestASimpleSystem~
+  testcase so that it is tested before any of the more complex system
+  bases (due to alphabetically appearing first).
+
+  The viability and focus of individual testcases is specified using
+  member attributes on those test case classes.
+
+   | Attribute  | Values              | Usage                                                            |
+   |------------+---------------------+------------------------------------------------------------------|
+   | ~testbase~ | "~Simple~"          | Specifies which System Base is being used.                       |
+   |            | "~MultiprocUDP~"    |                                                                  |
+   |            | "~MultiprocTCP~"    |                                                                  |
+   |            | "~MultiprocQueue~"  |                                                                  |
+   |------------+---------------------+------------------------------------------------------------------|
+   | ~unstable~ | ~False~ / ~True~    | True if the test does not provide stable results.                |
+   |            |                     | This usually indicates that the transport or                     |
+   |            |                     | services used by this system base are not reliable.              |
+   |------------+---------------------+------------------------------------------------------------------|
+   | ~scope~    | "~unit~" / "~func~" | Scope of this test.  The expectation is that unit tests          |
+   |            |                     | will exercise internal code only and not affect/utilize          |
+   |            |                     | system resources such as creating processes, using sockets, etc. |
+   |------------+---------------------+------------------------------------------------------------------|
+
+  These attributes should be specified on the class itself:
+
+#+BEGIN_SRC python -n
+class TestASimpleSystem(ActorSystemTestCase):
+    testbase = 'Simple'
+    scope = 'func'
+
+    def test_something(self):
+        "insert test here"
+
+    def test06_frobnicator(self):
+        "verify the frobnicator functionality"
+
+class TestMultiprocUDPSystem(TestASimpleSystem):
+    testbase = 'MultiprocUDP'
+    unstable = True # see note in test06
+#+END_SRC
+
+  When running the tests from the command line, the normal
+  nosetest-based commands can be used, with optional attribute
+  specifiers.  For example, to run all stable unit tests:
+
+#+BEGIN_EXAMPLE
+$ nosetests -A 'unstable != 1 and scope == "unit"'
+#+END_EXAMPLE
+
+The above is saved in ~scripts/run_unit_tests.sh~ for convenient
+re-use.  In addition, the ~scripts/run_main_functional_tests.sh~ file
+contains the following specification which is used to run all the
+stable functional tests for the standard set of testbases:
+
+#+BEGIN_EXAMPLE
+$ nosetests -A 'unstable != 1 and scope == "func" and testbase in ["Simple", "MultiprocTCP"]'
+#+END_EXAMPLE
+
+** Writing Tests
+
+When writing tests for Thespian, the ~ActorSystemTestCase~ as imported
+from ~thespian.test~ is recommended as a base class for tests using
+actors.  This base class provides a ~setUp()~ method that establishes
+the system base to utilize, and a ~tearDown()~ method that shuts down
+the Actor System automatically.  It also provides a ~setSystemBase()~
+method that can be used to specify which system base is to be used for
+testing.
+
+# KWQ: talk about thespianshell
