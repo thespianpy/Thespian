@@ -5,7 +5,8 @@ import thespian.test.helpers
 from thespian.actors import *
 import zipfile
 import tempfile
-import os
+import os, sys
+import copy
 
 
 
@@ -159,68 +160,8 @@ class BarActor(Actor):
             self.send(sender, 'SAW: '+str(msg))
 
 
-class TestRoundTripROT13(unittest.TestCase):
-    scope='unit'
-
-    def setUp(self):
-        self.tmpdir = tempfile.mkdtemp()
-
-
-    def tearDown(self):
-        import shutil
-        if os.path.exists(self.tmpdir): shutil.rmtree(self.tmpdir)
-
-
-    def test_simple_rot13_enc_dec(self):
-        self.simplezipFname = os.path.join(self.tmpdir, 'simple.zip')
-        open(self.simplezipFname, 'wb').write(b'abcdABCD1234')
-        encfname = _encryptROT13Zipfile(self.simplezipFname)
-        encdata = open(encfname, 'rb').read()
-        decdata = _decryptROT13(encdata)
-        self.assertEqual(decdata, b'abcdABCD1234')
-
-    def test_rot13_enc_dec(self):
-        self.foozipFname = os.path.join(self.tmpdir, 'foosrc.zip')
-        foozip = zipfile.ZipFile(self.foozipFname, 'w')
-        foozip.writestr('__init__.py', '')
-        foozip.writestr('foo.py', fooSource)
-        foozip.writestr('frog.py', frogSource)
-        foozip.writestr('toad.py', toadSource)
-        foozip.writestr('barn/__init__.py', 'import rooster')
-        foozip.writestr('barn/pig.py', pigSource)
-        foozip.writestr('barn/chicken.py', chickenSource)
-        foozip.writestr('barn/rooster.py', roosterSource)
-        foozip.writestr('barn/goose.py', gooseSource)
-        foozip.writestr('barn/sow.py', sowSource)
-        foozip.writestr('barn/cow/__init__.py', '')
-        foozip.writestr('barn/cow/moo.py', mooSource)
-        foozip.close()
-
-        encfname = _encryptROT13Zipfile(self.foozipFname)
-
-        encf = open(encfname, 'rb')
-        encdata = encf.read()
-        encf.close()
-        foozipDecoded = _decryptROT13(encdata)
-        from io import BytesIO
-        from zipfile import ZipFile
-        foozip = ZipFile(BytesIO(foozipDecoded))
-
-        names = foozip.namelist()
-        self.assertEqual(names[0], '__init__.py')
-        self.assertEqual(names[-1], 'barn/cow/moo.py')
-        self.assertEqual(len(names), 12)
-
-
-
-class TestASimpleSystem(ActorSystemTestCase):
-    testbase='Simple'
-    scope='func'
-    actorSystemBase = 'simpleSystemBase'
-    portBase = 0
-
-    def setUp(self):
-
+class CreateTestSourceZips(object):
+    def createZips(self):
         self.tmpdir = tempfile.mkdtemp()
 
         self.foozipFname = os.path.join(self.tmpdir, 'foosrc.zip')
@@ -248,6 +189,132 @@ class TestASimpleSystem(ActorSystemTestCase):
 
         self.dogzipEncFile = _encryptROT13Zipfile(self.dogzipFname)
 
+    def removeZips(self):
+        import shutil
+        if os.path.exists(self.tmpdir): shutil.rmtree(self.tmpdir)
+
+
+class TestRoundTripROT13(unittest.TestCase, CreateTestSourceZips):
+    scope='unit'
+
+    def setUp(self):
+        self.createZips()
+
+    def tearDown(self):
+        self.removeZips()
+
+    def test_simple_rot13_enc_dec(self):
+        self.simplezipFname = os.path.join(self.tmpdir, 'simple.zip')
+        open(self.simplezipFname, 'wb').write(b'abcdABCD1234')
+        encfname = _encryptROT13Zipfile(self.simplezipFname)
+        encdata = open(encfname, 'rb').read()
+        decdata = _decryptROT13(encdata)
+        self.assertEqual(decdata, b'abcdABCD1234')
+
+    def test_rot13_enc_dec(self):
+        encf = open(self.foozipEncFile, 'rb')
+        encdata = encf.read()
+        encf.close()
+        foozipDecoded = _decryptROT13(encdata)
+        from io import BytesIO
+        from zipfile import ZipFile
+        foozip = ZipFile(BytesIO(foozipDecoded))
+
+        names = foozip.namelist()
+        self.assertEqual(names[0], '__init__.py')
+        self.assertEqual(names[-1], 'barn/cow/moo.py')
+        self.assertEqual(len(names), 12)
+
+
+class TestDirectZipfile(unittest.TestCase):
+    # Note that these tests try to import from the zipfile directly,
+    # which can pollute the local namespace.  However, these tests are
+    # useful to ensure that the contents of the zipfile are compatible
+    # with the current python interpreter/version and that therefore
+    # the thespian importing has a reasonable chance of success.  By
+    # scoping this test as unit scope (which it is) and the thespian
+    # importing tests as func scope, they do not get run in the same
+    # python invocation and so there is no leakage between the two.
+
+    # The tricky part is that sys.modules is global and once a module
+    # is imported, it expects to be able to find related imports in
+    # that same source, so the zipfile used for the first import must
+    # remain available even though there are multiple tests.  To solve
+    # this, there is a class-level ZipManager instance that creates
+    # them, and testzzzzzz to delete them (where that test should come
+    # last in alphabetical sorting... running tests in random orders
+    # will defeat this and probably cause test failures.  Running
+    # specific tests only will leave behind zipfiles in $TMPDIR).
+
+    scope='unit'
+
+    class ZipManager(CreateTestSourceZips):
+        def __init__(self):
+            self.createZips()
+            self.origpath = copy.deepcopy(sys.path)
+
+        def remove(self):
+            if hasattr(self, 'origpath'):
+                self.removeZips()
+                sys.path = self.origpath
+                del self.origpath
+
+        def __del__(self): self.remove()
+
+    def setUp(self):
+        if not hasattr(self.__class__, 'zips'):
+            self.__class__.zips = self.__class__.ZipManager()
+        self.foozipFname = self.__class__.zips.foozipFname
+
+    def testzzzzzz(self):
+        self.__class__.zips.remove()
+
+    def testFooString(self):
+        sys.path.insert(0, self.foozipFname)
+        # First try to import foo itself from the zipfile
+        import foo
+        f = foo.FooActor()
+        # calling the FooActor with a string causes some additional
+        # non-module-level imports to occur.  If it makes it past the
+        # imports, it will try to send back a response which will fail
+        # since we are using the invalid address of "sender".
+        self.assertRaises(InvalidActorAddress,
+                          f.receiveMessage, "hi", "sender")
+
+    def testFooInteger(self):
+        sys.path.insert(0, self.foozipFname)
+        # First try to import foo itself from the zipfile
+        import foo
+        f = foo.FooActor()
+        # calling the FooActor with an integer causes some additional
+        # non-module-level imports to occur that are *different* than
+        # the ones that occur when it gets passed a string.  If it
+        # makes it past the imports, it will try to send back a
+        # response which will fail since we are using the invalid
+        # address of "sender".
+        self.assertRaises(InvalidActorAddress,
+                          f.receiveMessage, 5, "sender")
+
+    def testPig(self):
+        sys.path.insert(0, self.foozipFname)
+        # First try to import barn top level and pig from the zipfile
+        print('path: %s'%str(sys.path))
+        import barn.pig
+        f = barn.pig.PigActor()
+        # calling the PigActor with a string causes some additional
+        # non-module-level imports to occur.
+        self.assertRaises(InvalidActorAddress,
+                          f.receiveMessage, "what", "sender")
+
+
+class TestASimpleSystem(ActorSystemTestCase, CreateTestSourceZips):
+    testbase='Simple'
+    scope='func'
+    actorSystemBase = 'simpleSystemBase'
+    portBase = 0
+
+    def setUp(self):
+        self.createZips()
         self.systems = {}
 
     def startSystems(self, portOffset):
@@ -266,8 +333,7 @@ class TestASimpleSystem(ActorSystemTestCase):
     def tearDown(self):
         for each in self.systems:
             self.systems[each].shutdown()
-        import shutil
-        if os.path.exists(self.tmpdir): shutil.rmtree(self.tmpdir)
+        self.removeZips()
 
     def test00_systemsRunnable(self):
         self.startSystems(0)
