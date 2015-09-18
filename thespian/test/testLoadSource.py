@@ -121,15 +121,16 @@ class DogActor(Actor):
 # Pig exercises absolute imports
 pigSource = '''
 from thespian.actors import Actor
+import thespian.importlib as importlib
 from barn.chicken import Cluck
-import barn.goose
+from . import goose
 from barn.cow.moo import cow_says
 from frog import Frog
 import toad
 class PigActor(Actor):
     def receiveMessage(self, msg, sender):
         if type(msg) == type(""):
-            self.send(sender, 'Oink ' + toad.Toad(Frog(Cluck(barn.goose.Honk(msg)))) + ' ' + cow_says())
+            self.send(sender, 'Oink ' + toad.Toad(Frog(Cluck(goose.Honk(msg)))) + ' ' + cow_says())
 '''
 
 # Sow exercises relative imports
@@ -153,6 +154,15 @@ gooseSource = '''
 def Honk(msg): return "Honk " + msg
 import sys'''  # <-- no terminating newline
 
+barnInitSource = '''
+import sys
+if sys.version_info >= (3,):
+    from .rooster import *
+else:
+    import rooster
+    from .chicken import *
+'''
+
 
 class BarActor(Actor):
     def receiveMessage(self, msg, sender):
@@ -170,7 +180,7 @@ class CreateTestSourceZips(object):
         foozip.writestr('foo.py', fooSource)
         foozip.writestr('frog.py', frogSource)
         foozip.writestr('toad.py', toadSource)
-        foozip.writestr('barn/__init__.py', 'import rooster')
+        foozip.writestr('barn/__init__.py', barnInitSource)
         foozip.writestr('barn/pig.py', pigSource)
         foozip.writestr('barn/chicken.py', chickenSource)
         foozip.writestr('barn/rooster.py', roosterSource)
