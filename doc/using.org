@@ -449,6 +449,15 @@ described in [[*Dead%20Letter%20Handling][Dead Letter Handling]].
     ensure that the probe Actor reaches a stable condition in this
     manner.
 
+  - Actors are not intended to create other processes or threads;
+    attempts to do so may create undefined behavior.
+
+  - Actors should not block indefinitely on IO operations; while the
+    Actor is running in the ~receiveMessage()~ method it is not able
+    to handle other messages, including Actor System internal
+    messages.  The Actor will appear to be frozen and this will result
+    in PoisonMessage delivery failures to Actors attempting to
+    communicate with the busy Actor.
 
 * Thespian Actor Feature Extensions
 
