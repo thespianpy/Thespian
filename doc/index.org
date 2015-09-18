@@ -114,7 +114,7 @@ Hello, World!
 $
 #+END_EXAMPLE
 
-** Hello .. World
+** Hello World Redux
 
 It's easy to extend the Hello World example to include multiple actors
 which communicate with each other.  This example shows a number of
@@ -198,19 +198,24 @@ utilization document.
 
 ** Thespian Documentation
 
-  * [[file:using.html][Using Thespian]] is the main documentation reference for developers
-    writing and implementing Actor-based applications with Thespian.
+  | TXT | PDF | HTML                                                                                                                                |
+  |-----+-----+-------------------------------------------------------------------------------------------------------------------------------------|
+  | [[file:using.txt][TXT]] | [[file:using.pdf][PDF]] | [[file:using.html][Using Thespian]] is the main documentation reference for developers  writing and implementing Actor-based applications with Thespian. |
+  | [[file:developer.txt][TXT]] | [[file:developer.pdf][PDF]] | [[file:developer.html][Thespian Developer's Notes]] provides documentation for developers working on Thespian itself.                                        |
+  | [[file:releases.txt][TXT]] | [[file:releases.pdf][PDF]] | Release History is maintained in the [[file:releases.org][Thespian Release Notes]].                                                                        |
+  | [[file:in_depth.txt][TXT]] | [[file:in_depth.pdf][PDF]] | An [[file:in_depth.html][In Depth Introduction to Thespian]].                                                                                               |
+  |-----+-----+-------------------------------------------------------------------------------------------------------------------------------------|
 
-  * [[file:developer.html][Thespian Developer's Notes]] provides documentation for developers
-    working on Thespian itself.
 
-  * Release History is maintained in the [[file:releases.org][Thespian Release Notes]].
-
-** Background
+** Background and Related Efforts
 
   * The [[http://wikipedia.org/wiki/Actor_model][Actor Model]] at Wikipedia
   * http://c2.com/cgi/wiki?ActorsModel
-  * [[http://akka.io][Akka]] is a popular Actor Library for Java and Scala.
+  * [[http://akka.io][Akka]] is a popular Actor Library for Java and Scala; it is roughly
+    the equivalent to Thespian for those languages.
+  * [[http://getakka.net/][Akka.NET]] is an implementation of Akka for the .NET and Mono environments making it useable for C# and F# applications.
+  * The [[http://www.erlang.org][Erlang]] language has Actor support built-in (see
+    http://www.erlang.org/doc/getting_started/conc_prog.html).
 
 * Download
 
@@ -242,10 +247,10 @@ $ pip install thespian
 
 * News
 
-  * 2015-08-31 :: Thespian Publically Released
+  * 2015-08-31 :: Thespian Publicly Released
 
 
-  Current and prevoius Thespian release information is available in
+  Current and previous Thespian release information is available in
   the [[file:releases.org][Thespian Release Notes]].
 
 ** Blogs and Success Stories
