@@ -1,4 +1,4 @@
-#+TITLE: [[https://github.com/godaddy/Thespian][@@html:<img src="thesplogo2.png" alt="Thespian" width="50%" display="inline" />@@]] In-Depth Introduction
+#+TITLE: [[http://thespianpy.com][@@html:<img src="thesplogo2.png" alt="Thespian" width="50%" display="inline" />@@]] In-Depth Introduction
 #+AUTHOR: Kevin Quick <kquick@godaddy.com>
 #+SETUPFILE: /home/kquick/Public/org-html-themes/setup/theme-bigblow.setup
 #+HTML_HEAD: <link href="thespian.css" rel="stylesheet" type="text/css">
