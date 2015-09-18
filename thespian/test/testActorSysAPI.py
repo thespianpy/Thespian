@@ -27,7 +27,7 @@ class TestASimpleSystem(ActorSystemTestCase):
     testbase='Simple'
     scope='func'
 
-    responseDelay = 0.02
+    responseDelay = 0.06
 
     def testTell(self):
         mo = ActorSystem().createActor(Mo)
