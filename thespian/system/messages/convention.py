@@ -59,7 +59,7 @@ class SourceHashTransferReply(ActorSystemMessage):
         sum1, sum0 = 0xffff, 0xffff
         for x in range(0, len(sourceData), 359):
             for char in sourceData[x: x+359]:
-                sum1 += ord(char)
+                sum1 += ord(char) if isinstance(char, str) else char
                 sum0 += sum1
             sum1 = (sum1 & 0xffff) + (sum1 >> 16)
             sum0 = (sum0 & 0xffff) + (sum0 >> 16)
