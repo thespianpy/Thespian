@@ -1,0 +1,494 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+<title>Thespian Developers Notes</title>
+<!-- 2015-09-18 Fri 11:17 -->
+<meta  http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<meta  name="generator" content="Org-mode" />
+<meta  name="author" content="Kevin Quick &lt;kquick@godaddy.com&gt;" />
+<meta  name="description" content="cool stuff"
+ />
+<style type="text/css">
+ <!--/*--><![CDATA[/*><!--*/
+  .title  { text-align: center; }
+  .todo   { font-family: monospace; color: red; }
+  .done   { color: green; }
+  .tag    { background-color: #eee; font-family: monospace;
+            padding: 2px; font-size: 80%; font-weight: normal; }
+  .timestamp { color: #bebebe; }
+  .timestamp-kwd { color: #5f9ea0; }
+  .right  { margin-left: auto; margin-right: 0px;  text-align: right; }
+  .left   { margin-left: 0px;  margin-right: auto; text-align: left; }
+  .center { margin-left: auto; margin-right: auto; text-align: center; }
+  .underline { text-decoration: underline; }
+  #postamble p, #preamble p { font-size: 90%; margin: .2em; }
+  p.verse { margin-left: 3%; }
+  pre {
+    border: 1px solid #ccc;
+    box-shadow: 3px 3px 3px #eee;
+    padding: 8pt;
+    font-family: monospace;
+    overflow: auto;
+    margin: 1.2em;
+  }
+  pre.src {
+    position: relative;
+    overflow: visible;
+    padding-top: 1.2em;
+  }
+  pre.src:before {
+    display: none;
+    position: absolute;
+    background-color: white;
+    top: -10px;
+    right: 10px;
+    padding: 3px;
+    border: 1px solid black;
+  }
+  pre.src:hover:before { display: inline;}
+  pre.src-sh:before    { content: 'sh'; }
+  pre.src-bash:before  { content: 'sh'; }
+  pre.src-emacs-lisp:before { content: 'Emacs Lisp'; }
+  pre.src-R:before     { content: 'R'; }
+  pre.src-perl:before  { content: 'Perl'; }
+  pre.src-java:before  { content: 'Java'; }
+  pre.src-sql:before   { content: 'SQL'; }
+
+  table { border-collapse:collapse; }
+  caption.t-above { caption-side: top; }
+  caption.t-bottom { caption-side: bottom; }
+  td, th { vertical-align:top;  }
+  th.right  { text-align: center;  }
+  th.left   { text-align: center;   }
+  th.center { text-align: center; }
+  td.right  { text-align: right;  }
+  td.left   { text-align: left;   }
+  td.center { text-align: center; }
+  dt { font-weight: bold; }
+  .footpara:nth-child(2) { display: inline; }
+  .footpara { display: block; }
+  .footdef  { margin-bottom: 1em; }
+  .figure { padding: 1em; }
+  .figure p { text-align: center; }
+  .inlinetask {
+    padding: 10px;
+    border: 2px solid gray;
+    margin: 10px;
+    background: #ffffcc;
+  }
+  #org-div-home-and-up
+   { text-align: right; font-size: 70%; white-space: nowrap; }
+  textarea { overflow-x: auto; }
+  .linenr { font-size: smaller }
+  .code-highlighted { background-color: #ffff00; }
+  .org-info-js_info-navigation { border-style: none; }
+  #org-info-js_console-label
+    { font-size: 10px; font-weight: bold; white-space: nowrap; }
+  .org-info-js_search-highlight
+    { background-color: #ffff00; color: #000000; font-weight: bold; }
+  /*]]>*/-->
+</style>
+<link rel="stylesheet" type="text/css" href="http://www.pirilampo.org/styles/bigblow/css/htmlize.css"/>
+<link rel="stylesheet" type="text/css" href="http://www.pirilampo.org/styles/bigblow/css/bigblow.css"/>
+<link rel="stylesheet" type="text/css" href="http://www.pirilampo.org/styles/bigblow/css/hideshow.css"/>
+<script type="text/javascript" src="http://www.pirilampo.org/styles/bigblow/js/jquery-1.11.0.min.js"></script>
+<script type="text/javascript" src="http://www.pirilampo.org/styles/bigblow/js/jquery-ui-1.10.2.min.js"></script>
+<script type="text/javascript" src="http://www.pirilampo.org/styles/bigblow/js/jquery.localscroll-min.js"></script>
+<script type="text/javascript" src="http://www.pirilampo.org/styles/bigblow/js/jquery.scrollTo-1.4.3.1-min.js"></script>
+<script type="text/javascript" src="http://www.pirilampo.org/styles/bigblow/js/jquery.zclip.min.js"></script>
+<script type="text/javascript" src="http://www.pirilampo.org/styles/bigblow/js/bigblow.js"></script>
+<script type="text/javascript" src="http://www.pirilampo.org/styles/bigblow/js/hideshow.js"></script>
+<script type="text/javascript" src="http://www.pirilampo.org/styles/lib/js/jquery.stickytableheaders.min.js"></script>
+<link href="thespian.css" rel="stylesheet" type="text/css">
+<script type="text/javascript">
+/*
+@licstart  The following is the entire license notice for the
+JavaScript code in this tag.
+
+Copyright (C) 2012-2013 Free Software Foundation, Inc.
+
+The JavaScript code in this tag is free software: you can
+redistribute it and/or modify it under the terms of the GNU
+General Public License (GNU GPL) as published by the Free Software
+Foundation, either version 3 of the License, or (at your option)
+any later version.  The code is distributed WITHOUT ANY WARRANTY;
+without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE.  See the GNU GPL for more details.
+
+As additional permission under GNU GPL version 3 section 7, you
+may distribute non-source (e.g., minimized or compacted) forms of
+that code without the copy of the GNU GPL normally required by
+section 4, provided you include this license notice and a URL
+through which recipients can access the Corresponding Source.
+
+
+@licend  The above is the entire license notice
+for the JavaScript code in this tag.
+*/
+<!--/*--><![CDATA[/*><!--*/
+ function CodeHighlightOn(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(null != target) {
+     elem.cacheClassElem = elem.className;
+     elem.cacheClassTarget = target.className;
+     target.className = "code-highlighted";
+     elem.className   = "code-highlighted";
+   }
+ }
+ function CodeHighlightOff(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(elem.cacheClassElem)
+     elem.className = elem.cacheClassElem;
+   if(elem.cacheClassTarget)
+     target.className = elem.cacheClassTarget;
+ }
+/*]]>*///-->
+</script>
+</head>
+<body>
+<div id="content">
+<h1 class="title"><a href="http://thespianpy.com"><img src="thesplogo2.png" alt="Thespian" width="50%" display="inline" /></a> Developers Notes</h1>
+<div id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#sec-1">1. Source</a>
+<ul>
+<li><a href="#sec-1-1">1.1. Availability</a></li>
+<li><a href="#sec-1-2">1.2. Documentation</a></li>
+<li><a href="#sec-1-3">1.3. Issues</a></li>
+<li><a href="#sec-1-4">1.4. Contributions</a></li>
+</ul>
+</li>
+<li><a href="#sec-2">2. Testing</a>
+<ul>
+<li><a href="#sec-2-1">2.1. Approach</a></li>
+<li><a href="#sec-2-2">2.2. Test Duration</a></li>
+<li><a href="#sec-2-3">2.3. Testing System Bases</a></li>
+<li><a href="#sec-2-4">2.4. Running Tests</a></li>
+<li><a href="#sec-2-5">2.5. Writing Tests</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-sec-1" class="outline-2">
+<h2 id="sec-1"><span class="section-number-2">1</span> Source</h2>
+<div class="outline-text-2" id="text-1">
+</div><div id="outline-container-sec-1-1" class="outline-3">
+<h3 id="sec-1-1"><span class="section-number-3">1.1</span> Availability</h3>
+<div class="outline-text-3" id="text-1-1">
+<p>
+Source code for Thespian is available at
+<a href="https://github.com/godaddy/Thespian">https://github.com/godaddy/Thespian</a> under the MIT license.
+</p>
+</div>
+</div>
+
+<div id="outline-container-sec-1-2" class="outline-3">
+<h3 id="sec-1-2"><span class="section-number-3">1.2</span> Documentation</h3>
+<div class="outline-text-3" id="text-1-2">
+<p>
+Thespian documentation is maintained in the source tree under the
+<code>doc/</code> directory.  Documentation is written in Emacs orgmode,
+which allows export as PDF, HTML, text, and other formats.
+</p>
+
+<p>
+HTML output uses the <code>htmlize</code> package for syntax coloring, and
+the <code>bigblow</code> theme from Fabrice Niessen at
+<a href="https://github.com/fniessen/org-html-themes">https://github.com/fniessen/org-html-themes</a>.
+</p>
+
+<p>
+Documentation should be generated using the <code>doc/gen_html.sh</code> or
+<code>doc/gen_pdf.sh</code> bash script and specifying the source file for
+the document to be generated; the results are generated in the
+same <code>doc/</code> directory.
+</p>
+
+<pre class="example">
+$ bash doc/gen_html.sh doc/using.org
+</pre>
+</div>
+</div>
+
+<div id="outline-container-sec-1-3" class="outline-3">
+<h3 id="sec-1-3"><span class="section-number-3">1.3</span> Issues</h3>
+<div class="outline-text-3" id="text-1-3">
+<p>
+Any issues should be posted via the <a href="https://github.com/godaddy/Thespian">main Thespian github page</a>.
+</p>
+</div>
+</div>
+
+<div id="outline-container-sec-1-4" class="outline-3">
+<h3 id="sec-1-4"><span class="section-number-3">1.4</span> Contributions</h3>
+<div class="outline-text-3" id="text-1-4">
+<p>
+Contributions (both source and documentation) should be in the
+form of pull requests.  Contributions will not be accepted until
+the contributor has agreed to the contributor's agreement.
+Thespian uses the <a href="https://cla-assistant.io">cla-assistant.io</a> which will automatically check
+to see if a contributor has click-signed the contributor's
+agreement; as a contributor you will automatically be given a link
+to sign the agreement when you make your contribution.
+</p>
+</div>
+</div>
+</div>
+
+<div id="outline-container-sec-2" class="outline-2">
+<h2 id="sec-2"><span class="section-number-2">2</span> Testing</h2>
+<div class="outline-text-2" id="text-2">
+</div><div id="outline-container-sec-2-1" class="outline-3">
+<h3 id="sec-2-1"><span class="section-number-3">2.1</span> Approach</h3>
+<div class="outline-text-3" id="text-2-1">
+<p>
+While there are some Thespian tests that use mocking to reduce the
+effects of external elements, the main focus of Thespian testing is
+<b>functional</b> testing to make sure that the ActorSystem is providing
+proper functionality for the Actors that will be running.  Writing
+mock'ed unit tests for Thespian is still a welcome contribution, we
+have just focused our primary efforts on the functional tests.
+</p>
+
+<p>
+This functional approach means that the tests will actually create
+threads or processes (depending on the systembase) and that all
+systembases are tested on the same set of tests.
+</p>
+</div>
+</div>
+
+<div id="outline-container-sec-2-2" class="outline-3">
+<h3 id="sec-2-2"><span class="section-number-3">2.2</span> Test Duration</h3>
+<div class="outline-text-3" id="text-2-2">
+<p>
+Because of the approach above running the tests can take some time.
+Test can even can hang if there is bad code or if system resources
+become exhausted (e.g. no more sockets available), and there can be
+spurious effects from the real world (e.g. timing failures if the
+local system is excessively busy).
+</p>
+
+<p>
+Every effort is made to have tests run quickly and reliably, but
+validating functionality is the most important goal.
+</p>
+
+<p>
+As of Thespian 2.1.5, the <code>run_main_functional_tests.sh</code> duration is
+430&#x2013;650 seconds.
+</p>
+</div>
+</div>
+
+<div id="outline-container-sec-2-3" class="outline-3">
+<h3 id="sec-2-3"><span class="section-number-3">2.3</span> Testing System Bases</h3>
+<div class="outline-text-3" id="text-2-3">
+<p>
+Because all systembases are tested, it is necessary to accomodate
+the differences between those system bases.  For most Actors, there
+should be no difference between systembases and they should be
+unaware of which one is running, but it is not practical for all
+systembases to support all features; the administrator starting the
+ActorSystem is responsible for starting a system appropriate to the
+task and Actors at hand.
+</p>
+
+<p>
+Some of the system bases do not support some features (as detailed
+<a href="http://godaddy.github.io/Thespian/doc/using.html#outline-container-sec-8">here in the Using Thespian guide</a>) and so there are inputs provided
+to the tests to indicate which are viable and/or stable.  More on
+this in the Running Tests section below.
+</p>
+</div>
+</div>
+
+<div id="outline-container-sec-2-4" class="outline-3">
+<h3 id="sec-2-4"><span class="section-number-3">2.4</span> Running Tests</h3>
+<div class="outline-text-3" id="text-2-4">
+<p>
+Tests are written to fairly conventional Python unittest standards
+without relying on plugins.  Tests are normally run via <code>nose</code>, and
+the latter provides various testing controls.
+</p>
+
+<p>
+For simple, direct runs of specific tests, direct nose invocation of
+those tests is usually sufficient:
+</p>
+
+<pre class="example">
+$ nosetests thespian/test/testSimpleActor.py:TestASimpleSystem
+</pre>
+
+<p>
+As discussed above, all system bases are tested (by default) so the
+<code>simpleSystemBase</code> is usually covered by the <code>TestASimpleSystem</code>
+testcase so that it is tested before any of the more complex system
+bases (due to alphabetically appearing first).
+</p>
+
+<p>
+The viability and focus of individual testcases is specified using
+member attributes on those test case classes.
+</p>
+
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+
+
+<colgroup>
+<col  class="left" />
+
+<col  class="left" />
+
+<col  class="left" />
+</colgroup>
+<thead>
+<tr>
+<th scope="col" class="left">Attribute</th>
+<th scope="col" class="left">Values</th>
+<th scope="col" class="left">Usage</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="left"><code>testbase</code></td>
+<td class="left">"<code>Simple</code>"</td>
+<td class="left">Specifies which System Base is being used.</td>
+</tr>
+
+<tr>
+<td class="left">&#xa0;</td>
+<td class="left">"<code>MultiprocUDP</code>"</td>
+<td class="left">&#xa0;</td>
+</tr>
+
+<tr>
+<td class="left">&#xa0;</td>
+<td class="left">"<code>MultiprocTCP</code>"</td>
+<td class="left">&#xa0;</td>
+</tr>
+
+<tr>
+<td class="left">&#xa0;</td>
+<td class="left">"<code>MultiprocQueue</code>"</td>
+<td class="left">&#xa0;</td>
+</tr>
+</tbody>
+<tbody>
+<tr>
+<td class="left"><code>unstable</code></td>
+<td class="left"><code>False</code> / <code>True</code></td>
+<td class="left">True if the test does not provide stable results.</td>
+</tr>
+
+<tr>
+<td class="left">&#xa0;</td>
+<td class="left">&#xa0;</td>
+<td class="left">This usually indicates that the transport or</td>
+</tr>
+
+<tr>
+<td class="left">&#xa0;</td>
+<td class="left">&#xa0;</td>
+<td class="left">services used by this system base are not reliable.</td>
+</tr>
+</tbody>
+<tbody>
+<tr>
+<td class="left"><code>scope</code></td>
+<td class="left">"<code>unit</code>" / "<code>func</code>"</td>
+<td class="left">Scope of this test.  The expectation is that unit tests</td>
+</tr>
+
+<tr>
+<td class="left">&#xa0;</td>
+<td class="left">&#xa0;</td>
+<td class="left">will exercise internal code only and not affect/utilize</td>
+</tr>
+
+<tr>
+<td class="left">&#xa0;</td>
+<td class="left">&#xa0;</td>
+<td class="left">system resources such as creating processes, using sockets, etc.</td>
+</tr>
+</tbody>
+</table>
+
+<p>
+These attributes should be specified on the class itself:
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-python"><span class="linenr"> 1: </span><span class="org-keyword">class</span> <span class="org-type">TestASimpleSystem</span>(ActorSystemTestCase):
+<span class="linenr"> 2: </span>    <span class="org-variable-name">testbase</span> = <span class="org-string">'Simple'</span>
+<span class="linenr"> 3: </span>    <span class="org-variable-name">scope</span> = <span class="org-string">'func'</span>
+<span class="linenr"> 4: </span>
+<span class="linenr"> 5: </span>    <span class="org-keyword">def</span> <span class="org-function-name">test_something</span>(<span class="org-keyword">self</span>):
+<span class="linenr"> 6: </span>        <span class="org-string">"insert test here"</span>
+<span class="linenr"> 7: </span>
+<span class="linenr"> 8: </span>    <span class="org-keyword">def</span> <span class="org-function-name">test06_frobnicator</span>(<span class="org-keyword">self</span>):
+<span class="linenr"> 9: </span>        <span class="org-string">"verify the frobnicator functionality"</span>
+<span class="linenr">10: </span>
+<span class="linenr">11: </span><span class="org-keyword">class</span> <span class="org-type">TestMultiprocUDPSystem</span>(TestASimpleSystem):
+<span class="linenr">12: </span>    <span class="org-variable-name">testbase</span> = <span class="org-string">'MultiprocUDP'</span>
+<span class="linenr">13: </span>    <span class="org-variable-name">unstable</span> = <span class="org-constant">True</span> <span class="org-comment-delimiter"># </span><span class="org-comment">see note in test06</span>
+</pre>
+</div>
+
+<p>
+When running the tests from the command line, the normal
+nosetest-based commands can be used, with optional attribute
+specifiers.  For example, to run all stable unit tests:
+</p>
+
+<pre class="example">
+$ nosetests -A 'unstable != 1 and scope == "unit"'
+</pre>
+
+<p>
+The above is saved in <code>scripts/run_unit_tests.sh</code> for convenient
+re-use.  In addition, the <code>scripts/run_main_functional_tests.sh</code> file
+contains the following specification which is used to run all the
+stable functional tests for the standard set of testbases:
+</p>
+
+<pre class="example">
+$ nosetests -A 'unstable != 1 and scope == "func" and testbase in ["Simple", "MultiprocTCP"]'
+</pre>
+</div>
+</div>
+
+<div id="outline-container-sec-2-5" class="outline-3">
+<h3 id="sec-2-5"><span class="section-number-3">2.5</span> Writing Tests</h3>
+<div class="outline-text-3" id="text-2-5">
+<p>
+When writing tests for Thespian, the <code>ActorSystemTestCase</code> as imported
+from <code>thespian.test</code> is recommended as a base class for tests using
+actors.  This base class provides a <code>setUp()</code> method that establishes
+the system base to utilize, and a <code>tearDown()</code> method that shuts down
+the Actor System automatically.  It also provides a <code>setSystemBase()</code>
+method that can be used to specify which system base is to be used for
+testing.
+</p>
+</div>
+</div>
+</div>
+</div>
+<div id="postamble" class="status">
+<p class="author">Author: Kevin Quick &lt;kquick@godaddy.com&gt;</p>
+<p class="date">Created: 2015-09-18 Fri 11:17</p>
+<p class="creator"><a href="http://www.gnu.org/software/emacs/">Emacs</a> 24.5.2 (<a href="http://orgmode.org">Org</a> mode 8.2.10)</p>
+<p class="validation"><a href="http://validator.w3.org/check?uri=referer">Validate</a></p>
+</div>
+</body>
+</html>

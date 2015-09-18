@@ -1,0 +1,1831 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+<title>Thespian In-Depth Introduction</title>
+<!-- 2015-09-18 Fri 11:17 -->
+<meta  http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<meta  name="generator" content="Org-mode" />
+<meta  name="author" content="Kevin Quick &lt;kquick@godaddy.com&gt;" />
+<style type="text/css">
+ <!--/*--><![CDATA[/*><!--*/
+  .title  { text-align: center; }
+  .todo   { font-family: monospace; color: red; }
+  .done   { color: green; }
+  .tag    { background-color: #eee; font-family: monospace;
+            padding: 2px; font-size: 80%; font-weight: normal; }
+  .timestamp { color: #bebebe; }
+  .timestamp-kwd { color: #5f9ea0; }
+  .right  { margin-left: auto; margin-right: 0px;  text-align: right; }
+  .left   { margin-left: 0px;  margin-right: auto; text-align: left; }
+  .center { margin-left: auto; margin-right: auto; text-align: center; }
+  .underline { text-decoration: underline; }
+  #postamble p, #preamble p { font-size: 90%; margin: .2em; }
+  p.verse { margin-left: 3%; }
+  pre {
+    border: 1px solid #ccc;
+    box-shadow: 3px 3px 3px #eee;
+    padding: 8pt;
+    font-family: monospace;
+    overflow: auto;
+    margin: 1.2em;
+  }
+  pre.src {
+    position: relative;
+    overflow: visible;
+    padding-top: 1.2em;
+  }
+  pre.src:before {
+    display: none;
+    position: absolute;
+    background-color: white;
+    top: -10px;
+    right: 10px;
+    padding: 3px;
+    border: 1px solid black;
+  }
+  pre.src:hover:before { display: inline;}
+  pre.src-sh:before    { content: 'sh'; }
+  pre.src-bash:before  { content: 'sh'; }
+  pre.src-emacs-lisp:before { content: 'Emacs Lisp'; }
+  pre.src-R:before     { content: 'R'; }
+  pre.src-perl:before  { content: 'Perl'; }
+  pre.src-java:before  { content: 'Java'; }
+  pre.src-sql:before   { content: 'SQL'; }
+
+  table { border-collapse:collapse; }
+  caption.t-above { caption-side: top; }
+  caption.t-bottom { caption-side: bottom; }
+  td, th { vertical-align:top;  }
+  th.right  { text-align: center;  }
+  th.left   { text-align: center;   }
+  th.center { text-align: center; }
+  td.right  { text-align: right;  }
+  td.left   { text-align: left;   }
+  td.center { text-align: center; }
+  dt { font-weight: bold; }
+  .footpara:nth-child(2) { display: inline; }
+  .footpara { display: block; }
+  .footdef  { margin-bottom: 1em; }
+  .figure { padding: 1em; }
+  .figure p { text-align: center; }
+  .inlinetask {
+    padding: 10px;
+    border: 2px solid gray;
+    margin: 10px;
+    background: #ffffcc;
+  }
+  #org-div-home-and-up
+   { text-align: right; font-size: 70%; white-space: nowrap; }
+  textarea { overflow-x: auto; }
+  .linenr { font-size: smaller }
+  .code-highlighted { background-color: #ffff00; }
+  .org-info-js_info-navigation { border-style: none; }
+  #org-info-js_console-label
+    { font-size: 10px; font-weight: bold; white-space: nowrap; }
+  .org-info-js_search-highlight
+    { background-color: #ffff00; color: #000000; font-weight: bold; }
+  /*]]>*/-->
+</style>
+<link rel="stylesheet" type="text/css" href="http://www.pirilampo.org/styles/bigblow/css/htmlize.css"/>
+<link rel="stylesheet" type="text/css" href="http://www.pirilampo.org/styles/bigblow/css/bigblow.css"/>
+<link rel="stylesheet" type="text/css" href="http://www.pirilampo.org/styles/bigblow/css/hideshow.css"/>
+<script type="text/javascript" src="http://www.pirilampo.org/styles/bigblow/js/jquery-1.11.0.min.js"></script>
+<script type="text/javascript" src="http://www.pirilampo.org/styles/bigblow/js/jquery-ui-1.10.2.min.js"></script>
+<script type="text/javascript" src="http://www.pirilampo.org/styles/bigblow/js/jquery.localscroll-min.js"></script>
+<script type="text/javascript" src="http://www.pirilampo.org/styles/bigblow/js/jquery.scrollTo-1.4.3.1-min.js"></script>
+<script type="text/javascript" src="http://www.pirilampo.org/styles/bigblow/js/jquery.zclip.min.js"></script>
+<script type="text/javascript" src="http://www.pirilampo.org/styles/bigblow/js/bigblow.js"></script>
+<script type="text/javascript" src="http://www.pirilampo.org/styles/bigblow/js/hideshow.js"></script>
+<script type="text/javascript" src="http://www.pirilampo.org/styles/lib/js/jquery.stickytableheaders.min.js"></script>
+<link href="thespian.css" rel="stylesheet" type="text/css">
+<script type="text/javascript">
+/*
+@licstart  The following is the entire license notice for the
+JavaScript code in this tag.
+
+Copyright (C) 2012-2013 Free Software Foundation, Inc.
+
+The JavaScript code in this tag is free software: you can
+redistribute it and/or modify it under the terms of the GNU
+General Public License (GNU GPL) as published by the Free Software
+Foundation, either version 3 of the License, or (at your option)
+any later version.  The code is distributed WITHOUT ANY WARRANTY;
+without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE.  See the GNU GPL for more details.
+
+As additional permission under GNU GPL version 3 section 7, you
+may distribute non-source (e.g., minimized or compacted) forms of
+that code without the copy of the GNU GPL normally required by
+section 4, provided you include this license notice and a URL
+through which recipients can access the Corresponding Source.
+
+
+@licend  The above is the entire license notice
+for the JavaScript code in this tag.
+*/
+<!--/*--><![CDATA[/*><!--*/
+ function CodeHighlightOn(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(null != target) {
+     elem.cacheClassElem = elem.className;
+     elem.cacheClassTarget = target.className;
+     target.className = "code-highlighted";
+     elem.className   = "code-highlighted";
+   }
+ }
+ function CodeHighlightOff(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(elem.cacheClassElem)
+     elem.className = elem.cacheClassElem;
+   if(elem.cacheClassTarget)
+     target.className = elem.cacheClassTarget;
+ }
+/*]]>*///-->
+</script>
+</head>
+<body>
+<div id="content">
+<h1 class="title"><a href="http://thespianpy.com"><img src="thesplogo2.png" alt="Thespian" width="50%" display="inline" /></a> In-Depth Introduction</h1>
+<div id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#sec-1">1. Background</a>
+<ul>
+<li><a href="#sec-1-1">1.1. The Actor Model</a></li>
+</ul>
+</li>
+<li><a href="#sec-2">2. Thespian Features</a>
+<ul>
+<li><a href="#sec-2-1">2.1. Thespian Walk-Through</a>
+<ul>
+<li><a href="#sec-2-1-1">2.1.1. Installation of Thespian</a></li>
+<li><a href="#sec-2-1-2">2.1.2. Hello World</a></li>
+</ul>
+</li>
+<li><a href="#sec-2-2">2.2. Dynamic Actor Creation</a>
+<ul>
+<li><a href="#sec-2-2-1">2.2.1. Horizontal Scalability</a></li>
+<li><a href="#sec-2-2-2">2.2.2. Modularity and Extensibility</a></li>
+</ul>
+</li>
+<li><a href="#sec-2-3">2.3. Different ActorSystem Bases</a>
+<ul>
+<li><a href="#sec-2-3-1">2.3.1. Base Persistence</a></li>
+</ul>
+</li>
+<li><a href="#sec-2-4">2.4. Concurrency</a>
+<ul>
+<li><a href="#sec-2-4-1">2.4.1. Debugging</a></li>
+</ul>
+</li>
+<li><a href="#sec-2-5">2.5. Location Independence</a>
+<ul>
+<li><a href="#sec-2-5-1">2.5.1. Capability-based Location Selection</a></li>
+<li><a href="#sec-2-5-2">2.5.2. Multiple Cooperating Actor Systems</a></li>
+</ul>
+</li>
+<li><a href="#sec-2-6">2.6. Fault Tolerance</a></li>
+</ul>
+</li>
+<li><a href="#sec-3">3. Dynamic Source Loading</a></li>
+<li><a href="#sec-4">4. Shell</a>
+<ul>
+<li><a href="#sec-4-1">4.1. Starting the Shell</a></li>
+<li><a href="#sec-4-2">4.2. Address Management in the Shell</a></li>
+<li><a href="#sec-4-3">4.3. Shell Test Actor</a></li>
+<li><a href="#sec-4-4">4.4. Actor Status Requests</a></li>
+</ul>
+</li>
+<li><a href="#sec-5">5. Conclusion</a></li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-sec-1" class="outline-2">
+<h2 id="sec-1"><span class="section-number-2">1</span> Background</h2>
+<div class="outline-text-2" id="text-1">
+<p>
+How do you design an application using Agile methodologies that will
+be capable of scaling to become a distributed application running
+across thousands of servers and handling thousands of customer
+requests per day?  Especially when the application itself must be
+highly extensible and coordinate interaction with external services
+(many of which can be slow or unreliable at times)?  Scalable systems
+design is one of the most common challenges facing modern software
+development.  Scalable system design must address many difficult
+issues, including: fault tolerance and recovery, coordination, and
+even deployment synchronization.
+</p>
+
+<p>
+There are many different approaches to this problem, but one simple
+yet very powerful approach has been used by GoDaddy's Hosting group:
+using an <a href="https://en.wikipedia.org/wiki/Actor_model">Actor Model</a>.  The Actor Model was conceived in MIT's
+Artificial Intelligence labs back in the mid 1970's but it has
+recently seen renewed interest because of the way it addresses
+development architecture.
+</p>
+
+<p>
+Thespian is a Python library that enables Actor-based applications to
+be written to handle the challenges above. This document provides an
+in-depth introduction to writing Actor-based applications
+</p>
+
+<p>
+GoDaddy uses the <a href="http://python.org">Python language</a> for many of it's internal systems and
+has developed an Actor library for Python called <b>Thespian</b> to support
+this highly-scalable architecture.  GoDaddy has open-sourced the
+<a href="http://github.com/godaddy/Thespian">Thespian library</a> itself to share it with the community and allow
+others to leverage the Actor Model architecture for Python.
+</p>
+</div>
+
+<div id="outline-container-sec-1-1" class="outline-3">
+<h3 id="sec-1-1"><span class="section-number-3">1.1</span> The Actor Model</h3>
+<div class="outline-text-3" id="text-1-1">
+<p>
+The Actor Model itself is pretty simple, but it's the way that it
+frames the problem that creates big advantages.  A program's code is
+divided into multiple different parts and each part runs as an Actor.
+Each Actor has an address, and Actors can exchange messages by sending
+a message to another Actor's address.  Actors do <b>not</b> share state
+(i.e. memory), but they may maintain their own internal state.
+</p>
+
+<p>
+Each Actor basically just hangs out until it gets a message.  When it
+gets a message, it does one of three things:
+</p>
+
+<ol class="org-ol">
+<li>sends a finite number of messages
+</li>
+<li>creates a finite number of other Actors
+</li>
+<li>updates internal state
+</li>
+</ol>
+
+<p>
+At first glance, that sounds pretty trivial, but the power of the
+Actor Model lies more in what is <b>not</b> described above: Actors do not
+have to spend time managing their environment, establishing and
+maintaining a communications framework to each other; there are no
+locks, semaphores, or other complex concurrency concerns.  All of
+these things are handled by the Actor System (the framework in which
+the Actors run), and the Actors are freed to focus on the main
+concerns of the application.
+</p>
+
+
+<div class="figure">
+<p><img src="./fig1.png" alt="fig1.png" />
+</p>
+<p><span class="figure-number">Figure 1:</span> Example Actor configuration</p>
+</div>
+
+<p>
+This external component, the Actor System, is the place where all of
+these mundane issues are handled.  There are several different Actor
+System implementations available in different languages (e.g. Akka for
+Scala or Java, Thespian for Python).  Although they differ somewhat in
+various details, they all provide a common set of features, including:
+</p>
+
+<ul class="org-ul">
+<li>Creating the actual Actor instances
+</li>
+<li>Handling message delivery from one Actor to another
+</li>
+<li>Managing Actor lifecycles
+</li>
+<li>Providing appropriate scheduling and concurrency between
+different Actors.
+</li>
+</ul>
+</div>
+</div>
+</div>
+
+
+<div id="outline-container-sec-2" class="outline-2">
+<h2 id="sec-2"><span class="section-number-2">2</span> Thespian Features</h2>
+<div class="outline-text-2" id="text-2">
+</div><div id="outline-container-sec-2-1" class="outline-3">
+<h3 id="sec-2-1"><span class="section-number-3">2.1</span> Thespian Walk-Through</h3>
+<div class="outline-text-3" id="text-2-1">
+<p>
+One of the first things you'll notice when writing Actor-based code is
+how easy it is to write code for.
+</p>
+
+<dl class="org-dl">
+<dt> Environment </dt><dd>While it is possible to provide configuration
+information to customize your setup, it is often not necessary to
+specify anything for a simple environment.
+</dd>
+</dl>
+
+
+<dl class="org-dl">
+<dt> Code </dt><dd>Actors don't need lots of setup code and management.
+With many libraries, you simply include a module, subclass a
+base Actor object to define the Actor code, then create the Actor
+in a single library call.
+</dd>
+</dl>
+
+<p>
+To demonstrate how easy this is, let's look at an example using the
+<i>Thespian</i> Python Actor library.
+</p>
+</div>
+
+<div id="outline-container-sec-2-1-1" class="outline-4">
+<h4 id="sec-2-1-1"><span class="section-number-4">2.1.1</span> Installation of Thespian</h4>
+<div class="outline-text-4" id="text-2-1-1">
+<p>
+The Thespian Python library is available on github at
+<a href="http://github.com/godaddy/Thespian">http://github.com/godaddy/Thespian</a>, from <a href="http://pypi.python.org">http://pypi.python.org</a>, or possibly
+via a package provided for your OS.  You should probably use the
+latter if it's available, but otherwise just use <code>pip</code> for simplicity:
+</p>
+
+<pre class="example">
+$ pip install thespian
+</pre>
+
+<p>
+This will place the <code>thespian</code> package in the standard python library
+installation location.  Thespian is supported for any version of
+Python starting with 2.6, and has no required dependencies.
+</p>
+
+<p>
+You may wish to additionally install the <code>setproctitle</code> library:
+Thespian will make use of this if it is available to update the
+process description of running Actors making it easier to identify
+them in `ps' output.
+</p>
+</div>
+</div>
+
+<div id="outline-container-sec-2-1-2" class="outline-4">
+<h4 id="sec-2-1-2"><span class="section-number-4">2.1.2</span> Hello World</h4>
+<div class="outline-text-4" id="text-2-1-2">
+<p>
+Let's start with the typical example of Hello World.  In this case,
+we'll create an Actor, send it a message, wait for a response message,
+and print that response:
+</p>
+
+<div class="org-src-container">
+<label class="org-src-name">hello.py:</label>
+<pre class="src src-python" id="hello.py"><span class="linenr"> 1: </span>  <span class="org-keyword">from</span> thespian.actors <span class="org-keyword">import</span> *
+<span class="linenr"> 2: </span>
+<span id="coderef-baseclass" class="coderef-off"><span class="linenr"> 3: </span>  <span class="org-keyword">class</span> <span class="org-type">Hello</span>(Actor):</span>
+<span id="coderef-receiveMessage" class="coderef-off"><span class="linenr"> 4: </span>      <span class="org-keyword">def</span> <span class="org-function-name">receiveMessage</span>(<span class="org-keyword">self</span>, message, sender):</span>
+<span id="coderef-send" class="coderef-off"><span class="linenr"> 5: </span>          <span class="org-keyword">self</span>.send(sender, <span class="org-string">'Hello, world!'</span>)</span>
+<span class="linenr"> 6: </span>
+<span class="linenr"> 7: </span>  <span class="org-keyword">def</span> <span class="org-function-name">say_hello</span>():
+<span id="coderef-startActorSystem" class="coderef-off"><span class="linenr"> 8: </span>      <span class="org-variable-name">hello</span> = ActorSystem().createActor(Hello)</span>
+<span id="coderef-ask" class="coderef-off"><span class="linenr"> 9: </span>      <span class="org-keyword">print</span>(ActorSystem().ask(hello, <span class="org-string">'are you there?'</span>, 1.5))</span>
+<span class="linenr">10: </span>
+<span class="linenr">11: </span>  <span class="org-keyword">if</span> <span class="org-builtin">__name__</span> == <span class="org-string">"__main__"</span>:
+<span class="linenr">12: </span>      say_hello()
+</pre>
+</div>
+
+<p>
+The above runs as follows:
+</p>
+
+<pre class="example">
+$ python hello.py
+Hello World!
+</pre>
+
+<p>
+Which is as expected, but it's interesting to take a closer look at
+the code and resulting system state:
+</p>
+
+<ul class="org-ul">
+<li><a href="#coderef-baseclass"class="coderef" onmouseover="CodeHighlightOn(this, 'coderef-baseclass');" onmouseout="CodeHighlightOff(this, 'coderef-baseclass');">Line 3</a> shows how the Hello class subclasses the standard
+<code>Actor</code> baseclass provided by the <code>thespian</code> import.  The <code>Actor</code>
+baseclass provides methods for all of the actions that Actor might
+take that would interact with other Actors or the Actor System
+itself (see the <i>Using Thespian</i> documentation for more details).
+</li>
+</ul>
+
+
+<ul class="org-ul">
+<li><a href="#coderef-receiveMessage"class="coderef" onmouseover="CodeHighlightOn(this, 'coderef-receiveMessage');" onmouseout="CodeHighlightOff(this, 'coderef-receiveMessage');">Line 4</a> is the main entry point into any Actor.  It
+is invoked (by the Actor System) to deliver a new message to the
+current Actor to be processed.
+
+<ul class="org-ul">
+<li>In Thespian, messages can be <b>anything</b> that can be <a href="https://docs.python.org/3/library/pickle.html?highlight=pickle#module-pickle">pickled</a>.  In
+this particular example, the incoming message is ignored, but it
+can be used in any way desired by this Actor.
+</li>
+
+<li>The <code>sender</code> is the Actor Address of the Actor that sent the
+message.  This Actor Address is opaque to the Actor: it can save
+the address and use it to send messages, but it doesn't know
+what is in the address.
+</li>
+</ul>
+<p>
+When the Actor's <code>receiveMessage()</code> method exits, the Actor sleeps
+until another message is delivered to it.  Each Actor processes
+only a single message at a time.
+</p>
+</li>
+
+<li><a href="#coderef-send"class="coderef" onmouseover="CodeHighlightOn(this, 'coderef-send');" onmouseout="CodeHighlightOff(this, 'coderef-send');">Line 5</a> shows how an Actor sends a message.  Just the message
+and the target Actor's Address are needed.  In this case, the
+response message is sent back to the same Actor that generated the
+incoming message.
+</li>
+</ul>
+
+
+<p>
+These 3 lines define the Actor itself.  There can be any number of
+Actors running, but lets keep it simple for the moment.
+</p>
+</div>
+
+<ol class="org-ol"><li><a id="sec-2-1-2-1" name="sec-2-1-2-1"></a>Actor System Interaction<br  /><div class="outline-text-5" id="text-2-1-2-1">
+<p>
+The next couple of lines in the Hello World example are a little
+different though.  The Actors operate within the Actor System, but the
+Actor System itself must be started and handle communications to the
+Actors from the external world.
+</p>
+
+<ul class="org-ul">
+<li><a href="#coderef-startActorSystem"class="coderef" onmouseover="CodeHighlightOn(this, 'coderef-startActorSystem');" onmouseout="CodeHighlightOff(this, 'coderef-startActorSystem');">Line 8</a> actually performs two actions.  The first
+portion of the line gets a reference to a running Actor System,
+starting one up if one is not already running.
+
+<p>
+The second portion of the line calls that Actor System and
+requests the creation of an Actor (of the Hello class) within that
+system.  The result of this <code>createActor()</code> call is an Actor
+Address.
+</p>
+</li>
+</ul>
+
+
+<ul class="org-ul">
+<li><a href="#coderef-ask"class="coderef" onmouseover="CodeHighlightOn(this, 'coderef-ask');" onmouseout="CodeHighlightOff(this, 'coderef-ask');">Line 9</a> then calls the <code>ask()</code> method on the Actor System to
+send a message to an Actor within that system and wait for a
+response message.  In this case it sends a text query as the
+message, but as discussed previously that message is immaterial:
+the Hello Actor will always generate the same response.
+
+<p>
+The additional argument (the value <code>1.5</code>) specifies a timeout
+period: if there is no response from the actor in 1-and-a-half
+seconds then the return value from the <code>ask()</code> will be None to
+indicate a timeout.
+</p>
+</li>
+</ul>
+
+
+<p>
+Notice that even though the <code>ask()</code> is generated by regular code
+(i.e. not an Actor) via the Actor System, the Actor itself simply sees
+a message from a sender.  The ActorSystem assigns an Actor Address to
+the code issuing the <code>ask()</code>, so when the Actor calls <code>send()</code> with
+that target Actor Address, the result is delivered to complete the
+<code>ask()</code> call.
+</p>
+
+<p>
+It's worth pointing out that the way an Actor responds to any message
+depends entirely on the way the Actor code is written.  There is no
+requirement that messages be reciprocal and that a response must be
+generated for each received message.  In fact, an Actor is free to
+send several responses, or even no responses upon receipt of a
+message.
+</p>
+
+<p>
+Actors call their <code>send()</code> method to send messages and all received
+messages cause their <code>receiveMessage()</code> to be invoked.  However, the
+external code that communicates to Actors via the Actor System API has
+several options in addition to the <code>ask()</code> method shown in the
+example above:
+</p>
+
+<dl class="org-dl">
+<dt> <code>ask()</code> </dt><dd>sends a message and waits for a response message (or a
+timeout).  Note that the response message does not
+have to be from the same Actor that the input message
+was sent to, and the receipt of <i>any</i> message counts
+as a response.
+</dd>
+
+<dt> <code>tell()</code> </dt><dd>queues a message for transmission to the indicated
+Actor and returns immediately.  The message may or
+may not have been delivered to the target Actor by
+the time this call returns.
+</dd>
+
+<dt> <code>listen()</code> </dt><dd>waits for a response message or a timeout.
+</dd>
+</dl>
+
+
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+
+
+<colgroup>
+<col  class="left" />
+
+<col  class="left" />
+</colgroup>
+<thead>
+<tr>
+<th scope="col" class="left">ActorSystem API</th>
+<th scope="col" class="left">Actor</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="left">ask()</td>
+<td class="left">&#xa0;</td>
+</tr>
+
+<tr>
+<td class="left">tell()</td>
+<td class="left">send()</td>
+</tr>
+
+<tr>
+<td class="left">listen()</td>
+<td class="left">receiveMessage() method invoked</td>
+</tr>
+</tbody>
+</table>
+
+<p>
+Looking more closely at the example code, it's also clear that there
+are multiple calls to the <code>ActorSystem()</code> constructor.  It would be
+equally valid to rewrite those lines as below:
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-python">  <span class="org-variable-name">actorsys</span> = ActorSystem()
+  <span class="org-variable-name">hello</span> = actorsys.createActor(Hello)
+  <span class="org-keyword">print</span>(actorsys.ask(hello, <span class="org-string">'are you there?'</span>, 1.5))
+</pre>
+</div>
+
+<p>
+The <code>ActorSystem()</code> call is a singleton, creating the Actor System the
+first time it is called and subsequently simply returning that same
+Actor System.  This topic will be discussed in more detail later on.
+</p>
+
+<p>
+Once an Actor System is no longer needed its <code>shutdown()</code> method can
+be called to release it an all associated resources.  Any Actors
+running in that Actor System will also be terminated when the Actor
+System is shutdown.
+</p>
+<div class="org-src-container">
+
+<pre class="src src-python">  <span class="org-variable-name">actorsys</span> = ActorSystem()
+  <span class="org-variable-name">hello</span> = actorsys.createActor(Hello)
+  <span class="org-keyword">print</span>(actorsys.ask(hello, <span class="org-string">'are you there?'</span>, 1.5))
+  actorsys.shutdown()
+</pre>
+</div>
+</div>
+</li></ol>
+</div>
+</div>
+
+<div id="outline-container-sec-2-2" class="outline-3">
+<h3 id="sec-2-2"><span class="section-number-3">2.2</span> Dynamic Actor Creation</h3>
+<div class="outline-text-3" id="text-2-2">
+<p>
+In the Hello World example above, only a single Actor was created and
+used.  It's actually possible to create any number of Actors (subject
+to system limits), and for Actors to create other Actors.
+</p>
+
+<div class="org-src-container">
+<label class="org-src-name">hellogoodbye.py:</label>
+<pre class="src src-python" id="hellogoodbye.py"><span class="linenr"> 1: </span>   <span class="org-keyword">from</span> thespian.actors <span class="org-keyword">import</span> *
+<span class="linenr"> 2: </span>
+<span class="linenr"> 3: </span>   <span class="org-keyword">class</span> <span class="org-type">Hello</span>(Actor):
+<span class="linenr"> 4: </span>       <span class="org-keyword">def</span> <span class="org-function-name">receiveMessage</span>(<span class="org-keyword">self</span>, message, sender):
+<span id="coderef-messageCheck" class="coderef-off"><span class="linenr"> 5: </span>           <span class="org-keyword">if</span> message == <span class="org-string">'are you there?'</span>:</span>
+<span id="coderef-createGoodbye" class="coderef-off"><span class="linenr"> 6: </span>               <span class="org-variable-name">world</span> = <span class="org-keyword">self</span>.createActor(World)</span>
+<span id="coderef-messageTuple" class="coderef-off"><span class="linenr"> 7: </span>               <span class="org-variable-name">worldmsg</span> = (sender, <span class="org-string">'Hello,'</span>)</span>
+<span class="linenr"> 8: </span>               <span class="org-keyword">self</span>.send(world, worldmsg)
+<span class="linenr"> 9: </span>
+<span class="linenr">10: </span>   <span class="org-keyword">class</span> <span class="org-type">World</span>(Actor):
+<span class="linenr">11: </span>       <span class="org-keyword">def</span> <span class="org-function-name">receiveMessage</span>(<span class="org-keyword">self</span>, message, sender):
+<span id="coderef-messageIsTuple" class="coderef-off"><span class="linenr">12: </span>           <span class="org-keyword">if</span> <span class="org-builtin">isinstance</span>(message, <span class="org-builtin">tuple</span>):</span>
+<span class="linenr">13: </span>               <span class="org-variable-name">orig_sender</span>, <span class="org-variable-name">pre_world</span> = message
+<span id="coderef-sendOriginalSender" class="coderef-off"><span class="linenr">14: </span>               <span class="org-keyword">self</span>.send(orig_sender, pre_world + <span class="org-string">' world!'</span>)</span>
+<span class="linenr">15: </span>
+<span class="linenr">16: </span>   <span class="org-keyword">class</span> <span class="org-type">Goodbye</span>(Actor):
+<span class="linenr">17: </span>       <span class="org-keyword">def</span> <span class="org-function-name">receiveMessage</span>(<span class="org-keyword">self</span>, message, sender):
+<span class="linenr">18: </span>           <span class="org-keyword">self</span>.send(sender, <span class="org-string">'Goodbye'</span>)
+<span class="linenr">19: </span>
+<span class="linenr">20: </span>   <span class="org-keyword">def</span> <span class="org-function-name">run_example</span>(systembase=<span class="org-constant">None</span>):
+<span class="linenr">21: </span>       <span class="org-variable-name">hello</span> = ActorSystem(systembase).createActor(Hello)
+<span class="linenr">22: </span>       <span class="org-variable-name">goodbye</span> = ActorSystem().createActor(Goodbye)
+<span class="linenr">23: </span>       <span class="org-variable-name">greeting</span> = ActorSystem().ask(hello, <span class="org-string">'are you there?'</span>, 1.5)
+<span id="coderef-print" class="coderef-off"><span class="linenr">24: </span>       <span class="org-keyword">print</span>(greeting + <span class="org-string">'\n'</span> + ActorSystem().ask(goodbye, <span class="org-constant">None</span>, 0.1))</span>
+<span id="coderef-actorSysShutdown" class="coderef-off"><span class="linenr">25: </span>       ActorSystem().shutdown()</span>
+<span class="linenr">26: </span>
+<span class="linenr">27: </span>   <span class="org-keyword">if</span> <span class="org-builtin">__name__</span> == <span class="org-string">"__main__"</span>:
+<span class="linenr">28: </span>       <span class="org-keyword">import</span> sys
+<span class="linenr">29: </span>       run_example(sys.argv[1] <span class="org-keyword">if</span> <span class="org-builtin">len</span>(sys.argv) &gt; 1 <span class="org-keyword">else</span> <span class="org-constant">None</span>)
+</pre>
+</div>
+
+<p>
+The above runs as follows:
+</p>
+
+<pre class="example">
+$ python hellogoodbye.py
+Hello World!
+Goodbye
+</pre>
+
+
+<div class="figure">
+<p><img src="fig4.png" alt="fig4.png" />
+</p>
+</div>
+
+<p>
+In the <code>hellogoodbye</code> example, the Hello Actor does not send a
+message directly back to the sender, but instead passes the sender's
+address to another Actor that it creates on the fly (in <a href="#coderef-createGoodbye"class="coderef" onmouseover="CodeHighlightOn(this, 'coderef-createGoodbye');" onmouseout="CodeHighlightOff(this, 'coderef-createGoodbye');">line
+6</a>).  The second Actor (World) receives a tuple which
+is the combination of the original sender's address and the first
+part of the message (created in <a href="#coderef-messageTuple"class="coderef" onmouseover="CodeHighlightOn(this, 'coderef-messageTuple');" onmouseout="CodeHighlightOff(this, 'coderef-messageTuple');">line 7</a>).  The World
+Actor updates the message and then sends the resulting message to
+the original sender (<a href="#coderef-sendOriginalSender"class="coderef" onmouseover="CodeHighlightOn(this, 'coderef-sendOriginalSender');" onmouseout="CodeHighlightOff(this, 'coderef-sendOriginalSender');">line 14</a>).
+</p>
+
+<p>
+The main code (outside the Actor System) has also created another
+Actor (the Goodbye Actor).  The message printed to the console in
+<a href="#coderef-print"class="coderef" onmouseover="CodeHighlightOn(this, 'coderef-print');" onmouseout="CodeHighlightOff(this, 'coderef-print');">line 24</a> is the result of calling both the Hello and the Goodbye
+Actors (and indirectly the World Actor).
+</p>
+
+
+<div class="figure">
+<p><img src="fig6.png" alt="fig6.png" />
+</p>
+</div>
+
+<p>
+Each time the Hello Actor is called, it will create a new Actor.  If
+Hello were sent too many messages, the system would eventually fail
+because too many World Actors had been created.  To avoid this
+unconstrained growth, there are two options:
+</p>
+<ol class="org-ol">
+<li>Hello only creates one World Actor and remembers the address:
+<div class="org-src-container">
+
+<pre class="src src-python">  <span class="org-keyword">if</span> <span class="org-keyword">not</span> <span class="org-builtin">hasattr</span>(<span class="org-keyword">self</span>, <span class="org-string">'world'</span>):
+      <span class="org-keyword">self</span>.world = <span class="org-keyword">self</span>.createActor(World)
+  <span class="org-keyword">self</span>.send(<span class="org-keyword">self</span>.world, (sender, <span class="org-string">'Hello'</span>))
+</pre>
+</div>
+</li>
+<li>The World Actor exits after doing its work.  An Actor will exit
+if it receives an <code>ActorExitRequest</code> message (this message is
+defined in the <code>thespian</code> import file).  The <code>ActorExitRequest</code>
+message can be sent by any Actor to any other Actor, so the
+Hello Actor could send it as follows:
+<div class="org-src-container">
+
+<pre class="src src-python">  <span class="org-variable-name">world</span> = <span class="org-keyword">self</span>.createActor(World)
+  <span class="org-keyword">self</span>.send(world, (sender, <span class="org-string">'Hello,'</span>))
+  <span class="org-keyword">self</span>.send(world, ActorExitRequest())
+</pre>
+</div>
+<p>
+Because the <code>ActorExitRequest</code> is sent just like any other
+message, the World Actor could send it to itself (using the
+<code>myAddress</code> self-reference provided by the <code>Actor</code> base class):
+</p>
+<div class="org-src-container">
+
+<pre class="src src-python">  <span class="org-variable-name">orig_sender</span>, <span class="org-variable-name">pre_world</span> = message
+  <span class="org-keyword">self</span>.send(orig_sender, pre_world + <span class="org-string">' world!'</span>)
+  <span class="org-keyword">self</span>.send(<span class="org-keyword">self</span>.myAddress, ActorExitRequest())
+</pre>
+</div>
+</li>
+</ol>
+
+<p>
+When the Actor System delivers an <code>ActorExitRequest</code> to an Actor, it
+will pass that message to the Actor's <code>receiveMessage()</code> method to
+allow the Actor to perform shutdown activities.  Once the
+<code>receiveMessage()</code> returns from handling the <code>ActorExitRequest</code>, the
+Actor System will destroy the Actor.  If the Actor does not need to
+do any operations prior to being destroyed, it is free to ignore the
+<code>ActorExitRequest</code> message, but the if statement in <a href="#coderef-messageIsTuple"class="coderef" onmouseover="CodeHighlightOn(this, 'coderef-messageIsTuple');" onmouseout="CodeHighlightOff(this, 'coderef-messageIsTuple');">line
+12</a> ensures that when the World Actor receives the
+<code>ActorExitRequest</code> it does not try to interpret it as the greeting
+message it expected from the Hello Actor.
+</p>
+
+<p>
+Whenever an Actor exits, the Actor that initially created it will be
+notified via a <code>ChildActorExited</code> message.  This message is
+generated by the Actor System and specifies the address of the Actor
+which exited.  This is why there is also an if statement in <a href="#coderef-messageCheck"class="coderef" onmouseover="CodeHighlightOn(this, 'coderef-messageCheck');" onmouseout="CodeHighlightOff(this, 'coderef-messageCheck');">line
+5</a> above: when the World Actor exits the Hello Actor
+should not create another World Actor and send it a message&#x2014;this
+would result in an infinite loop!
+</p>
+
+<p>
+There are other messages that can be delivered to an Actor by the
+Actor System (all derived from the <code>ActorSystemMessage</code> base class);
+these will be described in later parts of this article.  Any Actor
+is free to ignore any of the messages delivered by the Actor System:
+they are designed to allow for additional functionality
+(e.g. restarting Actors that have exited) but only if that
+functionality is needed or desired.
+</p>
+</div>
+
+<div id="outline-container-sec-2-2-1" class="outline-4">
+<h4 id="sec-2-2-1"><span class="section-number-4">2.2.1</span> Horizontal Scalability</h4>
+<div class="outline-text-4" id="text-2-2-1">
+<p>
+As the <i>hellogoodbye</i> example above demonstrates, Actors can easily be
+created (and destroyed) on an as-needed basis.  This offers
+considerable flexibility in the design of your application.  One
+example usage of this ability is easy <b>horizontal scalability</b> by
+creating multiple instances of the same Actor and distributing
+messages across those instances (e.g. round-robin).
+</p>
+</div>
+</div>
+
+<div id="outline-container-sec-2-2-2" class="outline-4">
+<h4 id="sec-2-2-2"><span class="section-number-4">2.2.2</span> Modularity and Extensibility</h4>
+<div class="outline-text-4" id="text-2-2-2">
+<p>
+Just as the Actor model supports Horizontal Scalability, it's also
+naturally promoting a highly-modular <a href="https://en.wikipedia.org/wiki/Separation_of_concerns"><b>Separation of Concerns</b></a>
+approach.  Each Actor should be written to handle a single, specific
+purpose.  Other concerns should be handled by other Actors.  This
+encapsulation results in loose <a href="https://en.wikipedia.org/wiki/Coupling_(computer_science)">coupling</a> helps ensure a good overall
+application design, prevents "spaghetti" code, and increases overall
+reliability and fault tolerance.
+</p>
+
+<p>
+In the example above, the Hello Actor delegated functionality to the
+World Actor without affecting the delivery of the result because the
+Hello Actor and the requester are loosely coupled.  A design update
+could easily insert other Actors into the flow without significantly
+perturbing the existing Actors and their functionality.
+</p>
+</div>
+</div>
+</div>
+
+
+<div id="outline-container-sec-2-3" class="outline-3">
+<h3 id="sec-2-3"><span class="section-number-3">2.3</span> Different ActorSystem Bases</h3>
+<div class="outline-text-3" id="text-2-3">
+<p>
+The ActorSystem Base determines how the Actor System implements the
+Actor concurrency and transport elements for supporting the Actors.
+There can be bases for implementing Actors as separate processes, or
+separate threads, or simply sequential execution.  There can be
+system bases that use UDP to communicate between Actors and system
+bases that use TCP, bases that use a message bus, etc.
+</p>
+
+<p>
+The choice of system base can be made almost completely
+independently of the Actor code, which allows for significant
+upgrade and operational implementation flexibility.  The Actor
+System represents a <b>higher level of abstraction</b> than other models
+(e.g. a message bus "pub/sub" architecture) which helps decouple the
+Actor internal logic from the transport and concurrency issues.  An
+Actor-based application could be implemented with an Actor System
+running on top of a pub/sub transport, but if the pub/sub transport
+needed to be changed to a different transport this could be done by
+simply changing the system base and there would be no impact on the
+Actors themselves.
+</p>
+
+<p>
+The primary argument to the <b>first</b> <code>ActorSystem()</code> call specifies
+which system base to use (recall that <code>ActorSystem()</code> is a
+singleton, so it's only necessary to pass any initialization
+arguments to the very first call).  Different "bases" provide
+different Actor System-level functionality; they do not change the
+way that Actors work but they change the way that they are
+implemented. The <i>Using Thespian</i> guide defines the set of available
+system bases available for Thespian.
+</p>
+
+<p>
+By default, the "<code>simpleSystemBase</code>" is used, which runs all Actors
+synchronously in the current process.  While this base is very
+useful for debugging (see the <a href="#sec-2-4-1">Debugging</a> section), it does not
+provide the level of concurrency usually desired at production time.
+</p>
+
+
+<p>
+To demonstrate the use of different ActorSystem bases, the Actor
+System <code>shutdown()</code> method call in <a href="#coderef-actorSysShutdown"class="coderef" onmouseover="CodeHighlightOn(this, 'coderef-actorSysShutdown');" onmouseout="CodeHighlightOff(this, 'coderef-actorSysShutdown');">line 25</a> of
+<a href="#hellogoodbye.py">hellogoodbye.py</a> above can be commented out, and different bases can
+be specified on the command line.  In the following example the
+"<code>multiprocTCPBase</code>" is used; this system base implements Actors with
+multiprocess concurrency and uses TCP as the transport:
+</p>
+
+<pre class="example">
+$ python hellogoodbye.py multiprocTCPBase
+$ ps -eafw | grep -i [a]ctorad
+...
+kquick 5596 5594  0 21:51 pts/86  00:00:00 __main__.Hello ActorAddr-(TCP|10.56.10.5:35862)
+kquick 5597 5594  0 21:51 pts/86  00:00:00 World ActorAddr-(TCP|10.56.10.5:46023)
+kquick 5598 5594  0 21:51 pts/86  00:00:00 __main__.Goodbye ActorAddr-(TCP|10.56.10.5:59137)
+...
+</pre>
+
+<p>
+Assuming you have the <code>setproctitle</code> package installed, the ps
+listing above shows a number of processes, including a Hello Actor
+process, a World Actor process, and a Goodbye Actor process.  Each
+ps entry shows the Address of each Actor (including the TCP IP
+address and port number).
+</p>
+
+<p>
+Re-running this test with the "<code>multiprocUDPBase</code>" which implements
+Actors as separate processes but uses UDP as the transport we can
+see additional Actors have been created with different Actor
+addresses:
+</p>
+
+<pre class="example">
+$ python hellogoodbye.py multiprocTCPBase
+$ ps -eafw | grep -i [a]ctorad
+...
+kquick 5596 5594  0 21:51 pts/86  00:00:00 __main__.Hello ActorAddr-(TCP|10.56.10.5:35862)
+kquick 5597 5594  0 21:51 pts/86  00:00:00 World ActorAddr-(TCP|10.56.10.5:46023)
+kquick 5598 5594  0 21:51 pts/86  00:00:00 __main__.Goodbye ActorAddr-(TCP|10.56.10.5:59137)
+kquick 7446 7444  0 21:57 pts/86  00:00:00 __main__.Hello ActorAddr-(UDP|10.56.10.5:37643)
+kquick 7447 7444  0 21:57 pts/86  00:00:00 World ActorAddr-(UDP|10.56.10.5:45316)
+kquick 7448 7444  0 21:57 pts/86  00:00:00 __main__.Goodbye ActorAddr-(UDP|10.56.10.5:51954)
+...
+</pre>
+
+<p>
+In this output we can see the previous TCP transport-based Actors
+are still present, but now there are a set of UDP transport-based
+Actors as well.
+</p>
+
+<p>
+Part of the output elided in the above examples contained entries
+like the following:
+</p>
+
+<pre class="example">
+...
+kquick 5594    1  0 21:51 pts/86  00:00:00 MultiProcAdmin ActorAddr-(TCP|10.56.10.5:1900)
+kquick 5595 5594  0 21:51 pts/86  00:00:00 logger ActorAddr-(TCP|10.56.10.5:51866)
+...
+</pre>
+
+<p>
+These processes are specific to the multiprocTCPBase system base
+(there are an equivalent pair for the multiprocUDPBase).  The
+MultiProcAdmin represents the "Actor System" itself and is
+responsible for coordinating the Actor process creation and deletion
+and message delivery responsibilities of the Actor System.  The
+logger provides coordinated use of the <a href="https://docs.python.org/3/library/logging.html?highlight=logging#module-logging">python standard logging
+facility</a> for all of the Actors managed by that Actor System (an
+optional argument to the Actor System can specify the logging
+facility configuration).
+</p>
+
+<p>
+Each time the above tests are run, a new set of Hello, World, and
+Goodbye Actors are created.  Feel free to play around, and when you
+want all of them to be deleted, simply uncomment the Actor System
+<code>shutdown()</code> call in <a href="#coderef-actorSysShutdown"class="coderef" onmouseover="CodeHighlightOn(this, 'coderef-actorSysShutdown');" onmouseout="CodeHighlightOff(this, 'coderef-actorSysShutdown');">line 25</a> above and run it one
+last time: although new Actors are created each time, each run will
+automatically connect to the existing Admin for that system base, so
+shutting down that Admin will stop all Actors in that Actor System.
+</p>
+
+<p>
+As mentioned above, the <i>Using Thespian</i> document provides much more
+detail about the available System Bases for Thespian and their
+capabilities.  Other Actor System implemntations may or may not have
+similar configurability.
+</p>
+</div>
+
+<div id="outline-container-sec-2-3-1" class="outline-4">
+<h4 id="sec-2-3-1"><span class="section-number-4">2.3.1</span> Base Persistence</h4>
+<div class="outline-text-4" id="text-2-3-1">
+<p>
+One of the trickiest parts of using Thespian is in properly starting
+and/or using the desired SystemBase.  For process-local bases (like
+the simpleSystemBase), this is not an issue because the system base
+only exists during the lifetime of the application.
+</p>
+
+<p>
+However, some system bases (e.g. the multiprocTCPBase) instantiate
+the base as part of a separate admin process that continues to exist
+even after the starting process has exited.  A persistent
+ActorSystem like this only exits when it is explicitly shutdown via
+the <code>ActorSystem().shutdown()</code> operation.  This can be very useful:
+</p>
+<ul class="org-ul">
+<li>At boot time a startup script starts a Thespian multi-process
+base, providing various base configuration information at this
+startup point.
+</li>
+<li>Applications can utilize the existing base, and other systems
+(as described later) can interact and utilize the current
+running Actor System.
+</li>
+</ul>
+</div>
+
+<ol class="org-ol"><li><a id="sec-2-3-1-1" name="sec-2-3-1-1"></a>Code Updates<br  /><div class="outline-text-5" id="text-2-3-1-1">
+<p>
+Because the persistent base's admin process continues to exist,
+whatever code that was part of the admin process remains unchanged.
+This can be unexpectedly confusing at first.  As an example, let's
+return to our original <code>hello.py</code> sample:
+</p>
+
+<div class="org-src-container">
+<label class="org-src-name">hello.py:</label>
+<pre class="src src-python" id="hello.py"><span class="linenr"> 1: </span>  <span class="org-keyword">from</span> thespian.actors <span class="org-keyword">import</span> *
+<span class="linenr"> 2: </span>
+<span class="linenr"> 3: </span>  <span class="org-keyword">class</span> <span class="org-type">Hello</span>(Actor):
+<span class="linenr"> 4: </span>      <span class="org-keyword">def</span> <span class="org-function-name">receiveMessage</span>(<span class="org-keyword">self</span>, message, sender):
+<span id="coderef-message" class="coderef-off"><span class="linenr"> 5: </span>          <span class="org-keyword">self</span>.send(sender, <span class="org-string">'Hello, world!'</span>)</span>
+<span class="linenr"> 6: </span>
+<span class="linenr"> 7: </span>  <span class="org-keyword">def</span> <span class="org-function-name">say_hello</span>():
+<span id="coderef-ActorSystemSpec" class="coderef-off"><span class="linenr"> 8: </span>      <span class="org-variable-name">hello</span> = ActorSystem().createActor(Hello)</span>
+<span class="linenr"> 9: </span>      <span class="org-keyword">print</span>(ActorSystem().ask(hello, <span class="org-string">'are you there?'</span>, 1.5))
+<span id="coderef-nomorehello" class="coderef-off"><span class="linenr">10: </span>      ActorSystem().tell(hello, ActorExitRequest)</span>
+<span class="linenr">11: </span>
+<span class="linenr">12: </span>  <span class="org-keyword">if</span> <span class="org-builtin">__name__</span> == <span class="org-string">"__main__"</span>:
+<span class="linenr">13: </span>      say_hello()
+</pre>
+</div>
+
+<p>
+This example application is using the simpleSystemBase which is not
+persistent, so multiple runs get the same results, and modifying the
+code between runs has the expected change in the output:
+</p>
+
+<pre class="example">
+$ python hello.py
+Hello, world!
+$ python hello.py
+Hello, world!
+$ edit hello.py  # &lt;-- change "world" to "universe"
+$ python hello.py
+Hello, universe!
+</pre>
+
+<p>
+However, modifying <a href="#coderef-ActorSystemSpec"class="coderef" onmouseover="CodeHighlightOn(this, 'coderef-ActorSystemSpec');" onmouseout="CodeHighlightOff(this, 'coderef-ActorSystemSpec');">Line 8</a> to pass "multiprocTCPBase"
+as the argument to <code>ActorSystem()</code> results in the following:
+</p>
+
+<pre class="example">
+$ python hello.py
+Hello, world!
+$ python hello.py
+Hello, world!
+$ edit hello.py  # &lt;-- change "world" to "universe"
+$ python hello.py
+Hello, world!
+</pre>
+
+<p>
+Note that although the code was updated and the application was run
+again, that the ActorSystem call in <a href="#coderef-baseclass"class="coderef" onmouseover="CodeHighlightOn(this, 'coderef-baseclass');" onmouseout="CodeHighlightOff(this, 'coderef-baseclass');">line 3</a> re-connected to
+the existing Admin.  Even though the previous run had stopped the
+Hello Actor itself (via the exit request in <a href="#coderef-nomorehello"class="coderef" onmouseover="CodeHighlightOn(this, 'coderef-nomorehello');" onmouseout="CodeHighlightOff(this, 'coderef-nomorehello');">line 10</a>, the
+code used to start the new instance of the Hello Actor was still the
+original code that the Admin process inherited when it was first
+started up.
+</p>
+
+<p>
+One way to ensure the new code is loaded is to stop the current
+persistent base:
+</p>
+
+<pre class="example">
+$ python
+&gt;&gt;&gt; from thespian.actors import *
+&gt;&gt;&gt; ActorSystem('multiprocTCPBase').shutdown()
+</pre>
+
+<p>
+This however will stop all other Actors that are currently running
+in that system base.  The alternative is to dynamically load the new
+source code as described in <i>Dynamic Source Loading</i>.
+</p>
+</div>
+</li></ol>
+</div>
+</div>
+
+<div id="outline-container-sec-2-4" class="outline-3">
+<h3 id="sec-2-4"><span class="section-number-3">2.4</span> Concurrency</h3>
+<div class="outline-text-3" id="text-2-4">
+<p>
+In the examples shown above, messages were delivered to the
+different Actors and those Actors processed those messages.  One of
+the important things to note is that each call to an Actor's
+<code>send()</code> method is asynchronous: there is no guarantee that the
+target Actor has received&#x2014;or processed&#x2014;the message by the
+time the <code>send()</code> method returns.
+</p>
+
+<p>
+Because Actors do not share state (memory), this asynchronous send
+makes no difference to their implementation.  It is the
+responsibility of the Actor System to perform the scheduling of each
+Actor, invoking its <code>receiveMessage()</code> to handle the delivered
+message.  There are two primary constraints on Actor message handling:
+</p>
+
+<ol class="org-ol">
+<li>Each Actor will only process one message at a time.  It must
+return from the <code>receiveMessage()</code> handling of the current
+message before the next message will be delivered to the
+Actor.
+</li>
+
+<li>Thespian guarantees that messages sent from Actor A to Actor B
+are delivered to B in the same order that they are sent by A,
+but if Actor C is also sending messages to Actor B there is no
+guarantee that A's messages and C's messages will not be
+commingled.
+</li>
+</ol>
+
+<p>
+Actors thus operate on individual messages, running when a message
+is received and finishing when they exit from the
+<code>receiveMessage()</code>, during which they may have created other Actors
+or sent other messages.  This message passing paradigm is different
+from the conventional blocking paradigm used by most code.  In
+Thespian, there are no need for special objects like <i>futures</i> that
+hide asynchronous functionality behind what looks like synchronous
+code.  If an Actor does block during the <code>receiveMessage()</code>
+execution, it will not receive other messages while it is blocked;
+the typical method of addressing this in an Actor model is to start
+up more Actors or delegate the blocking functionality to a sub-Actor
+that was dynamically created as needed.
+</p>
+
+<p>
+This obliviousness of the Actors to the underlying concurrency and
+scheduling implementation is a very powerful abstraction.  This
+means that the concurrency is completely determined by the Actor
+System itself, and that the concurrency can be changed by the Actor
+System without impacting the Actor code itself at all.
+</p>
+
+<p>
+For example, depending on the ActorSystem Base selected, Thespian
+could implement each Actor as a separate thread running in the
+current process.  The next time the application was started, it
+could use an Actor System that implemented each Actor as a separate
+process instead of a thread&#x2014;as simply as that.  This allows
+another vector of scalability for the application: it is not
+necessary to choose which concurrency method to use (threads,
+processes, pools of either, greenlets, etc.) when writing the
+application's core logic: simply start with an Actor System
+implementing one and switch to a different Actor System if a
+different concurrency type is needed later on.
+</p>
+</div>
+
+<div id="outline-container-sec-2-4-1" class="outline-4">
+<h4 id="sec-2-4-1"><span class="section-number-4">2.4.1</span> Debugging</h4>
+<div class="outline-text-4" id="text-2-4-1">
+<p>
+Multi-threaded applications are very difficult to debug, and
+multi-process applications are even worse.  Stepping through code,
+setting breakpoints, determining what sequence of operations has
+occurred, or even collecting coverage information is very difficult
+when this type of execution parallelisim is running.
+</p>
+
+<p>
+As discussed above, Actors can be any of these types of concurrency,
+but most importantly, the concurrency type can be changed without
+affecting the application code in the Actors.  Thespian and other
+Actor Systems provide a mode whereby there is <i>no</i> concurrency: each
+Actor's <code>receiveMessage()</code> is executed one after another serially.
+</p>
+
+<div class="org-src-container">
+<label class="org-src-name">test-hellogoodbye.py:</label>
+<pre class="src src-python" id="test-hellogoodbye.py"><span class="linenr">1: </span>  <span class="org-keyword">from</span> hellogoodbye <span class="org-keyword">import</span> *
+<span class="linenr">2: </span>  <span class="org-keyword">from</span> unitttest <span class="org-keyword">import</span> TestCase
+<span class="linenr">3: </span>
+<span class="linenr">4: </span>  <span class="org-keyword">class</span> <span class="org-type">TestHelloGoodbye</span>(TestCase):
+<span class="linenr">5: </span>
+<span class="linenr">6: </span>      <span class="org-keyword">def</span> <span class="org-function-name">test_example</span>(<span class="org-keyword">self</span>):
+<span class="linenr">7: </span>          run_example(<span class="org-string">'simpleSystemBase'</span>)
+</pre>
+</div>
+
+<p>
+Running the above with a coverage report:
+</p>
+
+<pre class="example">
+$ nosetests --with-coverage --cover-package=hellogoodbye
+.
+Name           Stmts   Miss  Cover   Missing
+--------------------------------------------
+hellogoodbye      25      0   100%
+-------------------------------------------------------
+Ran 1 test in 0.023s
+
+OK
+</pre>
+
+<p>
+If the above had been running each actor in separate threads or
+processes then the coverage report would not have been able to
+determine 100% coverage.  Absolutely no change was made to the code
+under test to achieve this, and the only difference was passing a
+specific argument to the initial <code>ActorSystem()</code> call.  This
+argument will be discussed in the next section.
+</p>
+</div>
+</div>
+</div>
+
+<div id="outline-container-sec-2-5" class="outline-3">
+<h3 id="sec-2-5"><span class="section-number-3">2.5</span> Location Independence</h3>
+<div class="outline-text-3" id="text-2-5">
+<p>
+When an Actor wishes to send a message to another Actor, it uses the
+<code>self.send()</code> method and specifies the Address of the target Actor.
+That Address cannot be generated by the sending Actor: it must have
+been given to the Actor as the result of a <code>self.createActor()</code> call
+or in the body of a message passed to it's <code>receiveMessage()</code>
+method.
+</p>
+
+<p>
+Actors must treat the Address of another Actor as an opaque object;
+the actual information in the Address is determined and used by the
+currently running Actor System, and it may change between runs of
+the Actor application.
+</p>
+
+<p>
+One advantage of this opaqueness of Addresses, and also of not
+having shared state is that Actors have no direct interaction with
+each other: they only interact via asynchronous message delivery.
+This means that the sending Actor doesn't know or care where the
+target Actor is: a thread in the same process, another process on
+the current host node, another host node in the same datacenter,
+or a host node halfway around the world.  This is known as
+<b>location independence</b> and means that the Actors operate
+independently of their relative locations.  This allows Actors to be
+distributed throughout the available environment as
+appropriate&#x2026; again without any changes to the Actor application
+code itself.
+</p>
+
+<p>
+The combination of location independence and <a href="#sec-2-2-1">Horizontal Scalability</a>
+means that Actor-based applications are particularly well suited to
+<b>cloud-based solutions</b> where changes in the relative size of the
+cloud deployment can be realized through duplicating, moving, or
+de-duplicating Actors.
+</p>
+</div>
+
+<div id="outline-container-sec-2-5-1" class="outline-4">
+<h4 id="sec-2-5-1"><span class="section-number-4">2.5.1</span> Capability-based Location Selection</h4>
+<div class="outline-text-4" id="text-2-5-1">
+<p>
+Thespian allows different Actor Systems to identify what
+capabilities are present in the current environment.  These
+capabilities are expressed as free-form key/value pairs, and each
+Actor can provide an optional static method that will be called
+before the Actor is created with those capabilities to see if the
+capabilities of the current system match the Actor's requirements.
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-python"><span class="linenr"> 1: </span>  <span class="org-keyword">from</span> thespian.actors <span class="org-keyword">import</span> *
+<span class="linenr"> 2: </span>  <span class="org-keyword">from</span> database <span class="org-keyword">import</span> dbclass
+<span class="linenr"> 3: </span>
+<span class="linenr"> 4: </span>  <span class="org-keyword">class</span> <span class="org-type">DBUpdate</span>(Actor):
+<span class="linenr"> 5: </span>
+<span class="linenr"> 6: </span>      <span class="org-type">@staticmethod</span>
+<span id="coderef-capcheck" class="coderef-off"><span class="linenr"> 7: </span>      <span class="org-keyword">def</span> <span class="org-function-name">actorSystemCapabilityCheck</span>(capabilities, requirements):</span>
+<span id="coderef-dbCap" class="coderef-off"><span class="linenr"> 8: </span>          <span class="org-keyword">return</span> capabilities.get(<span class="org-string">'Has DB access'</span>, <span class="org-constant">False</span>)</span>
+<span class="linenr"> 9: </span>      
+<span class="linenr">10: </span>      <span class="org-keyword">def</span> <span class="org-function-name">__init__</span>(<span class="org-keyword">self</span>):
+<span class="linenr">11: </span>          <span class="org-keyword">self</span>.db = dbclass.connect(...)
+<span class="linenr">12: </span>          
+<span class="linenr">13: </span>      <span class="org-keyword">def</span> <span class="org-function-name">receiveMessage</span>(<span class="org-keyword">self</span>, message, sender):
+<span class="linenr">14: </span>          <span class="org-variable-name">rows</span> = <span class="org-keyword">self</span>.db.query(<span class="org-string">'select * from ...'</span>)
+<span class="linenr">15: </span>          ...
+</pre>
+</div>
+
+<p>
+The <code>DBUpdate</code> Actor above must be able to access a database to run
+properly; if the current host node does not have network access to
+that database then the Actor should be run on another host that does
+have access to the database.  The <code>actorSystemCapabilityCheck()</code> in
+<a href="#coderef-capcheck"class="coderef" onmouseover="CodeHighlightOn(this, 'coderef-capcheck');" onmouseout="CodeHighlightOff(this, 'coderef-capcheck');">line 7</a> checks the <code>capabilities</code> argument (which is a
+dictionary provided by the current Actor System) to see if the needed
+capabilities are there.  The <code>actorSystemCapabilityCheck()</code> method
+returns <code>True</code> if the current capabilities are valid for it to be
+created, or <code>False</code> if the current Actor System is not valid and the
+Actor cannot run in this Actor System.
+</p>
+
+<p>
+There is also a <code>requirements</code> argument in <a href="#coderef-capcheck"class="coderef" onmouseover="CodeHighlightOn(this, 'coderef-capcheck');" onmouseout="CodeHighlightOff(this, 'coderef-capcheck');">line 7</a> that the
+Actor can check: the <code>self.createActor()</code> method can be called with an
+optional requirements dictionary that lets the creating Actor pass
+requirements to the Actor it is wishing to create.
+</p>
+
+<p>
+Capabilities and requirements are both arbitrary key/value pairs, and
+any pickleable data may be specified as a key or value in these
+dictionaries.
+</p>
+
+<p>
+For simple True/False capabilities, there is also a
+<code>@requireCapability()</code> decorator that may be used instead which will
+require capability specified as the decorator argument to be present
+and True.  Multiple <code>@requireCapability()</code> decorators can be stacked,
+and they can be used in addition to an <code>actorSystemCapabilityCheck()</code>
+method:
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-python"><span class="linenr"> 1: </span>  <span class="org-keyword">from</span> thespian.actors <span class="org-keyword">import</span> *
+<span class="linenr"> 2: </span>  <span class="org-keyword">from</span> database <span class="org-keyword">import</span> dbclass
+<span class="linenr"> 3: </span>
+<span class="linenr"> 4: </span>  <span class="org-type">@requireCapability</span>(<span class="org-string">'Has DB access'</span>)
+<span class="linenr"> 5: </span>  <span class="org-type">@requireCapability</span>(<span class="org-string">'LDAP installed'</span>)
+<span class="linenr"> 6: </span>  <span class="org-keyword">class</span> <span class="org-type">DBUpdateFromLDAP</span>(Actor):
+<span class="linenr"> 7: </span>
+<span class="linenr"> 8: </span>      <span class="org-type">@staticmethod</span>
+<span class="linenr"> 9: </span>      <span class="org-keyword">def</span> <span class="org-function-name">actorSystemCapabilityCheck</span>(capabilities, requirements):
+<span class="linenr">10: </span>          <span class="org-keyword">return</span> capabilities.get(<span class="org-string">'LDAP zone'</span>, <span class="org-constant">None</span>) == <span class="org-string">'Active'</span>
+<span class="linenr">11: </span>      
+<span class="linenr">12: </span>      <span class="org-keyword">def</span> <span class="org-function-name">receiveMessage</span>(<span class="org-keyword">self</span>, message, sender): ...
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-sec-2-5-2" class="outline-4">
+<h4 id="sec-2-5-2"><span class="section-number-4">2.5.2</span> Multiple Cooperating Actor Systems</h4>
+<div class="outline-text-4" id="text-2-5-2">
+<p>
+When Thespian Actor Systems are started on each host node, they can
+specify the capabilities of the current system at that startup time.
+In addition, the different Actor Systems running on different host
+nodes can be linked in a "Convention", which allows them to interact
+and share Actors:
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-python"><span class="linenr"> 1: </span>  <span class="org-keyword">from</span> thespian.actors <span class="org-keyword">import</span> *
+<span class="linenr"> 2: </span>  <span class="org-keyword">from</span> database <span class="org-keyword">import</span> dbclass
+<span class="linenr"> 3: </span>
+<span id="coderef-conventionSpec" class="coderef-off"><span class="linenr"> 4: </span>  <span class="org-variable-name">capabilities</span> = { <span class="org-string">'Convention Address.IPv4'</span>: <span class="org-string">'10.5.1.1:1900'</span> }</span>
+<span class="linenr"> 5: </span>
+<span class="linenr"> 6: </span>  <span class="org-keyword">try</span>:
+<span class="linenr"> 7: </span>      <span class="org-variable-name">dbconn</span> = dbclass.connect(...)
+<span class="linenr"> 8: </span>      <span class="org-keyword">if</span> dbconn <span class="org-keyword">and</span> 1 == dbconn.runquery(<span class="org-string">'select 1=1'</span>):
+<span id="coderef-dbAccessSet" class="coderef-off"><span class="linenr"> 9: </span>          <span class="org-variable-name">capabilities</span>[<span class="org-string">'Has DB access'</span>] = <span class="org-constant">True</span></span>
+<span class="linenr">10: </span>  <span class="org-keyword">except</span> DBError:
+<span class="linenr">11: </span>      <span class="org-keyword">pass</span>
+<span class="linenr">12: </span>
+<span id="coderef-startupActorSys" class="coderef-off"><span class="linenr">13: </span>  ActorSystem(<span class="org-string">'multiprocTCPBase'</span>, capabilities)</span>
+</pre>
+</div>
+
+<p>
+The example code above might represent the startup code that runs on
+each host node in our environment:
+</p>
+
+<dl class="org-dl">
+<dt> <a href="#coderef-conventionSpec"class="coderef" onmouseover="CodeHighlightOn(this, 'coderef-conventionSpec');" onmouseout="CodeHighlightOff(this, 'coderef-conventionSpec');">Line 4</a> </dt><dd>All systems specify the IP address of the
+Convention Leader as a standard capability
+</dd>
+<dt> <a href="#coderef-dbAccessSet"class="coderef" onmouseover="CodeHighlightOn(this, 'coderef-dbAccessSet');" onmouseout="CodeHighlightOff(this, 'coderef-dbAccessSet');">Line 9</a> </dt><dd>Each system checks to see if it can access
+the database successfully and sets another capability if it
+can.  This capability is the same capability that the DBUpdate
+Actor above requires to be able to run.
+</dd>
+<dt> <a href="#coderef-startupActorSys"class="coderef" onmouseover="CodeHighlightOn(this, 'coderef-startupActorSys');" onmouseout="CodeHighlightOff(this, 'coderef-startupActorSys');">Line 13</a> </dt><dd>Each system starts the Actor System with
+the specified set of capabilities.  The Actor Systems will join
+the Convention run by the Actor System at the specified address
+and report their capabilities to each other.
+</dd>
+</dl>
+
+<p>
+If the <code>DBUpdate</code> Actor startup occurs in an Actor System that is on a
+host node that does not have access to the external database server,
+the <code>actorSystemCapabilityCheck()</code> will return False.  That Actor
+System will then check with other Actor Systems in the same Convention
+to see if any of the other systems can support the Actor.  If another
+host node <i>does</i> have access to the database, then the Actor will
+automatically be started on that other system.  The Actor is still
+fully accessible from the local host node or any other node in the
+Convention that has the Address of the Actor.
+</p>
+
+
+<div class="figure">
+<p><img src="./fig2.png" alt="fig2.png" />
+</p>
+<p><span class="figure-number">Figure 4:</span> Example Multi-node Actor configuration</p>
+</div>
+
+<p>
+It is also possible for Actors to dynamically update the system
+capabilties; if the DBUpdate Actor loses database connectivity it can
+call <code>self.updateCapability('Has DB access', False)</code> and exit.  Any
+DBUpdate Actor creation after that point will no longer create the
+Actor on this system.  This technique allows the multi-system
+application to <b>Dynamically Reconfigure</b> itself to work around
+failures.
+</p>
+</div>
+</div>
+</div>
+
+<div id="outline-container-sec-2-6" class="outline-3">
+<h3 id="sec-2-6"><span class="section-number-3">2.6</span> Fault Tolerance</h3>
+<div class="outline-text-3" id="text-2-6">
+<p>
+Any modern application must be capable of dealing with faults, and
+this is definitely true of a distributed system which has by its very
+nature many additional places where faults can occur.  The same
+benefits that make Actors easy to use with <a href="#sec-2-5">Location Independence</a> also
+make them resilient to Faults in the system.
+</p>
+
+<p>
+Because Actors do not share state and only communicate via message
+passing, the failure of an Actor does not directly affect any of the
+other Actors running in the system.  The Actor System itself will be
+aware of the Actor failure and can take corrective action but the
+other Actors in the system are oblivious (unless they choose otherwise).
+</p>
+
+<p>
+When an Actor fails, the Actor System will respond to that failure:
+</p>
+
+<ul class="org-ul">
+<li>The Actor System will restart the Actor and re-deliver the message
+that it was processing when it failed (all other inbound and
+outbound messages for that Actor are unaffected).
+</li>
+
+<li>If the Actor fails <i>again</i> processing the same message, the Actor
+System determines that it is the message that is causing the
+problem.  
+
+<ul class="org-ul">
+<li>The Actor System will restart the Actor yet again, but it will
+<i>not</i> deliver that same message to the Actor.
+</li>
+
+<li>The Actor System will wrap the message in a <code>PoisonMessage</code>
+wrapper and send it back to the Actor which originally sent
+the message.  This originating Actor is free to ignore this
+<code>PoisonMessage</code>, or it can provide operational recovery
+handling.
+</li>
+
+<li>The failed Actor will resume processing messages with the next
+message to be delivered.
+</li>
+</ul>
+</li>
+</ul>
+
+<p>
+Clearly the application logic embedded within the Actors must decide
+whether or not action should be taken on the <code>PoisonMessage</code> as
+determined by the overall funcationality of the application.  The
+advantage provided by the Actor Model is that the default mode of
+operation is to preserve the functionality of the application as a
+whole and to localize the impact of that failure.  This is in marked
+contrast with monolithic applications, where by default an exception
+will cause the termination of the entire application and even caught
+exceptions can still be significantly disruptive, including
+interfering with concurrency.
+</p>
+</div>
+</div>
+</div>
+
+<div id="outline-container-sec-3" class="outline-2">
+<h2 id="sec-3"><span class="section-number-2">3</span> Dynamic Source Loading</h2>
+<div class="outline-text-2" id="text-3">
+<p>
+Thespian's ability to perform <a href="#sec-2-2">Dynamic Actor Creation</a> can be logically
+extended to be able to dynamically load the sources from which these
+Actors are created.  This can be useful in several ways:
+</p>
+
+<ul class="org-ul">
+<li>Updating source code running in persistent ActorSystem base
+instances (as described in <i>Base Persistence</i>).
+</li>
+
+<li>Ensuring that the same version of Actor sources are running
+throughout the environment.
+</li>
+
+<li>Only loading new code on systems "on-demand"&#x2026; i.e. when an Actor
+is started on that system that uses the associated code.
+</li>
+</ul>
+
+<p>
+As indicated previously, GoDaddy is using a distributed Actor
+environment that spans over 5,000 active systems.  This presents a
+challenge when deploying new code into the environment.  A
+conventional deployment using yum repositories or Spacewalk will take
+a considerable amount of time to individually update all of these
+systems.  By using Thespian's dynamic source loading feature, these
+upgrades can be done more quickly and with less service impact.
+</p>
+
+<p>
+Dynamic Source Loading is done by allowing new source "images" to be
+loaded in zip-file format to a running Thespian environment by calling
+the <code>ActorSystem.loadSource()</code> method.  Each loaded image has a unique
+hash identifier, and <code>ActorSystem.createActor()</code> requests can specify
+the image hash from which that Actor is to be created.  The Actor
+<code>self.createActor()</code> can also specify a hash value, but the hash
+defaults to the same hash from which the Actor itself was created, so
+all Actors default to executing from the same image.  System images
+may be explicitly unloaded from Thespian by calling the
+<code>ActorSystem.unloadSource()</code> method.
+</p>
+
+<p>
+For security purposes, there is a special Actor that can register
+itself as the "Source Authority".  Any loaded image is passed to the
+Source Authority for validation before it is useable for
+<code>createActor()</code> operations. The Source Authority can perform whatever
+validation it chooses on the loaded image (e.g. validating a
+signature); images which are not approved by the Source Authority are
+rejected and cannot be used.
+</p>
+
+<p>
+Because the Thespian Actor Systems communicate as part of a
+Convention, the source image only needs to be loaded on the Convention
+Leader system.  When the <code>createActor()</code> is called and the
+capabilities require the Actor to be created remotely, the remote
+Actor System is told the Actor and the source image hash.  If the
+remote Actor System does not have that hashed source image available
+already, it will request it from the Convention Leader and then use it
+to fulfill the Actor creation request.
+</p>
+
+<p>
+There is no limit to the number of currently loaded active sources
+(other than available system memory) and the loaded sources function
+independently of each other.  Multiple instances of the same
+application can be loaded, as well as multiple different applications
+sharing the same Actor System.
+</p>
+
+
+<div class="figure">
+<p><img src="fig7.png" alt="fig7.png" />
+</p>
+</div>
+
+<p>
+The previous Hello example can now be updated to use
+<code>loadActorSource()</code> to ensure that the latest version of the source is
+used each time it is run:
+</p>
+
+<div class="org-src-container">
+<label class="org-src-name">hi.py:</label>
+<pre class="src src-python" id="hi.py"><span class="linenr"> 1: </span><span class="org-keyword">from</span> thespian.actors <span class="org-keyword">import</span> *
+<span class="linenr"> 2: </span>
+<span class="linenr"> 3: </span><span class="org-keyword">class</span> <span class="org-type">Hello</span>(Actor):
+<span class="linenr"> 4: </span>    <span class="org-keyword">def</span> <span class="org-function-name">receiveMessage</span>(<span class="org-keyword">self</span>, message, sender):
+<span class="linenr"> 5: </span>        <span class="org-keyword">self</span>.send(sender, <span class="org-string">'Hello, world!'</span>)
+<span class="linenr"> 6: </span>
+<span class="linenr"> 7: </span><span class="org-keyword">def</span> <span class="org-function-name">zipMyself</span>():
+<span class="linenr"> 8: </span>    <span class="org-variable-name">zipname</span> = <span class="org-string">'hi.zip'</span>
+<span class="linenr"> 9: </span>    <span class="org-keyword">import</span> zipfile
+<span class="linenr">10: </span>    <span class="org-variable-name">zf</span> = zipfile.ZipFile(zipname, <span class="org-string">'w'</span>)
+<span class="linenr">11: </span>    zf.writestr(<span class="org-string">'hi.py'</span>, <span class="org-builtin">open</span>(<span class="org-string">'hi.py'</span>, <span class="org-string">'r'</span>).read())
+<span class="linenr">12: </span>    zf.close()
+<span class="linenr">13: </span>    <span class="org-keyword">return</span> zipname
+<span class="linenr">14: </span>
+<span class="linenr">15: </span><span class="org-keyword">def</span> <span class="org-function-name">say_hello</span>():
+<span class="linenr">16: </span>    <span class="org-variable-name">actorSys</span> = ActorSystem(<span class="org-string">"multiprocTCPBase"</span>)
+<span id="coderef-loadSource" class="coderef-off"><span class="linenr">17: </span>    <span class="org-variable-name">loadHash</span> = actorSys.loadActorSource(zipMyself())</span>
+<span class="linenr">18: </span>    <span class="org-variable-name">hello</span> = actorSys.createActor(<span class="org-string">'hi.Hello'</span>,
+<span id="coderef-hashCreate" class="coderef-off"><span class="linenr">19: </span>                                 sourceHash = loadHash)</span>
+<span class="linenr">20: </span>    <span class="org-keyword">print</span>(actorSys.ask(hello, <span class="org-string">'are you there?'</span>, 1.5))
+<span class="linenr">21: </span>    actorSys.tell(hello, ActorExitRequest)
+<span class="linenr">22: </span>
+<span class="linenr">23: </span><span class="org-keyword">if</span> <span class="org-builtin">__name__</span> == <span class="org-string">"__main__"</span>:
+<span class="linenr">24: </span>    say_hello()
+</pre>
+</div>
+
+<p>
+This example creates the zipfile from itself (with a couple of
+assumptions&#x2026; this is just an example) although normally you would
+distribute your code as a zipfile generated by <code>$ python setup.py
+sdist</code> or something similar.
+</p>
+
+<p>
+The zipfile is loaded into the currently running Actor System in <a href="#coderef-loadSource"class="coderef" onmouseover="CodeHighlightOn(this, 'coderef-loadSource');" onmouseout="CodeHighlightOff(this, 'coderef-loadSource');">line
+17</a> and then the creation of the Actor in <a href="#coderef-hashCreate"class="coderef" onmouseover="CodeHighlightOn(this, 'coderef-hashCreate');" onmouseout="CodeHighlightOff(this, 'coderef-hashCreate');">line 19</a>
+uses the hash value obtained from loading the source to specify which
+source the Actor should be created from.  Note also that the Actor to
+be created is referred to by name instead of by reference, and that
+name is qualified by the zipfile name to match standard Python import
+semantics.
+</p>
+
+<p>
+Running this and changing the source in between runs clearly shows
+that the changes are loaded and used in subsequent runs:
+</p>
+
+<pre class="example">
+$ python hi.py
+Hello, world!
+$ python hi.py
+Hello, world!
+$ edit hi.py  # &lt;-- change "world" to "universe"
+$ python hi.py
+Hello, universe!
+</pre>
+
+<p>
+The sources loaded remain loaded until unloaded via a call to
+<code>unloadActorSource()</code> or until the Actor System exits.
+</p>
+</div>
+</div>
+
+<div id="outline-container-sec-4" class="outline-2">
+<h2 id="sec-4"><span class="section-number-2">4</span> Shell</h2>
+<div class="outline-text-2" id="text-4">
+<p>
+Thespian comes with a command-line application called the
+<code>thespianShell.py</code> which can be used to interact with existing Actor
+Systems.  This is especially handy to use with persistent Actor
+Systems to obtain information and perform manual testing.
+</p>
+</div>
+
+<div id="outline-container-sec-4-1" class="outline-3">
+<h3 id="sec-4-1"><span class="section-number-3">4.1</span> Starting the Shell</h3>
+<div class="outline-text-3" id="text-4-1">
+<p>
+At startup, the <code>start</code> command should be used to specify which Actor
+System base and parameters should be used.  This command internally
+generates an <code>ActorSystem()</code> API call, so it will either create an
+Actor System or connect to an existing persistent Actor System.
+</p>
+
+<p>
+At that point, commands may be typed, including the ability to send
+simple string messages to Actors.  The <code>help</code> command can be used to
+obtain more information, and the <code>exit</code> or <code>quit</code> commands can be used
+to leave the shell.
+</p>
+
+<pre class="example">
+$ thespianShell.py
+thespian&gt; start multiprocTCPBase
+Starting multiprocTCPBase ActorSystem
+thespian&gt; exit
+$
+</pre>
+</div>
+</div>
+
+<div id="outline-container-sec-4-2" class="outline-3">
+<h3 id="sec-4-2"><span class="section-number-3">4.2</span> Address Management in the Shell</h3>
+<div class="outline-text-3" id="text-4-2">
+<p>
+The thespianShell provides special handling for Actor Addresses.
+Rather than being required to type the full Actor Address each time,
+the shell provides the <code>address</code> command which can be used to
+"register" an Actor Address.  Each registered address is assigned an
+index, which is always shown in square brackets following the address
+itself.  All other commands use this index to refer to a specific
+address.
+</p>
+
+<pre class="example">
+$ thespianShell.py
+thespian&gt; start multiprocTCPBase
+Starting multiprocTCPBase ActorSystem
+thespian&gt; address localhost 1900
+Actor Address 0: ActorAddr-(TCP|127.0.0.1:1900)
+thespian&gt;
+</pre>
+</div>
+</div>
+
+<div id="outline-container-sec-4-3" class="outline-3">
+<h3 id="sec-4-3"><span class="section-number-3">4.3</span> Shell Test Actor</h3>
+<div class="outline-text-3" id="text-4-3">
+<p>
+There is also a test Actor that is part of the shell.  The test Actor
+simply sends back anything it gets with a message that it received it,
+unless the message is the string "create", in which it will create
+another TestActor and return the address of that Actor.
+</p>
+
+<pre class="example">
+$ thespianShell.py
+thespian&gt; start multiprocTCPBase
+Starting multiprocTCPBase ActorSystem
+thespian&gt; create_testActor
+Created new TestActor 0 @ ActorAddr-(TCP|10.56.10.5:46883)
+thespian&gt; ask 0 hello
+Response: TestActor @ ActorAddr-(TCP|10.56.10.5:46883) got: hello
+thespian&gt; ask 0 create
+Response: ActorAddr-(TCP|10.56.10.5:54991)
+thespian&gt; address 10.56.10.5:54991
+Actor Address 1: ActorAddr-(TCP|10.56.10.5:54991)
+thespian&gt; ask 1 hi
+Response: TestActor @ ActorAddr-(TCP|10.56.10.5:54991) got: hi
+</pre>
+</div>
+</div>
+
+<div id="outline-container-sec-4-4" class="outline-3">
+<h3 id="sec-4-4"><span class="section-number-3">4.4</span> Actor Status Requests</h3>
+<div class="outline-text-3" id="text-4-4">
+<p>
+The shell also supports issuing status queries to Actors.  The status
+query returns various information about the Actor.
+</p>
+
+<pre class="example">
+thespian&gt; status 0
+Requesting status from Actor (or Admin) @ ActorAddr-(TCP|127.0.0.1:1900) (#0)
+Status of ActorSystem @ ActorAddr-(TCP|10.56.10.5:1900) [#1]:
+  |Capabilities[5]:
+        Thespian ActorSystem Name: multiprocTCPBase
+     Thespian ActorSystem Version: 1
+                 Thespian Version: 1441577971430
+                   Python Version: (2, 6, 9, 'final', 0)
+              Thespian Generation: (2, 1)
+  |Convention Attendees [0]:
+  |Primary Actors [2]:
+    @ ActorAddr-(TCP|10.56.10.5:51966) [#2]
+    @ ActorAddr-(TCP|10.56.10.5:48095) [#3]
+  |Rate Governer: Rate limit: 4480 messages/sec (currently low with 33 ticks)
+  |Pending Messages [0]:
+  |Received Messages [0]:
+  |Pending Wakeups [0]:
+  |Pending Address Resolution [0]:
+  |&gt;               Actor.Message Send.Transmit Started: 33
+  |&gt;                      Admin Message Received.Total: 54
+  |&gt;           Admin Message Received.Type.Dead Letter: 1
+  |&gt; Admin Message Received.Type.Pending Actor Request: 10
+  |&gt;           Admin Message Received.Type.QueryExists: 22
+  |&gt;             Admin Message Received.Type.StatusReq: 1
+  |DeadLetter Addresses [0]:
+  |Source Authority: None
+  |Loaded Sources [2]:
+    f63171ffe80778e5a4f07203f41ce021
+    cbc67614f8792ecf3504772d793905b4
+  |Global Actors [0]:
+thespian&gt;
+</pre>
+
+<p>
+The status information may change over time and should not be
+programmatically relied upon at this time.
+</p>
+</div>
+</div>
+</div>
+
+
+<div id="outline-container-sec-5" class="outline-2">
+<h2 id="sec-5"><span class="section-number-2">5</span> Conclusion</h2>
+<div class="outline-text-2" id="text-5">
+<p>
+The Actor model is a powerful and yet simple tool for the modern
+software developer.  Actor libraries like Thespian enable the
+development of applications that are:
+</p>
+<ul class="org-ul">
+<li>highly scalable
+</li>
+<li>fault tolerant
+</li>
+<li>concurrent (modifiably, with synchronous reduced cases for debugging)
+</li>
+<li>loosely coupled
+</li>
+<li>modular
+</li>
+<li>extensible (via design, instances, and/or new source loads)
+</li>
+<li>adaptive
+</li>
+<li>location independent
+</li>
+<li>built around a higher level of abstraction (no lock-in on concurrency or
+transport mechanisms)
+</li>
+</ul>
+
+<p>
+The methods and capabilities introduced by this article are relatively
+easy to learn and incorporate into application design, especially for
+cloud-based applications.
+</p>
+</div>
+</div>
+</div>
+<div id="postamble" class="status">
+<p class="author">Author: Kevin Quick &lt;kquick@godaddy.com&gt;</p>
+<p class="date">Created: 2015-09-18 Fri 11:17</p>
+<p class="creator"><a href="http://www.gnu.org/software/emacs/">Emacs</a> 24.5.2 (<a href="http://orgmode.org">Org</a> mode 8.2.10)</p>
+<p class="validation"><a href="http://validator.w3.org/check?uri=referer">Validate</a></p>
+</div>
+</body>
+</html>
