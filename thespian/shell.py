@@ -26,23 +26,18 @@ class ThespianShell(cmd.Cmd):
     def emptyline(self): pass  # do nothing
 
     def do_exit(self, arg):
-        'Exit the Thespian shell, shutting down any ActorSystem started locally.'
+        'Exit the Thespian shell.  No cleanup or shutdown of existing Actor Systems or Actors.'
+        self.system = None
         print ('Exiting.')
-        if self.system:
-            print ('Shutting down ActorSystem')
-            self.system.shutdown()
-            del self.system
-            self.system = None
         return True
 
     def do_quit(self, arg):
         "Exits the Thespian shell immediately; no shutdown or cleanup of ActorSystems or Actors."
-        self.system = None
         return self.do_exit(arg)
 
     def do_EOF(self, arg):
         "Exits the Thespian shell immediately; no shutdown or cleanup of ActorSystems or Actors."
-        return self.do_quit(arg)
+        return self.do_exit(arg)
 
     def parseActorAddress(self, arg):
         args = dict(zip(['ipaddr', 'port'], arg.split()))
