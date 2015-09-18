@@ -1,7 +1,6 @@
 #+TITLE: [[http://thespianpy.com][@@html:<img src="thesplogo2.png" alt="Thespian" width="50%" display="inline" />@@]] Developers Notes
 #+AUTHOR: Kevin Quick <kquick@godaddy.com>
-#+DESCRIPTION: cool stuff
-#+SETUPFILE: /home/kquick/Public/org-html-themes/setup/theme-bigblow.setup
+#+SETUPFILE: theme.setup
 #+HTML_HEAD: <link href="thespian.css" rel="stylesheet" type="text/css">
 #+LATEX_CLASS: thespian
 # #+LATEX_CLASS_OPTIONS: [a4paper]
