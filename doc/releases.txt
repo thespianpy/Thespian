@@ -1,0 +1,48 @@
+		━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+		 [HTTP://THESPIANPY.COM/] RELEASE NOTES
+
+
+		    Kevin Quick <kquick@godaddy.com>
+		━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+
+Table of Contents
+─────────────────
+
+2.x
+.. 2.1
+..... 2.1.4 Initial Public Release <2015-08-31 Mon>
+.. 2.0
+1.x
+
+
+.
+
+
+2.x
+═══
+
+2.1
+───
+
+2.1.4 Initial Public Release <2015-08-31 Mon>
+╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+
+  The 2.1.4 Release represents the first publicly available release of
+  Thespian.  It includes the following features:
+
+  ‣ System Bases: SimpleSystemBase, MultiprocTCPBase, MultiprocUDPBase,
+    MultiprocQueueBase
+  ‣ Support for Loadable Sources
+
+
+2.0
+───
+
+  The 2.0 Release was developed and used internally by GoDaddy.
+
+
+1.x
+═══
+
+  The 1.x Release series was developed and used internally by GoDaddy
