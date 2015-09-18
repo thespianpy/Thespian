@@ -144,7 +144,7 @@ class MultiprocessQueueTransport(asyncTransportBase, wakeupTransportBase):
     def childResetFileNumList(self):
         return foldl(lambda a, b: a+[b._reader.fileno(), b._writer.fileno()],
                      [self._parentQ] +
-                     self._queues.values(), [])
+                     list(self._queues.values()), [])
 
 
     @property
