@@ -13,7 +13,9 @@
                        ))
 
 (setq org-src-preserve-indentation t)
-(setq org-html-htmlize-output-type 'css)
+(setq org-html-htmlize-output-type "css")
+(setq org-html-htmlize-convert-nonascii-to-entities nil)
+(setq org-html-htmlize-html-charset "utf-8")
 
 
 (add-hook 'org-babel-after-execute-hook 'bh/display-inline-images 'append)
@@ -26,12 +28,16 @@
  (quote ((emacs-lisp . t)
          (dot . t)
          (ditaa . t)
+         (plantuml . t)
          (python . t)
          (sh . t)
          (org . t)
          (latex . t))))
 
 (setq org-confirm-babel-evaluate nil)
+
+(setq org-image-actual-width 'nil)
+(setq org-plantuml-jar-path (expand-file-name "~/.nix-profile/lib/plantuml.jar"))
 
 ; Generate using.org PDF:
 ;   interactively via: Ctrl-c Ctrl-e p
