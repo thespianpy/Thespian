@@ -3,7 +3,7 @@ are asynchronously created.  It handles issues related to
 ActorLocalAddress resolution."""
 
 
-from thespian.system.transport import TransmitOnly
+from thespian.system.transport import TransmitOnly, SendStatus
 from thespian.system.utilis import thesplog
 import logging
 from thespian.system.addressManager import ActorLocalAddress, CannotPickleAddress
@@ -86,6 +86,21 @@ class asyncTransportBase(object):
             # Verify the target address is useable
             targetAddr, txmsg = addressManager.prepMessageSend(transmitIntent.targetAddr,
                                                                transmitIntent.message)
+            if txmsg == SendStatus.DeadTarget:
+                # Address Manager has indicated that these messages
+                # should never be attempted because the target is
+                # dead.  This is *only* for special messages like
+                # DeadEnvelope and ChildActorExited which would
+                # endlessly recurse or bounce back and forth.  This
+                # code indicates here that the transmit was
+                # "successful" to allow normal cleanup but to avoid
+                # recursive error generation.
+                thesplog('Faking transmit result Sent for %s because target is dead',
+                         transmitIntent, level = logging.WARNING)
+                transmitIntent.result = SendStatus.Sent
+                transmitIntent.completionCallback()
+                return
+
             if not targetAddr:
                 raise CannotPickleAddress(transmitIntent.targetAddr)
 
@@ -155,6 +170,10 @@ class asyncTransportBase(object):
             if each.targetAddr == childAddr:
                 newtgt, newmsg = addressManager.prepMessageSend(each.targetAddr, each.message)
                 each.changeTargetAddr(newtgt)
+                # n.b. prepMessageSend might return
+                # SendStatus.DeadTarget for newmsg; when this is later
+                # attempted, that will be handled normally and the
+                # transmit will be completed as "Sent"
                 each.changeMessage(newmsg)
 
 

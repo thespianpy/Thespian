@@ -1,6 +1,7 @@
 import types
-from thespian.actors import ActorAddress, DeadEnvelope
+from thespian.actors import ActorAddress, DeadEnvelope, ChildActorExited
 from thespian.system.utilis import thesplog
+from thespian.system.transport import SendStatus
 import logging
 
 
@@ -193,10 +194,20 @@ class ActorAddressManager:
            If the target address is not ready for use, the
            send-to-address portion of the tuple will return a value of
            None.
+
+           If the message should no longer be sent, the message
+           portion of the tuple will be returned as
+           SendStatus.DeadTarget (because this is *never* a valid
+           message to actually send).
+
         """
         tgtaddr = self.exportAddr(anAddress)
         if tgtaddr is None:
             return None, msg
         if tgtaddr in self._deadAddrs:
+            if isinstance(msg, (DeadEnvelope, ChildActorExited)):
+                thesplog('Discarding %s to %s because the latter is dead.',
+                         str(msg), str(tgtaddr))
+                return None, SendStatus.DeadTarget
             return self._adminAddr, DeadEnvelope(anAddress, msg)
         return tgtaddr, msg

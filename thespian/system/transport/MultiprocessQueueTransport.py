@@ -259,6 +259,15 @@ class MultiprocessQueueTransport(asyncTransportBase, wakeupTransportBase):
                     self._fwdvia[sendAddr] = relayAddr
             if hasattr(self, '_addressMgr'):
                 destAddr,msg = self._addressMgr.prepMessageSend(destAddr, msg)
+            if destAddr is None:
+                thesplog('Unexpected target inaccessibility for %s', msg,
+                         level = logging.WARNING)
+                raise CannotPickleAddress(destAddr)
+
+            if msg is SendStatus.DeadTarget:
+                thesplog('Faking message "sent" because target is dead and recursion avoided.')
+                continue
+
             if destAddr == self._myQAddress:
                 if incomingHandler is None:
                     return ReceiveEnvelope(sendAddr, msg)
