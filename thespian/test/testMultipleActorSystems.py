@@ -248,48 +248,64 @@ class TestMultiProcessSystem(unittest.TestCase):
     """These tests run the primary ActorSystem locally and the System2
     Actorsystem in a separate process."""
 
+    portBase = 0
+    baseName = 'multiprocTCPBase'
+
     def setUp(self):
+        pass
+
+    def startSystems(self, portOffset):
+        system1Port = 43000 + self.portBase + portOffset
+        system2Port = 42000 + self.portBase + portOffset
+        self.system1Caps = {'dog':'food',
+                            'Admin Port': system1Port,
+                            #'Convention Address': not specified, but is the leader anyhow
+        }
+
         self.parent_conn, child_conn = Pipe()
         self.child = Process(target=System2,
                              args=(child_conn,
-                                   'multiprocTCPBase',
-                                   { 'Admin Port': 43434,
-                                     'Convention Address.IPv4': ('localhost:43430'),
+                                   self.baseName,
+                                   { 'Admin Port': system2Port,
+                                     'Convention Address.IPv4': ('localhost:%d'%system1Port),
                                      'Humanitarian': True,
                                      'Adoption': True},
                                ))
         self.child.start()
-        ActorSystem('multiprocTCPBase',
-                    capabilities={'dog':'food',
-                                  'Admin Port': 43430,
-                                  #'Convention Address': not specified, but is the leader anyhow
-                              },
+        ActorSystem(self.baseName,
+                    capabilities = self.system1Caps,
                     logDefs = ActorSystemTestCase.getDefaultTestLogging())
         sleep(0.15)  # allow System2 to start and join the Convention
 
     def tearDown(self):
         ActorSystem().shutdown()
-        self.parent_conn.send('OK, all done')
-        self.child.join()
+        if hasattr(self, 'parent_conn'):
+            self.parent_conn.send('OK, all done')
+        if hasattr(self, 'child'):
+            self.child.join()
 
     def test00_nothing(self):
         # Verifies ActorSystems can start and stop... nothing else happening.
+        self.startSystems(0)
         pass
 
     def test01_SimpleActor(self):
         # Actor is created, but does nothing.  Multiple ActorSystems should complete registration.
+        self.startSystems(1)
         pattinson = ActorSystem().createActor(Pattinson)
 
     def test02_SimpleActorMatchPrimaryCapabilities(self):
         # Actor is created, validating against primary ActorSystem
         # capabilities, but does nothing.  Multiple ActorSystems
         # should complete registration.
+        self.startSystems(2)
         lassie = ActorSystem().createActor(Lassie)
 
     def test03_SimpleActorMatchOtherSystemCapabilities(self):
         # Actor creation fails validation against primary ActorSystem
         # capabilities, but matches alternate system capabilities.
         # Actor does nothing.
+        self.startSystems(3)
         stewart = ActorSystem().createActor(Stewart)
         # Immediate Exit
         #n.b. the ActorSystem() will shutdown while Stewart is not yet
@@ -300,17 +316,20 @@ class TestMultiProcessSystem(unittest.TestCase):
         # Actor creation fails validation against primary ActorSystem
         # capabilities, but matches alternate system capabilities.
         # Actor does nothing.
+        self.startSystems(4)
         stewart = ActorSystem().createActor(Stewart)
         wait_for_things_to_happen()
         # No good way to verify at this stage...
 
     def test05_LocalActorSend(self):
         # Actor is created in Convention Leader actor system and sent a message.
+        self.startSystems(5)
         pattinson = ActorSystem().createActor(Pattinson)
         ActorSystem().tell(pattinson, 'hello')
 
     def test06_RemoteActorSend(self):
         # Actor is created in remote actor system and sent a message.
+        self.startSystems(6)
         stewart = ActorSystem().createActor(Stewart)
         ActorSystem().tell(stewart, 'hello')
         #n.b. the ActorSystem() will shutdown while Stewart is not yet
@@ -319,6 +338,7 @@ class TestMultiProcessSystem(unittest.TestCase):
 
     def test07_0_RemoteActorSendWithDelay(self):
         # Actor is created in remote actor system and sent a message.
+        self.startSystems(7)
         stewart = ActorSystem().createActor(Stewart)
         ActorSystem().tell(stewart, 'hello')
         wait_for_things_to_happen()
@@ -326,6 +346,7 @@ class TestMultiProcessSystem(unittest.TestCase):
 
     def test07_1_RemoteActorSendAndExitWithDelay(self):
         # Actor is created in remote actor system and sent a message.
+        self.startSystems(8)
         stewart = ActorSystem().createActor(Stewart)
         ActorSystem().tell(stewart, 'hello')
         wait_for_things_to_happen()
@@ -335,6 +356,7 @@ class TestMultiProcessSystem(unittest.TestCase):
 
     def test07_2_RemoteActorSendAndExitWithDelay(self):
         # Actor is created in remote actor system and sent a message.
+        self.startSystems(9)
         stewart = ActorSystem().createActor(Stewart)
         ActorSystem().tell(stewart, 'hello')
         wait_for_things_to_happen()
@@ -343,6 +365,7 @@ class TestMultiProcessSystem(unittest.TestCase):
         # No good way to verify at this stage...
 
     def test08_0_CreateTwoActorsSeparateSystems(self):
+        self.startSystems(10)
         pattinson = ActorSystem().createActor(Pattinson)
         stewart = ActorSystem().createActor(Stewart)  # should be created in System2
         ActorSystem().tell(pattinson, 'hello')
@@ -351,6 +374,7 @@ class TestMultiProcessSystem(unittest.TestCase):
         # No good way to verify at this stage...
 
     def test08_1_CreateTwoActorsSeparateSystemsWithExplicitShutdown(self):
+        self.startSystems(11)
         pattinson = ActorSystem().createActor(Pattinson)
         stewart = ActorSystem().createActor(Stewart)  # should be created in System2
         ActorSystem().tell(pattinson, 'hello')
@@ -363,26 +387,31 @@ class TestMultiProcessSystem(unittest.TestCase):
 
     def test09_LocalActorAsk(self):
         # Actor is created in Convention Leader actor system and sent a message.
+        self.startSystems(12)
         pattinson = ActorSystem().createActor(Pattinson)
         self.assertEqual(ActorSystem().ask(pattinson, 'hello'), 'Greetings.')
 
     def test10_RemoteActorAsk(self):
         # Actor is created in remote actor system and sent a message.
+        self.startSystems(13)
         stewart = ActorSystem().createActor(Stewart)
         self.assertEqual(ActorSystem().ask(stewart, 'hello', 10), 'Greetings.')
 
     def test11_UnsupportableActorAsk(self):
         # Actor cannot be created, ask should timeout
+        self.startSystems(14)
         self.assertRaisesRegex(NoCompatibleSystemForActor,
                                '.*No (compatible ActorSystem|RemoteActorCreated).*Kilmer.*',
                                ActorSystem().createActor, Kilmer)
 
     def test12_CreateLocalChildActor(self):
+        self.startSystems(15)
         pattinson = ActorSystem().createActor(Pattinson)
         ActorSystem().tell(pattinson, 'Best Friend')
         self.assertEqual(ActorSystem().ask(pattinson, 'Best Friend Says', 2), 'woof!')
 
     def test13_CreateLocalChildOfRemoteActor(self):
+        self.startSystems(16)
         stewart = ActorSystem().createActor(Stewart)
         ActorSystem().tell(stewart, 'Best Friend')
         self.assertEqual(ActorSystem().ask(stewart, 'Best Friend Says', 2), 'woof!')
@@ -394,6 +423,7 @@ class TestMultiProcessSystem(unittest.TestCase):
         # No good way to verify at this stage...
 
     def test14_CreateRemoteChildOfRemoteActor(self):
+        self.startSystems(17)
         stewart = ActorSystem().createActor(Stewart)
         ActorSystem().tell(stewart, 'Best Friend')
         self.assertEqual(ActorSystem().ask(stewart, 'Best Friend Says', 2), 'woof!')
@@ -405,6 +435,7 @@ class TestMultiProcessSystem(unittest.TestCase):
         # No good way to verify at this stage...
 
     def test15_LocalToRemoteToLocal(self):
+        self.startSystems(18)
         pattinson = ActorSystem().createActor(Pattinson)
         self.assertEqual(ActorSystem().ask(pattinson, 'hello',2 ), 'Greetings.')
         self.assertEqual(ActorSystem().ask(pattinson, 'Girlfriend Says', 2), 'no girlfriend')
@@ -421,6 +452,7 @@ class TestMultiProcessSystem(unittest.TestCase):
         # No good way to verify at this stage...
 
     def test16_DistributedActorFamily(self):
+        self.startSystems(19)
         pattinson = ActorSystem().createActor(Pattinson)
         stewart = ActorSystem().ask(pattinson, 'girlfriend?', 2)
         ActorSystem().tell(stewart, 'Best Friend')
@@ -437,6 +469,7 @@ class TestMultiProcessSystem(unittest.TestCase):
         self.assertEqual(ActorSystem().ask(stewart, 'cat says', 2), 'Meow')
 
     def test17_CreateRemoteFriends(self):
+        self.startSystems(20)
         pattinson = ActorSystem().createActor(Pattinson)
         ActorSystem().tell(pattinson, 'Best Friend')
         self.assertEqual(ActorSystem().ask(pattinson, 'Best Friend Says', 2), 'woof!')
@@ -447,6 +480,7 @@ class TestMultiProcessSystem(unittest.TestCase):
         self.assertEqual(ActorSystem().ask(pattinson, 'Goodbye', 2), 'Greetings.')
 
     def test18_CreateWithTargetActorRequirements(self):
+        self.startSystems(21)
         jolie = ActorSystem().createActor(Jolie, 'Parent')
         self.assertEqual(ActorSystem().ask(jolie, 'Hello', 2), 'Yes, Hello')
 
@@ -454,22 +488,5 @@ class TestMultiProcessSystem(unittest.TestCase):
 class TestMPUDPSystem(TestMultiProcessSystem):
     testbase='MultiprocUDP'
     scope='func'
-
-    def setUp(self):
-        self.parent_conn, child_conn = Pipe()
-        self.child = Process(target=System2,
-                             args=(child_conn,
-                                   'multiprocUDPBase',
-                                   { 'Admin Port': 43432,
-                                     'Convention Address.IPv4': ('localhost:43431'),
-                                     'Humanitarian': True,
-                                     'Adoption': True},
-                               ))
-        self.child.start()
-        ActorSystem('multiprocUDPBase',
-                    capabilities={'dog':'food',
-                                  'Admin Port': 43431,
-                                  #'Convention Address': not specified, but is the leader anyhow
-                              },
-                    logDefs = ActorSystemTestCase.getDefaultTestLogging())
-        sleep(0.15)  # allow System2 to start and join the Convention
+    portBase = 100
+    baseName = 'multiprocUDPBase'
