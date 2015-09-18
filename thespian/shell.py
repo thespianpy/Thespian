@@ -266,9 +266,22 @@ Alternatively, if the first optional argument contains a colon, that is assumed 
 
     def do_create_testActor(self, arg):
         "Creates a Test Actor"
-        na = (self.system or ActorSystem()).createActor(TestActor)
-        N,A = self.getOrAddAddress(na)
-        print ('Created new TestActor %d @ %s'%(N, str(A)))
+        import StringIO, zipfile
+        zipdata = StringIO.StringIO()
+        zf = zipfile.ZipFile(zipdata, 'a')
+        zf.writestr('t.py', test_actor_source)
+        zf.close()
+        loadf = StringIO.StringIO(zipdata.getvalue())
+        actorSys = self.system or ActorSystem()
+        loadf_hash = actorSys.loadActorSource(loadf)
+        try:
+            na = actorSys.createActor('t.TestActor', sourceHash = loadf_hash)
+        except:
+            print ('***ERROR creating Actor t.TestActor from sourceHash %s'%(loadf_hash))
+            traceback.print_exc(limit=3)
+        else:
+            N,A = self.getOrAddAddress(na)
+            print ('Created new TestActor %d @ %s'%(N, str(A)))
 
 
     def do_tell(self, arg):
@@ -360,6 +373,10 @@ Alternatively, if the first optional argument contains a colon, that is assumed 
                                                     SetLogging(l1, l2, l3))
             print('Actor #%d (%s) logging settings updated.'%(anum, addr))
 
+test_actor_source = '''
+from thespian.actors import *
+import logging
+
 class TestActor(Actor):
     def receiveMessage(self, msg, sender):
         logger = logging.getLogger('Thespian.Actor')
@@ -370,7 +387,7 @@ class TestActor(Actor):
                 self.send(sender, self.createActor(TestActor))
             else:
                 self.send(sender, 'TestActor @ %s got: %s'%(str(self.myAddress), str(msg)))
-
+'''
 
         
 if __name__ == "__main__":
