@@ -520,6 +520,17 @@ class ConventioneerAdmin(GlobalNamesAdmin):
             self._sendPendingActorResponse(envelope, None,
                                            errorCode = PendingActorResponse.ERROR_Import)
             return True
+        except AttributeError:
+            # Usually when the module has no attribute FooActor
+            self._sendPendingActorResponse(envelope, None,
+                                           errorCode = PendingActorResponse.ERROR_Invalid_ActorClass)
+            return True
+        except Exception as ex:
+            import traceback
+            thesplog('Exception "%s" handling PendingActor: %s', ex, traceback.format_exc())
+            self._sendPendingActorResponse(envelope, None,
+                                           errorCode = PendingActorResponse.ERROR_Invalid_ActorClass)
+            return True
         return super(ConventioneerAdmin, self).h_PendingActor(envelope)
 
 
