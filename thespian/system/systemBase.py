@@ -16,7 +16,6 @@ except ImportError:
 from thespian.actors import *
 from thespian.system import *
 from thespian.system.utilis import toTimeDeltaOrNone, thesplog, ExpiryTime
-from thespian.system.messages import TellMessage
 from thespian.system.messages.admin import *
 from thespian.system.messages.status import *
 from thespian.system.transport import *
@@ -194,8 +193,7 @@ class systemBase(object):
             try:
                 self.transport.scheduleTransmit(
                     None,
-                    TransmitIntent(anActor, TellMessage(msg),
-                                   onError=self._tellFailed))
+                    TransmitIntent(anActor, msg, onError=self._tellFailed))
                 while not attemptLimit.expired():
                     if not self.transport.run(TransmitOnly, attemptLimit.remaining()):
                         break  # all transmits completed

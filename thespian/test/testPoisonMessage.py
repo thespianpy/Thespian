@@ -123,13 +123,27 @@ class TestASimpleSystem(ActorSystemTestCase):
         # wrapper.
         aS.tell(t1, 3)
         time.sleep(0.01)
-        # Verify that the PoisonMessage from above is NOT sent back to
-        # here because it came from a tell().
+        # Flush out any PoisonMessage response
+        r = aS.ask(t1, 'nothing', 0.2)
+        if r:
+            self.assertIsInstance(r, PoisonMessage)
+            self.assertEqual(r.poisonMessage, 3)
+
         self.assertEqual(aS.ask(counter, "Count?"), 0)
         self.assertEqual(aS.ask(t1, "Hello"), 'hi')
         aS.tell(t1, 3)
         aS.tell(t1, 3)
         time.sleep(0.01)
+        # Flush out any PoisonMessage responses
+        r = aS.ask(t1, 'nothing', 0.2)
+        if r:
+            self.assertIsInstance(r, PoisonMessage)
+            self.assertEqual(r.poisonMessage, 3)
+        r = aS.ask(t1, 'nothing', 0.2)
+        if r:
+            self.assertIsInstance(r, PoisonMessage)
+            self.assertEqual(r.poisonMessage, 3)
+
         self.assertEqual(aS.ask(counter, "Count?"), 0)
         self.assertEqual(aS.ask(t1, "Hello"), 'hi')
 

@@ -5,7 +5,6 @@ from thespian.actors import *
 from thespian.system.utilis import thesplog, StatsManager
 from thespian.system.ratelimit import RateThrottle
 from thespian.system.addressManager import ActorAddressManager, CannotPickleAddress
-from thespian.system.messages import TellMessage
 from thespian.system.messages.logcontrol import SetLogging
 from thespian.system.transport import *
 
@@ -74,7 +73,6 @@ class systemCommonBase(object):
     def setLoggingControls(self, envelope):
         from thespian.system.utilis import thesplog_control
         msg = envelope.message
-        if isinstance(msg, TellMessage): msg = msg.actualMessage
         thesplog_control(msg.threshold, msg.useLogging, msg.useFile)
         return True
 
@@ -129,11 +127,10 @@ class systemCommonBase(object):
                     self._sCBStats.inc('Actor.Message Send.Transmit ReInitiated')
                     self._send_intent_to_transport(each)
                 else:
-                    if not isinstance(each.message, TellMessage):
-                        self._receiveQueue.append(
-                            ReceiveEnvelope(self.myAddress,
-                                            PoisonMessage(each.message)))
-                        self._sCBStats.inc('Actor.Message Send.Poison Return on Child Abort')
+                    self._receiveQueue.append(
+                        ReceiveEnvelope(self.myAddress,
+                                        PoisonMessage(each.message)))
+                    self._sCBStats.inc('Actor.Message Send.Poison Return on Child Abort')
                     each.result = SendStatus.Failed
                     each.completionCallback()
 
@@ -157,9 +154,8 @@ class systemCommonBase(object):
             import traceback
             thesplog('Declaring transmit of %s as Poison: %s', intent.identify(),
                      traceback.format_exc(), exc_info=True, level=logging.ERROR)
-            if not isinstance(intent.message, TellMessage):
-                self._receiveQueue.append(ReceiveEnvelope(intent.targetAddr, PoisonMessage(intent.message)))
-                self._sCBStats.inc('Actor.Message Send.Transmit Poison Rejection')
+            self._receiveQueue.append(ReceiveEnvelope(intent.targetAddr, PoisonMessage(intent.message)))
+            self._sCBStats.inc('Actor.Message Send.Transmit Poison Rejection')
             intent.result = SendStatus.Failed
             intent.completionCallback()
 

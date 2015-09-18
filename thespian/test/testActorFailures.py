@@ -158,7 +158,7 @@ class TestASimpleSystem(ActorSystemTestCase):
 
         tellParent = lambda m: ActorSystem().tell(parent, m)
 
-        askParent        = lambda m: ActorSystem().ask(parent, m, 2)
+        askParent        = lambda m: ActorSystem().ask(parent, m, 0.5)
 
         self.assertEqual(askParent('name?'), parent)
         son = askParent('have a son?')
@@ -175,7 +175,7 @@ class TestASimpleSystem(ActorSystemTestCase):
 
         tellParent = lambda m: ActorSystem().tell(parent, m)
 
-        askParent = lambda m: ActorSystem().ask(parent, m, 2)
+        askParent = lambda m: ActorSystem().ask(parent, m, 0.5)
         askKid    = lambda m: askParent(TellDaughter(m))
 
         self.assertEqual(askParent('name?'), parent)
@@ -201,7 +201,7 @@ class TestASimpleSystem(ActorSystemTestCase):
     def test05_RestartedSubActorWithoutRestarts(self):
         parent = ActorSystem().createActor(NoRestartParent)
 
-        askParent = lambda m: ActorSystem().ask(parent, m, 2)
+        askParent = lambda m: ActorSystem().ask(parent, m, 0.5)
         askKid    = lambda m: askParent(TellDaughter(m))
 
         self.assertEqual(askParent('name?'), parent)
@@ -216,7 +216,7 @@ class TestASimpleSystem(ActorSystemTestCase):
 
         tellParent = lambda m: ActorSystem().tell(parent, m)
 
-        askParent        = lambda m: ActorSystem().ask(parent, m, 2)
+        askParent        = lambda m: ActorSystem().ask(parent, m, 0.5)
         askKid           = lambda m: askParent(TellDaughter(m))
         askGrandKid      = lambda m: askKid(TellDaughter(m))
         askGreatGrandKid = lambda m: askGrandKid(TellDaughter(m))
@@ -254,7 +254,7 @@ class TestASimpleSystem(ActorSystemTestCase):
         tellGrandKid      = lambda m: tellKid(TellDaughter(m))
         tellGreatGrandKid = lambda m: tellGrandKid(TellDaughter(m))
 
-        askParent        = lambda m: ActorSystem().ask(parent, m, 2)
+        askParent        = lambda m: ActorSystem().ask(parent, m, 0.5)
         askKid           = lambda m: askParent(TellDaughter(m))
         askGrandKid      = lambda m: askKid(TellDaughter(m))
         askGreatGrandKid = lambda m: askGrandKid(TellDaughter(m))
@@ -308,7 +308,7 @@ class TestASimpleSystem(ActorSystemTestCase):
         tellGrandKid      = lambda m: tellKid(TellDaughter(m))
         tellGreatGrandKid = lambda m: tellGrandKid(TellDaughter(m))
 
-        askParent        = lambda m: ActorSystem().ask(parent, m, 2)
+        askParent        = lambda m: ActorSystem().ask(parent, m, 0.5)
         askKid           = lambda m: askParent(TellDaughter(m))
         askGrandKid      = lambda m: askKid(TellDaughter(m))
         askGreatGrandKid = lambda m: askGrandKid(TellDaughter(m))
@@ -367,7 +367,21 @@ class TestASimpleSystem(ActorSystemTestCase):
         tellParent(Deadly(0))  # kills parent
         #time.sleep(0.38)  # wait for Deadly message effects to propagate
 
-        self.assertIsNotNone(askParent('name?'))
+        # First response from parent should be the
+        # PoisonMessage(Deadly), the next should be the response to
+        # the 'name?' query.
+        r = askParent('name?')
+        print('init r is: %s'%str(r))
+        while r:
+            if isinstance(r, PoisonMessage):
+                self.assertIsInstance(r.poisonMessage, Deadly)
+                r = askParent('')
+                print('next r is: %s'%str(r))
+            else:
+                self.assertIsInstance(r, ActorAddress)
+                break
+        self.assertIsNotNone(r)
+
         self.assertIsNotNone(askKid('name?'))
         self.assertIsNotNone(askGrandKid('name?'))
         self.assertIsNotNone(askGreatGrandKid('name?'))
@@ -497,7 +511,17 @@ class TestASimpleSystem(ActorSystemTestCase):
         ActorSystem().tell(confused2, Deadly(1))
         import time
         time.sleep(0.10)  # Allow time for ActorExitRequest to be processed
+
+        # Next response may be the PoisonMessage(Deadly) from
+        # confused2.  Will "ask nothing" from confused just to be able
+        # to retrieve the poison message from confused2.
+        r = ActorSystem().ask(confused, 'nothing', 0.30)
+        if r:
+            self.assertIsInstance(r, PoisonMessage)
+            self.assertIsInstance(r.poisonMessage, Deadly)
+
         self.assertEqual("dunno", ActorSystem().ask(confused, 'name?', 0.31))
+        self.assertEqual("dunno", ActorSystem().ask(confused2, 'name?', 0.31))
         ActorSystem().tell(confused, ActorExitRequest())
         self.assertIsNone(ActorSystem().ask(confused, 'name?', 0.1))
 

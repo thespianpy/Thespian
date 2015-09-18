@@ -2,7 +2,6 @@
 
 from datetime import datetime, timedelta
 from thespian.system.utilis import thesplog
-from thespian.system.messages import TellMessage
 import logging
 
 
@@ -58,7 +57,7 @@ class ReceiveEnvelope(object):
     @property
     def message(self): return self._message
     def identify(self):
-        smsg = str(self.message.actualMessage if isinstance(self.message, TellMessage) else self.message)
+        smsg = str(self.message)
         if len(smsg) > MAX_SHOWLEN:
             smsg = smsg[:MAX_SHOWLEN] + '...'
         msgt = str(type(self.message))

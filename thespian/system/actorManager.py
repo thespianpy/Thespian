@@ -108,8 +108,6 @@ class ActorManager(systemCommonBase):
     def _handleOneMessage(self, envelope):
 
         msg = envelope.message
-        if isinstance(msg, TellMessage):
-            msg = msg.actualMessage
 
         thesplog('ACTOR got %s', envelope.identify(), level=logging.DEBUG)
 
@@ -160,9 +158,8 @@ class ActorManager(systemCommonBase):
                                  self._actorClass, self.transport.myAddress, msg,
                                  traceback.format_exc(),
                                  level=logging.ERROR, exc_info=True)
-                        if not isinstance(envelope.message, TellMessage):
-                            self._send_intent(
-                                TransmitIntent(envelope.sender, PoisonMessage(msg)))
+                        self._send_intent(
+                            TransmitIntent(envelope.sender, PoisonMessage(msg)))
 
 
         if isinstance(msg, ActorExitRequest):
