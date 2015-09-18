@@ -13,8 +13,8 @@ import thespian.test.helpers
 from thespian.actors import *
 from thespian.test import ActorSystemTestCase
 
-wakeupAfterPeriod = timedelta(seconds=0.5)
-sleepLongerThanWakeup = lambda: time.sleep(0.6)
+wakeupAfterPeriod = timedelta(seconds=0.65)
+sleepLongerThanWakeup = lambda: time.sleep(0.7)
 sleepPartOfWakeupPeriod = lambda: time.sleep(0.1)
 
 
