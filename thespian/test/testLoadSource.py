@@ -215,7 +215,9 @@ class TestRoundTripROT13(unittest.TestCase, CreateTestSourceZips):
 
     def test_simple_rot13_enc_dec(self):
         self.simplezipFname = os.path.join(self.tmpdir, 'simple.zip')
-        open(self.simplezipFname, 'wb').write(b'abcdABCD1234')
+        zf = open(self.simplezipFname, 'wb')
+        zf.write(b'abcdABCD1234')
+        zf.close()
         encfname = _encryptROT13Zipfile(self.simplezipFname)
         encdata = open(encfname, 'rb').read()
         decdata = _decryptROT13(encdata)
