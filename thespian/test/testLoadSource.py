@@ -136,13 +136,28 @@ class PigActor(Actor):
 # Sow exercises relative imports
 sowSource = '''
 from thespian.actors import Actor
+from .chicken import Cluck
+import barn
+import barn.goose
+from .cow.moo import cow_says
+from frog import Frog
+import toad
+class SowActor(Actor):
+    def receiveMessage(self, msg, sender):
+        if type(msg) == type(""):\r
+            self.send(sender, cow_says() + ' Oink ' + Cluck(Frog(toad.Toad(barn.goose.Honk(msg)))))
+                '''  # <-- unexpected indentation without a trailing newline.
+
+# Piglet exercises OLD-style relative imports (valid in 2.x, but not 3.x)
+pigletSource = '''
+from thespian.actors import Actor
 from chicken import Cluck
 import barn
 import goose
 from cow.moo import cow_says
 from frog import Frog
 import toad
-class SowActor(Actor):
+class PigletActor(Actor):
     def receiveMessage(self, msg, sender):
         if type(msg) == type(""):\r
             self.send(sender, cow_says() + ' Oink ' + Cluck(Frog(toad.Toad(goose.Honk(msg)))))
@@ -186,6 +201,7 @@ class CreateTestSourceZips(object):
         foozip.writestr('barn/rooster.py', roosterSource)
         foozip.writestr('barn/goose.py', gooseSource)
         foozip.writestr('barn/sow.py', sowSource)
+        foozip.writestr('barn/piglet.py', pigletSource)
         foozip.writestr('barn/cow/__init__.py', '')
         foozip.writestr('barn/cow/moo.py', mooSource)
         foozip.close()
@@ -235,7 +251,7 @@ class TestRoundTripROT13(unittest.TestCase, CreateTestSourceZips):
         names = foozip.namelist()
         self.assertEqual(names[0], '__init__.py')
         self.assertEqual(names[-1], 'barn/cow/moo.py')
-        self.assertEqual(len(names), 12)
+        self.assertEqual(len(names), 13)
 
 
 class TestDirectZipfile(unittest.TestCase):
@@ -327,6 +343,17 @@ class TestDirectZipfile(unittest.TestCase):
         self.assertRaises(InvalidActorAddress,
                           f.receiveMessage, "what", "sender")
 
+    def testPiglet(self):
+        if sys.version_info < (3,0):
+            sys.path.insert(0, self.foozipFname)
+            # First try to import barn top level and piglet from the zipfile
+            import barn.piglet
+            f = barn.piglet.PigletActor()
+            # calling the PigletActor with a string causes some additional
+            # non-module-level imports to occur.
+            self.assertRaises(InvalidActorAddress,
+                              f.receiveMessage, "what", "sender")
+
 
 class TestASimpleSystem(ActorSystemTestCase, CreateTestSourceZips):
     testbase='Simple'
@@ -412,6 +439,13 @@ class TestASimpleSystem(ActorSystemTestCase, CreateTestSourceZips):
         srchash = self._loadFooSource()
         sow = self.systems['One'].createActor('barn.sow.SowActor', sourceHash=srchash)
         self.assertEqual('Moooo Oink Cluck Honk ready?', self.systems['One'].ask(sow, 'ready?', 1))
+
+    def test02_verifyAllOLDSTYLERelativeImportPossibilities(self):
+        if sys.version_info < (3,0):
+            self.startSystems(85)
+            srchash = self._loadFooSource()
+            piglet = self.systems['One'].createActor('barn.piglet.PigletActor', sourceHash=srchash)
+            self.assertEqual('Moooo Oink Cluck Honk ready?', self.systems['One'].ask(piglet, 'ready?', 1))
 
     def test02_verifyHashSourceAvailablePostLoadFromMembers(self):
         self.startSystems(90)
