@@ -137,21 +137,12 @@ class BadActor(Actor):   # useable as a "null" Actor which does nothing.
 
 
 class External(Actor):
-    "Proxy for a requester outside the system; any response will be discarded."
+    """Proxy for a requester outside the system.  Messages sent to this
+       Actor will be queued and delivered as the result of
+       ActorSystem().ask() and ActorSystem().listen() calls."""
     def receiveMessage(self, msg, sender):
-        pass
-
-
-class ExternalWaiter(Actor):
-    '''Temporary actor to hold an (eventual) response for some thread
-       external to the ActorSystem to check for and retrieve later.'''
-    def __init__(self, *args, **kw):
-        super(ExternalWaiter, self).__init__(*args, **kw)
-        self.response = None
-        self.gotResponse = False
-    def receiveMessage(self, msg, sender):
-        self.response = msg
-        self.gotResponse = True
+        if not hasattr(self, 'responses'): self.responses = []
+        self.responses.append(msg)
 
 
 def actor_base_receive(actorInst, msg, sender):
@@ -238,7 +229,6 @@ class ActorSystemBase:
             'System:ExternalRequester': extreq,
             'System:BadActor': badActor,
         }
-
 
     def shutdown(self):
         while self._sources:
@@ -429,16 +419,16 @@ class ActorSystemBase:
 
     def tell(self, anActor, msg):
         self._realizeWakeups()   # First, so that they "fire" between the last call and this one
-        sender = ActorAddress('System:ExternalRequester')
-        self._pendingSends.append(PendingSend(sender, msg, anActor))
+        self._pendingSends.append(PendingSend(self.actorRegistry['System:ExternalRequester'].address, msg, anActor))
         self._runSends()
 
     def ask(self, anActor, msg, timeout):
         self._realizeWakeups()   # First, so that they "fire" between the last call and this one
-        awa = self.newActor(self.system.systemAddress, ExternalWaiter, self.system,
-                            None, None, None) # new per ask
-        aw = self.actorRegistry[awa.actorAddressString].instance
-        self._pendingSends.append(PendingSend(awa, msg, anActor))
+        sender = self.actorRegistry['System:ExternalRequester']
+        self._pendingSends.append(PendingSend(sender.address, msg, anActor))
+        return self.listen(timeout)
+
+    def listen(self, timeout):
         # timeout is ignored because we are executing in the context
         # of the current thread, so all actors will run to completion
         # synchronously (or block on external operations) and timeout
@@ -447,14 +437,12 @@ class ActorSystemBase:
         # timeout period has been exceeded, but that still wouldn't
         # allow interruption of blocked Actors.
         self._runSends()
-        response = aw.response
-        if not aw.gotResponse:
-            logging.getLogger('Thespian').warning('No response received for ask message to %s'%(
-                str(anActor)))
-        self._pendingSends.append(PendingSend(ActorAddress('System:ExternalRequester'),
-                                              ActorExitRequest(), awa))
-        self._runSends()
-        return response
+        sender = self.actorRegistry['System:ExternalRequester']
+        while getattr(sender.instance, 'responses', None):
+            response = sender.instance.responses.pop(0)
+            if isInternalActorSystemMessage(response): continue
+            return response
+        return None
 
     def actor_send(self, fromActor, toActor, msg):
         self._pendingSends.append(PendingSend(fromActor, msg, toActor))
@@ -529,6 +517,3 @@ class ActorSystemBase:
                     del sys.modules[each]
                 del sys.meta_path[pnum]
                 break
-
-
-

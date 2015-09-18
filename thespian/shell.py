@@ -284,15 +284,25 @@ Alternatively, if the first optional argument contains a colon, that is assumed 
 
 
     def do_ask(self, arg):
-        """Sends a message to the identified Actor and waits for a response (for up to 10 seconds).  The first argument is required and is the Actor number (see create_testActor) and the rest of the line is the message string to send to the Actor."""
+        """Sends a message to the identified Actor and waits for a response from any Actor (for up to 10 seconds).  The first argument is required and is the Actor number (see create_testActor) and the rest of the line is the message string to send to the Actor."""
         actorAddrAndMsg = self.parseActorNum(arg)
         if actorAddrAndMsg:
             anum, addr, msg = actorAddrAndMsg
             try:
                 r = (self.system or ActorSystem()).ask(addr, msg, 10)
-                print ('Actor #%d (%s) response: %s'%(anum, addr, r or '<None... timed out>'))
+                print ('Response: %s'%(r or '<None... timed out>'))
             except:
                 print ('***ERROR asking Actor #%d (%s)'%(anum, str(addr)))
+                traceback.print_exc(limit=3)
+
+
+    def do_listen(self, arg):
+        """Listens for messages from any Actor in the system for up to 10 seconds."""
+        try:
+            r = (self.system or ActorSystem()).listen(10)
+            print('Received message: %s'%(r or '<None... timed out>'))
+        except:
+                print ('***ERROR listening')
                 traceback.print_exc(limit=3)
 
 

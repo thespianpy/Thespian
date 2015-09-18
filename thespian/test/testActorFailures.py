@@ -512,13 +512,9 @@ class TestASimpleSystem(ActorSystemTestCase):
         import time
         time.sleep(0.10)  # Allow time for ActorExitRequest to be processed
 
-        # Next response may be the PoisonMessage(Deadly) from
-        # confused2.  Will "ask nothing" from confused just to be able
-        # to retrieve the poison message from confused2.
-        r = ActorSystem().ask(confused, 'nothing', 0.30)
-        if r:
-            self.assertIsInstance(r, PoisonMessage)
-            self.assertIsInstance(r.poisonMessage, Deadly)
+        r = ActorSystem().listen(0.20)
+        self.assertIsInstance(r, PoisonMessage)
+        self.assertIsInstance(r.poisonMessage, Deadly)
 
         self.assertEqual("dunno", ActorSystem().ask(confused, 'name?', 0.31))
         self.assertEqual("dunno", ActorSystem().ask(confused2, 'name?', 0.31))

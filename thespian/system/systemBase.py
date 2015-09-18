@@ -218,6 +218,16 @@ class systemBase(object):
                 str(intent.targetAddr), str(result)))
 
 
+    def listen(self, timeout):
+        while True:
+            response = self.transport.run(None, toTimeDeltaOrNone(timeout))
+            if response is None: break
+            # Do not send miscellaneous ActorSystemMessages to the caller
+            # that it might not recognize.
+            if response and not isInternalActorSystemMessage(response.message):
+                return response.message
+        return None
+
     def ask(self, anActor, msg, timeout):
         self._ASKFAILED = None
         self.transport.scheduleTransmit(

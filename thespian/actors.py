@@ -405,11 +405,19 @@ class ActorSystem(object):
             raise ValueError('Actor ask address is not a valid ActorAddress')
         self._systemBase.tell(actorAddr, msg)
 
+    def listen(self, timeout=None):
+        """Waits for a message from any Actor.  The optional timeout argument
+        specifies the maximum amount of time to wait in fractional
+        seconds.  Returns None if no response is received in the
+        indicated time period.
+        """
+        return self._systemBase.listen(timeout)
+
     def ask(self, actorAddr, msg, timeout=None):
-        """Sends msg to the addressed Actor and waits for a response.  The
-        optional timeout argument specifies the maximum amount of time
-        to wait in fractional seconds.  Returns None if no response is
-        received in the indicated time period.
+        """Sends msg to the addressed Actor and waits for a response (from
+        *any* Actor).  The optional timeout argument specifies the
+        maximum amount of time to wait in fractional seconds.  Returns
+        None if no response is received in the indicated time period.
         """
         if not isinstance(actorAddr, ActorAddress):
             raise ValueError('Actor ask address "%s" is not a valid ActorAddress'%str(actorAddr))
