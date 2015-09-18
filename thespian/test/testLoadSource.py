@@ -310,7 +310,6 @@ class TestDirectZipfile(unittest.TestCase):
     def testPig(self):
         sys.path.insert(0, self.foozipFname)
         # First try to import barn top level and pig from the zipfile
-        print('path: %s'%str(sys.path))
         import barn.pig
         f = barn.pig.PigActor()
         # calling the PigActor with a string causes some additional
@@ -321,7 +320,6 @@ class TestDirectZipfile(unittest.TestCase):
     def testSow(self):
         sys.path.insert(0, self.foozipFname)
         # First try to import barn top level and sow from the zipfile
-        print('path: %s'%str(sys.path))
         import barn.sow
         f = barn.sow.SowActor()
         # calling the SowActor with a string causes some additional
