@@ -240,11 +240,7 @@ class systemBase(object):
                     str(self._ASKFAILED)))
             # Do not send miscellaneous ActorSystemMessages to the caller
             # that it might not recognize.
-            if response and (not isinstance(response.message, ActorSystemMessage) or
-                             isinstance(response.message,
-                                        (Thespian_SystemStatus,
-                                         Thespian_ActorStatus,
-                                         PoisonMessage))):
+            if response and not isInternalActorSystemMessage(response.message):
                 return response.message
         return None
 

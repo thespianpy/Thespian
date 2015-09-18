@@ -25,6 +25,7 @@ try:
 except ImportError:
     # Old python that doesn't contain this...
     from thespian.system.dictconfig import dictConfig
+from thespian.system import isInternalActorSystemMessage
 from thespian.system.messages.status import *
 from thespian.system.sourceLoader import loadModuleFromHashSource, SourceHashFinder
 
