@@ -293,6 +293,11 @@ class DeadEnvelope(ActorSystemMessage):
         self.deadAddress = origTgt
 
     def __str__(self):
+        if id(self.deadMessage) == id(self):
+            return 'Self-referential DeadEnvelope!'
+        if isinstance(self.deadMessage, DeadEnvelope):
+            if id(self.deadMessage.deadMessage) == id(self):
+                return 'Self-referential-once-removed DeadEnvelope!'
         return 'DeadEnvelope(%s)->%s'%(str(self.deadMessage), str(self.deadAddress))
     def __eq__(self, o):
         return isinstance(o, DeadEnvelope) \
