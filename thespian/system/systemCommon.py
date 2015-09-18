@@ -50,9 +50,14 @@ class systemCommonBase(object):
         self._childExited(childAddress)
         self._children = [C for C in self._children if C != childAddress]
         if hasattr(self, '_exiting') and not self._children:
-            # OK, all children are dead, can now exit this actor
-            self._sayGoodbye()
-            self.transport.abort_run(drain=True)
+            # OK, all children are dead, can now exit this actor, but
+            # make sure this final cleanup only occurs once
+            # (e.g. transport.deadAddress above could recurse through
+            # here as well.
+            if not hasattr(self, '_exitedAlready'):
+                self._exitedAlready = True
+                self._sayGoodbye()
+                self.transport.abort_run(drain=True)
         return True
 
 
