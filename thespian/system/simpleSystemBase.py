@@ -195,7 +195,7 @@ defaultLoggingConfig = {
                            'regLogHandler',
                        ],
           },
-    'disable_existing_loggers': True,
+    'disable_existing_loggers': False,
 }
 
 
@@ -204,8 +204,7 @@ class ActorSystemBase:
     def __init__(self, system, logDefs = None):
         self.system = system
         self._pendingSends = []
-        if logDefs is not None:
-            dictConfig(logDefs or defaultLoggingConfig)
+        dictConfig(logDefs or defaultLoggingConfig)
         self._primaryActors = []
         self._primaryCount  = 0
         self._globalNames = {}
