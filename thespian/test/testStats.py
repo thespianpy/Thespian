@@ -93,6 +93,7 @@ class TestASimpleSystem(ActorSystemTestCase):
         aS = ActorSystem()
         aa = aS.createActor(TestActor)
         aS.tell(aa, 'Sleep')
+        time.sleep(0.1)
 
         rsp = aS.ask(aa, Thespian_StatusReq(), 3)
         formatStatus(rsp)
@@ -102,6 +103,7 @@ class TestASimpleSystem(ActorSystemTestCase):
         self.assertEqual(len(rsp.childActors), 0)
 
         aS.tell(aa, 'Sleep')
+        time.sleep(0.1)
 
         rsp = aS.ask(aa, Thespian_StatusReq())
         formatStatus(rsp)
