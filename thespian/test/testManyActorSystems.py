@@ -24,6 +24,7 @@ def remoteSystem(conn, systembase, adminPort, systemCapabilities):
     if 'DeathStar' != conn.recv():  # wait for shutdown indication from parent
         ActorSystem().shutdown()
     conn.close()
+    return False
 
 
 def DagobahSystem(conn, base): remoteSystem(conn, base, 16230, { 'Swamp': True })
@@ -223,11 +224,14 @@ class TestManyActorSystem(unittest.TestCase):
 
 
     def tearDown(self):
-        ActorSystem().shutdown()
         for system in self.systems:
             self.systems[system][0].send('OK, all done')
         for system in self.systems:
-            self.systems[system][1].join()
+            for x in range(10):
+                if not self.systems[system][1].is_alive():
+                    break
+                sleep(1)
+        ActorSystem().shutdown()
 
 
     def test00_primeLogging(self):
@@ -318,8 +322,12 @@ class TestManyActorSystem(unittest.TestCase):
         self.assertEqual(ActorSystem().ask(jarjar, 'hi', 0.25), 'hi?  How rude!')
 
         self.systems['Naboo'][0].send('OK, all done')
-        self.systems['Naboo'][1].join()
+        ref = self.systems['Naboo'][1]
         del self.systems['Naboo']
+        for x in range(20):
+            if not ref.is_alive():
+                break
+            sleep(1)
         sleep(0.15)
 
         try:
@@ -336,7 +344,10 @@ class TestManyActorSystem(unittest.TestCase):
         self.assertEqual(ActorSystem().ask(jarjar, 'hiya', 0.25), 'hiya?  How rude!')
 
         self.systems['Endor'][0].send('OK, all done')
-        self.systems['Endor'][1].join()
+        for x in range(10):
+            if not self.systems['Endor'][1].is_alive():
+                break
+            sleep(1)
         del self.systems['Endor']
         sleep(0.15)
 
@@ -360,10 +371,14 @@ class TestManyActorSystem(unittest.TestCase):
                                            targetActorRequirements={'WantsToSee': 'Snow'})
         self.assertEqual(ActorSystem().ask(jarjar, 'hi you', 0.25), 'hi you?  How rude!')
 
+
     def test07_subActorRequirements(self):
         # JarJar's home world is taken by the Empire
         self.systems['Naboo'][0].send('OK, all done')
-        self.systems['Naboo'][1].join()
+        for x in range(10):
+            if not self.systems['Naboo'][1].is_alive():
+                break
+            sleep(1)
         del self.systems['Naboo']
         sleep(0.15)
 
