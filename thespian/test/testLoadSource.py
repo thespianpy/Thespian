@@ -10,23 +10,42 @@ import os
 
 
 def _encryptROT13Zipfile(zipFname):
+    "Encrypts a zipfile on disk into a new file with ROT13 encryption of contents"
     zFile = open(zipFname, 'rb')
     zData = zFile.read()
     zFile.close()
-    rot13 = lambda b: chr((ord(b) + 13) % 256)
-    z = 'ROT13___' + ''.join(map(rot13, zData))
     efName = zipFname + '.enc'
     zEFile = open(efName, 'wb')
-    zEFile.write(z)
+    if zData:
+        if isinstance(zData[0], int):
+            rot13 = lambda b: (b + 13) % 256
+            hdr = b'ROT13___'
+            join = bytes
+        else:
+            rot13 = lambda b: chr((ord(b) + 13) % 256)
+            hdr = 'ROT13___'
+            join = ''.join
+        z = hdr + join(map(rot13, zData))
+        try:
+            zEFile.write(z)
+        except TypeError:
+            zEFile.write(bytes(z, 'UTF-8'))
     zEFile.close()
     return efName
 
 
 def _decryptROT13(encdata):
+    "Converts input bytes read from a file into ROT13 decrypted bytes"
+    if not encdata: return None
+    if isinstance(encdata[0], int):
+        unrot13 = lambda b: (b + 256 - 13) % 256
+        join = bytes
+    else:
+        unrot13 = lambda b: chr((ord(b) + 256 - 13) % 256)
+        join = ''.join
     if encdata[:8].decode() != 'ROT13___':
         return None
-    unrot13 = lambda b: chr((ord(b) + 256 - 13) % 256)
-    clear = ''.join(map(unrot13, encdata[8:]))
+    clear = join(map(unrot13, encdata[8:]))
     return clear
 
 
@@ -151,6 +170,14 @@ class TestRoundTripROT13(unittest.TestCase):
         import shutil
         if os.path.exists(self.tmpdir): shutil.rmtree(self.tmpdir)
 
+
+    def test_simple_rot13_enc_dec(self):
+        self.simplezipFname = os.path.join(self.tmpdir, 'simple.zip')
+        open(self.simplezipFname, 'wb').write(b'abcdABCD1234')
+        encfname = _encryptROT13Zipfile(self.simplezipFname)
+        encdata = open(encfname, 'rb').read()
+        decdata = _decryptROT13(encdata)
+        self.assertEqual(decdata, b'abcdABCD1234')
 
     def test_rot13_enc_dec(self):
         self.foozipFname = os.path.join(self.tmpdir, 'foosrc.zip')
