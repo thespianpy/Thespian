@@ -39,6 +39,9 @@
 (setq org-image-actual-width 'nil)
 (setq org-plantuml-jar-path (expand-file-name "~/.nix-profile/lib/plantuml.jar"))
 
+(require 'ox-ascii)
+(setq org-ascii-charset 'utf-8)
+
 ; Generate using.org PDF:
 ;   interactively via: Ctrl-c Ctrl-e p
 ;   cmdline: $ emacs -batch --load doc/thespian.el --visit=doc/using.org --funcall org-latex-export-to-pdf
