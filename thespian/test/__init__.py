@@ -57,6 +57,8 @@ class ActorSystemTestCase(unittest.TestCase, LocallyManagedActorSystem):
         if hasattr(self, 'currentBase'):
             ActorSystem().shutdown()
             delattr(self, 'currentBase')
+            import time
+            time.sleep(0.02)
 
 
     @staticmethod
