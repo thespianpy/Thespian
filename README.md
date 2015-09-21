@@ -20,4 +20,4 @@ Contacts:
 ChangeLog
 =========
 
-  * 2.1.4 (2015-08-31) -- Public Release
+  See the (Thespian Release Notes)[http://thespianpy.com/releases.html].
