@@ -7,7 +7,7 @@
 #+LATEX_HEADER: \product{Thespian}
 #+LATEX_HEADER: \component{Python Actor System}
 #+LATEX_HEADER: \doctype{Release Notes}
-#+LATEX_HEADER: \docrev{2.1}{2015 Sep 05}
+#+LATEX_HEADER: \docrev{2.1.5}{2015 Sep 20}
 #+LATEX_HEADER: \docid{TheDoc-06}
 #+OPTIONS: ^:nil num:nil
 
@@ -16,6 +16,37 @@
 * 2.x
 
 ** 2.1
+
+*** 2.1.5 <2015-09-20 Sun>
+
+  * Adds support for Python 3.3 and Python 3.4 versions, including the
+    use of the PyPy interpreter.
+
+  * Adds the ~listen()~ API call (~ask()~ is ~tell()~ + ~listen()~)
+
+  * Log Actor exception through normal logging channels as well as via
+    Thespian internal logging output.
+
+  * The Thespian shell loads the TestActor via loadable sources.
+
+  * The simpleSystemBase will always apply default logging.
+
+  * The ~loadActorSource()~ call can now take a file-like object as
+    well as a filename.
+
+  * Added the Thespian Developer's document.
+
+  * Added the Thespian In-Depth Introduction document.
+
+  * Added the Thespian Index (main pages) document.
+
+  * Added the Thespian Releases document.
+
+  * Internal updates to more gracefully handle shutdown scenarios and
+    avoid impossible retransmits.
+
+  * Testing, documentation, and setup file updates.
+
 
 *** 2.1.4 Initial Public Release <2015-08-31 Mon>
 
