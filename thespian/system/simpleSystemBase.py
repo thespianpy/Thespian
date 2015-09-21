@@ -488,7 +488,9 @@ class ActorSystemBase:
         return hval
 
     def _loadValidatedActorSource(self, sourceHash, sourceZip):
-        # Validate the source file
+        # Validate the source file by constructing a SourceHashFinder
+        # for it and seeing if that SourceHashFinder can access the
+        # contents.
         try:
             f = SourceHashFinder(sourceHash, lambda v: v, sourceZip)
             namelist = f.getZipNames()
