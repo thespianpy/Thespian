@@ -11,13 +11,20 @@ setup(
     scripts = [ 'thespianShell.py' ],
     packages = find_packages(exclude=['thespian/test']),
     classifiers = [
+        'Development Status :: 3 - Production/Stable',
         'Environment :: Library',
         'Intended Audience :: Developers',
+        'License :: OSI Approved :: MIT License',
         'Operating System :: MacOS',
         'Operating System :: Microsoft :: Windows',
         'Operating System :: POSIX :: Linux',
         'Programming Language :: Python :: 2.6',
         'Programming Language :: Python :: 2.7',
+        'Programming Language :: Python :: 3.3',
+        'Programming Language :: Python :: 3.4',
+        'Programming Language :: Python :: Implementation :: CPython',
+        'Programming Language :: Python :: Implementation :: PyPy',
+        'Topic :: System :: Distributed Computing',
     ],
     long_description = '''
 
