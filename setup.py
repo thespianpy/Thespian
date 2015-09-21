@@ -4,7 +4,7 @@ setup(
     name = 'thespian',
     version = '2.1.5',
     description = 'Python Actor concurrency library',
-    author = 'Kevin Quick',
+    author = 'Kevin Quick, GoDaddy',
     author_email = 'kquick@godaddy.com',
     url = 'http://thespianpy.com',
     license = 'MIT',
