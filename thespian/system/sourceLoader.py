@@ -5,6 +5,7 @@ except ImportError:
         from StringIO import StringIO
     except ImportError:
         from io import StringIO
+from io import BytesIO
 from zipfile import ZipFile
 from os import path as ospath
 import logging
@@ -52,9 +53,13 @@ class HashLoader(object):
             # mode to read the file is not always effective
             # (e.g. ntlm.HTTPNtlmAuthHandler.py, so explicitly ensure
             # the proper line endings for the compiler.
+            if sys.version_info >= (3,0):
+                converter = lambda s: compile(s + b'\n', mod.__file__, "exec")
+            else:
+                converter = lambda s: compile(s.replace('\r\n', '\n')+'\n', mod.__file__, "exec")
             code = self.finder.withZipElementSource(
                 name,
-                lambda s: compile(s.replace('\r\n', '\n')+'\n', mod.__file__, "exec"))
+                converter)
             do_exec(code, mod.__dict__)
         except Exception as ex:
             thesplog('sourceload realization failure: %s', ex)
@@ -103,7 +108,7 @@ class SourceHashFinder(object):
         return '{{' + self.srcHash + '}}'
     def _getFromZipFile(self, getter):
         plainsrc = self.decryptor(self.enczfsrc)
-        z = ZipFile(StringIO(plainsrc))
+        z = ZipFile(BytesIO(plainsrc))
         try:
             return getter(z)
         finally:
