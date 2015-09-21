@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
 <title>Thespian Actors User's Guide</title>
-<!-- 2015-09-07 Mon 00:04 -->
+<!-- 2015-09-20 Sun 22:54 -->
 <meta  http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta  name="generator" content="Org-mode" />
 <meta  name="author" content="Kevin Quick &lt;kquick@godaddy.com&gt;" />
@@ -88,17 +88,17 @@
     { background-color: #ffff00; color: #000000; font-weight: bold; }
   /*]]>*/-->
 </style>
-<link rel="stylesheet" type="text/css" href="http://www.pirilampo.org/styles/bigblow/css/htmlize.css"/>
-<link rel="stylesheet" type="text/css" href="http://www.pirilampo.org/styles/bigblow/css/bigblow.css"/>
-<link rel="stylesheet" type="text/css" href="http://www.pirilampo.org/styles/bigblow/css/hideshow.css"/>
-<script type="text/javascript" src="http://www.pirilampo.org/styles/bigblow/js/jquery-1.11.0.min.js"></script>
-<script type="text/javascript" src="http://www.pirilampo.org/styles/bigblow/js/jquery-ui-1.10.2.min.js"></script>
-<script type="text/javascript" src="http://www.pirilampo.org/styles/bigblow/js/jquery.localscroll-min.js"></script>
-<script type="text/javascript" src="http://www.pirilampo.org/styles/bigblow/js/jquery.scrollTo-1.4.3.1-min.js"></script>
-<script type="text/javascript" src="http://www.pirilampo.org/styles/bigblow/js/jquery.zclip.min.js"></script>
-<script type="text/javascript" src="http://www.pirilampo.org/styles/bigblow/js/bigblow.js"></script>
-<script type="text/javascript" src="http://www.pirilampo.org/styles/bigblow/js/hideshow.js"></script>
-<script type="text/javascript" src="http://www.pirilampo.org/styles/lib/js/jquery.stickytableheaders.min.js"></script>
+<link rel="stylesheet" type="text/css" href="styles/bigblow/css/htmlize.css"/>
+<link rel="stylesheet" type="text/css" href="styles/bigblow/css/bigblow.css"/>
+<link rel="stylesheet" type="text/css" href="styles/bigblow/css/hideshow.css"/>
+<script type="text/javascript" src="styles/bigblow/js/jquery-1.11.0.min.js"></script>
+<script type="text/javascript" src="styles/bigblow/js/jquery-ui-1.10.2.min.js"></script>
+<script type="text/javascript" src="styles/bigblow/js/jquery.localscroll-min.js"></script>
+<script type="text/javascript" src="styles/bigblow/js/jquery.scrollTo-1.4.3.1-min.js"></script>
+<script type="text/javascript" src="styles/bigblow/js/jquery.zclip.min.js"></script>
+<script type="text/javascript" src="styles/bigblow/js/bigblow.js"></script>
+<script type="text/javascript" src="styles/bigblow/js/hideshow.js"></script>
+<script type="text/javascript" src="styles/lib/js/jquery.stickytableheaders.min.js"></script>
 <link href="thespian.css" rel="stylesheet">
 <script type="text/javascript">
 /*
@@ -149,7 +149,7 @@ for the JavaScript code in this tag.
 </head>
 <body>
 <div id="content">
-<h1 class="title"><a href="https://github.com/godaddy/Thespian"><img src="thesplogo2.png" alt="Thespian" width="50%" display="inline" /></a> Actors User's Guide</h1>
+<h1 class="title"><a href="http://thespianpy.com"><img src="thesplogo2.png" alt="Thespian" width="50%" display="inline" /></a> Actors User's Guide</h1>
 <div id="table-of-contents">
 <h2>Table of Contents</h2>
 <div id="text-table-of-contents">
@@ -239,14 +239,15 @@ for the JavaScript code in this tag.
 <li><a href="#sec-6-5-1">6.5.1. Gotchas</a></li>
 </ul>
 </li>
-<li><a href="#sec-6-6">6.6. updateCapability</a></li>
-<li><a href="#sec-6-7">6.7. loadActorSource</a>
+<li><a href="#sec-6-6">6.6. listen</a></li>
+<li><a href="#sec-6-7">6.7. updateCapability</a></li>
+<li><a href="#sec-6-8">6.8. loadActorSource</a>
 <ul>
-<li><a href="#sec-6-7-1">6.7.1. Source Loading Issues</a></li>
-<li><a href="#sec-6-7-2">6.7.2. Security Considerations</a></li>
+<li><a href="#sec-6-8-1">6.8.1. Source Loading Issues</a></li>
+<li><a href="#sec-6-8-2">6.8.2. Security Considerations</a></li>
 </ul>
 </li>
-<li><a href="#sec-6-8">6.8. unloadActorSource</a></li>
+<li><a href="#sec-6-9">6.9. unloadActorSource</a></li>
 </ul>
 </li>
 <li><a href="#sec-7">7. ActorSystem Messages</a>
@@ -321,7 +322,6 @@ for the JavaScript code in this tag.
 </ul>
 </div>
 </div>
-
 
 <div id="outline-container-sec-1" class="outline-2">
 <h2 id="sec-1"><span class="section-number-2">1</span> Actor Overview</h2>
@@ -878,10 +878,21 @@ ensure that the probe Actor reaches a stable condition in this
 manner.
 </p>
 </li>
+
+<li>Actors are not intended to create other processes or threads;
+attempts to do so may create undefined behavior.
+</li>
+
+<li>Actors should not block indefinitely on IO operations; while the
+Actor is running in the <code>receiveMessage()</code> method it is not able
+to handle other messages, including Actor System internal
+messages.  The Actor will appear to be frozen and this will result
+in PoisonMessage delivery failures to Actors attempting to
+communicate with the busy Actor.
+</li>
 </ul>
 </div>
 </div>
-
 
 <div id="outline-container-sec-4" class="outline-2">
 <h2 id="sec-4"><span class="section-number-2">4</span> Thespian Actor Feature Extensions</h2>
@@ -1328,7 +1339,7 @@ encounter version-related problems.
 </ul>
 
 <p>
-The <a href="#sec-6-7">loadActorSource</a> operation describes this capability in more
+The <a href="#sec-6-8">loadActorSource</a> operation describes this capability in more
 detail, including security protections associated with this feature.
 </p>
 </div>
@@ -1471,7 +1482,7 @@ system was started as root, then all Actors will run as root.</span>
 
 <p>
 The source for the <code>actorClass</code> to be created is established by
-the current Actor, relative to any <a href="#sec-6-7">loadActorSource</a> operation that
+the current Actor, relative to any <a href="#sec-6-8">loadActorSource</a> operation that
 apply to the creating Actor itself:
 </p>
 
@@ -1570,7 +1581,7 @@ actorClass is not specified in a valid manner.
 
 <li>Actor classes must either have been in the system path when the
 ActorSystem was created, or they must exist in a loaded Actor
-Source (see <a href="#sec-6-7">loadActorSource</a>).  Many ActorSystems use separate
+Source (see <a href="#sec-6-8">loadActorSource</a>).  Many ActorSystems use separate
 processes to manage and create new Actors, so any changes in the
 current process after the ActorSystem process is started up will
 not be visible to the latter.
@@ -1672,7 +1683,7 @@ handling system registration events from other ActorSystems (see
 <p>
 This method registers the current Actor as the Source Authority
 handler for the current Actor System as described in the <i>Security
-Considerations</i> section of the <a href="#sec-6-7">loadActorSource</a> Actor System API
+Considerations</i> section of the <a href="#sec-6-8">loadActorSource</a> Actor System API
 call.  Once registered, this Actor will receive <a href="#sec-7-7">ValidateSource</a>
 messages and be responsible for decrypting (if necessary) and
 determining authorization for loaded sources to run.
@@ -2028,7 +2039,7 @@ load the <code>actorClass</code> source and start the Actor.
 </p>
 <ul class="org-ul">
 <li>The source file must previously have been loaded by the
-<a href="#sec-6-7">loadActorSource</a> operation.
+<a href="#sec-6-8">loadActorSource</a> operation.
 </li>
 <li>If not specified, then the <code>actorClass</code> is expected to be found
 on the standard path.  If the <code>sourceHash</code> value does not match
@@ -2126,8 +2137,8 @@ Actor Address and the <code>message</code> can be anything that can be sent.
 The "response message" is any message received by the local
 endpoint.  The local endpoint looks like a normal Actor with an
 ActorAddress to the rest of the system.  <b>Any</b> Actor sending a
-message to this address will complete the <code>ask()</code> operation with
-that message.
+message to this address will cause the <code>ask()</code> operation to
+complete with that message.
 </p>
 
 <p>
@@ -2168,8 +2179,41 @@ the application must be prepared to use techniques like no-response
 </div>
 
 <div id="outline-container-sec-6-6" class="outline-3">
-<h3 id="sec-6-6"><span class="section-number-3">6.6</span> updateCapability</h3>
+<h3 id="sec-6-6"><span class="section-number-3">6.6</span> listen</h3>
 <div class="outline-text-3" id="text-6-6">
+<p>
+Listen is used to wait for a message.
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-python">     <span class="org-variable-name">responseMessage</span> = actorSys.listen([timeout])
+</pre>
+</div>
+
+<p>
+The received message is any message received by the local endpoint.
+The local endpoint looks like a normal Actor with an ActorAddress
+to the rest of the system.  <b>Any</b> Actor sending a message to this
+address will cause the <code>listen()</code> operation to complete with that
+message.
+</p>
+
+<p>
+If the <code>timeout</code> field specifies a non-None timeout value then the
+<code>listen()</code> will only block for the specified timeout period,
+returning a None value if the timeout has occurred.  The
+recommended manner of specifying a timeout period is as an instance
+of the datetime.timedelta class, although an integer or floating
+point value will be accepted as a specification of a number of
+seconds.
+</p>
+</div>
+</div>
+
+<div id="outline-container-sec-6-7" class="outline-3">
+<h3 id="sec-6-7"><span class="section-number-3">6.7</span> updateCapability</h3>
+<div class="outline-text-3" id="text-6-7">
 <p>
 The <code>updateCapability()</code> method is used update the capabilities of
 the ActorSystem.  This is the external interface to updating
@@ -2213,9 +2257,9 @@ issuing a <a href="#sec-7-9">Thespian_StatusReq</a> to the ActorSystem.
 </div>
 
 
-<div id="outline-container-sec-6-7" class="outline-3">
-<h3 id="sec-6-7"><span class="section-number-3">6.7</span> loadActorSource</h3>
-<div class="outline-text-3" id="text-6-7">
+<div id="outline-container-sec-6-8" class="outline-3">
+<h3 id="sec-6-8"><span class="section-number-3">6.8</span> loadActorSource</h3>
+<div class="outline-text-3" id="text-6-8">
 <div class="org-src-container">
 
 <pre class="src src-python">    <span class="org-variable-name">sourceHash</span> = actorSys.loadActorSource(fileref)
@@ -2249,9 +2293,9 @@ feedback (excepting perhaps the <code>/tmp/Thespian.log</code> logfile).
 </p>
 </div>
 
-<div id="outline-container-sec-6-7-1" class="outline-4">
-<h4 id="sec-6-7-1"><span class="section-number-4">6.7.1</span> Source Loading Issues</h4>
-<div class="outline-text-4" id="text-6-7-1">
+<div id="outline-container-sec-6-8-1" class="outline-4">
+<h4 id="sec-6-8-1"><span class="section-number-4">6.8.1</span> Source Loading Issues</h4>
+<div class="outline-text-4" id="text-6-8-1">
 <p>
 Although the <code>loadActorSource()</code> functionality works quite well,
 there are a few scenarios that can cause difficulties:
@@ -2307,9 +2351,9 @@ will be loaded via <code>loadActorSource()</code>.
 </div>
 </div>
 
-<div id="outline-container-sec-6-7-2" class="outline-4">
-<h4 id="sec-6-7-2"><span class="section-number-4">6.7.2</span> Security Considerations</h4>
-<div class="outline-text-4" id="text-6-7-2">
+<div id="outline-container-sec-6-8-2" class="outline-4">
+<h4 id="sec-6-8-2"><span class="section-number-4">6.8.2</span> Security Considerations</h4>
+<div class="outline-text-4" id="text-6-8-2">
 <p>
 When <code>loadActorSource()</code> is not used, the source for all
 instantiated Actors must come from the existing Python import path
@@ -2374,7 +2418,7 @@ Authority that will reject all loaded sources.
 </p>
 </div>
 
-<ol class="org-ol"><li><a id="sec-6-7-2-1" name="sec-6-7-2-1"></a>Multi-System Source Authorization<br  /><div class="outline-text-5" id="text-6-7-2-1">
+<ol class="org-ol"><li><a id="sec-6-8-2-1" name="sec-6-8-2-1"></a>Multi-System Source Authorization<br  /><div class="outline-text-5" id="text-6-8-2-1">
 <p>
 The Source Authority registration is unique to an Actor System.
 Different Actor Systems in a <i>Multiple Systems</i> configuration can each
@@ -2430,9 +2474,9 @@ running Actor in the other source load via independent means.
 </div>
 </div>
 
-<div id="outline-container-sec-6-8" class="outline-3">
-<h3 id="sec-6-8"><span class="section-number-3">6.8</span> unloadActorSource</h3>
-<div class="outline-text-3" id="text-6-8">
+<div id="outline-container-sec-6-9" class="outline-3">
+<h3 id="sec-6-9"><span class="section-number-3">6.9</span> unloadActorSource</h3>
+<div class="outline-text-3" id="text-6-9">
 <div class="org-src-container">
 
 <pre class="src src-python">    actorSys.unloadActorSource(sourceHash)
@@ -2441,7 +2485,7 @@ running Actor in the other source load via independent means.
 
 <p>
 The <code>unloadActorSource()</code> method is used to unload a source zipfile
-previously loaded by the <a href="#sec-6-7">loadActorSource</a> operation.
+previously loaded by the <a href="#sec-6-8">loadActorSource</a> operation.
 </p>
 
 <p>
@@ -2657,7 +2701,7 @@ de-registered for failing to checkin.
 <p>
 The <code>ValidateSource</code> object is delivered to the registered Source
 Authority.  The contents are the source file provided via the
-<a href="#sec-6-7">loadActorSource</a> call to the ActorSystem.  The Actor receiving this
+<a href="#sec-6-8">loadActorSource</a> call to the ActorSystem.  The Actor receiving this
 message should decrypt and validate the source to ensure that the
 source is authorized to run in the context of the current
 ActorSystem.
@@ -2696,7 +2740,7 @@ load via the <a href="#sec-7-9">Thespian_StatusReq</a> operation.
 <li><code>.sourceHash</code> &#x2013; the hash associated with this loaded source.
 </li>
 <li><code>.sourceData</code> &#x2013; the input data (file contents) provided to the
-<a href="#sec-6-7">loadActorSource</a> call to the ActorSystem.
+<a href="#sec-6-8">loadActorSource</a> call to the ActorSystem.
 </li>
 </ul>
 </div>
@@ -3370,7 +3414,7 @@ difference will remain unaddressed.
 </div></div>
 <div id="postamble" class="status">
 <p class="author">Author: Kevin Quick &lt;kquick@godaddy.com&gt;</p>
-<p class="date">Created: 2015-09-07 Mon 00:04</p>
+<p class="date">Created: 2015-09-20 Sun 22:54</p>
 <p class="creator"><a href="http://www.gnu.org/software/emacs/">Emacs</a> 24.5.2 (<a href="http://orgmode.org">Org</a> mode 8.2.10)</p>
 <p class="validation"><a href="http://validator.w3.org/check?uri=referer">Validate</a></p>
 </div>
