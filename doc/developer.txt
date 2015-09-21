@@ -1,9 +1,9 @@
-	       ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-		[HTTP://THESPIANPY.COM] DEVELOPERS NOTES
+	      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+	       [HTTP://THESPIANPY.COM] DEVELOPER'S NOTES
 
 
 		    Kevin Quick <kquick@godaddy.com>
-	       ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+	      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 
 Table of Contents
