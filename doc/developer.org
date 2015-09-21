@@ -1,4 +1,4 @@
-#+TITLE: [[http://thespianpy.com][@@html:<img src="thesplogo2.png" alt="Thespian" width="50%" display="inline" />@@]] Developers Notes
+#+TITLE: [[http://thespianpy.com][@@html:<img src="thesplogo2.png" alt="Thespian" width="50%" display="inline" />@@]] Developer's Notes
 #+AUTHOR: Kevin Quick <kquick@godaddy.com>
 #+SETUPFILE: theme.setup
 #+HTML_HEAD: <link href="thespian.css" rel="stylesheet" type="text/css">
@@ -6,7 +6,7 @@
 # #+LATEX_CLASS_OPTIONS: [a4paper]
 #+LATEX_HEADER: \product{Thespian}
 #+LATEX_HEADER: \component{Python Actor System}
-#+LATEX_HEADER: \doctype{Developers Notes}
+#+LATEX_HEADER: \doctype{Developer's Notes}
 #+LATEX_HEADER: \docrev{1.2}{2015 Sep 05}
 #+LATEX_HEADER: \docid{TheDoc-03}
 #+OPTIONS: ^:nil
