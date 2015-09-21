@@ -6,7 +6,7 @@ setup(
     description = 'Python Actor concurrency library',
     author = 'Kevin Quick',
     author_email = 'kquick@godaddy.com',
-    url = 'https://github.com/godaddy/Thespian',
+    url = 'http://thespianpy.com',
     license = 'MIT',
     scripts = [ 'thespianShell.py' ],
     packages = find_packages(exclude=['thespian/test']),
