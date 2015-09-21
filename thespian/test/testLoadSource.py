@@ -794,7 +794,7 @@ class rot13CorruptAuthority(Actor):
         elif isinstance(msg, ValidateSource):
             clear = _decryptROT13(msg.sourceData)
             if clear:
-                corruption = 'corrupted'
+                corruption = 'corrupted' if isinstance(clear, str) else b'corrupted'
                 for x in range(5, len(clear), len(corruption) + 100):
                     clear = clear[:x] + corruption + clear[x+len(corruption):]
                 self.send(sender, ValidatedSource(msg.sourceHash, clear))
