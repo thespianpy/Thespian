@@ -11,8 +11,7 @@ setup(
     scripts = [ 'thespianShell.py' ],
     packages = find_packages(exclude=['thespian/test']),
     classifiers = [
-        'Development Status :: 3 - Production/Stable',
-        'Environment :: Library',
+        'Development Status :: 5 - Production/Stable',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: MIT License',
         'Operating System :: MacOS',
