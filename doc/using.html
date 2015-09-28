@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
 <title>Thespian Actors User's Guide</title>
-<!-- 2015-09-20 Sun 22:54 -->
+<!-- 2015-09-25 Fri 17:03 -->
 <meta  http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta  name="generator" content="Org-mode" />
 <meta  name="author" content="Kevin Quick &lt;kquick@godaddy.com&gt;" />
@@ -201,7 +201,11 @@ for the JavaScript code in this tag.
 <li><a href="#sec-4-8">4.8. Actor Troupes</a></li>
 <li><a href="#sec-4-9">4.9. ActorSystem Capabilities</a></li>
 <li><a href="#sec-4-10">4.10. Other Actor Systems</a></li>
-<li><a href="#sec-4-11">4.11. Logging</a></li>
+<li><a href="#sec-4-11">4.11. Logging</a>
+<ul>
+<li><a href="#sec-4-11-1">4.11.1. Thespian Internals Logging</a></li>
+</ul>
+</li>
 <li><a href="#sec-4-12">4.12. Actor Code Distribution</a></li>
 </ul>
 </li>
@@ -232,22 +236,23 @@ for the JavaScript code in this tag.
 <ul>
 <li><a href="#sec-6-1">6.1. Exceptions</a></li>
 <li><a href="#sec-6-2">6.2. ActorSystem</a></li>
-<li><a href="#sec-6-3">6.3. ActorSystem.createActor</a></li>
-<li><a href="#sec-6-4">6.4. tell</a></li>
-<li><a href="#sec-6-5">6.5. ask</a>
+<li><a href="#sec-6-3">6.3. ActorSystem.shutdown</a></li>
+<li><a href="#sec-6-4">6.4. ActorSystem.createActor</a></li>
+<li><a href="#sec-6-5">6.5. tell</a></li>
+<li><a href="#sec-6-6">6.6. ask</a>
 <ul>
-<li><a href="#sec-6-5-1">6.5.1. Gotchas</a></li>
+<li><a href="#sec-6-6-1">6.6.1. Gotchas</a></li>
 </ul>
 </li>
-<li><a href="#sec-6-6">6.6. listen</a></li>
-<li><a href="#sec-6-7">6.7. updateCapability</a></li>
-<li><a href="#sec-6-8">6.8. loadActorSource</a>
+<li><a href="#sec-6-7">6.7. listen</a></li>
+<li><a href="#sec-6-8">6.8. updateCapability</a></li>
+<li><a href="#sec-6-9">6.9. loadActorSource</a>
 <ul>
-<li><a href="#sec-6-8-1">6.8.1. Source Loading Issues</a></li>
-<li><a href="#sec-6-8-2">6.8.2. Security Considerations</a></li>
+<li><a href="#sec-6-9-1">6.9.1. Source Loading Issues</a></li>
+<li><a href="#sec-6-9-2">6.9.2. Security Considerations</a></li>
 </ul>
 </li>
-<li><a href="#sec-6-9">6.9. unloadActorSource</a></li>
+<li><a href="#sec-6-10">6.10. unloadActorSource</a></li>
 </ul>
 </li>
 <li><a href="#sec-7">7. ActorSystem Messages</a>
@@ -322,6 +327,7 @@ for the JavaScript code in this tag.
 </ul>
 </div>
 </div>
+
 
 <div id="outline-container-sec-1" class="outline-2">
 <h2 id="sec-1"><span class="section-number-2">1</span> Actor Overview</h2>
@@ -592,7 +598,7 @@ method.
 <p>
 Log-based architectures (e.g. Kafka) are fundamentally "pub/sub"
 architectures that use persistent storage for the published messages.
-As noted in the <i>Message Bus (Pub/Sub) Architecture</i>, the Actor model is
+As noted in the <a href="#sec-1-6-1">Message Bus (Pub/Sub) Architecture</a>, the Actor model is
 a higher-level abstraction layer that encompasses the pub/sub
 functionality. The Actor model therefore also abstracts a Logging
 System with the exception of the persistent storage/replay
@@ -646,15 +652,16 @@ an ActorSystem using the "multiprocTCPBase":
 
 <p>
 More details on the explicit parameters for this call are found in
-<a href="#sec-1-3">ActorSystem</a>, and the known system bases are describe in <i>ActorSystem
-Implementations</i>.
+<a href="#sec-1-3">ActorSystem</a>, and the known system bases are describe in <a href="#sec-8">ActorSystem
+Implementations</a>.
 </p>
 
 <p>
 Once created, the running ActorSystem reference is stored as a
-singleton for the current process.  This means that subsequent
-references can either use the direct reference (e.g. <code>asys</code> from the
-above) or another <code>ActorSystem()</code> instantiation with no parameters.
+singleton for the current process by default.  This means that
+subsequent references can either use the direct reference (e.g. <code>asys</code>
+from the above) or another <code>ActorSystem()</code> instantiation with no
+parameters.
 </p>
 </div>
 </div>
@@ -683,13 +690,13 @@ itself is shutdown.
 <p>
 Actors can be created by other Actors or by external applications
 making a request to the running ActorSystem.  In the former case, the
-Actor making the request becomes the "<i>Parent Actor</i>" of the newly
+Actor making the request becomes the "<a href="#sec-2-2-4">Parent Actor</a>" of the newly
 created Actor, whereas there is no parent in the latter case and the
 newly created actor is therefore referred to as a "Top-Level" Actor.
 </p>
 
 <p>
-A Top-Level Actor is created via the <a href="#sec-6-3">ActorSystem.createActor</a> call:
+A Top-Level Actor is created via the <a href="#sec-6-4">ActorSystem.createActor</a> call:
 </p>
 
 <div class="org-src-container">
@@ -704,7 +711,7 @@ A Top-Level Actor is created via the <a href="#sec-6-3">ActorSystem.createActor<
 
 <p>
 The result of the call is the ActorAddress which can be used with the
-ActorSystem's <a href="#sec-6-5">ask</a>() or <a href="#sec-6-4">tell</a>() methods to communicate with the created
+ActorSystem's <a href="#sec-6-6">ask</a>() or <a href="#sec-6-5">tell</a>() methods to communicate with the created
 Actor.
 </p>
 </div>
@@ -760,7 +767,7 @@ ActorSystem.
 <p>
 After the Actor has been killed, the Actor's Address is dead-lettered;
 any subsequent messages sent to the Actor's address will be handled as
-described in <i>Dead Letter Handling</i>.
+described in <a href="#sec-4-2">Dead Letter Handling</a>.
 </p>
 </div>
 </div>
@@ -771,8 +778,8 @@ described in <i>Dead Letter Handling</i>.
 <div class="outline-text-4" id="text-2-2-4">
 <p>
 An Actor which creates other Actors automatically becomes the
-"Parent" of the created Actor(s).  In the example in the <i>Creating
-an Actor</i> section above, the MyFirstActor Actor is the parent of
+"Parent" of the created Actor(s).  In the example in the <a href="#sec-2-2-2">Creating
+an Actor</a> section above, the MyFirstActor Actor is the parent of
 any created Supporting Actor.
 </p>
 
@@ -809,7 +816,7 @@ exception checking and error condition handling.
 When writing Actor code, the general philosophy is "fail early";
 the ActorSystem itself will restart the Actor in the event of a
 failure and possibly retry the message or abort that specific
-message.  See <i>PoisonMessage Returns</i> for more details.
+message.  See <a href="#sec-4-4">PoisonMessage Returns</a> for more details.
 </p>
 </div>
 </div>
@@ -837,15 +844,15 @@ the ActorSystemMessage base class.  The messages that an
 ActorSystem can deliver to an Actor are:
 
 <ul class="org-ul">
-<li>ActorExitRequest   (see <i>Killing an Actor</i>)
+<li>ActorExitRequest   (see <a href="#sec-2-2-3">Killing an Actor</a>)
 </li>
-<li>ChildActorExited   (see <i>Parent Actor</i>)
+<li>ChildActorExited   (see <a href="#sec-2-2-4">Parent Actor</a>)
 </li>
-<li>PoisonMessage      (see <i>PoisonMessage Returns</i>)
+<li>PoisonMessage      (see <a href="#sec-4-4">PoisonMessage Returns</a>)
 </li>
-<li>ActorSystemConventionUpdate  (see <i>Other Actor Systems</i>)
+<li>ActorSystemConventionUpdate  (see <a href="#sec-4-10">Other Actor Systems</a>)
 </li>
-<li>WakeupMessage      (see <i>Timer Messages</i>)
+<li>WakeupMessage      (see <a href="#sec-4-7">Timer Messages</a>)
 </li>
 </ul>
 <p>
@@ -934,7 +941,7 @@ prevent too many messages being held in limbo.
 
 <p>
 If the recipient exits before the send can be completed, the message
-is redirected to <i>Dead Letter Handling</i>.
+is redirected to <a href="#sec-4-2">Dead Letter Handling</a>.
 </p>
 </div>
 </div>
@@ -981,7 +988,7 @@ which would undoubtably cause confusion.
 <p>
 Actors that cannot be started at all will be Dead Lettered by the
 ActorSystem.  If an Actor has registered for receiving Dead Letters
-(see <i>Dead Letter Handling</i>) then it can perform special actions to
+(see <a href="#sec-4-2">Dead Letter Handling</a>) then it can perform special actions to
 handle the non-starting Actor, but by default all messages sent to a
 non-starting Actor are discarded by the default Dead Letter Handling.
 </p>
@@ -995,7 +1002,7 @@ non-starting Actor are discarded by the default Dead Letter Handling.
 If an Actor experiences a failure (an uncaught exception) when
 processing a message, the ActorSystem will catch the exception and
 retry delivery of the message to the target Actor (as describe in
-<i>Actor Failure</i>).
+<a href="#sec-2-2-5">Actor Failure</a>).
 </p>
 
 <p>
@@ -1019,14 +1026,14 @@ See <a href="#sec-7-1">PoisonMessage</a> for details on the <code>PoisonMessage<
 <p>
 Actors created by the external environment are called "Top-Level
 Actors" and are unique in that they have no "parent" Actor (see
-<i>Parent Actor</i>).  Since there is no Parent Actor, there is nowhere to
+<a href="#sec-2-2-4">Parent Actor</a>).  Since there is no Parent Actor, there is nowhere to
 send a ChildActorExited message when the Actor dies and therefore
 there is no allowance for restarting Top Level Actors.
 </p>
 
 <p>
 Messages sent to a Top Level Actor that has died will still be
-redirected to the Dead Letter Handler (see <i>Dead Letter Handling</i>).
+redirected to the Dead Letter Handler (see <a href="#sec-4-2">Dead Letter Handling</a>).
 </p>
 </div>
 </div>
@@ -1067,7 +1074,7 @@ considered relative to their convenience:
 </p>
 
 <ol class="org-ol">
-<li>All Named Actors are similar to <i>Top-Level Actors</i> in that they
+<li>All Named Actors are similar to <a href="#sec-4-5">Top-Level Actors</a> in that they
 are managed by the Actor System itself rather than a Parent
 Actor and therefore there is no notification when a Named Actor
 exits, and any messages sent to a Named Actor that has exited
@@ -1096,7 +1103,7 @@ Normally Actors respond to messages sent to them by other Actors,
 but sometimes an Actor would like to run again after a timed delay.
 While it is possible for the Actor to sleep internally, this will
 prevent it from responding to other messages and cause messages to
-be queued causing eventual delivery failure (see <i>Message Delivery</i>).
+be queued causing eventual delivery failure (see <a href="#sec-4-1">Message Delivery</a>).
 </p>
 
 <p>
@@ -1176,7 +1183,7 @@ specifies them.
 
 <p>
 All Thespian ActorSystem instances automatically supply a set of
-common capabilities described in the <i>Common Capabilities</i> section.
+common capabilities described in the <a href="#sec-8-1">Common Capabilities</a> section.
 </p>
 </div>
 </div>
@@ -1186,13 +1193,13 @@ common capabilities described in the <i>Common Capabilities</i> section.
 <div class="outline-text-3" id="text-4-10">
 <p>
 The current ActorSystem can communicate with other ActorSystems to
-coordinate Actor activities as described in <i>Multiple Systems</i>.  To
+coordinate Actor activities as described in <a href="#sec-1-3-2">Multiple Systems</a>.  To
 support this, the ActorSystems communicate on known transport
 addresses to form a "Convention" of ActorSystems.
 </p>
 
 <p>
-When new Actors are created, the <i>ActorSystem Capabilities</i> of the
+When new Actors are created, the <a href="#sec-4-9">ActorSystem Capabilities</a> of the
 ActorSystems that are part of the Convention are used to determine
 where to start up the requested new Actor.
 </p>
@@ -1228,15 +1235,16 @@ improve the logging experience using Thespian.
 </p>
 
 <p>
-The 'logging' parameter of the system capabilities passed to the Actor
-System (see below) will specify the primary logging configuration for
-Thespian and corresponding Actors (regardless of where the logger is
-obtained).
+The optional <code>logDefs</code> argument passed to the <code>ActorSystem()</code>
+instantiation (see below) will specify the primary logging
+configuration for Thespian and corresponding Actors (regardless of
+where the logger is obtained).
 </p>
 
 <p>
 The functionality provided by logging in the Thespian environment
-possibly includes sending log messages to a central Logging actor.
+possibly includes sending log messages to a central Logging actor (as
+explicitly indicated in the <a href="#sec-8">ActorSystem Implementations</a> section).
 This is needed because the standard Python logging is not
 multi-process safe and attempts to use it as-is will result in missing
 or duplicated log messages.
@@ -1246,6 +1254,42 @@ or duplicated log messages.
 In addition, the Convention Manager Actor System receives all log
 messages from any conference member that is of <code>WARNING</code> level or above.
 </p>
+</div>
+
+<div id="outline-container-sec-4-11-1" class="outline-4">
+<h4 id="sec-4-11-1"><span class="section-number-4">4.11.1</span> Thespian Internals Logging</h4>
+<div class="outline-text-4" id="text-4-11-1">
+<p>
+Because Thespian instruments the standard logging functionality to
+provide the Convention forwarding ability, it is not possible to use
+logging from within most of Thespian itself because this can cause
+infinite recursions hangs.
+</p>
+
+<p>
+Thespian internals write logging information to a file
+(<code>/tmp/thespian.log</code> by default) with a single backup rotation of that
+file at a specified size limit.  This internal logging can be
+controlled via the following environment variables that must be set
+before the ActorSystem is started:
+</p>
+
+<dl class="org-dl">
+<dt> THESPLOG_FILE </dt><dd>specifies the filepath for the Thespian
+internals logging.  By default this writes to
+<code>/tmp/thespian.log</code>.
+</dd>
+
+<dt> THESPLOG_FILE_MAXSIZE </dt><dd>specifies the maximum size for the
+Thespian internals logging file.  There is a single backup
+rotation (<code>{filepath}.old</code>), so the actual space consumed can
+reach twice this value.  The default value of 50KB is
+relatively small, but this file should normally not be needed
+by developers writing Actors and is usually only needed by
+developers modifying Thespian internals.
+</dd>
+</dl>
+</div>
 </div>
 </div>
 
@@ -1339,7 +1383,7 @@ encounter version-related problems.
 </ul>
 
 <p>
-The <a href="#sec-6-8">loadActorSource</a> operation describes this capability in more
+The <a href="#sec-6-9">loadActorSource</a> operation describes this capability in more
 detail, including security protections associated with this feature.
 </p>
 </div>
@@ -1375,7 +1419,7 @@ Each Actor is represented by an Actor baseclass:
 
 <p>
 Versioning of the Actor API and the ActorSystem are described in
-<i>ActorSystem Capabilities</i>.
+<a href="#sec-4-9">ActorSystem Capabilities</a>.
 </p>
 </div>
 
@@ -1408,7 +1452,7 @@ This method is the primary entry point into the Actor to handle
 received messages.  Each subclass should override the base Actor
 receiveMessage() method as appropriate.  The <code>message</code> argument is
 the message being received, and the <code>sender</code> is the ActorAddress of
-the Actor (or <i>External Communications</i> endpoint) sending the
+the Actor (or <a href="#sec-1-4">External Communications</a> endpoint) sending the
 message.
 </p>
 
@@ -1429,7 +1473,7 @@ do when handling a message:
 <p>
 If the processing of the message causes an exception, the failure
 will be caught by the ActorSystem and the message may be retried or
-returned to the sender as described in <i>PoisonMessage Returns</i>.  Note
+returned to the sender as described in <a href="#sec-4-4">PoisonMessage Returns</a>.  Note
 that the <i>original</i> copy of the receive message is passed to the
 Actor with each attempt; if the Actor modifies the message before
 failing with an exception, the retried or Poison-returned version
@@ -1463,7 +1507,7 @@ valid manner.
 The optional <code>targetActorRequirements</code> argument is a value that
 will be passed passed to the <a href="#sec-5-9">actorSystemCapabilityCheck</a> to use for
 validating whether the Actor can be started within the current
-ActorSystem environment (see <i>ActorSystem Capabilities</i>).  The value
+ActorSystem environment (see <a href="#sec-4-9">ActorSystem Capabilities</a>).  The value
 specified for this argument can be anything the target Actor's
 <code>actorSystemCapabilityCheck()</code> method can understand, although
 typically it is a Python dictionary.
@@ -1471,7 +1515,7 @@ typically it is a Python dictionary.
 
 <p>
 The <code>globalName</code> argument may be specified (as an arbitrary string)
-to create a <i>Named Actors</i> instance.
+to create a <a href="#sec-4-6">Named Actors</a> instance.
 </p>
 
 <p>
@@ -1482,7 +1526,7 @@ system was started as root, then all Actors will run as root.</span>
 
 <p>
 The source for the <code>actorClass</code> to be created is established by
-the current Actor, relative to any <a href="#sec-6-8">loadActorSource</a> operation that
+the current Actor, relative to any <a href="#sec-6-9">loadActorSource</a> operation that
 apply to the creating Actor itself:
 </p>
 
@@ -1524,7 +1568,7 @@ and does not need to be concerned with the asynchronous startup
 aspect of the target Actor.  However, due to this asynchronous
 startup, it is possible that the new Actor cannot be started at
 all; in this event all messages intended for the new target Actor
-will be handled as described in the <i>Dead Letter Handling</i> section.
+will be handled as described in the <a href="#sec-4-2">Dead Letter Handling</a> section.
 </p>
 </div>
 
@@ -1581,7 +1625,7 @@ actorClass is not specified in a valid manner.
 
 <li>Actor classes must either have been in the system path when the
 ActorSystem was created, or they must exist in a loaded Actor
-Source (see <a href="#sec-6-8">loadActorSource</a>).  Many ActorSystems use separate
+Source (see <a href="#sec-6-9">loadActorSource</a>).  Many ActorSystems use separate
 processes to manage and create new Actors, so any changes in the
 current process after the ActorSystem process is started up will
 not be visible to the latter.
@@ -1613,7 +1657,7 @@ There is no response to the send, and the message is delivered to
 the target asynchronously.  There is no guarantee that the target
 has received the message by the time the <code>.send()</code> method returns.
 The ActorSystem delivers the message at some point by best-effort,
-sending the message to <i>Dead Letter Handling</i> if it cannot be
+sending the message to <a href="#sec-4-2">Dead Letter Handling</a> if it cannot be
 delivered.
 </p>
 </div>
@@ -1632,8 +1676,8 @@ delivered.
 The <code>timePeriod</code> specifies a Python <code>datetime.timedelta</code> period.
 When this time period has expired, the ActorSystem will deliver a
 <code>WakeupMessage</code> to the Actor via the normal <code>.receiveMessage()</code>
-entrypoint (the sender will be the Actor itself).  See <i>Timer
-Messages</i> for more information.
+entrypoint (the sender will be the Actor itself).  See <a href="#sec-4-7">Timer
+Messages</a> for more information.
 </p>
 </div>
 </div>
@@ -1666,7 +1710,7 @@ handling Dead Letters.
 <p>
 This method can be called to register or de-register this Actor for
 handling system registration events from other ActorSystems (see
-<i>Other Actor Systems</i>) via <code>ActorSystemConventionUpdate</code> messages.
+<a href="#sec-4-10">Other Actor Systems</a>) via <code>ActorSystemConventionUpdate</code> messages.
 </p>
 </div>
 </div>
@@ -1682,8 +1726,7 @@ handling system registration events from other ActorSystems (see
 
 <p>
 This method registers the current Actor as the Source Authority
-handler for the current Actor System as described in the <i>Security
-Considerations</i> section of the <a href="#sec-6-8">loadActorSource</a> Actor System API
+handler for the current Actor System as described in the <a href="#sec-6-9-2">Security Considerations</a> section of the <a href="#sec-6-9">loadActorSource</a> Actor System API
 call.  Once registered, this Actor will receive <a href="#sec-7-7">ValidateSource</a>
 messages and be responsible for decrypting (if necessary) and
 determining authorization for loaded sources to run.
@@ -1716,7 +1759,7 @@ current ActorSystem.
 The <code>capabilities</code> argument specifies the key/value dictionary of
 capabilities of the current ActorSystem.  ActorSystem capabilities
 are free-form and are determined solely by agents specifying those
-capabilities (see <i>ActorSystem Capabilities</i>).
+capabilities (see <a href="#sec-4-9">ActorSystem Capabilities</a>).
 </p>
 
 <p>
@@ -1849,7 +1892,7 @@ is equivalent to:
 The <code>updateCapability()</code> method is used update the capabilities of
 the current ActorSystem this Actor is running in (there is a
 corresponding method on the ActorSystem for externally-specified
-updates; see the <i>ActorSystem API</i> for that version).
+updates; see the <a href="#sec-6">ActorSystem API</a> for that version).
 </p>
 
 <div class="org-src-container">
@@ -1961,15 +2004,18 @@ The following shows the heirarchy of defined Thespian exceptions:
 <div class="outline-text-3" id="text-6-2">
 <div class="org-src-container">
 
-<pre class="src src-python">      <span class="org-variable-name">actorSys</span> = ActorSystem(systemBase=<span class="org-constant">None</span>, capabilities=<span class="org-constant">None</span>)
+<pre class="src src-python"><span class="org-variable-name">actorSys</span> = ActorSystem(systemBase = <span class="org-constant">None</span>,
+                       capabilities = <span class="org-constant">None</span>,
+                       logDefs = <span class="org-constant">None</span>,
+                       transientUnique = <span class="org-constant">False</span>)
 </pre>
 </div>
 
 <p>
 The <code>systemBase</code> argument should specify which ActorSystem
 implementation base should be used for this ActorSystem, as
-selected from those systems describe in the <i>ActorSystem
-Implementations</i> section. If <code>systemBase</code> is None, this call will
+selected from those systems describe in the <a href="#sec-8">ActorSystem
+Implementations</a> section. If <code>systemBase</code> is None, this call will
 check to see if there was a previous call to ActorSystem in the
 current process and if so, re-use the <code>systemBase</code> from the
 previous call. If there is no previous call, the default system
@@ -1978,18 +2024,78 @@ base is the <code>simpleSystemBase</code> (see <a href="#sec-8-2">simpleSystemBa
 
 <p>
 The <code>capabilities</code> argument should be a dictionary of capability
-keys and values as describe in the <i>ActorSystem Capabilities</i>
+keys and values as describe in the <a href="#sec-4-9">ActorSystem Capabilities</a>
 section.  These capabilities form the initial set of capabilities
 for the ActorSystem if it is started; the capabilities are ignored
 if an ActorSystem is already running.
 </p>
-</div>
-</div>
 
+<p>
+The <code>logDefs</code> argument is used to specify a logging configuration
+dictionary (in standard logdict format).  If not specified, a
+default logging configuration is usually supplied.  If specified
+as <code>False</code>, then no logging configuration is supplied; this latter
+is useful in situations where another component is attempting to
+establish a logging configuration (e.g. nosetest logcapture).  As
+described in the <a href="#sec-4-11">Logging</a> section, the Convention Leader will
+receive forwarding of log messages at Warning level or higher,
+providing a centralized logging capability.
+</p>
+
+<p>
+Normally the created ActorSystem becomes a process-wide (and
+possibly system-wide) singleton instance.  The <code>transientUnique</code>
+argument may be set to true to get a new, un-registered
+ActorSystem.  Note that typical Python classes provide a unique
+instantiation on each call (i.e. the result provided here if
+<code>transientUnique</code> is <code>True</code>) but more typical Thespian
+functionality is achieved by the global singleton behavior, so
+that is the default and the <code>transientUnique</code> must be explicitly
+specified for non-singleton creations.
+</p>
+</div>
+</div>
 
 <div id="outline-container-sec-6-3" class="outline-3">
-<h3 id="sec-6-3"><span class="section-number-3">6.3</span> ActorSystem.createActor</h3>
+<h3 id="sec-6-3"><span class="section-number-3">6.3</span> ActorSystem.shutdown</h3>
 <div class="outline-text-3" id="text-6-3">
+<div class="org-src-container">
+
+<pre class="src src-python">    actorSys.shutdown()
+</pre>
+</div>
+
+<p>
+The <code>shutdown()</code> ActorSystem method is used to terminate an Actor
+System and all Actors running in that system.  If issued to a
+ActorSystem that is part of a multi-system Convention that
+ActorSystem is shutdown and the other Convention members are
+notified (but they continue to exist).
+</p>
+
+<p>
+As described previously, the ActorSystem is a process-global
+singleton that may be a system-wide singleton, depending on the
+system base used (see <a href="#sec-8">ActorSystem Implementations</a> for details).
+The <code>shutdown()</code> method is the proper way to stop those
+process-wide or system-wide ActorSystems when they are no longer
+needed.  The decision of when to do this is left to the user; in
+some situations the ActorSystem should be a long-running service
+that matches the lifetime of the system itself.
+</p>
+
+<p>
+If the ActorSystem was started with <code>transientUnique = True</code>, the
+<code>shutdown()</code> should still be used to properly stop the current
+ActorSystem, but any global ActorSystem registration will be
+unaffected by stopping the transient unique ActorSystem.
+</p>
+</div>
+</div>
+
+<div id="outline-container-sec-6-4" class="outline-3">
+<h3 id="sec-6-4"><span class="section-number-3">6.4</span> ActorSystem.createActor</h3>
+<div class="outline-text-3" id="text-6-4">
 <div class="org-src-container">
 
 <pre class="src src-python">    <span class="org-variable-name">actorAddr</span> = actorSys.createActor(actorClass,
@@ -2018,7 +2124,7 @@ or as a module-qualified string identifying a class object
 The <code>targetActorRequirements</code> argument is a value that will be
 passed to the <a href="#sec-5-9">actorSystemCapabilityCheck</a> to use for validating
 whether the Actor can be started within the current ActorSystem
-environment (see <i>ActorSystem Capabilities</i>).  The value specified
+environment (see <a href="#sec-4-9">ActorSystem Capabilities</a>).  The value specified
 for this argument can be anything the target Actor's
 <code>actorSystemCapabilityCheck()</code> method can understand, although
 typically it is a Python dictionary.
@@ -2027,7 +2133,7 @@ typically it is a Python dictionary.
 <p>
 The <code>globalName</code> argument, if specified, should be a string
 specifying the "name" of the Actor within the ActorSystem.  As
-describe in <i>Named Actors</i>, this name allows the Actor to be uniquely
+describe in <a href="#sec-4-6">Named Actors</a>, this name allows the Actor to be uniquely
 identified and referenced in a manner additional to the
 ActorAddress of the actor.
 </p>
@@ -2039,7 +2145,7 @@ load the <code>actorClass</code> source and start the Actor.
 </p>
 <ul class="org-ul">
 <li>The source file must previously have been loaded by the
-<a href="#sec-6-8">loadActorSource</a> operation.
+<a href="#sec-6-9">loadActorSource</a> operation.
 </li>
 <li>If not specified, then the <code>actorClass</code> is expected to be found
 on the standard path.  If the <code>sourceHash</code> value does not match
@@ -2083,9 +2189,9 @@ not match any currently loaded source.
 </div>
 </div>
 
-<div id="outline-container-sec-6-4" class="outline-3">
-<h3 id="sec-6-4"><span class="section-number-3">6.4</span> tell</h3>
-<div class="outline-text-3" id="text-6-4">
+<div id="outline-container-sec-6-5" class="outline-3">
+<h3 id="sec-6-5"><span class="section-number-3">6.5</span> tell</h3>
+<div class="outline-text-3" id="text-6-5">
 <p>
 Tell is used to inject a message into the Actor system (targeting a
 specific Actor) without waiting for any response message.
@@ -2114,9 +2220,9 @@ until the send is completed.
 </div>
 </div>
 
-<div id="outline-container-sec-6-5" class="outline-3">
-<h3 id="sec-6-5"><span class="section-number-3">6.5</span> ask</h3>
-<div class="outline-text-3" id="text-6-5">
+<div id="outline-container-sec-6-6" class="outline-3">
+<h3 id="sec-6-6"><span class="section-number-3">6.6</span> ask</h3>
+<div class="outline-text-3" id="text-6-6">
 <p>
 Ask is used to send a message to an Actor (injecting it into the
 Actor system) and wait for a response message.
@@ -2151,9 +2257,9 @@ value will be accepted as a specification of a number of seconds.
 </p>
 </div>
 
-<div id="outline-container-sec-6-5-1" class="outline-4">
-<h4 id="sec-6-5-1"><span class="section-number-4">6.5.1</span> Gotchas</h4>
-<div class="outline-text-4" id="text-6-5-1">
+<div id="outline-container-sec-6-6-1" class="outline-4">
+<h4 id="sec-6-6-1"><span class="section-number-4">6.6.1</span> Gotchas</h4>
+<div class="outline-text-4" id="text-6-6-1">
 <ul class="org-ul">
 <li>The response may come from a previous <code>tell()</code> (or <code>ask()</code> if that
 ask caused the Actor to send multiple messages to the requestor,
@@ -2178,9 +2284,9 @@ the application must be prepared to use techniques like no-response
 </div>
 </div>
 
-<div id="outline-container-sec-6-6" class="outline-3">
-<h3 id="sec-6-6"><span class="section-number-3">6.6</span> listen</h3>
-<div class="outline-text-3" id="text-6-6">
+<div id="outline-container-sec-6-7" class="outline-3">
+<h3 id="sec-6-7"><span class="section-number-3">6.7</span> listen</h3>
+<div class="outline-text-3" id="text-6-7">
 <p>
 Listen is used to wait for a message.
 </p>
@@ -2211,9 +2317,9 @@ seconds.
 </div>
 </div>
 
-<div id="outline-container-sec-6-7" class="outline-3">
-<h3 id="sec-6-7"><span class="section-number-3">6.7</span> updateCapability</h3>
-<div class="outline-text-3" id="text-6-7">
+<div id="outline-container-sec-6-8" class="outline-3">
+<h3 id="sec-6-8"><span class="section-number-3">6.8</span> updateCapability</h3>
+<div class="outline-text-3" id="text-6-8">
 <p>
 The <code>updateCapability()</code> method is used update the capabilities of
 the ActorSystem.  This is the external interface to updating
@@ -2257,9 +2363,9 @@ issuing a <a href="#sec-7-9">Thespian_StatusReq</a> to the ActorSystem.
 </div>
 
 
-<div id="outline-container-sec-6-8" class="outline-3">
-<h3 id="sec-6-8"><span class="section-number-3">6.8</span> loadActorSource</h3>
-<div class="outline-text-3" id="text-6-8">
+<div id="outline-container-sec-6-9" class="outline-3">
+<h3 id="sec-6-9"><span class="section-number-3">6.9</span> loadActorSource</h3>
+<div class="outline-text-3" id="text-6-9">
 <div class="org-src-container">
 
 <pre class="src src-python">    <span class="org-variable-name">sourceHash</span> = actorSys.loadActorSource(fileref)
@@ -2280,7 +2386,7 @@ instantiate Actors found in that sourcefile.
 Although a plaintext zipfile may be loaded, it is highly recommended
 that production environments encrypt the zipFile using some sort of
 encryption methodology.  The reasons for this are discussed in the
-<i>Security Considerations</i> section below; when an encrypted zipfile is
+<a href="#sec-6-9-2">Security Considerations</a> section below; when an encrypted zipfile is
 loaded it is first decrypted and/or authorized as described therein.
 </p>
 
@@ -2293,9 +2399,9 @@ feedback (excepting perhaps the <code>/tmp/Thespian.log</code> logfile).
 </p>
 </div>
 
-<div id="outline-container-sec-6-8-1" class="outline-4">
-<h4 id="sec-6-8-1"><span class="section-number-4">6.8.1</span> Source Loading Issues</h4>
-<div class="outline-text-4" id="text-6-8-1">
+<div id="outline-container-sec-6-9-1" class="outline-4">
+<h4 id="sec-6-9-1"><span class="section-number-4">6.9.1</span> Source Loading Issues</h4>
+<div class="outline-text-4" id="text-6-9-1">
 <p>
 Although the <code>loadActorSource()</code> functionality works quite well,
 there are a few scenarios that can cause difficulties:
@@ -2351,9 +2457,9 @@ will be loaded via <code>loadActorSource()</code>.
 </div>
 </div>
 
-<div id="outline-container-sec-6-8-2" class="outline-4">
-<h4 id="sec-6-8-2"><span class="section-number-4">6.8.2</span> Security Considerations</h4>
-<div class="outline-text-4" id="text-6-8-2">
+<div id="outline-container-sec-6-9-2" class="outline-4">
+<h4 id="sec-6-9-2"><span class="section-number-4">6.9.2</span> Security Considerations</h4>
+<div class="outline-text-4" id="text-6-9-2">
 <p>
 When <code>loadActorSource()</code> is not used, the source for all
 instantiated Actors must come from the existing Python import path
@@ -2418,19 +2524,19 @@ Authority that will reject all loaded sources.
 </p>
 </div>
 
-<ol class="org-ol"><li><a id="sec-6-8-2-1" name="sec-6-8-2-1"></a>Multi-System Source Authorization<br  /><div class="outline-text-5" id="text-6-8-2-1">
+<ol class="org-ol"><li><a id="sec-6-9-2-1" name="sec-6-9-2-1"></a>Multi-System Source Authorization<br  /><div class="outline-text-5" id="text-6-9-2-1">
 <p>
 The Source Authority registration is unique to an Actor System.
-Different Actor Systems in a <i>Multiple Systems</i> configuration can each
+Different Actor Systems in a <a href="#sec-1-3-2">Multiple Systems</a> configuration can each
 have a separate Source Authority that may perform different
-authorization techniques.  However, as described in <i>Actor Code
-Distribution</i>, Actor Systems joined together in a Convention can
+authorization techniques.  However, as described in <a href="#sec-4-12">Actor Code
+Distribution</a>, Actor Systems joined together in a Convention can
 exchange sources on demand to satisfy Actor creation requests.
 sources exchanged between Actor Systems in this manner are not
 subject to further <b>validation</b> after the initial load on the
 original system (although the local ActorSystem can choose the level
 of sharing it wishes to perform; see the <b>AllowRemoteActorSources</b>
-capability setting in the <i>Common Capabilities</i> section).
+capability setting in the <a href="#sec-8-1">Common Capabilities</a> section).
 </p>
 
 <p>
@@ -2474,9 +2580,9 @@ running Actor in the other source load via independent means.
 </div>
 </div>
 
-<div id="outline-container-sec-6-9" class="outline-3">
-<h3 id="sec-6-9"><span class="section-number-3">6.9</span> unloadActorSource</h3>
-<div class="outline-text-3" id="text-6-9">
+<div id="outline-container-sec-6-10" class="outline-3">
+<h3 id="sec-6-10"><span class="section-number-3">6.10</span> unloadActorSource</h3>
+<div class="outline-text-3" id="text-6-10">
 <div class="org-src-container">
 
 <pre class="src src-python">    actorSys.unloadActorSource(sourceHash)
@@ -2485,7 +2591,7 @@ running Actor in the other source load via independent means.
 
 <p>
 The <code>unloadActorSource()</code> method is used to unload a source zipfile
-previously loaded by the <a href="#sec-6-8">loadActorSource</a> operation.
+previously loaded by the <a href="#sec-6-9">loadActorSource</a> operation.
 </p>
 
 <p>
@@ -2530,7 +2636,7 @@ attempt by that Actor has caused the target Actor to fail.  The
 caused the failure.  The originating Actor receives this poison
 message indication to allow it to perform any desired cleanup or
 alternative work based on the target Actor failure (see
-<i>PoisonMessage Returns</i>).
+<a href="#sec-4-4">PoisonMessage Returns</a>).
 </p>
 </div>
 
@@ -2552,7 +2658,7 @@ failures.
 <p>
 The <code>WakeupMessage</code> is delivered to the Actor by the ActorSystem as
 a result of a previous call to the Actor's <code>.wakeupAfter()</code> method
-call (see <i>Timer Messages</i>).
+call (see <a href="#sec-4-7">Timer Messages</a>).
 </p>
 </div>
 
@@ -2616,7 +2722,7 @@ message or if the Actor was killed by other means.
 </p>
 
 <p>
-The Parent of <i>Named Actors</i> is the ActorSystem itself; no
+The Parent of <a href="#sec-4-6">Named Actors</a> is the ActorSystem itself; no
 other Actor will receive a <code>ChildActorExited</code> message when a
 Named Actor exits.
 </p>
@@ -2646,7 +2752,7 @@ argument passed to the current Actor's <code>.receiveMessage()</code> method.
 <div class="outline-text-3" id="text-7-5">
 <p>
 The <code>DeadEnvelope</code> object is delivered to the Dead Letter handler as
-described in <i>Dead Letter Handling</i>.  The <code>DeadEnvelope</code> is a wrapper
+described in <a href="#sec-4-2">Dead Letter Handling</a>.  The <code>DeadEnvelope</code> is a wrapper
 around the original message that could not be delivered to the
 target Actor because the target is no longer running.
 </p>
@@ -2671,7 +2777,7 @@ target Actor because the target is no longer running.
 <p>
 The <code>ActorSystemConventionUpdate</code> object is delivered to an Actor
 that has registered to be notified on changes in ActorSystem
-convention membership (as described in <i>Other Actor Systems</i>).  This
+convention membership (as described in <a href="#sec-4-10">Other Actor Systems</a>).  This
 message is generated by the ActorSystem itself.
 </p>
 </div>
@@ -2701,7 +2807,7 @@ de-registered for failing to checkin.
 <p>
 The <code>ValidateSource</code> object is delivered to the registered Source
 Authority.  The contents are the source file provided via the
-<a href="#sec-6-8">loadActorSource</a> call to the ActorSystem.  The Actor receiving this
+<a href="#sec-6-9">loadActorSource</a> call to the ActorSystem.  The Actor receiving this
 message should decrypt and validate the source to ensure that the
 source is authorized to run in the context of the current
 ActorSystem.
@@ -2740,7 +2846,7 @@ load via the <a href="#sec-7-9">Thespian_StatusReq</a> operation.
 <li><code>.sourceHash</code> &#x2013; the hash associated with this loaded source.
 </li>
 <li><code>.sourceData</code> &#x2013; the input data (file contents) provided to the
-<a href="#sec-6-8">loadActorSource</a> call to the ActorSystem.
+<a href="#sec-6-9">loadActorSource</a> call to the ActorSystem.
 </li>
 </ul>
 </div>
@@ -2940,7 +3046,7 @@ details are available in each section:
 <h3 id="sec-8-1"><span class="section-number-3">8.1</span> Common Capabilities</h3>
 <div class="outline-text-3" id="text-8-1">
 <p>
-As described in <i>ActorSystem Capabilities</i> each ActorSystem has a set of
+As described in <a href="#sec-4-9">ActorSystem Capabilities</a> each ActorSystem has a set of
 capabilities that describe that ActorSystem and which can be audited
 by the Actor's <a href="#sec-5-9">actorSystemCapabilityCheck</a> method to determine if the
 Actor is compatible with the ActorSystem.
@@ -3005,7 +3111,7 @@ that the ActorSystem version will increment.
 
 <dt> <b>AllowRemoteActorSources</b> </dt><dd>This capability specifies whether or
 not this ActorSystem will accept sources loaded via remote
-Actor Systems as described in the <i>Actor Code Distribution</i>
+Actor Systems as described in the <a href="#sec-4-12">Actor Code Distribution</a>
 section.  Valid values for this capability are:
 
 <dl class="org-dl">
@@ -3049,7 +3155,7 @@ process thread.
 actors are created in the current ActorSystem regardless of
 their capability requirements.
 </li>
-<li>No support for <i>Multiple Systems</i> (e.g. Conventions)
+<li>No support for <a href="#sec-1-3-2">Multiple Systems</a> (e.g. Conventions)
 </li>
 </ul>
 
@@ -3075,7 +3181,15 @@ never delivered.
 </p>
 
 <p>
-The simpleSystemBase uses the following <i>ActorSystem Capabilities</i>:
+The simpleSystemBase is commonly used for unit testing
+configurations; as such, specifying the <code>logDefs</code> constructor
+argument as <code>False</code> helps prevent this system base from interfering
+with any log capturing that is performed by the unit testing
+framework (e.g. nosetest logcapture).
+</p>
+
+<p>
+The simpleSystemBase uses the following <a href="#sec-4-9">ActorSystem Capabilities</a>:
 </p>
 
 <dl class="org-dl">
@@ -3120,11 +3234,11 @@ destination.
 The multiprocQueueBase can only be used for communications on the
 current system and not for inter-system communications.  The
 multiprocQueueBase does not support the use of multiple ActorSystems
-in a Convention as described in <i>Multiple Systems</i>.
+in a Convention as described in <a href="#sec-1-3-2">Multiple Systems</a>.
 </p>
 
 <p>
-The multiprocQueueBase uses the following <i>ActorSystem Capabilities</i>:
+The multiprocQueueBase uses the following <a href="#sec-4-9">ActorSystem Capabilities</a>:
 </p>
 
 <dl class="org-dl">
@@ -3161,7 +3275,13 @@ other systems accessible via TCP/IPv4.
 </p>
 
 <p>
-The multiprocTCPBase uses the following <i>ActorSystem Capabilities</i>:
+The multiprocTCPBase supports forwarding of logging messages (warning
+and above) to the Convention Leader if used in a multi-system
+configuration.
+</p>
+
+<p>
+The multiprocTCPBase uses the following <a href="#sec-4-9">ActorSystem Capabilities</a>:
 </p>
 
 <dl class="org-dl">
@@ -3235,7 +3355,13 @@ other systems accessible via UDP/IP.
 </p>
 
 <p>
-The multiprocUDPBase uses the following <i>ActorSystem Capabilities</i>:
+The multiprocUDPBase supports forwarding of logging messages (warning
+and above) to the Convention Leader if used in a multi-system
+configuration.
+</p>
+
+<p>
+The multiprocUDPBase uses the following <a href="#sec-4-9">ActorSystem Capabilities</a>:
 </p>
 
 <dl class="org-dl">
@@ -3414,7 +3540,7 @@ difference will remain unaddressed.
 </div></div>
 <div id="postamble" class="status">
 <p class="author">Author: Kevin Quick &lt;kquick@godaddy.com&gt;</p>
-<p class="date">Created: 2015-09-20 Sun 22:54</p>
+<p class="date">Created: 2015-09-25 Fri 17:03</p>
 <p class="creator"><a href="http://www.gnu.org/software/emacs/">Emacs</a> 24.5.2 (<a href="http://orgmode.org">Org</a> mode 8.2.10)</p>
 <p class="validation"><a href="http://validator.w3.org/check?uri=referer">Validate</a></p>
 </div>
