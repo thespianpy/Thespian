@@ -6,7 +6,7 @@ systems (which should not be an issue under normal operations).
 """
 
 import unittest
-from thespian.test import ActorSystemTestCase
+from thespian.test import ActorSystemTestCase, simpleActorTestLogging
 import time
 import thespian.test.helpers
 from thespian.actors import *
@@ -95,7 +95,8 @@ class BaseCapabilityUpdates(object):
                           }
         for each in ['One', 'Two', 'Three']:  # 'One' must be first
             self.systems[each] = ActorSystem(self.actorSystemBase, self.capabilities[each],
-                                             logDefs = ActorSystemTestCase.getDefaultTestLogging())
+                                             logDefs = simpleActorTestLogging(),
+                                             transientUnique = True)
         time.sleep(0.25)  # Wait for Actor Systems to start
 
     def tearDown(self):

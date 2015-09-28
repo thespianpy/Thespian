@@ -1,7 +1,7 @@
 import unittest
 from time import sleep
 import logging
-from thespian.test import ActorSystemTestCase
+from thespian.test import ActorSystemTestCase, simpleActorTestLogging
 import thespian.test.helpers
 from thespian.actors import *
 from multiprocessing import Process, Pipe
@@ -9,7 +9,7 @@ from multiprocessing import Process, Pipe
 
 def remoteSystem(conn, systembase, adminPort, systemCapabilities):
     # shutdown anything still running
-    ActorSystem(logDefs = ActorSystemTestCase.getDefaultTestLogging()).shutdown()
+    ActorSystem(logDefs = simpleActorTestLogging()).shutdown()
 
     conn.recv()  # wait for startup indication from parent
 
@@ -20,7 +20,7 @@ def remoteSystem(conn, systembase, adminPort, systemCapabilities):
               })
     caps.update(systemCapabilities)
     ActorSystem(systembase, caps,
-                logDefs = ActorSystemTestCase.getDefaultTestLogging())
+                logDefs = simpleActorTestLogging())
     if 'DeathStar' != conn.recv():  # wait for shutdown indication from parent
         ActorSystem().shutdown()
     conn.close()
@@ -216,7 +216,7 @@ class TestManyActorSystem(unittest.TestCase):
 
         ActorSystem(self.actorSystemBase, {'Jedi Council': True,
                                            'Admin Port': 12121},
-                    logDefs =  ActorSystemTestCase.getDefaultTestLogging())
+                    logDefs = simpleActorTestLogging())
 
         for each in self.systems:
             self.systems[each][0].send('Start now please')
@@ -487,7 +487,7 @@ class TestConventionWatcher(unittest.TestCase):
 
             ActorSystem(self.actorSystemBase, {'Jedi Council': True,
                                                'Admin Port': 12121},
-                        logDefs =  ActorSystemTestCase.getDefaultTestLogging())
+                        logDefs =  simpleActorTestLogging())
 
             watcher = ActorSystem().createActor(Notified)
             ActorSystem().tell(watcher, 'register')
@@ -575,7 +575,7 @@ class TestConventionDeregistration(unittest.TestCase):
 
             ActorSystem(self.actorSystemBase, {'Jedi Council': True,
                                                'Admin Port': 12121},
-                        logDefs =  ActorSystemTestCase.getDefaultTestLogging())
+                        logDefs =  simpleActorTestLogging())
 
             watcher = ActorSystem().createActor(Notified)
             ActorSystem().tell(watcher, 'register')

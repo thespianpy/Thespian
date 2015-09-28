@@ -2,7 +2,7 @@ import unittest
 from time import sleep
 import logging
 import thespian.test.helpers
-from thespian.test import ActorSystemTestCase
+from thespian.test import ActorSystemTestCase, simpleActorTestLogging
 from thespian.actors import *
 from multiprocessing import Process, Pipe
 
@@ -182,7 +182,7 @@ class TestSolitaryActorSystem(unittest.TestCase):
     def setUp(self):
         ActorSystem('multiprocTCPBase',
                     capabilities={'dog':'food'},
-                    logDefs = ActorSystemTestCase.getDefaultTestLogging())
+                    logDefs = simpleActorTestLogging())
 
     def tearDown(self):
         ActorSystem().shutdown()
@@ -217,7 +217,7 @@ class TestSolitaryMPQueueActorSystem(TestSolitaryActorSystem):
     def setUp(self):
         ActorSystem('multiprocQueueBase',
                     capabilities={'dog':'food'},
-                    logDefs = ActorSystemTestCase.getDefaultTestLogging())
+                    logDefs = simpleActorTestLogging())
 
 
 class TestSolitaryMPUDPActorSystem(TestSolitaryActorSystem):
@@ -227,7 +227,7 @@ class TestSolitaryMPUDPActorSystem(TestSolitaryActorSystem):
     def setUp(self):
         ActorSystem('multiprocUDPBase',
                     capabilities={'dog':'food'},
-                    logDefs = ActorSystemTestCase.getDefaultTestLogging())
+                    logDefs = simpleActorTestLogging())
 
 
 def System2(conn, base, capabilities):
@@ -235,7 +235,7 @@ def System2(conn, base, capabilities):
     sleep(0.05)  # give ConventionLeader in main process time to startup
     ActorSystem(base,
                 capabilities,
-                logDefs = ActorSystemTestCase.getDefaultTestLogging())
+                logDefs = simpleActorTestLogging())
     conn.recv()  # wait for shutdown indication from parent
     ActorSystem().shutdown()
     conn.close()
@@ -274,7 +274,7 @@ class TestMultiProcessSystem(unittest.TestCase):
         self.child.start()
         ActorSystem(self.baseName,
                     capabilities = self.system1Caps,
-                    logDefs = ActorSystemTestCase.getDefaultTestLogging())
+                    logDefs = simpleActorTestLogging())
         sleep(0.15)  # allow System2 to start and join the Convention
 
     def tearDown(self):

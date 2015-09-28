@@ -1,5 +1,5 @@
 import unittest
-from thespian.test import ActorSystemTestCase
+from thespian.test import ActorSystemTestCase, simpleActorTestLogging
 import time
 import thespian.test.helpers
 from thespian.actors import *
@@ -354,7 +354,7 @@ class TestDirectZipfile(unittest.TestCase):
                               f.receiveMessage, "what", "sender")
 
 
-class TestASimpleSystem(ActorSystemTestCase, CreateTestSourceZips):
+class TestASimpleSystem(unittest.TestCase, CreateTestSourceZips):
     testbase='Simple'
     scope='func'
     actorSystemBase = 'simpleSystemBase'
@@ -374,7 +374,8 @@ class TestASimpleSystem(ActorSystemTestCase, CreateTestSourceZips):
                           }
         for each in ['One']:  # 'One' must be first
             self.systems[each] = ActorSystem(self.actorSystemBase, self.capabilities[each],
-                                             logDefs = ActorSystemTestCase.getDefaultTestLogging())
+                                             logDefs = simpleActorTestLogging(),
+                                             transientUnique = True)
         time.sleep(0.1)  # Wait for Actor Systems to start
 
     def tearDown(self):
@@ -867,7 +868,8 @@ class TestMultipleMultiProcTCPSystem(ActorSystemTestCase):
                           }
         for each in ['One', 'Two']:  # 'One' must be first
             self.systems[each] = ActorSystem(self.actorSystemBase, self.capabilities[each],
-                                             logDefs = ActorSystemTestCase.getDefaultTestLogging())
+                                             logDefs = simpleActorTestLogging(),
+                                             transientUnique = True)
         time.sleep(0.5)  # Wait for Actor Systems to start
 
     def tearDown(self):
