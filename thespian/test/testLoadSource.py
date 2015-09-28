@@ -64,7 +64,7 @@ class FooActor(Actor):
             self.send(sender, 'GOT: '+Frog(toad.Toad(msg)))
         elif type(msg) == type(1):
             # Some more import tests
-            from .barn.cow.moo import cow_says  # Import from within this hashSource
+            from barn.cow.moo import cow_says  # Import from within this hashSource
             import calendar   # Import a regular module that has not been imported before
             self.send(sender, 'COW: ' + str(cow_says()) + ' on %s'%calendar.weekday(2001,9,11))
         elif type(msg) == type((1,2)):
