@@ -680,13 +680,14 @@ The standard Python logging can be used with the Thespian Actor
 system, although there are some Thespian modifications to logging that
 improve the logging experience using Thespian.
 
-The 'logging' parameter of the system capabilities passed to the Actor
-System (see below) will specify the primary logging configuration for
-Thespian and corresponding Actors (regardless of where the logger is
-obtained).
+The optional ~logDefs~ argument passed to the ~ActorSystem()~
+instantiation (see below) will specify the primary logging
+configuration for Thespian and corresponding Actors (regardless of
+where the logger is obtained).
 
 The functionality provided by logging in the Thespian environment
-possibly includes sending log messages to a central Logging actor.
+possibly includes sending log messages to a central Logging actor (as
+explicitly indicated in the [[*ActorSystem Implementations][ActorSystem Implementations]] section).
 This is needed because the standard Python logging is not
 multi-process safe and attempts to use it as-is will result in missing
 or duplicated log messages.
@@ -1170,7 +1171,7 @@ messages from any conference member that is of ~WARNING~ level or above.
 ** ActorSystem
 
 #+begin_src python
-      actorSys = ActorSystem(systemBase=None, capabilities=None)
+      actorSys = ActorSystem(systemBase=None, capabilities=None, logDefs=None)
 #+end_src
 
     The ~systemBase~ argument should specify which ActorSystem
@@ -1187,6 +1188,16 @@ messages from any conference member that is of ~WARNING~ level or above.
     section.  These capabilities form the initial set of capabilities
     for the ActorSystem if it is started; the capabilities are ignored
     if an ActorSystem is already running.
+
+    The ~logDefs~ argument is used to specify a logging configuration
+    dictionary (in standard logdict format).  If not specified, a
+    default logging configuration is usually supplied.  If specified
+    as ~False~, then no logging configuration is supplied; this latter
+    is useful in situations where another component is attempting to
+    establish a logging configuration (e.g. nosetest logcapture).  As
+    described in the [[*Logging][Logging]] section, the Convention Leader will
+    receive forwarding of log messages at Warning level or higher,
+    providing a centralized logging capability.
 
 
 ** ActorSystem.createActor
@@ -1912,6 +1923,12 @@ ActorSystems:
   if no future calls of this type are made then those wakeups are
   never delivered.
 
+  The simpleSystemBase is commonly used for unit testing
+  configurations; as such, specifying the ~logDefs~ constructor
+  argument as ~False~ helps prevent this system base from interfering
+  with any log capturing that is performed by the unit testing
+  framework (e.g. nosetest logcapture).
+
   The simpleSystemBase uses the following [[*ActorSystem Capabilities][ActorSystem Capabilities]]:
 
   * *Thespian ActorSystem Name* :: "simpleSystemBase"
@@ -1967,6 +1984,10 @@ shutdown.
 The multiprocTCPBase can be used for Actors on the same system or on
 other systems accessible via TCP/IPv4.
 
+The multiprocTCPBase supports forwarding of logging messages (warning
+and above) to the Convention Leader if used in a multi-system
+configuration.
+
 The multiprocTCPBase uses the following [[*ActorSystem Capabilities][ActorSystem Capabilities]]:
 
   * *Thespian ActorSystem Name* :: "multiprocTCPBase"
@@ -2017,7 +2038,11 @@ to 64KiB in size.  Larger messages will fail.
 The multiprocUDPBase can be used for Actors on the same system or on
 other systems accessible via UDP/IP.
 
-  The multiprocUDPBase uses the following [[*ActorSystem Capabilities][ActorSystem Capabilities]]:
+The multiprocUDPBase supports forwarding of logging messages (warning
+and above) to the Convention Leader if used in a multi-system
+configuration.
+
+The multiprocUDPBase uses the following [[*ActorSystem Capabilities][ActorSystem Capabilities]]:
 
   * *Thespian ActorSystem Name* :: "multiprocUDPBase"
 
