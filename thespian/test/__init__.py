@@ -6,33 +6,37 @@ import logging
 from thespian.actors import ActorSystem
 
 
+def simpleActorTestLogging():
+    """This function returns a logging dictionary that can be passed as
+       the logDefs argument for ActorSystem() initialization to get
+       simple stdout logging configuration.  This is not necessary for
+       typical unit testing that uses the simpleActorSystemBase, but
+       it can be useful for multiproc.. ActorSystems where the
+       separate processes created should have a very simple logging
+       configuration.
+    """
+    import sys
+    return {
+        'version' : 1,
+        'handlers': { #'discarder': {'class': 'logging.NullHandler' },
+            'testStream' : { 'class': 'logging.StreamHandler',
+                             'stream': sys.stdout,
+            },
+        },
+        'root': { 'handlers': ['testStream'] },
+        'disable_existing_loggers': False,
+    }
+
+
 class LocallyManagedActorSystem(object):
 
-    # n.b. initialize logging here instead of globally to get the
-    # version of sys.stdout established by python unittest
-    # framework on startup.
-    @staticmethod
-    def getDefaultTestLogging():
-        import sys
-        return {
-            'version' : 1,
-            'handlers': { #'discarder': {'class': 'logging.NullHandler' },
-                'testStream' : { 'class': 'logging.StreamHandler',
-                                 'stream': sys.stdout,
-                             },
-            },
-            'root': { 'handlers': ['testStream'] },
-            'disable_existing_loggers': False,
-        }
-
-
-    def setSystemBase(self, newBase='simpleSystemBase', systemCapabilities=None, logDefs=None):
+    def setSystemBase(self, newBase='simpleSystemBase', systemCapabilities=None, logDefs='BestForBase'):
         newBaseStr = str(newBase)
         if not hasattr(self, 'currentBase') or self.currentBase != newBaseStr:
+            ldefs = logDefs if logDefs != 'BestForBase' else (simpleActorTestLogging() if newBase.startswith('multiproc') else False)
             # In case the ActorSystem was *already* setup, break the singleton aspect and re-init
-            ActorSystem(logDefs = logDefs).shutdown()
-            if logDefs is None: logDefs = ActorSystemTestCase.getDefaultTestLogging()
-            ActorSystem(newBase, systemCapabilities, logDefs)
+            ActorSystem(logDefs = ldefs).shutdown()
+            ActorSystem(newBase, systemCapabilities, logDefs = ldefs)
             self.currentBase = newBaseStr
 
 
