@@ -204,7 +204,7 @@ class ActorSystemBase:
     def __init__(self, system, logDefs = None):
         self.system = system
         self._pendingSends = []
-        dictConfig(logDefs or defaultLoggingConfig)
+        if logDefs is not False: dictConfig(logDefs or defaultLoggingConfig)
         self._primaryActors = []
         self._primaryCount  = 0
         self._globalNames = {}
