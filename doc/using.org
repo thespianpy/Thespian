@@ -1199,6 +1199,26 @@ messages from any conference member that is of ~WARNING~ level or above.
     receive forwarding of log messages at Warning level or higher,
     providing a centralized logging capability.
 
+** ActorSystem.shutdown
+
+#+BEGIN_SRC python
+    actorSys.shutdown()
+#+END_SRC
+
+    The ~shutdown()~ ActorSystem method is used to terminate an Actor
+    System and all Actors running in that system.  If issued to a
+    ActorSystem that is part of a multi-system Convention that
+    ActorSystem is shutdown and the other Convention members are
+    notified (but they continue to exist).
+
+    As described previously, the ActorSystem is a process-global
+    singleton that may be a system-wide singleton, depending on the
+    system base used (see [[*ActorSystem Implementations][ActorSystem Implementations]] for details).
+    The ~shutdown()~ method is the proper way to stop those
+    process-wide or system-wide ActorSystems when they are no longer
+    needed.  The decision of when to do this is left to the user; in
+    some situations the ActorSystem should be a long-running service
+    that matches the lifetime of the system itself.
 
 ** ActorSystem.createActor
 
