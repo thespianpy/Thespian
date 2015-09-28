@@ -155,7 +155,7 @@ class ConventioneerAdmin(GlobalNamesAdmin):
         super(ConventioneerAdmin, self).__init__(*args, **kw)
         self._conventionMembers = {} # key=Remote Admin Addr, value=ConventionMemberData
         self._conventionRegistration = ExpiryTime(timedelta(seconds=0))
-        self._conventionNotificationHandler = None
+        self._conventionNotificationHandlers = set()
         self._conventionAddress = None  # Not a member; still could be a leader
         self._pendingSources = {}  # key = sourceHash, value is array of PendingActor requests
         self._hysteresisSender = HysteresisDelaySender(self._send_intent)
@@ -166,7 +166,7 @@ class ConventioneerAdmin(GlobalNamesAdmin):
         for each in self._conventionMembers:
             resp.addConventioneer(self._conventionMembers[each].remoteAddress,
                                   self._conventionMembers[each].registryValid)
-        resp.setNotifyHandler(self._conventionNotificationHandler)
+        resp.setNotifyHandlers(self._conventionNotificationHandlers)
         super(ConventioneerAdmin, self)._updateStatusResponse(resp)
 
 
@@ -260,9 +260,9 @@ class ConventioneerAdmin(GlobalNamesAdmin):
         if self.isConventionLeader():
 
             if newReg:
-                if self._conventionNotificationHandler:
+                for each in self._conventionNotificationHandlers:
                     self._send_intent(
-                        TransmitIntent(self._conventionNotificationHandler,
+                        TransmitIntent(each,
                                        ActorSystemConventionUpdate(registrant,
                                                                    envelope.message.capabilities,
                                                                    True)))  # errors ignored
@@ -321,12 +321,13 @@ class ConventioneerAdmin(GlobalNamesAdmin):
             cmr = self._conventionMembers[registrant.actorAddressString]
 
             # Send exited notification to conventionNotificationHandler (if any)
-            if self.isConventionLeader() and self._conventionNotificationHandler:
-                self._send_intent(
-                    TransmitIntent(self._conventionNotificationHandler,
-                                   ActorSystemConventionUpdate(cmr.remoteAddress,
-                                                               cmr.remoteCapabilities,
-                                                               False)))  # errors ignored
+            if self.isConventionLeader():
+                for each in self._conventionNotificationHandlers:
+                    self._send_intent(
+                        TransmitIntent(each,
+                                       ActorSystemConventionUpdate(cmr.remoteAddress,
+                                                                   cmr.remoteCapabilities,
+                                                                   False)))  # errors ignored
 
             # If the remote ActorSystem shutdown gracefully (i.e. sent
             # a Convention Deregistration) then it should not be
@@ -536,17 +537,18 @@ class ConventioneerAdmin(GlobalNamesAdmin):
 
     def h_NotifyOnSystemRegistration(self, envelope):
         if envelope.message.enableNotification:
-            self._conventionNotificationHandler = envelope.sender
-            # Now update the registrant on the current state of all convention members
-            for member in self._conventionMembers:
-                self._send_intent(
-                    TransmitIntent(envelope.sender,
-                                   ActorSystemConventionUpdate(member,
-                                                               self._conventionMembers[member].remoteCapabilities,
-                                                               True)))
+            newRegistrant = envelope.sender not in self._conventionNotificationHandlers
+            if newRegistrant:
+                self._conventionNotificationHandlers.add(envelope.sender)
+                # Now update the registrant on the current state of all convention members
+                for member in self._conventionMembers:
+                    self._send_intent(
+                        TransmitIntent(envelope.sender,
+                                       ActorSystemConventionUpdate(member,
+                                                                   self._conventionMembers[member].remoteCapabilities,
+                                                                   True)))
         else:
-            if envelope.sender == self._conventionNotificationHandler:
-                self._conventionNotificationHandler = None
+            self._conventionNotificationHandlers.discard(envelope.sender)
         return True
 
 

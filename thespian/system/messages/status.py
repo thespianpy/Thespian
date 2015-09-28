@@ -52,7 +52,7 @@ class Thespian_SystemStatus(_Common_StatusResp):
         self.conventionAttendees    = []  # array of (Admin actorAddress, last checkin or remaining time)
         self.deadLetterHandler      = None
         self.deadLetterAddresses    = []
-        self.notifyAddress          = None
+        self.notifyAddresses          = []
         self.globalActors           = {}
         self.inShutdown             = inShutdown
         self.sourceAuthority        = None
@@ -64,7 +64,7 @@ class Thespian_SystemStatus(_Common_StatusResp):
     def setConventionRegisterTime(self, time): self.conventionRegisterTime = time
     def addGlobalActor(self, name, address): self.globalActors[name] = address
     def setDeadLetterHandler(self, address): self.deadLetterHandler = address
-    def setNotifyHandler(self, address): self.notifyAddress = address
+    def setNotifyHandlers(self, addresses): self.notifyAddresses = addresses
     def setLoadedSources(self, sourceHashes): self.loadedSources = sourceHashes
 
 
@@ -126,8 +126,10 @@ def formatStatus(response, showAddress=str, tofd=None):
                 tofd.write('  Registration valid %s\n'%(str(response.conventionRegisterTime)))
         elif response.conventionAttendees:
             tofd.write('  Appears to be the Convention Leader\n')
-        if response.notifyAddress:
-            tofd.write('  |Convention Notifications: %s\n'%(showAddress(response.notifyAddress)))
+        if response.notifyAddresses:
+            tofd.write('  |Convention Notifications [%d]:\n'%len(response.notifyAddresses))
+            for each in response.notifyAddresses:
+                tofd.write('    ' + showAddress(each))
         tofd.write('  |Convention Attendees [%d]:\n'%len(response.conventionAttendees))
         for addr,validtime in response.conventionAttendees:
             tofd.write('    @ %s: %s\n'%(showAddress(addr), str(validtime)))
