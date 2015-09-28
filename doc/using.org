@@ -979,7 +979,7 @@ messages from any conference member that is of ~WARNING~ level or above.
 
   This method can be called to register or de-register this Actor for
   handling system registration events from other ActorSystems (see
-  [[*Other%20Actor%20Systems][Other Actor Systems]]) via ~ActorSystemConventionUpdate~ messages.
+  [[*Other Actor Systems][Other Actor Systems]]) via ~ActorSystemConventionUpdate~ messages.
 
 ** registerSourceAuthority
 
@@ -988,8 +988,7 @@ messages from any conference member that is of ~WARNING~ level or above.
 #+end_src
 
    This method registers the current Actor as the Source Authority
-   handler for the current Actor System as described in the [[*Security%20Considerations][Security
-   Considerations]] section of the [[*loadActorSource][loadActorSource]] Actor System API
+   handler for the current Actor System as described in the [[*Security Considerations][Security Considerations]] section of the [[*loadActorSource][loadActorSource]] Actor System API
    call.  Once registered, this Actor will receive [[*ValidateSource][ValidateSource]]
    messages and be responsible for decrypting (if necessary) and
    determining authorization for loaded sources to run.
@@ -1011,7 +1010,7 @@ messages from any conference member that is of ~WARNING~ level or above.
   The ~capabilities~ argument specifies the key/value dictionary of
   capabilities of the current ActorSystem.  ActorSystem capabilities
   are free-form and are determined solely by agents specifying those
-  capabilities (see [[*ActorSystem%20Capabilities][ActorSystem Capabilities]]).
+  capabilities (see [[*ActorSystem Capabilities][ActorSystem Capabilities]]).
 
   The optional ~requirements~ argument specifies the additional
   requirements that the creating Actor specified in the
@@ -1106,7 +1105,7 @@ messages from any conference member that is of ~WARNING~ level or above.
    The ~updateCapability()~ method is used update the capabilities of
    the current ActorSystem this Actor is running in (there is a
    corresponding method on the ActorSystem for externally-specified
-   updates; see the [[*ActorSystem%20API][ActorSystem API]] for that version).
+   updates; see the [[*ActorSystem API][ActorSystem API]] for that version).
 
 #+begin_src python
      self.updateCapability(self, capabilityName, capabilityValue=None)
@@ -1176,7 +1175,7 @@ messages from any conference member that is of ~WARNING~ level or above.
 
     The ~systemBase~ argument should specify which ActorSystem
     implementation base should be used for this ActorSystem, as
-    selected from those systems describe in the [[*ActorSystem%20Implementations][ActorSystem
+    selected from those systems describe in the [[*ActorSystem Implementations][ActorSystem
     Implementations]] section. If ~systemBase~ is None, this call will
     check to see if there was a previous call to ActorSystem in the
     current process and if so, re-use the ~systemBase~ from the
@@ -1184,7 +1183,7 @@ messages from any conference member that is of ~WARNING~ level or above.
     base is the ~simpleSystemBase~ (see [[*simpleSystemBase][simpleSystemBase]]).
 
     The ~capabilities~ argument should be a dictionary of capability
-    keys and values as describe in the [[*ActorSystem%20Capabilities][ActorSystem Capabilities]]
+    keys and values as describe in the [[*ActorSystem Capabilities][ActorSystem Capabilities]]
     section.  These capabilities form the initial set of capabilities
     for the ActorSystem if it is started; the capabilities are ignored
     if an ActorSystem is already running.
@@ -1213,14 +1212,14 @@ messages from any conference member that is of ~WARNING~ level or above.
    The ~targetActorRequirements~ argument is a value that will be
    passed to the [[*actorSystemCapabilityCheck][actorSystemCapabilityCheck]] to use for validating
    whether the Actor can be started within the current ActorSystem
-   environment (see [[*ActorSystem%20Capabilities][ActorSystem Capabilities]]).  The value specified
+   environment (see [[*ActorSystem Capabilities][ActorSystem Capabilities]]).  The value specified
    for this argument can be anything the target Actor's
    ~actorSystemCapabilityCheck()~ method can understand, although
    typically it is a Python dictionary.
 
    The ~globalName~ argument, if specified, should be a string
    specifying the "name" of the Actor within the ActorSystem.  As
-   describe in [[*Named%20Actors][Named Actors]], this name allows the Actor to be uniquely
+   describe in [[*Named Actors][Named Actors]], this name allows the Actor to be uniquely
    identified and referenced in a manner additional to the
    ActorAddress of the actor.
 
@@ -1395,7 +1394,7 @@ messages from any conference member that is of ~WARNING~ level or above.
   Although a plaintext zipfile may be loaded, it is highly recommended
   that production environments encrypt the zipFile using some sort of
   encryption methodology.  The reasons for this are discussed in the
-  [[*Security%20Considerations][Security Considerations]] section below; when an encrypted zipfile is
+  [[*Security Considerations][Security Considerations]] section below; when an encrypted zipfile is
   loaded it is first decrypted and/or authorized as described therein.
 
   The ~fileref~ argument can be a string specifying an input file path
@@ -1499,16 +1498,16 @@ messages from any conference member that is of ~WARNING~ level or above.
 **** Multi-System Source Authorization
 
   The Source Authority registration is unique to an Actor System.
-  Different Actor Systems in a [[*Multiple%20Systems][Multiple Systems]] configuration can each
+  Different Actor Systems in a [[*Multiple Systems][Multiple Systems]] configuration can each
   have a separate Source Authority that may perform different
-  authorization techniques.  However, as described in [[*Actor%20Code%20Distribution][Actor Code
+  authorization techniques.  However, as described in [[*Actor Code Distribution][Actor Code
   Distribution]], Actor Systems joined together in a Convention can
   exchange sources on demand to satisfy Actor creation requests.
   sources exchanged between Actor Systems in this manner are not
   subject to further *validation* after the initial load on the
   original system (although the local ActorSystem can choose the level
   of sharing it wishes to perform; see the *AllowRemoteActorSources*
-  capability setting in the [[*Common%20Capabilities][Common Capabilities]] section).
+  capability setting in the [[*Common Capabilities][Common Capabilities]] section).
 
   This functionality allows for maximum flexibility in handling
   different deployment environments:
@@ -1584,7 +1583,7 @@ messages from any conference member that is of ~WARNING~ level or above.
    caused the failure.  The originating Actor receives this poison
    message indication to allow it to perform any desired cleanup or
    alternative work based on the target Actor failure (see
-   [[*PoisonMessage%20Returns][PoisonMessage Returns]]).
+   [[*PoisonMessage Returns][PoisonMessage Returns]]).
 
 *** Attributes
 
@@ -1595,7 +1594,7 @@ messages from any conference member that is of ~WARNING~ level or above.
 
   The ~WakeupMessage~ is delivered to the Actor by the ActorSystem as
   a result of a previous call to the Actor's ~.wakeupAfter()~ method
-  call (see [[*Timer%20Messages][Timer Messages]]).
+  call (see [[*Timer Messages][Timer Messages]]).
 
 *** Attributes
 
@@ -1632,7 +1631,7 @@ messages from any conference member that is of ~WARNING~ level or above.
    of whether the exit was due to the receipt of an [[*ActorExitRequest][ActorExitRequest]]
    message or if the Actor was killed by other means.
 
-   The Parent of [[*Named%20Actors][Named Actors]] is the ActorSystem itself; no
+   The Parent of [[*Named Actors][Named Actors]] is the ActorSystem itself; no
    other Actor will receive a ~ChildActorExited~ message when a
    Named Actor exits.
 
@@ -1649,7 +1648,7 @@ messages from any conference member that is of ~WARNING~ level or above.
 ** DeadEnvelope
 
    The ~DeadEnvelope~ object is delivered to the Dead Letter handler as
-   described in [[*Dead%20Letter%20Handling][Dead Letter Handling]].  The ~DeadEnvelope~ is a wrapper
+   described in [[*Dead Letter Handling][Dead Letter Handling]].  The ~DeadEnvelope~ is a wrapper
    around the original message that could not be delivered to the
    target Actor because the target is no longer running.
 
@@ -1662,7 +1661,7 @@ messages from any conference member that is of ~WARNING~ level or above.
 
    The ~ActorSystemConventionUpdate~ object is delivered to an Actor
    that has registered to be notified on changes in ActorSystem
-   convention membership (as described in [[*Other%20Actor%20Systems][Other Actor Systems]]).  This
+   convention membership (as described in [[*Other Actor Systems][Other Actor Systems]]).  This
    message is generated by the ActorSystem itself.
 
 *** Attributes
@@ -1812,7 +1811,7 @@ details are available in each section:
 
 ** Common Capabilities
 
-As described in [[*ActorSystem%20Capabilities][ActorSystem Capabilities]] each ActorSystem has a set of
+As described in [[*ActorSystem Capabilities][ActorSystem Capabilities]] each ActorSystem has a set of
 capabilities that describe that ActorSystem and which can be audited
 by the Actor's [[*actorSystemCapabilityCheck][actorSystemCapabilityCheck]] method to determine if the
 Actor is compatible with the ActorSystem.
@@ -1866,7 +1865,7 @@ ActorSystems:
 
   * *AllowRemoteActorSources* :: This capability specifies whether or
        not this ActorSystem will accept sources loaded via remote
-       Actor Systems as described in the [[*Actor%20Code%20Distribution][Actor Code Distribution]]
+       Actor Systems as described in the [[*Actor Code Distribution][Actor Code Distribution]]
        section.  Valid values for this capability are:
 
          - *Yes* :: Any Actor Source validated by a Source Authority
@@ -1894,7 +1893,7 @@ ActorSystems:
     * The [[*actorSystemCapabilityCheck][actorSystemCapabilityCheck]] is not called for any Actors: all
       actors are created in the current ActorSystem regardless of
       their capability requirements.
-    * No support for [[*Multiple%20Systems][Multiple Systems]] (e.g. Conventions)
+    * No support for [[*Multiple Systems][Multiple Systems]] (e.g. Conventions)
 
   Specifically, whenever an ActorSystem ~.tell()~ or ~.ask()~ is
   called, the message is passed to the target Actor and any subsequent
@@ -1913,7 +1912,7 @@ ActorSystems:
   if no future calls of this type are made then those wakeups are
   never delivered.
 
-  The simpleSystemBase uses the following [[*ActorSystem%20Capabilities][ActorSystem Capabilities]]:
+  The simpleSystemBase uses the following [[*ActorSystem Capabilities][ActorSystem Capabilities]]:
 
   * *Thespian ActorSystem Name* :: "simpleSystemBase"
 
@@ -1944,9 +1943,9 @@ destination.
 The multiprocQueueBase can only be used for communications on the
 current system and not for inter-system communications.  The
 multiprocQueueBase does not support the use of multiple ActorSystems
-in a Convention as described in [[*Multiple%20Systems][Multiple Systems]].
+in a Convention as described in [[*Multiple Systems][Multiple Systems]].
 
-The multiprocQueueBase uses the following [[*ActorSystem%20Capabilities][ActorSystem Capabilities]]:
+The multiprocQueueBase uses the following [[*ActorSystem Capabilities][ActorSystem Capabilities]]:
 
   * *Thespian ActorSystem Name* :: "multiprocQueueBase"
 
@@ -1968,7 +1967,7 @@ shutdown.
 The multiprocTCPBase can be used for Actors on the same system or on
 other systems accessible via TCP/IPv4.
 
-The multiprocTCPBase uses the following [[*ActorSystem%20Capabilities][ActorSystem Capabilities]]:
+The multiprocTCPBase uses the following [[*ActorSystem Capabilities][ActorSystem Capabilities]]:
 
   * *Thespian ActorSystem Name* :: "multiprocTCPBase"
 
@@ -2018,7 +2017,7 @@ to 64KiB in size.  Larger messages will fail.
 The multiprocUDPBase can be used for Actors on the same system or on
 other systems accessible via UDP/IP.
 
-  The multiprocUDPBase uses the following [[*ActorSystem%20Capabilities][ActorSystem Capabilities]]:
+  The multiprocUDPBase uses the following [[*ActorSystem Capabilities][ActorSystem Capabilities]]:
 
   * *Thespian ActorSystem Name* :: "multiprocUDPBase"
 
