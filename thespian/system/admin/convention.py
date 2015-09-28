@@ -552,6 +552,15 @@ class ConventioneerAdmin(GlobalNamesAdmin):
         return True
 
 
+    def h_PoisonMessage(self, envelope):
+        self._conventionNotificationHandlers.discard(envelope.sender)
+
+
+    def _handleChildExited(self, childAddr):
+        self._conventionNotificationHandlers.discard(childAddr)
+        return super(ConventioneerAdmin, self)._handleChildExited(childAddr)
+
+
     def h_CapabilityUpdate(self, envelope):
         updateLocals = self._updSystemCapabilities(
             envelope.message.capabilityName,
