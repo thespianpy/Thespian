@@ -121,7 +121,6 @@ class DogActor(Actor):
 # Pig exercises absolute imports
 pigSource = '''
 from thespian.actors import Actor
-import thespian.importlib as importlib
 from barn.chicken import Cluck
 from . import goose
 from barn.cow.moo import cow_says
