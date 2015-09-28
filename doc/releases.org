@@ -17,6 +17,32 @@
 
 ** 2.1
 
+*** 2.2.0 <2015-09-27 Sun>
+
+  * Fix internal links in Using Thespian document.
+
+  * Add support for multiple convention notification registrations.
+
+  * Allow ActorSystem logDefs to be specified as False to suppress any
+    logging configuration; especially useful for test log capture
+    modes.
+
+  * Better ActorSystem startup processing to distinguish between a
+    re-specification of the current base and a new base, and added the
+    transientUnique startup argument to get a plain instance (a
+    non-global-singleton instance).
+
+  * Added missing description of the ActorSystem ~shutdown()~
+    operation in the Using Thespian document.
+
+  * Added ability to set the maximum thesplog logging file via the
+    ~THESPLOG_FILE_MAXSIZE~ environment variable and changed the default
+    to 50KB.
+
+  * Added Using Thespian documentation description of logging with the
+    ~THESPLOG_FILE~ and ~THESPLOG_FILE_MAXSIZE~ environment variable
+    controls.
+
 *** 2.1.6 <2015-09-27 Sun>
 
   * Fix imports in tests and actors.py for multiple Python versions.
