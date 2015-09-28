@@ -30,7 +30,7 @@ class LocallyManagedActorSystem(object):
         newBaseStr = str(newBase)
         if not hasattr(self, 'currentBase') or self.currentBase != newBaseStr:
             # In case the ActorSystem was *already* setup, break the singleton aspect and re-init
-            ActorSystem().shutdown()
+            ActorSystem(logDefs = logDefs).shutdown()
             if logDefs is None: logDefs = ActorSystemTestCase.getDefaultTestLogging()
             ActorSystem(newBase, systemCapabilities, logDefs)
             self.currentBase = newBaseStr
