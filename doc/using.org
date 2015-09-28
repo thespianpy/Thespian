@@ -260,7 +260,7 @@ method.
 
 Log-based architectures (e.g. Kafka) are fundamentally "pub/sub"
 architectures that use persistent storage for the published messages.
-As noted in the [[*Message%20Bus%20(Pub/Sub)%20Architecture][Message Bus (Pub/Sub) Architecture]], the Actor model is
+As noted in the [[*Message Bus (Pub/Sub) Architecture][Message Bus (Pub/Sub) Architecture]], the Actor model is
 a higher-level abstraction layer that encompasses the pub/sub
 functionality. The Actor model therefore also abstracts a Logging
 System with the exception of the persistent storage/replay
@@ -295,7 +295,7 @@ an ActorSystem using the "multiprocTCPBase":
 #+end_src
 
 More details on the explicit parameters for this call are found in
-[[*ActorSystem][ActorSystem]], and the known system bases are describe in [[*ActorSystem%20Implementations][ActorSystem
+[[*ActorSystem][ActorSystem]], and the known system bases are describe in [[*ActorSystem Implementations][ActorSystem
 Implementations]].
 
 Once created, the running ActorSystem reference is stored as a
@@ -319,7 +319,7 @@ itself is shutdown.
 
 Actors can be created by other Actors or by external applications
 making a request to the running ActorSystem.  In the former case, the
-Actor making the request becomes the "[[*Parent%20Actor][Parent Actor]]" of the newly
+Actor making the request becomes the "[[*Parent Actor][Parent Actor]]" of the newly
 created Actor, whereas there is no parent in the latter case and the
 newly created actor is therefore referred to as a "Top-Level" Actor.
 
@@ -372,13 +372,13 @@ ActorSystem.
 
 After the Actor has been killed, the Actor's Address is dead-lettered;
 any subsequent messages sent to the Actor's address will be handled as
-described in [[*Dead%20Letter%20Handling][Dead Letter Handling]].
+described in [[*Dead Letter Handling][Dead Letter Handling]].
 
 
 *** Parent Actor
 
     An Actor which creates other Actors automatically becomes the
-    "Parent" of the created Actor(s).  In the example in the [[*Creating%20an%20Actor][Creating
+    "Parent" of the created Actor(s).  In the example in the [[*Creating an Actor][Creating
     an Actor]] section above, the MyFirstActor Actor is the parent of
     any created Supporting Actor.
 
@@ -402,7 +402,7 @@ described in [[*Dead%20Letter%20Handling][Dead Letter Handling]].
    When writing Actor code, the general philosophy is "fail early";
    the ActorSystem itself will restart the Actor in the event of a
    failure and possibly retry the message or abort that specific
-   message.  See [[*PoisonMessage%20Returns][PoisonMessage Returns]] for more details.
+   message.  See [[*PoisonMessage Returns][PoisonMessage Returns]] for more details.
 
 * Guidelines for Actors and their messages
 
@@ -419,11 +419,11 @@ described in [[*Dead%20Letter%20Handling][Dead Letter Handling]].
     the ActorSystemMessage base class.  The messages that an
     ActorSystem can deliver to an Actor are:
 
-       + ActorExitRequest   (see [[*Killing%20an%20Actor][Killing an Actor]])
-       + ChildActorExited   (see [[*Parent%20Actor][Parent Actor]])
-       + PoisonMessage      (see [[*PoisonMessage%20Returns][PoisonMessage Returns]])
-       + ActorSystemConventionUpdate  (see [[*Other%20Actor%20Systems][Other Actor Systems]])
-       + WakeupMessage      (see [[*Timer%20Messages][Timer Messages]])
+       + ActorExitRequest   (see [[*Killing an Actor][Killing an Actor]])
+       + ChildActorExited   (see [[*Parent Actor][Parent Actor]])
+       + PoisonMessage      (see [[*PoisonMessage Returns][PoisonMessage Returns]])
+       + ActorSystemConventionUpdate  (see [[*Other Actor Systems][Other Actor Systems]])
+       + WakeupMessage      (see [[*Timer Messages][Timer Messages]])
 
     Most actors can be written very simply and can safely ignore any
     and all messages from the ActorSystem.  These messages are
@@ -489,7 +489,7 @@ described in [[*Dead%20Letter%20Handling][Dead Letter Handling]].
   prevent too many messages being held in limbo.
 
   If the recipient exits before the send can be completed, the message
-  is redirected to [[*Dead%20Letter%20Handling][Dead Letter Handling]].
+  is redirected to [[*Dead Letter Handling][Dead Letter Handling]].
 
 ** Dead Letter Handling
 
@@ -520,7 +520,7 @@ described in [[*Dead%20Letter%20Handling][Dead Letter Handling]].
 
   Actors that cannot be started at all will be Dead Lettered by the
   ActorSystem.  If an Actor has registered for receiving Dead Letters
-  (see [[*Dead%20Letter%20Handling][Dead Letter Handling]]) then it can perform special actions to
+  (see [[*Dead Letter Handling][Dead Letter Handling]]) then it can perform special actions to
   handle the non-starting Actor, but by default all messages sent to a
   non-starting Actor are discarded by the default Dead Letter Handling.
 
@@ -529,7 +529,7 @@ described in [[*Dead%20Letter%20Handling][Dead Letter Handling]].
    If an Actor experiences a failure (an uncaught exception) when
    processing a message, the ActorSystem will catch the exception and
    retry delivery of the message to the target Actor (as describe in
-   [[*Actor%20Failure][Actor Failure]]).
+   [[*Actor Failure][Actor Failure]]).
 
    If the target Actor generates another exception when handling the
    message the second time, the ActorSystem will assume that the
@@ -544,12 +544,12 @@ described in [[*Dead%20Letter%20Handling][Dead Letter Handling]].
 
   Actors created by the external environment are called "Top-Level
   Actors" and are unique in that they have no "parent" Actor (see
-  [[*Parent%20Actor][Parent Actor]]).  Since there is no Parent Actor, there is nowhere to
+  [[*Parent Actor][Parent Actor]]).  Since there is no Parent Actor, there is nowhere to
   send a ChildActorExited message when the Actor dies and therefore
   there is no allowance for restarting Top Level Actors.
 
   Messages sent to a Top Level Actor that has died will still be
-  redirected to the Dead Letter Handler (see [[*Dead%20Letter%20Handling][Dead Letter Handling]]).
+  redirected to the Dead Letter Handler (see [[*Dead Letter Handling][Dead Letter Handling]]).
 
 ** Named Actors
 
@@ -575,7 +575,7 @@ described in [[*Dead%20Letter%20Handling][Dead Letter Handling]].
   There are a couple of disadvantages to Named Actors that must be
   considered relative to their convenience:
 
-   1. All Named Actors are similar to [[*Top-Level%20Actors][Top-Level Actors]] in that they
+   1. All Named Actors are similar to [[*Top-Level Actors][Top-Level Actors]] in that they
       are managed by the Actor System itself rather than a Parent
       Actor and therefore there is no notification when a Named Actor
       exits, and any messages sent to a Named Actor that has exited
@@ -595,7 +595,7 @@ described in [[*Dead%20Letter%20Handling][Dead Letter Handling]].
   but sometimes an Actor would like to run again after a timed delay.
   While it is possible for the Actor to sleep internally, this will
   prevent it from responding to other messages and cause messages to
-  be queued causing eventual delivery failure (see [[*Message%20Delivery][Message Delivery]]).
+  be queued causing eventual delivery failure (see [[*Message Delivery][Message Delivery]]).
 
   To avoid this, each Actor has a ~.wakeupAfter()~ method that can be
   called with a specified Python ~timedelta~ value.  The ActorSystem
@@ -648,16 +648,16 @@ described in [[*Dead%20Letter%20Handling][Dead Letter Handling]].
   specifies them.
 
   All Thespian ActorSystem instances automatically supply a set of
-  common capabilities described in the [[*Common%20Capabilities][Common Capabilities]] section.
+  common capabilities described in the [[*Common Capabilities][Common Capabilities]] section.
 
 ** Other Actor Systems
 
   The current ActorSystem can communicate with other ActorSystems to
-  coordinate Actor activities as described in [[*Multiple%20Systems][Multiple Systems]].  To
+  coordinate Actor activities as described in [[*Multiple Systems][Multiple Systems]].  To
   support this, the ActorSystems communicate on known transport
   addresses to form a "Convention" of ActorSystems.
 
-  When new Actors are created, the [[*ActorSystem%20Capabilities][ActorSystem Capabilities]] of the
+  When new Actors are created, the [[*ActorSystem Capabilities][ActorSystem Capabilities]] of the
   ActorSystems that are part of the Convention are used to determine
   where to start up the requested new Actor.
 
@@ -786,7 +786,7 @@ messages from any conference member that is of ~WARNING~ level or above.
 #+end_src
 
   Versioning of the Actor API and the ActorSystem are described in
-  [[*ActorSystem%20Capabilities][ActorSystem Capabilities]].
+  [[*ActorSystem Capabilities][ActorSystem Capabilities]].
 
 ** myAddress
 
@@ -806,7 +806,7 @@ messages from any conference member that is of ~WARNING~ level or above.
    received messages.  Each subclass should override the base Actor
    receiveMessage() method as appropriate.  The ~message~ argument is
    the message being received, and the ~sender~ is the ActorAddress of
-   the Actor (or [[*External%20Communications][External Communications]] endpoint) sending the
+   the Actor (or [[*External Communications][External Communications]] endpoint) sending the
    message.
 
    The message can be discarded once it has been handled.  As
@@ -818,7 +818,7 @@ messages from any conference member that is of ~WARNING~ level or above.
 
    If the processing of the message causes an exception, the failure
    will be caught by the ActorSystem and the message may be retried or
-   returned to the sender as described in [[*PoisonMessage%20Returns][PoisonMessage Returns]].  Note
+   returned to the sender as described in [[*PoisonMessage Returns][PoisonMessage Returns]].  Note
    that the /original/ copy of the receive message is passed to the
    Actor with each attempt; if the Actor modifies the message before
    failing with an exception, the retried or Poison-returned version
@@ -843,13 +843,13 @@ messages from any conference member that is of ~WARNING~ level or above.
    The optional ~targetActorRequirements~ argument is a value that
    will be passed passed to the [[*actorSystemCapabilityCheck][actorSystemCapabilityCheck]] to use for
    validating whether the Actor can be started within the current
-   ActorSystem environment (see [[*ActorSystem%20Capabilities][ActorSystem Capabilities]]).  The value
+   ActorSystem environment (see [[*ActorSystem Capabilities][ActorSystem Capabilities]]).  The value
    specified for this argument can be anything the target Actor's
    ~actorSystemCapabilityCheck()~ method can understand, although
    typically it is a Python dictionary.
 
    The ~globalName~ argument may be specified (as an arbitrary string)
-   to create a [[*Named%20Actors][Named Actors]] instance.
+   to create a [[*Named Actors][Named Actors]] instance.
 
    The context for the created Actor will be the context under which
    the Thespian system was started.  _This means that if the Thespian
@@ -890,7 +890,7 @@ messages from any conference member that is of ~WARNING~ level or above.
    aspect of the target Actor.  However, due to this asynchronous
    startup, it is possible that the new Actor cannot be started at
    all; in this event all messages intended for the new target Actor
-   will be handled as described in the [[*Dead%20Letter%20Handling][Dead Letter Handling]] section.
+   will be handled as described in the [[*Dead Letter Handling][Dead Letter Handling]] section.
 
 
 *** globalName
@@ -948,7 +948,7 @@ messages from any conference member that is of ~WARNING~ level or above.
     the target asynchronously.  There is no guarantee that the target
     has received the message by the time the ~.send()~ method returns.
     The ActorSystem delivers the message at some point by best-effort,
-    sending the message to [[*Dead%20Letter%20Handling][Dead Letter Handling]] if it cannot be
+    sending the message to [[*Dead Letter Handling][Dead Letter Handling]] if it cannot be
     delivered.
 
 ** wakeupAfter
@@ -960,7 +960,7 @@ messages from any conference member that is of ~WARNING~ level or above.
     The ~timePeriod~ specifies a Python ~datetime.timedelta~ period.
     When this time period has expired, the ActorSystem will deliver a
     ~WakeupMessage~ to the Actor via the normal ~.receiveMessage()~
-    entrypoint (the sender will be the Actor itself).  See [[*Timer%20Messages][Timer
+    entrypoint (the sender will be the Actor itself).  See [[*Timer Messages][Timer
     Messages]] for more information.
 
 ** handleDeadLetters
