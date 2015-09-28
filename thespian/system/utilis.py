@@ -86,10 +86,13 @@ class ExpiryTime(object):
 _thesplog_control_settings = (
     logging.INFO,
     False,
-    5 * 1024 * 1024 # 5MB /tmp/Thespian.log
+    os.getenv('THESPLOG_FILE_MAXSIZE', 50 * 1024) # 50KB by default
 )
 
-_thesplog_file = os.getenv('THESPLOG_FILE', '/tmp/Thespian.log')
+# Usually logging would be directed to /var/log, but that is often not
+# user-writeable, so /tmp is used by default; setting THESPLOG_FILE is
+# encouraged.
+_thesplog_file = os.getenv('THESPLOG_FILE', '/tmp/thespian.log')
 _thesplog_old_file = _thesplog_file + '.old'
 
 
