@@ -695,6 +695,31 @@ or duplicated log messages.
 In addition, the Convention Manager Actor System receives all log
 messages from any conference member that is of ~WARNING~ level or above.
 
+*** Thespian Internals Logging
+
+Because Thespian instruments the standard logging functionality to
+provide the Convention forwarding ability, it is not possible to use
+logging from within most of Thespian itself because this can cause
+infinite recursions hangs.
+
+Thespian internals write logging information to a file
+(~/tmp/thespian.log~ by default) with a single backup rotation of that
+file at a specified size limit.  This internal logging can be
+controlled via the following environment variables that must be set
+before the ActorSystem is started:
+
+  * THESPLOG_FILE :: specifies the filepath for the Thespian
+       internals logging.  By default this writes to
+       ~/tmp/thespian.log~.
+
+  * THESPLOG_FILE_MAXSIZE :: specifies the maximum size for the
+       Thespian internals logging file.  There is a single backup
+       rotation (~{filepath}.old~), so the actual space consumed can
+       reach twice this value.  The default value of 50KB is
+       relatively small, but this file should normally not be needed
+       by developers writing Actors and is usually only needed by
+       developers modifying Thespian internals.
+
 ** Actor Code Distribution
 
   The Thespian ActorSystem provides an feature to specify the code
