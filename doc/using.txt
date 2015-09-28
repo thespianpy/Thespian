@@ -41,6 +41,7 @@ Table of Contents
 .. 4.9 ActorSystem Capabilities
 .. 4.10 Other Actor Systems
 .. 4.11 Logging
+..... 4.11.1 Thespian Internals Logging
 .. 4.12 Actor Code Distribution
 5 Actor API
 .. 5.1 myAddress
@@ -59,16 +60,17 @@ Table of Contents
 6 ActorSystem API
 .. 6.1 Exceptions
 .. 6.2 ActorSystem
-.. 6.3 ActorSystem.createActor
-.. 6.4 tell
-.. 6.5 ask
-..... 6.5.1 Gotchas
-.. 6.6 listen
-.. 6.7 updateCapability
-.. 6.8 loadActorSource
-..... 6.8.1 Source Loading Issues
-..... 6.8.2 Security Considerations
-.. 6.9 unloadActorSource
+.. 6.3 ActorSystem.shutdown
+.. 6.4 ActorSystem.createActor
+.. 6.5 tell
+.. 6.6 ask
+..... 6.6.1 Gotchas
+.. 6.7 listen
+.. 6.8 updateCapability
+.. 6.9 loadActorSource
+..... 6.9.1 Source Loading Issues
+..... 6.9.2 Security Considerations
+.. 6.10 unloadActorSource
 7 ActorSystem Messages
 .. 7.1 PoisonMessage
 ..... 7.1.1 Attributes
@@ -330,9 +332,10 @@ Table of Contents
   Implementations.
 
   Once created, the running ActorSystem reference is stored as a
-  singleton for the current process.  This means that subsequent
-  references can either use the direct reference (e.g. `asys' from the
-  above) or another `ActorSystem()' instantiation with no parameters.
+  singleton for the current process by default.  This means that
+  subsequent references can either use the direct reference (e.g. `asys'
+  from the above) or another `ActorSystem()' instantiation with no
+  parameters.
 
 
 2.2 Actor Lifecycle
@@ -744,13 +747,14 @@ Table of Contents
   system, although there are some Thespian modifications to logging that
   improve the logging experience using Thespian.
 
-  The 'logging' parameter of the system capabilities passed to the Actor
-  System (see below) will specify the primary logging configuration for
-  Thespian and corresponding Actors (regardless of where the logger is
-  obtained).
+  The optional `logDefs' argument passed to the `ActorSystem()'
+  instantiation (see below) will specify the primary logging
+  configuration for Thespian and corresponding Actors (regardless of
+  where the logger is obtained).
 
   The functionality provided by logging in the Thespian environment
-  possibly includes sending log messages to a central Logging actor.
+  possibly includes sending log messages to a central Logging actor (as
+  explicitly indicated in the ActorSystem Implementations section).
   This is needed because the standard Python logging is not
   multi-process safe and attempts to use it as-is will result in missing
   or duplicated log messages.
@@ -758,6 +762,33 @@ Table of Contents
   In addition, the Convention Manager Actor System receives all log
   messages from any conference member that is of `WARNING' level or
   above.
+
+
+4.11.1 Thespian Internals Logging
+╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+
+  Because Thespian instruments the standard logging functionality to
+  provide the Convention forwarding ability, it is not possible to use
+  logging from within most of Thespian itself because this can cause
+  infinite recursions hangs.
+
+  Thespian internals write logging information to a file
+  (`/tmp/thespian.log' by default) with a single backup rotation of that
+  file at a specified size limit.  This internal logging can be
+  controlled via the following environment variables that must be set
+  before the ActorSystem is started:
+
+  THESPLOG_FILE: specifies the filepath for the Thespian internals
+                 logging.  By default this writes to `/tmp/thespian.log'.
+
+  THESPLOG_FILE_MAXSIZE: specifies the maximum size for the Thespian
+                         internals logging file.  There is a single backup
+                         rotation (`{filepath}.old'), so the actual space
+                         consumed can reach twice this value.  The default
+                         value of 50KB is relatively small, but this file
+                         should normally not be needed by developers
+                         writing Actors and is usually only needed by
+                         developers modifying Thespian internals.
 
 
 4.12 Actor Code Distribution
@@ -1265,7 +1296,10 @@ Table of Contents
 ───────────────
 
   ┌────
-  │       actorSys = ActorSystem(systemBase=None, capabilities=None)
+  │ actorSys = ActorSystem(systemBase = None,
+  │                        capabilities = None,
+  │                        logDefs = None,
+  │                        transientUnique = False)
   └────
 
   The `systemBase' argument should specify which ActorSystem
@@ -1283,8 +1317,55 @@ Table of Contents
   if it is started; the capabilities are ignored if an ActorSystem is
   already running.
 
+  The `logDefs' argument is used to specify a logging configuration
+  dictionary (in standard logdict format).  If not specified, a default
+  logging configuration is usually supplied.  If specified as `False',
+  then no logging configuration is supplied; this latter is useful in
+  situations where another component is attempting to establish a
+  logging configuration (e.g. nosetest logcapture).  As described in the
+  Logging section, the Convention Leader will receive forwarding of log
+  messages at Warning level or higher, providing a centralized logging
+  capability.
 
-6.3 ActorSystem.createActor
+  Normally the created ActorSystem becomes a process-wide (and possibly
+  system-wide) singleton instance.  The `transientUnique' argument may
+  be set to true to get a new, un-registered ActorSystem.  Note that
+  typical Python classes provide a unique instantiation on each call
+  (i.e. the result provided here if `transientUnique' is `True') but
+  more typical Thespian functionality is achieved by the global
+  singleton behavior, so that is the default and the `transientUnique'
+  must be explicitly specified for non-singleton creations.
+
+
+6.3 ActorSystem.shutdown
+────────────────────────
+
+  ┌────
+  │     actorSys.shutdown()
+  └────
+
+  The `shutdown()' ActorSystem method is used to terminate an Actor
+  System and all Actors running in that system.  If issued to a
+  ActorSystem that is part of a multi-system Convention that ActorSystem
+  is shutdown and the other Convention members are notified (but they
+  continue to exist).
+
+  As described previously, the ActorSystem is a process-global singleton
+  that may be a system-wide singleton, depending on the system base used
+  (see ActorSystem Implementations for details).  The `shutdown()'
+  method is the proper way to stop those process-wide or system-wide
+  ActorSystems when they are no longer needed.  The decision of when to
+  do this is left to the user; in some situations the ActorSystem should
+  be a long-running service that matches the lifetime of the system
+  itself.
+
+  If the ActorSystem was started with `transientUnique = True', the
+  `shutdown()' should still be used to properly stop the current
+  ActorSystem, but any global ActorSystem registration will be
+  unaffected by stopping the transient unique ActorSystem.
+
+
+6.4 ActorSystem.createActor
 ───────────────────────────
 
   ┌────
@@ -1352,7 +1433,7 @@ Table of Contents
     match any currently loaded source.
 
 
-6.4 tell
+6.5 tell
 ────────
 
   Tell is used to inject a message into the Actor system (targeting a
@@ -1372,7 +1453,7 @@ Table of Contents
   until the send is completed.
 
 
-6.5 ask
+6.6 ask
 ───────
 
   Ask is used to send a message to an Actor (injecting it into the Actor
@@ -1394,11 +1475,11 @@ Table of Contents
   `ask()' will only block for the specified timeout period, returning a
   None value if the timeout has occurred.  The recommended manner of
   specifying a timeout period is as an instance of the
-  datetime.timedelta class, although an integer or floating point value
-  will be accepted as a specification of a number of seconds.
+  `datetime.timedelta' class, although an integer or floating point
+  value will be accepted as a specification of a number of seconds.
 
 
-6.5.1 Gotchas
+6.6.1 Gotchas
 ╌╌╌╌╌╌╌╌╌╌╌╌╌
 
   ‣ The response may come from a previous `tell()' (or `ask()' if that
@@ -1417,7 +1498,7 @@ Table of Contents
   `asks()' with timeouts and message identifiers to
 
 
-6.6 listen
+6.7 listen
 ──────────
 
   Listen is used to wait for a message.
@@ -1435,11 +1516,11 @@ Table of Contents
   `listen()' will only block for the specified timeout period, returning
   a None value if the timeout has occurred.  The recommended manner of
   specifying a timeout period is as an instance of the
-  datetime.timedelta class, although an integer or floating point value
-  will be accepted as a specification of a number of seconds.
+  `datetime.timedelta' class, although an integer or floating point
+  value will be accepted as a specification of a number of seconds.
 
 
-6.7 updateCapability
+6.8 updateCapability
 ────────────────────
 
   The `updateCapability()' method is used update the capabilities of the
@@ -1471,7 +1552,7 @@ Table of Contents
   a Thespian_StatusReq to the ActorSystem.
 
 
-6.8 loadActorSource
+6.9 loadActorSource
 ───────────────────
 
   ┌────
@@ -1499,7 +1580,7 @@ Table of Contents
   feedback (excepting perhaps the `/tmp/Thespian.log' logfile).
 
 
-6.8.1 Source Loading Issues
+6.9.1 Source Loading Issues
 ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 
   Although the `loadActorSource()' functionality works quite well, there
@@ -1543,7 +1624,7 @@ Table of Contents
      be loaded via `loadActorSource()'.
 
 
-6.8.2 Security Considerations
+6.9.2 Security Considerations
 ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 
   When `loadActorSource()' is not used, the source for all instantiated
@@ -1594,7 +1675,7 @@ Table of Contents
   that will reject all loaded sources.
 
 
-◊ 6.8.2.1 Multi-System Source Authorization
+◊ 6.9.2.1 Multi-System Source Authorization
 
   The Source Authority registration is unique to an Actor System.
   Different Actor Systems in a Multiple Systems configuration can each
@@ -1636,8 +1717,8 @@ Table of Contents
   other source load via independent means.
 
 
-6.9 unloadActorSource
-─────────────────────
+6.10 unloadActorSource
+──────────────────────
 
   ┌────
   │     actorSys.unloadActorSource(sourceHash)
@@ -2065,6 +2146,12 @@ Table of Contents
   future calls of this type are made then those wakeups are never
   delivered.
 
+  The simpleSystemBase is commonly used for unit testing configurations;
+  as such, specifying the `logDefs' constructor argument as `False'
+  helps prevent this system base from interfering with any log capturing
+  that is performed by the unit testing framework (e.g. nosetest
+  logcapture).
+
   The simpleSystemBase uses the following ActorSystem Capabilities:
 
   *Thespian ActorSystem Name*: "simpleSystemBase"
@@ -2124,6 +2211,10 @@ Table of Contents
   The multiprocTCPBase can be used for Actors on the same system or on
   other systems accessible via TCP/IPv4.
 
+  The multiprocTCPBase supports forwarding of logging messages (warning
+  and above) to the Convention Leader if used in a multi-system
+  configuration.
+
   The multiprocTCPBase uses the following ActorSystem Capabilities:
 
   *Thespian ActorSystem Name*: "multiprocTCPBase"
@@ -2178,6 +2269,10 @@ Table of Contents
 
   The multiprocUDPBase can be used for Actors on the same system or on
   other systems accessible via UDP/IP.
+
+  The multiprocUDPBase supports forwarding of logging messages (warning
+  and above) to the Convention Leader if used in a multi-system
+  configuration.
 
   The multiprocUDPBase uses the following ActorSystem Capabilities:
 
