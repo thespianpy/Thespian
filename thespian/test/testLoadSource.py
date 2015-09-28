@@ -419,7 +419,7 @@ class TestASimpleSystem(ActorSystemTestCase, CreateTestSourceZips):
         srchash = self._loadFooSource()
         foo = self.systems['One'].createActor('foo.FooActor', sourceHash=srchash)
         self.assertEqual('GOT: good one', self.systems['One'].ask(foo, 'good one', 1))
-        self.assertEqual('And MOO: great', self.systems['One'].ask(foo, ('discard', 'great')))
+        self.assertEqual('And MOO: great', self.systems['One'].ask(foo, ('discard', 'great'), 1))
 
     def test02_verifySubModuleAvailableWhenLoaded(self):
         self.startSystems(60)
