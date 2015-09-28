@@ -392,7 +392,7 @@ class ActorSystem(object):
             systemBase = currentSystemBase
             if systemBase is None:
                 import thespian.system.simpleSystemBase
-                systemBase = thespian.system.simpleSystemBase.ActorSystemBase(self, logDefs)
+                systemBase = thespian.system.simpleSystemBase.ActorSystemBase(self, logDefs = logDefs)
         elif isinstance(systemBase, str):
             import sys
             if sys.version_info < (2,7):
@@ -401,7 +401,14 @@ class ActorSystem(object):
                 import importlib
             # n.b. let standard import exception indicate a missing/unknown systemBase
             module = importlib.import_module('thespian.system.%s'%systemBase)
-            systemBase = getattr(module, 'ActorSystemBase')(self, logDefs)
+            sbc = getattr(module, 'ActorSystemBase')
+            if currentSystemBase and id(currentSystemBase.__class__) == id(sbc):
+                systemBase = currentSystemBase
+            else:
+                systemBase = sbc(self, logDefs = logDefs)
+        elif systemBase and currentSystemBase:
+            if id(systemBase.__class__) == id(currentSystemBase.__class__):
+                systemBase = currentSystemBase
         # else systemBase should be a valid object already
         self._systemBase = systemBase
         return systemBase
