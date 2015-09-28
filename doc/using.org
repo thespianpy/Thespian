@@ -299,9 +299,10 @@ More details on the explicit parameters for this call are found in
 Implementations]].
 
 Once created, the running ActorSystem reference is stored as a
-singleton for the current process.  This means that subsequent
-references can either use the direct reference (e.g. ~asys~ from the
-above) or another ~ActorSystem()~ instantiation with no parameters.
+singleton for the current process by default.  This means that
+subsequent references can either use the direct reference (e.g. ~asys~
+from the above) or another ~ActorSystem()~ instantiation with no
+parameters.
 
 
 ** Actor Lifecycle
@@ -1196,7 +1197,10 @@ before the ActorSystem is started:
 ** ActorSystem
 
 #+begin_src python
-      actorSys = ActorSystem(systemBase=None, capabilities=None, logDefs=None)
+actorSys = ActorSystem(systemBase = None,
+                       capabilities = None,
+                       logDefs = None,
+                       transientUnique = False)
 #+end_src
 
     The ~systemBase~ argument should specify which ActorSystem
@@ -1224,6 +1228,16 @@ before the ActorSystem is started:
     receive forwarding of log messages at Warning level or higher,
     providing a centralized logging capability.
 
+    Normally the created ActorSystem becomes a process-wide (and
+    possibly system-wide) singleton instance.  The ~transientUnique~
+    argument may be set to true to get a new, un-registered
+    ActorSystem.  Note that typical Python classes provide a unique
+    instantiation on each call (i.e. the result provided here if
+    ~transientUnique~ is ~True~) but more typical Thespian
+    functionality is achieved by the global singleton behavior, so
+    that is the default and the ~transientUnique~ must be explicitly
+    specified for non-singleton creations.
+
 ** ActorSystem.shutdown
 
 #+BEGIN_SRC python
@@ -1244,6 +1258,11 @@ before the ActorSystem is started:
     needed.  The decision of when to do this is left to the user; in
     some situations the ActorSystem should be a long-running service
     that matches the lifetime of the system itself.
+
+    If the ActorSystem was started with ~transientUnique = True~, the
+    ~shutdown()~ should still be used to properly stop the current
+    ActorSystem, but any global ActorSystem registration will be
+    unaffected by stopping the transient unique ActorSystem.
 
 ** ActorSystem.createActor
 

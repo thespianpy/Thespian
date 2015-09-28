@@ -367,14 +367,29 @@ class ActorSystem(object):
 
     """
 
-    def __init__(self, systemBase=None, capabilities=None, logDefs=None):
+    def __init__(self,
+                 systemBase = None,
+                 capabilities = None,
+                 logDefs = None,
+                 transientUnique = False):
+        systemBase = self._startupActorSys(None if transientUnique
+                                           else getattr(self.__class__, 'systemBase', None),
+                                           systemBase, capabilities, logDefs)
+        if transientUnique:
+            self._isTransientUnique = True
+        else:
+            # (Re-)Set the Singleton systemBase
+            self.__class__.systemBase = systemBase
+
+
+    def _startupActorSys(self, currentSystemBase, systemBase, capabilities, logDefs):
         self.systemAddress = ActorAddress('/ActorSys')
         self.capabilities = capabilities or dict()
         if 'logging' in self.capabilities:
             import logging
             logging('Thespian').warning('logging specification moved from capabilities to an explicit argument.')
         if systemBase is None:
-            systemBase = getattr(self.__class__, 'systemBase', None)
+            systemBase = currentSystemBase
             if systemBase is None:
                 import thespian.system.simpleSystemBase
                 systemBase = thespian.system.simpleSystemBase.ActorSystemBase(self, logDefs)
@@ -389,16 +404,17 @@ class ActorSystem(object):
             systemBase = getattr(module, 'ActorSystemBase')(self, logDefs)
         # else systemBase should be a valid object already
         self._systemBase = systemBase
-        if getattr(self.__class__, 'systemBase', None) is None:
-            # Set the Singleton systemBase
-            self.__class__.systemBase = systemBase
+        return systemBase
+
 
     def shutdown(self):
         "Called to shutdown the ActorSystem itself.  May block until all Actors are shutdown."
         self._systemBase.shutdown()
-        if getattr(self.__class__, 'systemBase', None) == self._systemBase:
-            delattr(self.__class__, 'systemBase')
+        if not getattr(self, '_isTransientUnique', False):
+            if getattr(self.__class__, 'systemBase', None) == self._systemBase:
+                delattr(self.__class__, 'systemBase')
         self._systemBase = None
+
 
     def createActor(self, actorClass,
                     targetActorRequirements=None,
