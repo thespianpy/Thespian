@@ -17,6 +17,12 @@
 
 ** 2.1
 
+*** 2.1.6 <2015-09-27 Sun>
+
+  * Fix imports in tests and actors.py for multiple Python versions.
+
+  * Add missing timeout to test to prevent hang.
+
 *** 2.1.5 <2015-09-20 Sun>
 
   * Adds support for Python 3.3 and Python 3.4 versions, including the
