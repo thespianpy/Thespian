@@ -11,6 +11,7 @@ Table of Contents
 
 2.x
 .. 2.1
+..... 2.1.6 <2015-09-27 Sun>
 ..... 2.1.5 <2015-09-20 Sun>
 ..... 2.1.4 Initial Public Release <2015-08-31 Mon>
 .. 2.0
@@ -25,6 +26,14 @@ Table of Contents
 
 2.1
 ───
+
+2.1.6 <2015-09-27 Sun>
+╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+
+  ‣ Fix imports in tests and actors.py for multiple Python versions.
+
+  ‣ Add missing timeout to test to prevent hang.
+
 
 2.1.5 <2015-09-20 Sun>
 ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
