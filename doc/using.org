@@ -1372,7 +1372,7 @@ actorSys = ActorSystem(systemBase = None,
    ~ask()~ will only block for the specified timeout period, returning
    a None value if the timeout has occurred.  The recommended manner
    of specifying a timeout period is as an instance of the
-   datetime.timedelta class, although an integer or floating point
+   ~datetime.timedelta~ class, although an integer or floating point
    value will be accepted as a specification of a number of seconds.
 
 *** Gotchas
@@ -1410,7 +1410,7 @@ actorSys = ActorSystem(systemBase = None,
    ~listen()~ will only block for the specified timeout period,
    returning a None value if the timeout has occurred.  The
    recommended manner of specifying a timeout period is as an instance
-   of the datetime.timedelta class, although an integer or floating
+   of the ~datetime.timedelta~ class, although an integer or floating
    point value will be accepted as a specification of a number of
    seconds.
 
