@@ -3,7 +3,7 @@
 For more details, see Thespian.md.
 """
 
-ThespianGeneration = (2, 1)
+ThespianGeneration = (2, 3)
 
 
 class ActorSystemException(Exception): pass
