@@ -32,8 +32,9 @@ class Parent(Actor):
 
 
 class TestASimpleSystem(ActorSystemTestCase):
-    testbase='Simple'
-    scope='func'
+    testbase = 'Simple'
+    scope = 'func'
+    basename = 'simpleSystemBase'
 
     def testFwdMsg(self):
         aS = ActorSystem()
@@ -43,15 +44,15 @@ class TestASimpleSystem(ActorSystemTestCase):
         self.assertEqual([a2,a2,a1,a2], r.pathdone)
 
     def testConnectToExistingActorSystem(self):
+        # Create a Parent Actor in the existing system and verify connectivity
         as1 = ActorSystem()
         parent1 = as1.createActor(Parent)
         self.assertEqual('Hi', as1.ask(parent1, 'Hello', 3))
 
-        # Access Internals to make singleton "forget" about the
-        # current ActorSystem.
-        ActorSystem.systemBase = None
-
-        aS = ActorSystem(self.currentBase)
+        # Create a new ActorSystem, with a new Parent Actor and ensure
+        # that both the old and new Actors can still communicate.
+        aS = ActorSystem(self.basename, { 'Admin Port': 14153 },
+                         transientUnique = True)
         try:
 
             parent = aS.createActor(Parent)
@@ -73,8 +74,11 @@ class TestASimpleSystem(ActorSystemTestCase):
 
         p.start()
 
-        # Access Internals to make singleton "forget" about the
-        # current ActorSystem.
+        # Access system internals to make singleton "forget" about the
+        # current ActorSystem.  This is done so that a new local
+        # ActorSystem object can be obtained, but it's check on a
+        # system-global admin finds that admin ... which is shutting
+        # down.
         ActorSystem.systemBase = None
 
         aS = ActorSystem(self.currentBase)
@@ -97,19 +101,22 @@ def stopAdmin(actorsys):
     actorsys.shutdown()
 
 class TestMultiprocUDPSystem(TestASimpleSystem):
-    testbase='MultiprocUDP'
+    testbase = 'MultiprocUDP'
+    basename = 'multiprocUDPBase'
     def setUp(self):
         self.setSystemBase('multiprocUDPBase')
         super(TestMultiprocUDPSystem, self).setUp()
 
 class TestMultiprocTCPSystem(TestASimpleSystem):
-    testbase='MultiprocTCP'
+    testbase = 'MultiprocTCP'
+    basename = 'multiprocTCPBase'
     def setUp(self):
         self.setSystemBase('multiprocTCPBase')
         super(TestMultiprocTCPSystem, self).setUp()
 
 class TestMultiprocQueueSystem(TestASimpleSystem):
-    testbase='MultiprocQueue'
+    testbase = 'MultiprocQueue'
+    basename = 'multiprocQueueBase'
     def setUp(self):
         self.setSystemBase('multiprocQueueBase')
         super(TestMultiprocQueueSystem, self).setUp()
