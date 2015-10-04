@@ -143,9 +143,14 @@ def thesplog(msg, *args, **kw):
                 # The logfile didn't exist or another process already
                 # rotated it.  Move along.
                 pass
-            with open(_thesplog_file, 'a') as lf:
-                lf.write('%s p%s %-4s %s\n'%(str(datetime.now()), os.getpid(),
-                                              levelstr(kw.get('level', logging.INFO)), str(msg%args)))
+            try:
+                with open(_thesplog_file, 'a') as lf:
+                    lf.write('%s p%s %-4s %s\n'%(str(datetime.now()), os.getpid(),
+                                                  levelstr(kw.get('level', logging.INFO)), str(msg%args)))
+            except Exception:
+                # It should not be fatal if there was an error writing
+                # to the logfile (e.g. the disk was full)
+                pass
         # The Thespian environment uses its own transport to forward
         # logging messages.  This can be dangerous if the transport itself
         # generates logging output because this can lead to a never-ending
