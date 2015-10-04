@@ -793,7 +793,6 @@ before the ActorSystem is started:
   The [[*loadActorSource][loadActorSource]] operation describes this capability in more
   detail, including security protections associated with this feature.
 
-
 * Actor API
 
   The Actor API is the set of operations that a running Actor can
@@ -1158,6 +1157,183 @@ before the ActorSystem is started:
    The current set of ActorSystem capabilities can be obtained by
    issuing a [[*Thespian_StatusReq][Thespian_StatusReq]] to the ActorSystem.
 
+** ActorTypeDispatcher
+
+An alternative base class for creating Actors is the
+~ActorTypeDispatcher~ which extends the ~Actor~ base class.  The
+~ActorTypeDispatcher~ automatically determines the type of incoming
+messages and calls a receive method related to that type instead of
+the generic ~receiveMessage()~ called by the Actor base class.  The
+type-based receive methods are named "receiveMsg_TYPE" where TYPE is
+the actual type.
+
+#+BEGIN_SRC python
+class Typer(ActorTypeDispatcher):
+
+    def receiveMsg_str(self, message, sender):
+        self.send(sender, "Got a string")
+
+    def receiveMsg_int(self, message, sender):
+        self.send(sender, "Got an int")
+#+END_SRC
+
+This dispatching works for user-defined classes as well as built-in
+types, and will iterate through the base classes if a higher-level
+handler is not found.
+
+#+BEGIN_SRC python
+class BaseMsg(object): pass
+
+class ShortMsg(BaseMsg):
+    def __init__(self, report = ''):
+        self.report = report
+
+class LongMsg(BaseMsg): pass
+
+
+class Typer(ActorTypeDispatcher):
+
+    def receiveMsg_str(self, message, sender):
+        self.send(sender, "Got a string")
+
+    def receiveMsg_int(self, message, sender):
+        self.send(sender, "Got an int")
+
+    def receiveMsg_LongMsg(self, message, sender):
+        self.send(sender, "Got a long message")
+
+    def receiveMsg_BaseMsg(self, message, sender):
+        self.send(sender, "Got a message")
+#+END_SRC
+
+#+BEGIN_EXAMPLE
+>>> asys = ActorSystem()
+>>> t = asys.createActor(Typer)
+>>> print(asys.ask(t, 1))
+Got an int
+>>> print(asys.ask(t, "1"))
+Got a string
+>>> print(asys.ask(t, LongMsg()))
+Got a long message
+>>> print(asys.ask(t, ShortMsg()))
+Got a message
+>>>
+#+END_EXAMPLE
+
+This receive method lookup also works for derived classes:
+
+#+BEGIN_SRC python
+class Subtyper(Typer):
+    def receiveMsg_ShortMsg(self, message, sender):
+        self.send(sender, "Got a short message")
+#+END_SRC
+
+#+BEGIN_EXAMPLE
+>>> asys = ActorSystem()
+>>> a1 = asys.createActor(Typer)
+>>> print(asys.ask(a1, ShortMsg()))
+Got a message
+>>> print(asys.ask(a1, LongMsg()))
+Got a long message
+>>>
+>>> a2 = asys.createActor(Subtyper)
+>>> print(asys.ask(a2, ShortMsg()))
+Got a short message
+>>> print(asys.ask(a2, LongMsg()))
+Got a long message
+>>>
+#+END_EXAMPLE
+
+It is possible to specify a fallback handler for the
+~ActorTypeDispatcher~ if the type is not explicitly recognized by
+defining the ~receiveUnrecognizedMessage()~ method.
+
+#+BEGIN_SRC python
+class Subtyper2(Typer):
+
+    def receiveMsg_ShortMsg(self, message, sender):
+        self.send(sender, "Got a short message")
+
+    def receiveUnrecognizedMessage(self, message, sender):
+        self.send(sender, "Did not recognize the message type: %s"%type(message))
+#+END_SRC
+
+#+BEGIN_EXAMPLE
+>>> asys = ActorSystem()
+>>> st = asys.createActor(Subtyper2)
+>>> print(asys.ask(st, ShortMsg()))
+Got a short message
+>>> print(asys.ask(st, 1))
+Got an int
+>>> print(asys.ask(st, 1.0))
+Did not recognize the message type: <type 'float'>
+>>>
+#+END_EXAMPLE
+
+*** Type Handling Deferral
+
+In a normal Python subclass, it is possible for a method in the
+subclass to call a method in the base class by using the ~super()~
+function:
+
+#+BEGIN_SRC python
+class ClassA(object):
+    def method1(self): pass
+
+class ClassB(object):
+    def method1(self, val):
+        if val == 1: pass
+        super(ClassB, self).method1()
+#+END_SRC
+
+However, this ~super()~ technique is not as useful when using the
+~ActorTypeDispatcher~ because it only looks for the specifically
+identified method, which would abort the receive handler search
+operation implemented by ~ActorTypeDispatcher~:
+
+#+BEGIN_SRC python
+class SubTyper3(Typer):
+    def receiveMsg_ShortMsg(self, message, sender):
+        if "private" in message.report:
+            super(SubTyper3, self).receiveMsg_ShortMsg(self, message, sender)
+        else:
+            self.send(sender, "Got a public short message")
+#+END_SRC
+
+#+BEGIN_EXAMPLE
+>>> asys = ActorSystem()
+>>> st = asys.createActor(SubTyper3)
+>>> print(asys.ask(st, ShortMsg("This is public")), 2)
+Got a public short message
+>>> print(asys.ask(st, ShortMsg("This is private")), 2)
+# Poison message trace because super has no 'receiveMsg_ShortMsg'
+>>>
+#+END_EXAMPLE
+
+The last step in the above example timed out (returning ~None~)
+because there is no base class with an explicity
+~receiveMsg_ShortMsg()~ method.  Instead, the current method should
+return ~ActorTypeDispatcher.SUPER~ to instruct the
+~ActorTypeDispatcher~ to continue the normal search,
+
+#+BEGIN_SRC python
+class SubTyper4(Typer):
+    def receiveMsg_ShortMsg(self, message, sender):
+        if "private" in message.report:
+            return self.SUPER
+        else:
+            self.send(sender, "Got a public short message")
+#+END_SRC
+
+#+BEGIN_EXAMPLE
+>>> asys = ActorSystem()
+>>> st = asys.createActor(SubTyper4)
+>>> print(asys.ask(st, ShortMsg("This is public"), 2))
+Got a public short message
+>>> print(asys.ask(st, ShortMsg("This is private"), 2))
+Got a message
+>>>
+#+END_EXAMPLE
 
 * ActorSystem API
 
@@ -1838,7 +2014,6 @@ actorSys = ActorSystem(systemBase = None,
    information in this message is informational only and subject to
    change: relying on specific fields or values in this message is not
    recommended.
-
 
 * ActorSystem Implementations
 
