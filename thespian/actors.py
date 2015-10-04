@@ -493,6 +493,41 @@ def requireCapability(cap):
     return go
 
 
+import inspect
+
+class ActorTypeDispatcher(Actor):
+    """This is an enhancement on the base Actor where the receiveMessage
+       determines the type of the received message and calls a
+       "receiveMsg_{type}" method (if it exists) to handle it.  The
+       specific type of the message is checked, then the parent of the
+       message type, all the way back through to the base message
+       type.
+
+       This processing will check subclasses first for the method.  It
+       is not possible to perform the normal "return super(MYCLASS,
+       self).foo()" if the current class does not handle the message
+       and it should be passed to a parent class; in part because the
+       parent class may handle the message as a parent of the message
+       (there are two class heirarchies being checked: the Actor's and
+       the message's).  To enable the proper functionality, the
+       "receiveMsg_{type}" method should return self.SUPER if it has
+       not handled the message and it (or a base class of it) should
+       be passed to a base class handler.
+
+    """
+
+    SUPER = hash("SUPER")
+
+    def receiveMessage(self, message, sender):
+        for each in inspect.getmro(message.__class__):
+            methodName = 'receiveMsg_%s'%each.__name__
+            if hasattr(self, methodName):
+                for klasses in inspect.getmro(self.__class__):
+                    if hasattr(klasses, methodName):
+                        if getattr(klasses, methodName)(self, message, sender) != self.SUPER:
+                            return
+
+
 from thespian.system.messages.status import (Thespian_StatusReq,
                                              Thespian_SystemStatus,
                                              Thespian_ActorStatus)
