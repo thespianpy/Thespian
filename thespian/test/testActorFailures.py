@@ -14,6 +14,10 @@ class PassedMessage(object):
     def __init__(self, msg, origSender):
         self.msg = msg
         self.origSender = origSender
+    # Can't compare these messages to anything either; make sure this
+    # doesn't break Thespian internals.
+    def __eq__(self, o): raise ValueError
+    def __ne__(self, o): raise ValueError
 
 
 class Parent(Actor):

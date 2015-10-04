@@ -86,7 +86,12 @@ class asyncTransportBase(object):
             # Verify the target address is useable
             targetAddr, txmsg = addressManager.prepMessageSend(transmitIntent.targetAddr,
                                                                transmitIntent.message)
-            if txmsg == SendStatus.DeadTarget:
+            try:
+                isDead = txmsg == SendStatus.DeadTarget
+            except Exception:
+                # txmsg may have an __eq__ that threw an exception on comparison
+                isDead = False
+            if isDead:
                 # Address Manager has indicated that these messages
                 # should never be attempted because the target is
                 # dead.  This is *only* for special messages like
