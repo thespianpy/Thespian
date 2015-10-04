@@ -11,6 +11,7 @@ Table of Contents
 
 2.x
 .. 2.1
+..... 2.3.0 <2015-10-04 Sun>
 ..... 2.2.0 <2015-09-27 Sun>
 ..... 2.1.6 <2015-09-27 Sun>
 ..... 2.1.5 <2015-09-20 Sun>
@@ -27,6 +28,24 @@ Table of Contents
 
 2.1
 ───
+
+2.3.0 <2015-10-04 Sun>
+╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+
+  ‣ Added ActorTypeDispatcher enhanced base class to facilitate
+    dispatching of received messages based on message type.
+
+  ‣ Ensure exceptions occuring while writing to Thespian file log do not
+    cause failures.
+
+  ‣ Protect against exceptions occurring when comparing messages for
+    equality.
+
+  ‣ Updates to testActorSystemRestart.
+
+  ‣ Update "Thespian Generation" common Capabilities to version (2,3).
+    Previous 2.2.0 release erroneously did not update this value.
+
 
 2.2.0 <2015-09-27 Sun>
 ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
