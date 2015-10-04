@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
 <title>Thespian Actors User's Guide</title>
-<!-- 2015-09-27 Sun 22:49 -->
+<!-- 2015-10-04 Sun 15:37 -->
 <meta  http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta  name="generator" content="Org-mode" />
 <meta  name="author" content="Kevin Quick &lt;kquick@godaddy.com&gt;" />
@@ -230,6 +230,11 @@ for the JavaScript code in this tag.
 </ul>
 </li>
 <li><a href="#sec-5-10">5.10. updateCapability</a></li>
+<li><a href="#sec-5-11">5.11. ActorTypeDispatcher</a>
+<ul>
+<li><a href="#sec-5-11-1">5.11.1. Type Handling Deferral</a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li><a href="#sec-6">6. ActorSystem API</a>
@@ -1389,7 +1394,6 @@ detail, including security protections associated with this feature.
 </div>
 </div>
 
-
 <div id="outline-container-sec-5" class="outline-2">
 <h2 id="sec-5"><span class="section-number-2">5</span> Actor API</h2>
 <div class="outline-text-2" id="text-5">
@@ -1929,8 +1933,219 @@ issuing a <a href="#sec-7-9">Thespian_StatusReq</a> to the ActorSystem.
 </p>
 </div>
 </div>
+
+<div id="outline-container-sec-5-11" class="outline-3">
+<h3 id="sec-5-11"><span class="section-number-3">5.11</span> ActorTypeDispatcher</h3>
+<div class="outline-text-3" id="text-5-11">
+<p>
+An alternative base class for creating Actors is the
+<code>ActorTypeDispatcher</code> which extends the <code>Actor</code> base class.  The
+<code>ActorTypeDispatcher</code> automatically determines the type of incoming
+messages and calls a receive method related to that type instead of
+the generic <code>receiveMessage()</code> called by the Actor base class.  The
+type-based receive methods are named "receiveMsg_TYPE" where TYPE is
+the actual type.
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-python"><span class="org-keyword">class</span> <span class="org-type">Typer</span>(ActorTypeDispatcher):
+
+    <span class="org-keyword">def</span> <span class="org-function-name">receiveMsg_str</span>(<span class="org-keyword">self</span>, message, sender):
+        <span class="org-keyword">self</span>.send(sender, <span class="org-string">"Got a string"</span>)
+
+    <span class="org-keyword">def</span> <span class="org-function-name">receiveMsg_int</span>(<span class="org-keyword">self</span>, message, sender):
+        <span class="org-keyword">self</span>.send(sender, <span class="org-string">"Got an int"</span>)
+</pre>
 </div>
 
+<p>
+This dispatching works for user-defined classes as well as built-in
+types, and will iterate through the base classes if a higher-level
+handler is not found.
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-python"><span class="org-keyword">class</span> <span class="org-type">BaseMsg</span>(<span class="org-builtin">object</span>): <span class="org-keyword">pass</span>
+
+<span class="org-keyword">class</span> <span class="org-type">ShortMsg</span>(BaseMsg):
+    <span class="org-keyword">def</span> <span class="org-function-name">__init__</span>(<span class="org-keyword">self</span>, report = <span class="org-string">''</span>):
+        <span class="org-keyword">self</span>.report = report
+
+<span class="org-keyword">class</span> <span class="org-type">LongMsg</span>(BaseMsg): <span class="org-keyword">pass</span>
+
+
+<span class="org-keyword">class</span> <span class="org-type">Typer</span>(ActorTypeDispatcher):
+
+    <span class="org-keyword">def</span> <span class="org-function-name">receiveMsg_str</span>(<span class="org-keyword">self</span>, message, sender):
+        <span class="org-keyword">self</span>.send(sender, <span class="org-string">"Got a string"</span>)
+
+    <span class="org-keyword">def</span> <span class="org-function-name">receiveMsg_int</span>(<span class="org-keyword">self</span>, message, sender):
+        <span class="org-keyword">self</span>.send(sender, <span class="org-string">"Got an int"</span>)
+
+    <span class="org-keyword">def</span> <span class="org-function-name">receiveMsg_LongMsg</span>(<span class="org-keyword">self</span>, message, sender):
+        <span class="org-keyword">self</span>.send(sender, <span class="org-string">"Got a long message"</span>)
+
+    <span class="org-keyword">def</span> <span class="org-function-name">receiveMsg_BaseMsg</span>(<span class="org-keyword">self</span>, message, sender):
+        <span class="org-keyword">self</span>.send(sender, <span class="org-string">"Got a message"</span>)
+</pre>
+</div>
+
+<pre class="example">
+&gt;&gt;&gt; asys = ActorSystem()
+&gt;&gt;&gt; t = asys.createActor(Typer)
+&gt;&gt;&gt; print(asys.ask(t, 1))
+Got an int
+&gt;&gt;&gt; print(asys.ask(t, "1"))
+Got a string
+&gt;&gt;&gt; print(asys.ask(t, LongMsg()))
+Got a long message
+&gt;&gt;&gt; print(asys.ask(t, ShortMsg()))
+Got a message
+&gt;&gt;&gt;
+</pre>
+
+<p>
+This receive method lookup also works for derived classes:
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-python"><span class="org-keyword">class</span> <span class="org-type">Subtyper</span>(Typer):
+    <span class="org-keyword">def</span> <span class="org-function-name">receiveMsg_ShortMsg</span>(<span class="org-keyword">self</span>, message, sender):
+        <span class="org-keyword">self</span>.send(sender, <span class="org-string">"Got a short message"</span>)
+</pre>
+</div>
+
+<pre class="example">
+&gt;&gt;&gt; asys = ActorSystem()
+&gt;&gt;&gt; a1 = asys.createActor(Typer)
+&gt;&gt;&gt; print(asys.ask(a1, ShortMsg()))
+Got a message
+&gt;&gt;&gt; print(asys.ask(a1, LongMsg()))
+Got a long message
+&gt;&gt;&gt;
+&gt;&gt;&gt; a2 = asys.createActor(Subtyper)
+&gt;&gt;&gt; print(asys.ask(a2, ShortMsg()))
+Got a short message
+&gt;&gt;&gt; print(asys.ask(a2, LongMsg()))
+Got a long message
+&gt;&gt;&gt;
+</pre>
+
+<p>
+It is possible to specify a fallback handler for the
+<code>ActorTypeDispatcher</code> if the type is not explicitly recognized by
+defining the <code>receiveUnrecognizedMessage()</code> method.
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-python"><span class="org-keyword">class</span> <span class="org-type">Subtyper2</span>(Typer):
+
+    <span class="org-keyword">def</span> <span class="org-function-name">receiveMsg_ShortMsg</span>(<span class="org-keyword">self</span>, message, sender):
+        <span class="org-keyword">self</span>.send(sender, <span class="org-string">"Got a short message"</span>)
+
+    <span class="org-keyword">def</span> <span class="org-function-name">receiveUnrecognizedMessage</span>(<span class="org-keyword">self</span>, message, sender):
+        <span class="org-keyword">self</span>.send(sender, <span class="org-string">"Did not recognize the message type: %s"</span>%<span class="org-builtin">type</span>(message))
+</pre>
+</div>
+
+<pre class="example">
+&gt;&gt;&gt; asys = ActorSystem()
+&gt;&gt;&gt; st = asys.createActor(Subtyper2)
+&gt;&gt;&gt; print(asys.ask(st, ShortMsg()))
+Got a short message
+&gt;&gt;&gt; print(asys.ask(st, 1))
+Got an int
+&gt;&gt;&gt; print(asys.ask(st, 1.0))
+Did not recognize the message type: &lt;type 'float'&gt;
+&gt;&gt;&gt;
+</pre>
+</div>
+
+<div id="outline-container-sec-5-11-1" class="outline-4">
+<h4 id="sec-5-11-1"><span class="section-number-4">5.11.1</span> Type Handling Deferral</h4>
+<div class="outline-text-4" id="text-5-11-1">
+<p>
+In a normal Python subclass, it is possible for a method in the
+subclass to call a method in the base class by using the <code>super()</code>
+function:
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-python"><span class="org-keyword">class</span> <span class="org-type">ClassA</span>(<span class="org-builtin">object</span>):
+    <span class="org-keyword">def</span> <span class="org-function-name">method1</span>(<span class="org-keyword">self</span>): <span class="org-keyword">pass</span>
+
+<span class="org-keyword">class</span> <span class="org-type">ClassB</span>(<span class="org-builtin">object</span>):
+    <span class="org-keyword">def</span> <span class="org-function-name">method1</span>(<span class="org-keyword">self</span>, val):
+        <span class="org-keyword">if</span> val == 1: <span class="org-keyword">pass</span>
+        <span class="org-builtin">super</span>(ClassB, <span class="org-keyword">self</span>).method1()
+</pre>
+</div>
+
+<p>
+However, this <code>super()</code> technique is not as useful when using the
+<code>ActorTypeDispatcher</code> because it only looks for the specifically
+identified method, which would abort the receive handler search
+operation implemented by <code>ActorTypeDispatcher</code>:
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-python"><span class="org-keyword">class</span> <span class="org-type">SubTyper3</span>(Typer):
+    <span class="org-keyword">def</span> <span class="org-function-name">receiveMsg_ShortMsg</span>(<span class="org-keyword">self</span>, message, sender):
+        <span class="org-keyword">if</span> <span class="org-string">"private"</span> <span class="org-keyword">in</span> message.report:
+            <span class="org-builtin">super</span>(SubTyper3, <span class="org-keyword">self</span>).receiveMsg_ShortMsg(<span class="org-keyword">self</span>, message, sender)
+        <span class="org-keyword">else</span>:
+            <span class="org-keyword">self</span>.send(sender, <span class="org-string">"Got a public short message"</span>)
+</pre>
+</div>
+
+<pre class="example">
+&gt;&gt;&gt; asys = ActorSystem()
+&gt;&gt;&gt; st = asys.createActor(SubTyper3)
+&gt;&gt;&gt; print(asys.ask(st, ShortMsg("This is public")), 2)
+Got a public short message
+&gt;&gt;&gt; print(asys.ask(st, ShortMsg("This is private")), 2)
+# Poison message trace because super has no 'receiveMsg_ShortMsg'
+&gt;&gt;&gt;
+</pre>
+
+<p>
+The last step in the above example timed out (returning <code>None</code>)
+because there is no base class with an explicity
+<code>receiveMsg_ShortMsg()</code> method.  Instead, the current method should
+return <code>ActorTypeDispatcher.SUPER</code> to instruct the
+<code>ActorTypeDispatcher</code> to continue the normal search,
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-python"><span class="org-keyword">class</span> <span class="org-type">SubTyper4</span>(Typer):
+    <span class="org-keyword">def</span> <span class="org-function-name">receiveMsg_ShortMsg</span>(<span class="org-keyword">self</span>, message, sender):
+        <span class="org-keyword">if</span> <span class="org-string">"private"</span> <span class="org-keyword">in</span> message.report:
+            <span class="org-keyword">return</span> <span class="org-keyword">self</span>.SUPER
+        <span class="org-keyword">else</span>:
+            <span class="org-keyword">self</span>.send(sender, <span class="org-string">"Got a public short message"</span>)
+</pre>
+</div>
+
+<pre class="example">
+&gt;&gt;&gt; asys = ActorSystem()
+&gt;&gt;&gt; st = asys.createActor(SubTyper4)
+&gt;&gt;&gt; print(asys.ask(st, ShortMsg("This is public"), 2))
+Got a public short message
+&gt;&gt;&gt; print(asys.ask(st, ShortMsg("This is private"), 2))
+Got a message
+&gt;&gt;&gt;
+</pre>
+</div>
+</div>
+</div>
+</div>
 
 <div id="outline-container-sec-6" class="outline-2">
 <h2 id="sec-6"><span class="section-number-2">6</span> ActorSystem API</h2>
@@ -2950,7 +3165,6 @@ recommended.
 </div>
 </div>
 
-
 <div id="outline-container-sec-8" class="outline-2">
 <h2 id="sec-8"><span class="section-number-2">8</span> ActorSystem Implementations</h2>
 <div class="outline-text-2" id="text-8">
@@ -3539,7 +3753,7 @@ difference will remain unaddressed.
 </div></div>
 <div id="postamble" class="status">
 <p class="author">Author: Kevin Quick &lt;kquick@godaddy.com&gt;</p>
-<p class="date">Created: 2015-09-27 Sun 22:49</p>
+<p class="date">Created: 2015-10-04 Sun 15:37</p>
 <p class="creator"><a href="http://www.gnu.org/software/emacs/">Emacs</a> 24.5.2 (<a href="http://orgmode.org">Org</a> mode 8.2.10)</p>
 <p class="validation"><a href="http://validator.w3.org/check?uri=referer">Validate</a></p>
 </div>
