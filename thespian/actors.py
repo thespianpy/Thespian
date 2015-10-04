@@ -526,6 +526,8 @@ class ActorTypeDispatcher(Actor):
                     if hasattr(klasses, methodName):
                         if getattr(klasses, methodName)(self, message, sender) != self.SUPER:
                             return
+        if hasattr(self, 'receiveUnrecognizedMessage'):
+            self.receiveUnrecognizedMessage(message, sender)
 
 
 from thespian.system.messages.status import (Thespian_StatusReq,

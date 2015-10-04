@@ -17,6 +17,9 @@ class Message2(Message1):
 class Message3(object): pass
 class Message4(object): pass
 
+class StrangeMessage1(Message3): pass
+class StrangeMessage2(object): pass
+
 
 class Bottom(ActorTypeDispatcher):
     def receiveMsg_str(self, msg, sender):
@@ -32,6 +35,9 @@ class Middle(Bottom):
 
     def receiveMsg_Message3(self, msg, sender):
         self.send(sender, "middle got #3")
+
+    def receiveUnrecognizedMessage(self, msg, sender):
+        self.send(sender, "didn't recognize: %s"%str(type(msg)))
 
 class Top(Middle):
     def receiveMsg_Message3(self, msg, sender):
@@ -98,7 +104,9 @@ class TestASimpleSystem(ActorSystemTestCase):
                                      ["got a string"])
 
     def testMiddleInt(self):
-        self.verifyExpectedResponses(self.middle, 9, None)
+        import sys
+        tname = 'class' if sys.version_info >= (3,0,0) else 'type'
+        self.verifyExpectedResponses(self.middle, 9, ["didn't recognize: <%s 'int'>"%tname])
 
     def testMiddleMsg1(self):
         self.verifyExpectedResponses(self.middle, Message1(), ["got m1"])
@@ -139,4 +147,27 @@ class TestASimpleSystem(ActorSystemTestCase):
     def testTopMsg3(self):
         self.verifyExpectedResponses(self.top, Message3(), ["top got msg3",
                                                             "middle got #3"])
+
+    # --- Unrecognized fallbacks --------------------------------
+
+    def testBottomStrangeSubclass(self):
+        self.verifyExpectedResponses(self.bottom, StrangeMessage1(), None)
+
+    def testBottomUnrecognized(self):
+        self.verifyExpectedResponses(self.bottom, StrangeMessage2(), None)
+
+    def testMiddleStrangeSubclass(self):
+        self.verifyExpectedResponses(self.middle, StrangeMessage1(), ["middle got #3"])
+
+    def testMiddleUnrecognized(self):
+        self.verifyExpectedResponses(self.middle, StrangeMessage2(), ["didn't recognize: <class 'thespian.test.testTypeDispatcher.StrangeMessage2'>"])
+
+    def testTopStrangeSubclass(self):
+        self.verifyExpectedResponses(self.top, StrangeMessage1(), ["top got msg3",
+                                                                   "middle got #3"])
+
+    def testTopUnrecognized(self):
+        self.verifyExpectedResponses(self.top, StrangeMessage2(),
+                                     ["didn't recognize: <class "
+                                      "'thespian.test.testTypeDispatcher.StrangeMessage2'>"])
 
