@@ -215,7 +215,10 @@ def actualActorClass(actorClass, sourceHashLoader=None):
             # *always* disallowed.
             raise InvalidActorSpecification(actorClass)
         else:
-            import thespian.importlib as importlib
+            try:
+                import importlib
+            except ImportError:
+                import thespian.importlib as importlib # KWQ?
             if sourceHashLoader:
                 actorClass = sourceHashLoader(classModule, className)
             else:
