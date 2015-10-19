@@ -91,7 +91,7 @@ class AdminCore(systemCommonBase):
                                      inShutdown = self.isShuttingDown())
         resp.setDeadLetterHandler(self._deadLetterHandler)
         self._updateStatusResponse(resp)
-        resp.setLoadedSources(self._sources.keys())
+        resp.setLoadedSources(list(self._sources.keys()))
         resp.sourceAuthority = self._sourceAuthority
         self._send_intent(TransmitIntent(envelope.sender, resp))
         return True
