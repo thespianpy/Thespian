@@ -55,6 +55,11 @@ except ImportError:
         from io import StringIO
 from io import BytesIO
 from zipfile import ZipFile
+try:
+    from zipfile import BadZipFile
+except ImportError:
+    from zipfile import BadZipfile
+    BadZipFile = BadZipfile
 from os import path as ospath
 import logging
 import imp
@@ -324,5 +329,8 @@ def _loadModuleFromVerifiedHashSource(hashFinder, modName, modClass):
     hRoot = hashFinder.hashRoot()
     pkg = importlib.import_module(hRoot)
     impModName = modName if modName.startswith(hRoot + '.') else (hRoot + '.' + modName)
-    m = importlib.import_module(impModName, hRoot)
+    try:
+        m = importlib.import_module(impModName, hRoot)
+    except (BadZipFile, SyntaxError) as ex:
+        raise ImportError(str(ex))
     return getattr(m, modClass)
