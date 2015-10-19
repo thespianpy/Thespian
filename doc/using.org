@@ -1022,6 +1022,34 @@ before the ActorSystem is started:
    The current Actor continues as the Source Authority until another
    Actor registers for this role.
 
+** loadActorSource
+
+#+begin_src python
+    sourceHash = self.loadActorSource(fileref)
+#+end_src
+
+  The ~loadActorSource()~ method is used to load a (possibly
+  encrypted) zipfile containing Python source code in standard Python
+  zipimport format (via PEP302[fn:PEP302] methodologies).  The return value
+  is an internally-generated hash value identifying that loaded source
+  zipfile that can be used in subsequent [[*createActor][createActor]] calls to
+  instantiate Actors found in that sourcefile.
+
+  See the description of the same function in the [[*ActorSystem API][ActorSystem API]]
+  section for more details.
+
+** unloadActorSource
+
+#+begin_src python
+    self.unloadActorSource(sourceHash)
+#+end_src
+
+  The ~unloadActorSource()~ method is used to unload a source zipfile
+  previously loaded by the [[*loadActorSource][loadActorSource]] operation.
+
+  See the description of the same function in the [[*ActorSystem API][ActorSystem API]]
+  section for more details.
+
 ** actorSystemCapabilityCheck
 
 #+begin_src python
