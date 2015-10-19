@@ -785,7 +785,7 @@ class TestASimpleSystem(unittest.TestCase, CreateTestSourceZips):
         except (InvalidActorSourceHash, ImportError):
             self.assertTrue(True)  # Valid exceptions for a corrupt source
         except Exception as ex:
-            self.assertFalse('Invalid exception thrown: %s'%str(ex))
+            self.assertEqual('', 'Invalid exception thrown: %s (%s)'%(str(ex), type(ex)))
 
     def test07_sourceAuthorityExceptions(self):
         self.startSystems(280)
