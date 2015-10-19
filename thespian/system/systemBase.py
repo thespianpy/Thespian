@@ -158,6 +158,11 @@ class systemBase(object):
             if self._pcrFAILED == PendingActorResponse.ERROR_Invalid_ActorClass:
                 raise InvalidActorSpecification(actorClass)
             if self._pcrFAILED == PendingActorResponse.ERROR_Import:
+                info = getattr(self, '_pcrMessage', '')
+                if info:
+                    thesplog('Actor Create Failure, Import Error: %s', info)
+                    raise ImportError(str(actorClass) + ': ' + info)
+                thesplog('Actor Create Failure, Import Error')
                 raise ImportError(actorClass)
             if self._pcrFAILED == PendingActorResponse.ERROR_No_Compatible_ActorSystem:
                 raise NoCompatibleSystemForActor(
@@ -179,6 +184,7 @@ class systemBase(object):
             self._newActorAddress = False if envelope.message.errorCode else \
                                     envelope.message.actualAddress
             self._pcrFAILED = envelope.message.errorCode
+            self._pcrMessage = getattr(envelope.message, 'errorStr', None)
             return False # Stop running transport; got new actor address (or failure)
         # Discard everything else.  Previous requests and operations
         # may have caused there to be messages sent back to this
