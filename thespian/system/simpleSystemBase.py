@@ -361,7 +361,7 @@ class ActorSystemBase:
             actor = None
             if isTopLevel: raise
         except ImportError:
-            logging.getLogger('Thespian').warning('Actor create import error for %s', actorClass, exc_info=True)
+            logging.getLogger('Thespian').warning('Actor create import error for %s (hash %s)', actorClass, sourceHash, exc_info=True)
             raise
         except Exception:
             logging.getLogger('Thespian').warning('Actor total creation error', exc_info=True)
