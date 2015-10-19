@@ -130,7 +130,7 @@ class Actor(object):
         "Returns the ActorAddress of this Actor itself."
         return self._myRef.address
 
-    def createActor(self, actorClass, targetActorRequirements=None, globalName=None):
+    def createActor(self, actorClass, targetActorRequirements=None, globalName=None, sourceHash = None):
         """Initiates creation of a new child Actor of the specified Class.  Returns the ActorAddress for that child
            Actor.
 
@@ -143,7 +143,7 @@ class Actor(object):
            under that name, the requested Actor is created and
            registered under that name.
         """
-        return self._myRef.createActor(actorClass, targetActorRequirements, globalName)
+        return self._myRef.createActor(actorClass, targetActorRequirements, globalName, sourceHash)
 
     def send(self, targetAddr, msg):
         """Sends a message to another Actor (specified via ActorAddress) from
