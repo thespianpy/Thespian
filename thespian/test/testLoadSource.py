@@ -116,6 +116,13 @@ class DogActor(Actor):
             self.send(sender, 'Woof! '+str(msg))
         elif type(msg) == type( (1,2) ):
             self.send(msg[1], ('Ruff Ruff: ' + str(msg[0]), sender))
+        elif type(msg) == type([]):
+            newHash = self.loadActorSource(msg[0])
+            import time
+            time.sleep(0.1) # allow load to finish
+            newA = self.createActor(msg[1], sourceHash = newHash)
+            self.send(newA, ('Bark! ' + msg[2], sender))
+            self.unloadActorSource(newHash)
 '''
 
 # Pig exercises absolute imports
@@ -561,6 +568,22 @@ class TestASimpleSystem(unittest.TestCase, CreateTestSourceZips):
         self.assertRaises(InvalidActorSourceHash,
                           self.systems['One'].createActor,
                           'foo.FooActor', sourceHash = srchash)
+
+    def test04_actorsCanLoadAndUnloadSource(self):
+        self.startSystems(270)
+        # Load first source
+        srchash = self.systems['One'].loadActorSource(self.dogzipFname)
+        import time
+        time.sleep(0.1) # allow time to load
+        # Create an actor from that loaded source
+        dogActor = self.systems['One'].createActor('dog.DogActor', sourceHash = srchash)
+        # Verify that actor can be used
+        self.assertEqual(self.systems['One'].ask(dogActor, 'tick', 1), 'Woof! tick')
+        # Now ask that actor to load and use a different source
+        self.assertEqual(self.systems['One'].ask(dogActor, [self.foozipFname, 'barn.cow.moo.MooActor', 'tock'], 1),
+                         'And MOO: Bark! tock' )
+
+
 
     def test05_verifyUnloadOfHashedSourceDoesNotKillActiveActors(self):
         self.startSystems(180)

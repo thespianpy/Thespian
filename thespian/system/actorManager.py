@@ -257,6 +257,8 @@ class ActorManager(systemCommonBase):
                 return naa
             except NoCompatibleSystemForActor:
                 pass
+            except ImportError:  # hash source may not be available locally
+                pass
 
         # Cannot create the actor directly, so ask the Admin for help
         actorClassName = '%s.%s'%(newActorClass.__module__,
@@ -335,6 +337,24 @@ class ActorManager(systemCommonBase):
     def registerSourceAuthority(self, address):
         self._send_intent(
             TransmitIntent(self._adminAddr, RegisterSourceAuthority(address)))
+
+
+    def loadActorSource(self, fname):
+        f = fname if hasattr(fname, 'read') else open(fname, 'rb')
+        try:
+            d = f.read()
+            import hashlib
+            hval = hashlib.md5(d).hexdigest()
+            self._send_intent(TransmitIntent(self._adminAddr,
+                                             ValidateSource(hval, d)))
+            return hval
+        finally:
+            f.close()
+
+
+    def unloadActorSource(self, sourceHash):
+        self._send_intent(TransmitIntent(self._adminAddr,
+                                         ValidateSource(sourceHash, None)))
 
 
     # ----------------------------------------------------------------------

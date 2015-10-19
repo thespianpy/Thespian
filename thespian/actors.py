@@ -182,6 +182,14 @@ class Actor(object):
     def updateCapability(self, capabilityName, capabilityValue=None):
         self._myRef.updateCapability(capabilityName, capabilityValue)
 
+    def loadActorSource(self, fname):
+        return self._myRef.loadActorSource(fname)
+
+    def unloadActorSource(self, sourceHash):
+        return self._myRef.unloadActorSource(sourceHash)
+
+
+
 
 class ActorSystemMessage(object):
     "Base class for all ActorSystem Messages for easier isinstance identification"

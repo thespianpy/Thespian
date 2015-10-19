@@ -70,10 +70,10 @@ class ActorRef:
                 child, ActorExitRequest())
 
     # Functionality vectoring for the Actor this represents.
-    def createActor(self, actorClass, targetActorRequirements, globalName):
+    def createActor(self, actorClass, targetActorRequirements, globalName, sourceHash=None):
         return self._system._systemBase.newActor(self._addr, actorClass, self._system,
                                                  targetActorRequirements, globalName,
-                                                 self._mySourceHash)
+                                                 sourceHash or self._mySourceHash)
 
     def actor_send(self, toActorAddr, msg):
         self._system._systemBase.actor_send(self._addr, toActorAddr, msg)
@@ -86,6 +86,12 @@ class ActorRef:
 
     def registerSourceAuthority(self, address):
         self._system._systemBase.registerSourceAuthority(address)
+
+    def loadActorSource(self, fname):
+        return self._system._systemBase.loadActorSource(fname)
+
+    def unloadActorSource(self, sourceHash):
+        self._system._systemBase.unloadActorSource(sourceHash)
 
     def notifyOnSystemRegistrationChanges(self, address, enable):
         pass # ignored: simple systems don't have registration
@@ -335,7 +341,8 @@ class ActorSystemBase:
                     self.actorRegistry[deadAddr] = None
 
 
-    def _newRefAndActor(self, actorSystem, parentAddr, actorAddr, actorClass, sourceHash=None, isTopLevel=False):
+    def _newRefAndActor(self, actorSystem, parentAddr, actorAddr, actorClass,
+                        sourceHash = None, isTopLevel = False):
         try:
             actorClass = actualActorClass(actorClass,
                                           functools.partial(
@@ -404,7 +411,7 @@ class ActorSystemBase:
         self.actorRegistry[naa.actorAddressString] = nar = \
                 self._newRefAndActor(actorSystem, parentAddr, naa, actorClass,
                                      sourceHash = sourceHash)
-        if nar.instance:
+        if nar and nar.instance:
             if globalName:
                 logging.getLogger('Thespian').info('Registered %s as global "%s" Actor',
                                                    str(naa), globalName)
