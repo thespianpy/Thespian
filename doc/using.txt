@@ -54,11 +54,13 @@ Table of Contents
 .. 5.6 handleDeadLetters
 .. 5.7 notifyOnSystemRegistrationChanges
 .. 5.8 registerSourceAuthority
-.. 5.9 actorSystemCapabilityCheck
-..... 5.9.1 requireCapability decorator
-.. 5.10 updateCapability
-.. 5.11 ActorTypeDispatcher
-..... 5.11.1 Type Handling Deferral
+.. 5.9 loadActorSource
+.. 5.10 unloadActorSource
+.. 5.11 actorSystemCapabilityCheck
+..... 5.11.1 requireCapability decorator
+.. 5.12 updateCapability
+.. 5.13 ActorTypeDispatcher
+..... 5.13.1 Type Handling Deferral
 6 ActorSystem API
 .. 6.1 Exceptions
 .. 6.2 ActorSystem
@@ -1113,8 +1115,40 @@ Table of Contents
   Actor registers for this role.
 
 
-5.9 actorSystemCapabilityCheck
-──────────────────────────────
+5.9 loadActorSource
+───────────────────
+
+  ┌────
+  │     sourceHash = self.loadActorSource(fileref)
+  └────
+
+  The `loadActorSource()' method is used to load a (possibly encrypted)
+  zipfile containing Python source code in standard Python zipimport
+  format (via PEP302[1] methodologies).  The return value is an
+  internally-generated hash value identifying that loaded source zipfile
+  that can be used in subsequent createActor calls to instantiate Actors
+  found in that sourcefile.
+
+  See the description of the same function in the ActorSystem API
+  section for more details.
+
+
+5.10 unloadActorSource
+──────────────────────
+
+  ┌────
+  │     self.unloadActorSource(sourceHash)
+  └────
+
+  The `unloadActorSource()' method is used to unload a source zipfile
+  previously loaded by the loadActorSource operation.
+
+  See the description of the same function in the ActorSystem API
+  section for more details.
+
+
+5.11 actorSystemCapabilityCheck
+───────────────────────────────
 
   ┌────
   │     def actorSystemCapabilityCheck(capabilities, requirements=None):
@@ -1146,8 +1180,8 @@ Table of Contents
   message.
 
 
-5.9.1 requireCapability decorator
-╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+5.11.1 requireCapability decorator
+╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 
   To facilitate easy specification of requirements, there is a
   `requireCapability' class decorator defined which can be used to
@@ -1222,7 +1256,7 @@ Table of Contents
   └────
 
 
-5.10 updateCapability
+5.12 updateCapability
 ─────────────────────
 
   The `updateCapability()' method is used update the capabilities of the
@@ -1255,7 +1289,7 @@ Table of Contents
   a Thespian_StatusReq to the ActorSystem.
 
 
-5.11 ActorTypeDispatcher
+5.13 ActorTypeDispatcher
 ────────────────────────
 
   An alternative base class for creating Actors is the
@@ -1370,7 +1404,7 @@ Table of Contents
   └────
 
 
-5.11.1 Type Handling Deferral
+5.13.1 Type Handling Deferral
 ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 
   In a normal Python subclass, it is possible for a method in the

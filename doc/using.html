@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
 <title>Thespian Actors User's Guide</title>
-<!-- 2015-10-04 Sun 15:37 -->
+<!-- 2015-10-19 Mon 05:49 -->
 <meta  http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta  name="generator" content="Org-mode" />
 <meta  name="author" content="Kevin Quick &lt;kquick@godaddy.com&gt;" />
@@ -224,15 +224,17 @@ for the JavaScript code in this tag.
 <li><a href="#sec-5-6">5.6. handleDeadLetters</a></li>
 <li><a href="#sec-5-7">5.7. notifyOnSystemRegistrationChanges</a></li>
 <li><a href="#sec-5-8">5.8. registerSourceAuthority</a></li>
-<li><a href="#sec-5-9">5.9. actorSystemCapabilityCheck</a>
+<li><a href="#sec-5-9">5.9. loadActorSource</a></li>
+<li><a href="#sec-5-10">5.10. unloadActorSource</a></li>
+<li><a href="#sec-5-11">5.11. actorSystemCapabilityCheck</a>
 <ul>
-<li><a href="#sec-5-9-1">5.9.1. requireCapability decorator</a></li>
+<li><a href="#sec-5-11-1">5.11.1. requireCapability decorator</a></li>
 </ul>
 </li>
-<li><a href="#sec-5-10">5.10. updateCapability</a></li>
-<li><a href="#sec-5-11">5.11. ActorTypeDispatcher</a>
+<li><a href="#sec-5-12">5.12. updateCapability</a></li>
+<li><a href="#sec-5-13">5.13. ActorTypeDispatcher</a>
 <ul>
-<li><a href="#sec-5-11-1">5.11.1. Type Handling Deferral</a></li>
+<li><a href="#sec-5-13-1">5.13.1. Type Handling Deferral</a></li>
 </ul>
 </li>
 </ul>
@@ -875,7 +877,7 @@ processes to ensure Actor isolation.
 <li>It is a common practice to have an Actor probe for functional
 aspects of the current environment and update the ActorSystem
 capabilities based on the results of the probing (see
-<a href="#sec-5-10">updateCapability</a>).  Changing the existing capabilities <b>may</b>
+<a href="#sec-5-12">updateCapability</a>).  Changing the existing capabilities <b>may</b>
 result in all existing actors being killed, including the Actor
 initiating the change.
 
@@ -1387,7 +1389,7 @@ encounter version-related problems.
 </ul>
 
 <p>
-The <a href="#sec-6-9">loadActorSource</a> operation describes this capability in more
+The <a href="#sec-5-9">loadActorSource</a> operation describes this capability in more
 detail, including security protections associated with this feature.
 </p>
 </div>
@@ -1508,7 +1510,7 @@ valid manner.
 
 <p>
 The optional <code>targetActorRequirements</code> argument is a value that
-will be passed passed to the <a href="#sec-5-9">actorSystemCapabilityCheck</a> to use for
+will be passed passed to the <a href="#sec-5-11">actorSystemCapabilityCheck</a> to use for
 validating whether the Actor can be started within the current
 ActorSystem environment (see <a href="#sec-4-9">ActorSystem Capabilities</a>).  The value
 specified for this argument can be anything the target Actor's
@@ -1529,7 +1531,7 @@ system was started as root, then all Actors will run as root.</span>
 
 <p>
 The source for the <code>actorClass</code> to be created is established by
-the current Actor, relative to any <a href="#sec-6-9">loadActorSource</a> operation that
+the current Actor, relative to any <a href="#sec-5-9">loadActorSource</a> operation that
 apply to the creating Actor itself:
 </p>
 
@@ -1628,7 +1630,7 @@ actorClass is not specified in a valid manner.
 
 <li>Actor classes must either have been in the system path when the
 ActorSystem was created, or they must exist in a loaded Actor
-Source (see <a href="#sec-6-9">loadActorSource</a>).  Many ActorSystems use separate
+Source (see <a href="#sec-5-9">loadActorSource</a>).  Many ActorSystems use separate
 processes to manage and create new Actors, so any changes in the
 current process after the ActorSystem process is started up will
 not be visible to the latter.
@@ -1729,7 +1731,7 @@ handling system registration events from other ActorSystems (see
 
 <p>
 This method registers the current Actor as the Source Authority
-handler for the current Actor System as described in the <a href="#sec-6-9-2">Security Considerations</a> section of the <a href="#sec-6-9">loadActorSource</a> Actor System API
+handler for the current Actor System as described in the <a href="#sec-6-9-2">Security Considerations</a> section of the <a href="#sec-5-9">loadActorSource</a> Actor System API
 call.  Once registered, this Actor will receive <a href="#sec-7-7">ValidateSource</a>
 messages and be responsible for decrypting (if necessary) and
 determining authorization for loaded sources to run.
@@ -1743,8 +1745,54 @@ Actor registers for this role.
 </div>
 
 <div id="outline-container-sec-5-9" class="outline-3">
-<h3 id="sec-5-9"><span class="section-number-3">5.9</span> actorSystemCapabilityCheck</h3>
+<h3 id="sec-5-9"><span class="section-number-3">5.9</span> loadActorSource</h3>
 <div class="outline-text-3" id="text-5-9">
+<div class="org-src-container">
+
+<pre class="src src-python">    <span class="org-variable-name">sourceHash</span> = <span class="org-keyword">self</span>.loadActorSource(fileref)
+</pre>
+</div>
+
+<p>
+The <code>loadActorSource()</code> method is used to load a (possibly
+encrypted) zipfile containing Python source code in standard Python
+zipimport format (via PEP302<sup><a id="fnr.1" name="fnr.1" class="footref" href="#fn.1">1</a></sup> methodologies).  The return value
+is an internally-generated hash value identifying that loaded source
+zipfile that can be used in subsequent <a href="#sec-5-3">createActor</a> calls to
+instantiate Actors found in that sourcefile.
+</p>
+
+<p>
+See the description of the same function in the <a href="#sec-6">ActorSystem API</a>
+section for more details.
+</p>
+</div>
+</div>
+
+<div id="outline-container-sec-5-10" class="outline-3">
+<h3 id="sec-5-10"><span class="section-number-3">5.10</span> unloadActorSource</h3>
+<div class="outline-text-3" id="text-5-10">
+<div class="org-src-container">
+
+<pre class="src src-python">    <span class="org-keyword">self</span>.unloadActorSource(sourceHash)
+</pre>
+</div>
+
+<p>
+The <code>unloadActorSource()</code> method is used to unload a source zipfile
+previously loaded by the <a href="#sec-5-9">loadActorSource</a> operation.
+</p>
+
+<p>
+See the description of the same function in the <a href="#sec-6">ActorSystem API</a>
+section for more details.
+</p>
+</div>
+</div>
+
+<div id="outline-container-sec-5-11" class="outline-3">
+<h3 id="sec-5-11"><span class="section-number-3">5.11</span> actorSystemCapabilityCheck</h3>
+<div class="outline-text-3" id="text-5-11">
 <div class="org-src-container">
 
 <pre class="src src-python">    <span class="org-keyword">def</span> <span class="org-function-name">actorSystemCapabilityCheck</span>(capabilities, requirements=<span class="org-constant">None</span>):
@@ -1781,15 +1829,15 @@ all, or none of the capabilities or requirements provided.
 <p>
 This static method may also be called to re-validate the Actor's
 viability if the capabilities of its ActorSystem are updated (as
-described in the <a href="#sec-5-10">updateCapability</a> section), and if it returns False
+described in the <a href="#sec-5-12">updateCapability</a> section), and if it returns False
 then the existing Actor will be killed with an <a href="#sec-7-3">ActorExitRequest</a>
 message.
 </p>
 </div>
 
-<div id="outline-container-sec-5-9-1" class="outline-4">
-<h4 id="sec-5-9-1"><span class="section-number-4">5.9.1</span> requireCapability decorator</h4>
-<div class="outline-text-4" id="text-5-9-1">
+<div id="outline-container-sec-5-11-1" class="outline-4">
+<h4 id="sec-5-11-1"><span class="section-number-4">5.11.1</span> requireCapability decorator</h4>
+<div class="outline-text-4" id="text-5-11-1">
 <p>
 To facilitate easy specification of requirements, there is a
 <code>requireCapability</code> class decorator defined which can be used to
@@ -1888,9 +1936,9 @@ is equivalent to:
 </div>
 </div>
 </div>
-<div id="outline-container-sec-5-10" class="outline-3">
-<h3 id="sec-5-10"><span class="section-number-3">5.10</span> updateCapability</h3>
-<div class="outline-text-3" id="text-5-10">
+<div id="outline-container-sec-5-12" class="outline-3">
+<h3 id="sec-5-12"><span class="section-number-3">5.12</span> updateCapability</h3>
+<div class="outline-text-3" id="text-5-12">
 <p>
 The <code>updateCapability()</code> method is used update the capabilities of
 the current ActorSystem this Actor is running in (there is a
@@ -1919,7 +1967,7 @@ capability is removed from the ActorSystem if it exists.
 If the capabilities of the ActorSystem are modified by this method
 (i.e. the capability value is not already set as requested) then
 all Actors within that ActorSystem are re-validated by calling
-their <a href="#sec-5-9">actorSystemCapabilityCheck</a> static method and sending them an
+their <a href="#sec-5-11">actorSystemCapabilityCheck</a> static method and sending them an
 ActorExitRequest if the capability check call returns false.  This
 could result in killing the Actor that initiated the capability
 exchange, even if new capabilities are added.  Actors may be
@@ -1934,9 +1982,9 @@ issuing a <a href="#sec-7-9">Thespian_StatusReq</a> to the ActorSystem.
 </div>
 </div>
 
-<div id="outline-container-sec-5-11" class="outline-3">
-<h3 id="sec-5-11"><span class="section-number-3">5.11</span> ActorTypeDispatcher</h3>
-<div class="outline-text-3" id="text-5-11">
+<div id="outline-container-sec-5-13" class="outline-3">
+<h3 id="sec-5-13"><span class="section-number-3">5.13</span> ActorTypeDispatcher</h3>
+<div class="outline-text-3" id="text-5-13">
 <p>
 An alternative base class for creating Actors is the
 <code>ActorTypeDispatcher</code> which extends the <code>Actor</code> base class.  The
@@ -2065,9 +2113,9 @@ Did not recognize the message type: &lt;type 'float'&gt;
 </pre>
 </div>
 
-<div id="outline-container-sec-5-11-1" class="outline-4">
-<h4 id="sec-5-11-1"><span class="section-number-4">5.11.1</span> Type Handling Deferral</h4>
-<div class="outline-text-4" id="text-5-11-1">
+<div id="outline-container-sec-5-13-1" class="outline-4">
+<h4 id="sec-5-13-1"><span class="section-number-4">5.13.1</span> Type Handling Deferral</h4>
+<div class="outline-text-4" id="text-5-13-1">
 <p>
 In a normal Python subclass, it is possible for a method in the
 subclass to call a method in the base class by using the <code>super()</code>
@@ -2336,7 +2384,7 @@ or as a module-qualified string identifying a class object
 
 <p>
 The <code>targetActorRequirements</code> argument is a value that will be
-passed to the <a href="#sec-5-9">actorSystemCapabilityCheck</a> to use for validating
+passed to the <a href="#sec-5-11">actorSystemCapabilityCheck</a> to use for validating
 whether the Actor can be started within the current ActorSystem
 environment (see <a href="#sec-4-9">ActorSystem Capabilities</a>).  The value specified
 for this argument can be anything the target Actor's
@@ -2561,7 +2609,7 @@ capability is removed from the ActorSystem if it exists.
 If the capabilities of the ActorSystem are modified by this method
 (i.e. the capability value is not already set as requested) then
 all Actors within that ActorSystem are re-validated by calling
-their <a href="#sec-5-9">actorSystemCapabilityCheck</a> static method and sending them an
+their <a href="#sec-5-11">actorSystemCapabilityCheck</a> static method and sending them an
 ActorExitRequest if the capability check call returns false.  _This
 could result in killing the Actor that initiated the capability
 exchange, even if new capabilities are added._ Actors may be
@@ -2589,7 +2637,7 @@ issuing a <a href="#sec-7-9">Thespian_StatusReq</a> to the ActorSystem.
 <p>
 The <code>loadActorSource()</code> method is used to load a (possibly
 encrypted) zipfile containing Python source code in standard Python
-zipimport format (via PEP302<sup><a id="fnr.1" name="fnr.1" class="footref" href="#fn.1">1</a></sup> methodologies).  The return value
+zipimport format (via PEP302<sup><a id="fnr.1.100" name="fnr.1.100" class="footref" href="#fn.1">1</a></sup> methodologies).  The return value
 is an internally-generated hash value identifying that loaded source
 zipfile that can be used in subsequent <a href="#sec-5-3">createActor</a> calls to
 instantiate Actors found in that sourcefile.
@@ -3021,7 +3069,7 @@ de-registered for failing to checkin.
 <p>
 The <code>ValidateSource</code> object is delivered to the registered Source
 Authority.  The contents are the source file provided via the
-<a href="#sec-6-9">loadActorSource</a> call to the ActorSystem.  The Actor receiving this
+<a href="#sec-5-9">loadActorSource</a> call to the ActorSystem.  The Actor receiving this
 message should decrypt and validate the source to ensure that the
 source is authorized to run in the context of the current
 ActorSystem.
@@ -3060,7 +3108,7 @@ load via the <a href="#sec-7-9">Thespian_StatusReq</a> operation.
 <li><code>.sourceHash</code> &#x2013; the hash associated with this loaded source.
 </li>
 <li><code>.sourceData</code> &#x2013; the input data (file contents) provided to the
-<a href="#sec-6-9">loadActorSource</a> call to the ActorSystem.
+<a href="#sec-5-9">loadActorSource</a> call to the ActorSystem.
 </li>
 </ul>
 </div>
@@ -3261,7 +3309,7 @@ details are available in each section:
 <p>
 As described in <a href="#sec-4-9">ActorSystem Capabilities</a> each ActorSystem has a set of
 capabilities that describe that ActorSystem and which can be audited
-by the Actor's <a href="#sec-5-9">actorSystemCapabilityCheck</a> method to determine if the
+by the Actor's <a href="#sec-5-11">actorSystemCapabilityCheck</a> method to determine if the
 Actor is compatible with the ActorSystem.
 </p>
 
@@ -3364,7 +3412,7 @@ Testing and other very simplistic Actor environments:
 <li>All Actors run synchronously in the context of the current
 process thread.
 </li>
-<li>The <a href="#sec-5-9">actorSystemCapabilityCheck</a> is not called for any Actors: all
+<li>The <a href="#sec-5-11">actorSystemCapabilityCheck</a> is not called for any Actors: all
 actors are created in the current ActorSystem regardless of
 their capability requirements.
 </li>
@@ -3753,7 +3801,7 @@ difference will remain unaddressed.
 </div></div>
 <div id="postamble" class="status">
 <p class="author">Author: Kevin Quick &lt;kquick@godaddy.com&gt;</p>
-<p class="date">Created: 2015-10-04 Sun 15:37</p>
+<p class="date">Created: 2015-10-19 Mon 05:49</p>
 <p class="creator"><a href="http://www.gnu.org/software/emacs/">Emacs</a> 24.5.2 (<a href="http://orgmode.org">Org</a> mode 8.2.10)</p>
 <p class="validation"><a href="http://validator.w3.org/check?uri=referer">Validate</a></p>
 </div>

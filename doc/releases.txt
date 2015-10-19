@@ -11,6 +11,7 @@ Table of Contents
 
 2.x
 .. 2.1
+..... 2.4.0 <2015-10-18 Sun>
 ..... 2.3.0 <2015-10-04 Sun>
 ..... 2.2.0 <2015-09-27 Sun>
 ..... 2.1.6 <2015-09-27 Sun>
@@ -28,6 +29,23 @@ Table of Contents
 
 2.1
 ───
+
+2.4.0 <2015-10-18 Sun>
+╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+
+  ‣ Add loadActorSource() and unloadActorSource() to Actor API
+    (duplicating existing Actor System API functionality).
+
+  ‣ Internal: use distributed importlib whenever possible.
+
+  ‣ Fix stats response for Actor Systems for Python3.
+
+  ‣ Allow optional error strings in reporting actor creation failures.
+
+  ‣ Better capture and reporting of loaded source instantiation errors.
+
+  ‣ Miscellaneous test and logging updates.
+
 
 2.3.0 <2015-10-04 Sun>
 ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
