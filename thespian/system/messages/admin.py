@@ -88,12 +88,15 @@ class PendingActorResponse(ActorSystemMessage):
     ERROR_Import                    = 0xe05
 
     def __init__(self, forActor, instanceNumForActor, globalName,
-                 errorCode=None, actualAddress=None):
+                 errorCode = None,
+                 actualAddress = None,
+                 errorStr = None):
         self.forActor      = forActor
         self.instanceNum   = instanceNumForActor
         self.errorCode     = errorCode  # False is no error
         self.actualAddress = actualAddress
         self.globalName    = globalName
+        self.errorStr      = errorStr # supplemental to errorCode; may be blank
 
 
 class HandleDeadLetters(ActorSystemMessage):

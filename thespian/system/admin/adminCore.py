@@ -207,7 +207,8 @@ class AdminCore(systemCommonBase):
         return True
 
 
-    def _sendPendingActorResponse(self, requestEnvelope, actualAddress, errorCode=None):
+    def _sendPendingActorResponse(self, requestEnvelope, actualAddress,
+                                  errorCode = None, errorStr = None):
         # actualAddress is None for failure
         if actualAddress is None and errorCode is None:
             raise ValueError('Must specify either actualAddress or errorCode')
@@ -217,6 +218,7 @@ class AdminCore(systemCommonBase):
                                                 requestEnvelope.message.instanceNum,
                                                 requestEnvelope.message.globalName,
                                                 errorCode = errorCode,
+                                                errorStr = errorStr,
                                                 actualAddress = actualAddress)))
 
 
