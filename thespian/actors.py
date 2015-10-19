@@ -1,9 +1,11 @@
 """Actor model execution framework (see https://en.wikipedia.org/wiki/Actor_model).
 
 For more details, see Thespian.md.
+
+Thespian Generation 2.4
 """
 
-ThespianGeneration = (2, 3)
+ThespianGeneration = (2, 4)
 
 
 class ActorSystemException(Exception): pass

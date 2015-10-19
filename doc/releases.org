@@ -7,7 +7,7 @@
 #+LATEX_HEADER: \product{Thespian}
 #+LATEX_HEADER: \component{Python Actor System}
 #+LATEX_HEADER: \doctype{Release Notes}
-#+LATEX_HEADER: \docrev{2.3.0}{2015 Oct 04}
+#+LATEX_HEADER: \docrev{2.4.0}{2015 Oct 18}
 #+LATEX_HEADER: \docid{TheDoc-06}
 #+OPTIONS: ^:nil num:nil
 
@@ -16,6 +16,21 @@
 * 2.x
 
 ** 2.1
+
+*** 2.4.0 <2015-10-18 Sun>
+
+  * Add loadActorSource() and unloadActorSource() to Actor API
+    (duplicating existing Actor System API functionality).
+
+  * Internal: use distributed importlib whenever possible.
+
+  * Fix stats response for Actor Systems for Python3.
+
+  * Allow optional error strings in reporting actor creation failures.
+
+  * Better capture and reporting of loaded source instantiation errors.
+
+  * Miscellaneous test and logging updates.
 
 *** 2.3.0 <2015-10-04 Sun>
 
