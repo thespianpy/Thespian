@@ -11,6 +11,7 @@ Table of Contents
 
 2.x
 .. 2.1
+..... 2.4.1 <2015-10-20 Mon>
 ..... 2.4.0 <2015-10-18 Sun>
 ..... 2.3.0 <2015-10-04 Sun>
 ..... 2.2.0 <2015-09-27 Sun>
@@ -29,6 +30,16 @@ Table of Contents
 
 2.1
 ───
+
+2.4.1 <2015-10-20 Mon>
+╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+
+  ‣ Updated to allow packets not blocked on waiting for an address
+    resolution to be sent even if previous packets are still waiting for
+    that resolution.
+
+  ‣ Fixed documentation uploads.
+
 
 2.4.0 <2015-10-18 Sun>
 ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
