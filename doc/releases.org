@@ -7,7 +7,7 @@
 #+LATEX_HEADER: \product{Thespian}
 #+LATEX_HEADER: \component{Python Actor System}
 #+LATEX_HEADER: \doctype{Release Notes}
-#+LATEX_HEADER: \docrev{2.4.0}{2015 Oct 18}
+#+LATEX_HEADER: \docrev{2.4.1}{2015 Oct 20}
 #+LATEX_HEADER: \docid{TheDoc-06}
 #+OPTIONS: ^:nil num:nil
 
@@ -16,6 +16,14 @@
 * 2.x
 
 ** 2.1
+
+*** 2.4.1 <2015-10-20 Mon>
+
+  * Updated to allow packets not blocked on waiting for an address
+    resolution to be sent even if previous packets are still waiting
+    for that resolution.
+
+  * Fixed documentation uploads.
 
 *** 2.4.0 <2015-10-18 Sun>
 
