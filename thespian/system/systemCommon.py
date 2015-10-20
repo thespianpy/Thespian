@@ -123,14 +123,8 @@ class systemCommonBase(object):
                     # KWQ: confirm the following two lines can be removed; send_intent_to_transport should do this translation on its own.  At that point, the changeTargetAddr method should be able to be removed.
     #                if each.targetAddr == lcladdr:
     #                    each.changeTargetAddr(actualAddress)
-                    # The only way this intent would have been on an
-                    # _awaitingAddressUpdate list is if a previous attempt
-                    # to actually transmit it it had already called
-                    # _send_intent_to_transport; preservation of transmit
-                    # ordering dictates it's still the right intent to
-                    # perform:
                     self._sCBStats.inc('Actor.Message Send.Transmit ReInitiated')
-                    self._send_intent_to_transport(each)
+                    self._send_intent(each)
                 else:
                     self._receiveQueue.append(
                         ReceiveEnvelope(self.myAddress,
@@ -155,6 +149,7 @@ class systemCommonBase(object):
                      ex.address, hash(ex.address), level=logging.DEBUG)
             self._awaitingAddressUpdate.setdefault(ex.address, []).append(intent)
             self._sCBStats.inc('Actor.Message Send.Postponed for Address')
+            self._checkNextTransmit(0, intent)
         except Exception:
             import traceback
             thesplog('Declaring transmit of %s as Poison: %s', intent.identify(),
