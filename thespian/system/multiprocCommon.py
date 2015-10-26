@@ -96,6 +96,17 @@ from thespian.system.systemAdmin import ThespianAdmin
 
 def startAdmin(adminClass, addrOfStarter, endpointPrep, transportClass,
                adminAddr, capabilities, logDefs):
+    # Unix Daemonization; skipped if not available
+    import os,sys
+    if hasattr(os, 'setsid'):
+        os.setsid()
+    try:
+        import resource
+        resource.setrlimit(resource.RLIMIT_CORE, (0,0))  # No core dumps
+    except Exception: pass
+    if hasattr(os, 'fork'):
+        if os.fork(): sys.exit(0)
+
     # Slight trickiness here.  There may *already* be an admin bound
     # to this start address.  However, the external process attempting
     # to start is going to wait for the EndpointConnected message
