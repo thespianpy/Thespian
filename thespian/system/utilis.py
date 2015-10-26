@@ -91,9 +91,10 @@ _thesplog_control_settings = (
 
 # Usually logging would be directed to /var/log, but that is often not
 # user-writeable, so /tmp is used by default; setting THESPLOG_FILE is
-# encouraged.
-_thesplog_file = os.getenv('THESPLOG_FILE', '/tmp/thespian.log')
-_thesplog_old_file = _thesplog_file + '.old'
+# encouraged.  The below variables are set on first use to allow
+# direction to be set post load of this file.
+_thesplog_file = None
+_thesplog_old_file = None
 
 
 def thesplog_control(baseLevel=logging.DEBUG, useLogging=True, tmpFileMaxSize=0):
@@ -132,6 +133,10 @@ def thesplog(msg, *args, **kw):
                                    logging.WARNING: 'Warn',
                                    logging.ERROR:   'ERR',
                                    logging.CRITICAL: 'CRIT' }.get(l, '??')
+            global _thesplog_file, _thesplog_old_file
+            if not _thesplog_file:
+                _thesplog_file = os.getenv('THESPLOG_FILE', '/tmp/thespian.log')
+                _thesplog_old_file = _thesplog_file + '.old'
             try:
                 if os.stat(_thesplog_file).st_size > int(_thesplog_control_settings[2]):
                     # Tricky: a multiprocess system might enter here
