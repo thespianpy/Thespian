@@ -11,6 +11,7 @@ Table of Contents
 
 2.x
 .. 2.1
+..... 2.4.2 <2015-10-26 Mon>
 ..... 2.4.1 <2015-10-20 Mon>
 ..... 2.4.0 <2015-10-18 Sun>
 ..... 2.3.0 <2015-10-04 Sun>
@@ -30,6 +31,18 @@ Table of Contents
 
 2.1
 ───
+
+2.4.2 <2015-10-26 Mon>
+╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+
+  ‣ Delay thesplog location determination until usage to allow startup
+    code to adjust location.
+
+  ‣ Better daemonization of multiproc Admin on Unix.
+
+  ‣ Ensure filenums to close is passed as a list not a Python3 iterator
+    when creating multiproc children (bugfix).
+
 
 2.4.1 <2015-10-20 Mon>
 ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌

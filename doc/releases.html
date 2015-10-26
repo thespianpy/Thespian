@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
 <title>Thespian Release Notes</title>
-<!-- 2015-10-20 Tue 10:01 -->
+<!-- 2015-10-26 Mon 09:29 -->
 <meta  http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta  name="generator" content="Org-mode" />
 <meta  name="author" content="Kevin Quick &lt;kquick@godaddy.com&gt;" />
@@ -158,13 +158,14 @@ for the JavaScript code in this tag.
 <ul>
 <li><a href="#sec-1-1">2.1</a>
 <ul>
-<li><a href="#sec-1-1-1">2.4.1 <span class="timestamp-wrapper"><span class="timestamp">&lt;2015-10-20 Mon&gt;</span></span></a></li>
-<li><a href="#sec-1-1-2">2.4.0 <span class="timestamp-wrapper"><span class="timestamp">&lt;2015-10-18 Sun&gt;</span></span></a></li>
-<li><a href="#sec-1-1-3">2.3.0 <span class="timestamp-wrapper"><span class="timestamp">&lt;2015-10-04 Sun&gt;</span></span></a></li>
-<li><a href="#sec-1-1-4">2.2.0 <span class="timestamp-wrapper"><span class="timestamp">&lt;2015-09-27 Sun&gt;</span></span></a></li>
-<li><a href="#sec-1-1-5">2.1.6 <span class="timestamp-wrapper"><span class="timestamp">&lt;2015-09-27 Sun&gt;</span></span></a></li>
-<li><a href="#sec-1-1-6">2.1.5 <span class="timestamp-wrapper"><span class="timestamp">&lt;2015-09-20 Sun&gt;</span></span></a></li>
-<li><a href="#sec-1-1-7">2.1.4 Initial Public Release <span class="timestamp-wrapper"><span class="timestamp">&lt;2015-08-31 Mon&gt;</span></span></a></li>
+<li><a href="#sec-1-1-1">2.4.2 <span class="timestamp-wrapper"><span class="timestamp">&lt;2015-10-26 Mon&gt;</span></span></a></li>
+<li><a href="#sec-1-1-2">2.4.1 <span class="timestamp-wrapper"><span class="timestamp">&lt;2015-10-20 Mon&gt;</span></span></a></li>
+<li><a href="#sec-1-1-3">2.4.0 <span class="timestamp-wrapper"><span class="timestamp">&lt;2015-10-18 Sun&gt;</span></span></a></li>
+<li><a href="#sec-1-1-4">2.3.0 <span class="timestamp-wrapper"><span class="timestamp">&lt;2015-10-04 Sun&gt;</span></span></a></li>
+<li><a href="#sec-1-1-5">2.2.0 <span class="timestamp-wrapper"><span class="timestamp">&lt;2015-09-27 Sun&gt;</span></span></a></li>
+<li><a href="#sec-1-1-6">2.1.6 <span class="timestamp-wrapper"><span class="timestamp">&lt;2015-09-27 Sun&gt;</span></span></a></li>
+<li><a href="#sec-1-1-7">2.1.5 <span class="timestamp-wrapper"><span class="timestamp">&lt;2015-09-20 Sun&gt;</span></span></a></li>
+<li><a href="#sec-1-1-8">2.1.4 Initial Public Release <span class="timestamp-wrapper"><span class="timestamp">&lt;2015-08-31 Mon&gt;</span></span></a></li>
 </ul>
 </li>
 <li><a href="#sec-1-2">2.0</a></li>
@@ -185,8 +186,26 @@ for the JavaScript code in this tag.
 <h3 id="sec-1-1">2.1</h3>
 <div class="outline-text-3" id="text-1-1">
 </div><div id="outline-container-sec-1-1-1" class="outline-4">
-<h4 id="sec-1-1-1">2.4.1 <span class="timestamp-wrapper"><span class="timestamp">&lt;2015-10-20 Mon&gt;</span></span></h4>
+<h4 id="sec-1-1-1">2.4.2 <span class="timestamp-wrapper"><span class="timestamp">&lt;2015-10-26 Mon&gt;</span></span></h4>
 <div class="outline-text-4" id="text-1-1-1">
+<ul class="org-ul">
+<li>Delay thesplog location determination until usage to allow startup
+code to adjust location.
+</li>
+
+<li>Better daemonization of multiproc Admin on Unix.
+</li>
+
+<li>Ensure filenums to close is passed as a list not a Python3
+iterator when creating multiproc children (bugfix).
+</li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-sec-1-1-2" class="outline-4">
+<h4 id="sec-1-1-2">2.4.1 <span class="timestamp-wrapper"><span class="timestamp">&lt;2015-10-20 Mon&gt;</span></span></h4>
+<div class="outline-text-4" id="text-1-1-2">
 <ul class="org-ul">
 <li>Updated to allow packets not blocked on waiting for an address
 resolution to be sent even if previous packets are still waiting
@@ -199,9 +218,9 @@ for that resolution.
 </div>
 </div>
 
-<div id="outline-container-sec-1-1-2" class="outline-4">
-<h4 id="sec-1-1-2">2.4.0 <span class="timestamp-wrapper"><span class="timestamp">&lt;2015-10-18 Sun&gt;</span></span></h4>
-<div class="outline-text-4" id="text-1-1-2">
+<div id="outline-container-sec-1-1-3" class="outline-4">
+<h4 id="sec-1-1-3">2.4.0 <span class="timestamp-wrapper"><span class="timestamp">&lt;2015-10-18 Sun&gt;</span></span></h4>
+<div class="outline-text-4" id="text-1-1-3">
 <ul class="org-ul">
 <li>Add loadActorSource() and unloadActorSource() to Actor API
 (duplicating existing Actor System API functionality).
@@ -225,9 +244,9 @@ for that resolution.
 </div>
 </div>
 
-<div id="outline-container-sec-1-1-3" class="outline-4">
-<h4 id="sec-1-1-3">2.3.0 <span class="timestamp-wrapper"><span class="timestamp">&lt;2015-10-04 Sun&gt;</span></span></h4>
-<div class="outline-text-4" id="text-1-1-3">
+<div id="outline-container-sec-1-1-4" class="outline-4">
+<h4 id="sec-1-1-4">2.3.0 <span class="timestamp-wrapper"><span class="timestamp">&lt;2015-10-04 Sun&gt;</span></span></h4>
+<div class="outline-text-4" id="text-1-1-4">
 <ul class="org-ul">
 <li>Added ActorTypeDispatcher enhanced base class to facilitate
 dispatching of received messages based on message type.
@@ -251,9 +270,9 @@ Previous 2.2.0 release erroneously did not update this value.
 </div>
 </div>
 
-<div id="outline-container-sec-1-1-4" class="outline-4">
-<h4 id="sec-1-1-4">2.2.0 <span class="timestamp-wrapper"><span class="timestamp">&lt;2015-09-27 Sun&gt;</span></span></h4>
-<div class="outline-text-4" id="text-1-1-4">
+<div id="outline-container-sec-1-1-5" class="outline-4">
+<h4 id="sec-1-1-5">2.2.0 <span class="timestamp-wrapper"><span class="timestamp">&lt;2015-09-27 Sun&gt;</span></span></h4>
+<div class="outline-text-4" id="text-1-1-5">
 <ul class="org-ul">
 <li>Fix internal links in Using Thespian document.
 </li>
@@ -289,9 +308,9 @@ controls.
 </div>
 </div>
 
-<div id="outline-container-sec-1-1-5" class="outline-4">
-<h4 id="sec-1-1-5">2.1.6 <span class="timestamp-wrapper"><span class="timestamp">&lt;2015-09-27 Sun&gt;</span></span></h4>
-<div class="outline-text-4" id="text-1-1-5">
+<div id="outline-container-sec-1-1-6" class="outline-4">
+<h4 id="sec-1-1-6">2.1.6 <span class="timestamp-wrapper"><span class="timestamp">&lt;2015-09-27 Sun&gt;</span></span></h4>
+<div class="outline-text-4" id="text-1-1-6">
 <ul class="org-ul">
 <li>Fix imports in tests and actors.py for multiple Python versions.
 </li>
@@ -302,9 +321,9 @@ controls.
 </div>
 </div>
 
-<div id="outline-container-sec-1-1-6" class="outline-4">
-<h4 id="sec-1-1-6">2.1.5 <span class="timestamp-wrapper"><span class="timestamp">&lt;2015-09-20 Sun&gt;</span></span></h4>
-<div class="outline-text-4" id="text-1-1-6">
+<div id="outline-container-sec-1-1-7" class="outline-4">
+<h4 id="sec-1-1-7">2.1.5 <span class="timestamp-wrapper"><span class="timestamp">&lt;2015-09-20 Sun&gt;</span></span></h4>
+<div class="outline-text-4" id="text-1-1-7">
 <ul class="org-ul">
 <li>Adds support for Python 3.3 and Python 3.4 versions, including the
 use of the PyPy interpreter.
@@ -350,9 +369,9 @@ avoid impossible retransmits.
 </div>
 
 
-<div id="outline-container-sec-1-1-7" class="outline-4">
-<h4 id="sec-1-1-7">2.1.4 Initial Public Release <span class="timestamp-wrapper"><span class="timestamp">&lt;2015-08-31 Mon&gt;</span></span></h4>
-<div class="outline-text-4" id="text-1-1-7">
+<div id="outline-container-sec-1-1-8" class="outline-4">
+<h4 id="sec-1-1-8">2.1.4 Initial Public Release <span class="timestamp-wrapper"><span class="timestamp">&lt;2015-08-31 Mon&gt;</span></span></h4>
+<div class="outline-text-4" id="text-1-1-8">
 <p>
 The 2.1.4 Release represents the first publicly available release of
 Thespian.  It includes the following features:
@@ -389,7 +408,7 @@ The 1.x Release series was developed and used internally by GoDaddy
 </div>
 <div id="postamble" class="status">
 <p class="author">Author: Kevin Quick &lt;kquick@godaddy.com&gt;</p>
-<p class="date">Created: 2015-10-20 Tue 10:01</p>
+<p class="date">Created: 2015-10-26 Mon 09:29</p>
 <p class="creator"><a href="http://www.gnu.org/software/emacs/">Emacs</a> 24.5.2 (<a href="http://orgmode.org">Org</a> mode 8.2.10)</p>
 <p class="validation"><a href="http://validator.w3.org/check?uri=referer">Validate</a></p>
 </div>
