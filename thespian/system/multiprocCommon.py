@@ -191,7 +191,9 @@ class MultiProcReplicator(object):
 
         multiprocessing.process._current_process._daemonic = False
 
-        fileNumsToClose = self.transport.childResetFileNumList()
+        # Ensure fileNumsToClose is a list, not an iterator because it
+        # is an argument passed to the child.
+        fileNumsToClose = list(self.transport.childResetFileNumList())
 
         child = multiprocessing.Process(target=startChild,  #KWQ: instantiates module specified by sourceHash to create actor
                                         args=(childClass,
