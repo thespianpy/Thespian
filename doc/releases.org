@@ -7,7 +7,7 @@
 #+LATEX_HEADER: \product{Thespian}
 #+LATEX_HEADER: \component{Python Actor System}
 #+LATEX_HEADER: \doctype{Release Notes}
-#+LATEX_HEADER: \docrev{2.4.1}{2015 Oct 20}
+#+LATEX_HEADER: \docrev{2.4.2}{2015 Oct 26}
 #+LATEX_HEADER: \docid{TheDoc-06}
 #+OPTIONS: ^:nil num:nil
 
@@ -16,6 +16,16 @@
 * 2.x
 
 ** 2.1
+
+*** 2.4.2 <2015-10-26 Mon>
+
+  * Delay thesplog location determination until usage to allow startup
+    code to adjust location.
+
+  * Better daemonization of multiproc Admin on Unix.
+
+  * Ensure filenums to close is passed as a list not a Python3
+    iterator when creating multiproc children (bugfix).
 
 *** 2.4.1 <2015-10-20 Mon>
 
