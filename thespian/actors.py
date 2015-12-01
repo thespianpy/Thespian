@@ -182,12 +182,28 @@ class Actor(object):
         return self._myRef.logger(name)
 
     def updateCapability(self, capabilityName, capabilityValue=None):
+        """Updates the specified capability for the current Actor System
+           hosting this Actor to have the newly specified value.  This
+           may cause other Actors to be stopped or restarted if they
+           depended upon the capability being modified.  Capabilities
+           set to None will be removed.
+        """
         self._myRef.updateCapability(capabilityName, capabilityValue)
 
     def loadActorSource(self, fname):
+        """Loads the specified file as a new source containing Actor code
+           (subject to validation by any loaded Source Authority (see
+           the registerSourceAuthority() call).  Returns the source
+           hash associated with the loaded source; this hash can be
+           used in the createActor() and unloadActorSource() calls.
+        """
         return self._myRef.loadActorSource(fname)
 
     def unloadActorSource(self, sourceHash):
+        """Unloads the previously loaded source specified by the sourceHash.
+           If the specified hash does not match any currently loaded
+           sources then this operation will be ignored.
+        """
         return self._myRef.unloadActorSource(sourceHash)
 
 
