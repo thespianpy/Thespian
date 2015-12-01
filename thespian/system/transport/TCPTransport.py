@@ -358,7 +358,7 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
         if (hasattr(intent, 'socket') and intent.socket.fileno() == fileno) or \
            (fileno == -1 and intent.timeToRetry()):
             return self._nextTransmitStep(intent)
-        if not intent.delay():
+        if intent.expired():
             # Transmit timed out (consider this permanent)
             thesplog('Transmit attempt from %s to %s timed out, returning PoisonPacket',
                      self.myAddress, intent.targetAddr, level=logging.WARNING)
@@ -367,6 +367,8 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
             # Stop attempting this transmit
             return self._finishIntent(intent, SendStatus.Failed)
         # Continue to attempt this transmit
+        if not intent.delay():
+            return self._nextTransmitStep(intent)
         return True
 
     def _nextTransmitStep(self, intent):

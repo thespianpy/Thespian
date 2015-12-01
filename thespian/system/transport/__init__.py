@@ -209,6 +209,9 @@ class TransmitIntent(PauseWithBackoff):
                        getattr(self, '_retryTime', self._quitTime) - now,
                        getattr(self, '_pauseUntil', self._quitTime) - now))
 
+    def expired(self):
+        return self._quitTime < datetime.now()
+
     def __str__(self):
         return '************* %s' % self.identify()
 
