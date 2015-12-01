@@ -154,6 +154,28 @@ class SowActor(Actor):
             self.send(sender, cow_says() + ' Oink ' + Cluck(Frog(toad.Toad(barn.goose.Honk(msg)))))
                 '''  # <-- unexpected indentation without a trailing newline.
 
+# roo exercises deep imports, indirect through kanga
+rooSource = '''
+import thespian.actors
+#import pooh
+import pooh.corner.kanga
+#from pooh.kanga import *
+class RooActor(thespian.actors.Actor):
+    def receiveMessage(self, msg, sender):
+        if type(msg) == type(""):
+            self.send(sender, pooh.corner.kanga.kanga(msg))
+'''
+
+kangaSource = '''
+import thespian.actors
+import gorse.bush.eeyore
+def kanga(msgstr): return msgstr + ' ' + gorse.bush.eeyore.says()
+'''
+
+eeyoreSource = '''
+def says(): return 'whatever'
+'''
+
 # Piglet exercises OLD-style relative imports (valid in 2.x, but not 3.x)
 pigletSource = '''
 from thespian.actors import Actor
@@ -207,9 +229,16 @@ class CreateTestSourceZips(object):
         foozip.writestr('barn/rooster.py', roosterSource)
         foozip.writestr('barn/goose.py', gooseSource)
         foozip.writestr('barn/sow.py', sowSource)
+        foozip.writestr('pooh/__init__.py', '')
+        foozip.writestr('pooh/corner/__init__.py', '')
+        foozip.writestr('gorse/__init__.py', '')
+        foozip.writestr('gorse/bush/__init__.py', '')
+        foozip.writestr('gorse/bush/eeyore.py', eeyoreSource)
+        foozip.writestr('pooh/corner/kanga.py', kangaSource)
         foozip.writestr('barn/piglet.py', pigletSource)
         foozip.writestr('barn/cow/__init__.py', '')
         foozip.writestr('barn/cow/moo.py', mooSource)
+        foozip.writestr('roo.py', rooSource)
         foozip.close()
 
         self.foozipEncFile = _encryptROT13Zipfile(self.foozipFname)
@@ -256,8 +285,9 @@ class TestRoundTripROT13(unittest.TestCase, CreateTestSourceZips):
 
         names = foozip.namelist()
         self.assertEqual(names[0], '__init__.py')
-        self.assertEqual(names[-1], 'barn/cow/moo.py')
-        self.assertEqual(len(names), 13)
+        self.assertEqual(names[-2], 'barn/cow/moo.py')
+        self.assertEqual(names[-1], 'roo.py')
+        self.assertEqual(len(names), 20)
 
 
 class TestDirectZipfile(unittest.TestCase):
@@ -360,6 +390,14 @@ class TestDirectZipfile(unittest.TestCase):
             self.assertRaises(InvalidActorAddress,
                               f.receiveMessage, "what", "sender")
 
+    def testRoo(self):
+        sys.path.insert(0, self.foozipFname)
+        import roo
+        f = roo.RooActor()
+        # call with a string to make sure deep import references resolve
+        self.assertRaises(InvalidActorAddress,
+                          f.receiveMessage, "roo", "sender")
+
 
 class TestASimpleSystem(unittest.TestCase, CreateTestSourceZips):
     testbase='Simple'
@@ -453,6 +491,12 @@ class TestASimpleSystem(unittest.TestCase, CreateTestSourceZips):
             srchash = self._loadFooSource()
             piglet = self.systems['One'].createActor('barn.piglet.PigletActor', sourceHash=srchash)
             self.assertEqual('Moooo Oink Cluck Honk ready?', self.systems['One'].ask(piglet, 'ready?', 1))
+
+    def test02_verifyDeepImportReferences(self):
+        self.startSystems(85)
+        srchash = self._loadFooSource()
+        roo = self.systems['One'].createActor('roo.RooActor', sourceHash=srchash)
+        self.assertEqual('roo says whatever', self.systems['One'].ask(roo, 'roo says', 1))
 
     def test02_verifyHashSourceAvailablePostLoadFromMembers(self):
         self.startSystems(90)

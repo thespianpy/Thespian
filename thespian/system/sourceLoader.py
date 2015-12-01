@@ -114,7 +114,14 @@ class ImportRePackage(ast.NodeTransformer):
             firstName = A.name.partition('.')[0]
             if firstName in self._topnames:
                 if A.asname is None:
-                    newnames.append(ast.copy_location(ast.alias(self._sourceHashDot + A.name, A.name), A))
+                    # Normally "import foo.bar.bang" will cause foo to
+                    # be added to globals.  This code converts "import
+                    # x.y.z" to "import hash.x as x; import
+                    # hash.x.y.z" to effect the same thing.
+                    newnames.append(ast.copy_location(
+                        ast.alias(self._sourceHashDot + firstName, firstName), A))
+                    newnames.append(ast.copy_location(
+                        ast.alias(self._sourceHashDot + A.name, None), A))
                 else:
                     newnames.append(ast.copy_location(ast.alias(self._sourceHashDot + A.name, A.asname), A))
             else:
