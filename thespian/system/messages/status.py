@@ -129,7 +129,7 @@ def formatStatus(response, showAddress=str, tofd=None):
         if response.notifyAddresses:
             tofd.write('  |Convention Notifications [%d]:\n'%len(response.notifyAddresses))
             for each in response.notifyAddresses:
-                tofd.write('    ' + showAddress(each))
+                tofd.write('    ' + showAddress(each) + '\n')
         tofd.write('  |Convention Attendees [%d]:\n'%len(response.conventionAttendees))
         for addr,validtime in response.conventionAttendees:
             tofd.write('    @ %s: %s\n'%(showAddress(addr), str(validtime)))
