@@ -1,6 +1,6 @@
 """Actor model execution framework (see https://en.wikipedia.org/wiki/Actor_model).
 
-For more details, see Thespian.md.
+For more details, see http://thespianpy.com
 
 Thespian Generation 2.4
 """
