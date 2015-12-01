@@ -442,7 +442,7 @@ class ActorSystem(object):
 
     def shutdown(self):
         "Called to shutdown the ActorSystem itself.  May block until all Actors are shutdown."
-        self._systemBase.shutdown()
+        if self._systemBase: self._systemBase.shutdown()
         if not getattr(self, '_isTransientUnique', False):
             if getattr(self.__class__, 'systemBase', None) == self._systemBase:
                 delattr(self.__class__, 'systemBase')
