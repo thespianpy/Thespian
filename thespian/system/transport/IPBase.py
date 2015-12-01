@@ -85,6 +85,11 @@ class IPActorAddress(object):
                     baseaddr = s.getsockname()[0]
                 finally:
                     s.close()
+            except TypeError as ex:
+                # Probably specified the Admin Port as a string...
+                print('Error connecting to %s'%(str(remoteAddr)))
+                import traceback
+                traceback.print_exc()
             except Exception as ex:
                 pass
             if not baseaddr or thisSystem._localAddr(baseaddr): # (baseaddr == '127.0.0.1' and not thisSystem._localAddr(remoteAddr[0])):
