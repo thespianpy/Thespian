@@ -117,7 +117,9 @@ class ActorAddressManager:
            with the remote address for future use.
         """
         if ownerAddress == self._thisActorAddr:
-            self._managed[ownerInstance] = useableAddress
+            if len(self._managed) > ownerInstance:
+                # Allows updates
+                self._managed[ownerInstance] = useableAddress
         self.importAddr(useableAddress)
 
 
