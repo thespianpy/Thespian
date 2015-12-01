@@ -159,7 +159,11 @@ def actor_base_receive(actorInst, msg, sender):
     except:
         logging.getLogger('Thespian').warning('Actor "%s" error processing message "%s"',
                                               actorInst, msg, exc_info=True)
-        actorInst.send(sender, PoisonMessage(msg))
+        if isinstance(msg, PoisonMessage):
+            logging.getLogger('Thespian').warning('Actor "%s" double-draught of poison; discarding',
+                                                  actorInst)
+        else:
+            actorInst.send(sender, PoisonMessage(msg))
 
 
 class actorLogFilter(logging.Filter):
@@ -264,6 +268,8 @@ class ActorSystemBase:
             if ps.attempts > 4:
                 continue  # discard message if PoisonMessage deliveries are also failing
             elif ps.attempts > 2:
+                if isinstance(ps.msg, PoisonMessage):
+                    continue # no recursion on Poison
                 rcvr, sndr, msg = ps.sender, ps.toActor, PoisonMessage(ps.msg)
             else:
                 rcvr, sndr, msg = ps.toActor, ps.sender, ps.msg

@@ -126,9 +126,10 @@ class systemCommonBase(object):
                     self._sCBStats.inc('Actor.Message Send.Transmit ReInitiated')
                     self._send_intent(each)
                 else:
-                    self._receiveQueue.append(
-                        ReceiveEnvelope(self.myAddress,
-                                        PoisonMessage(each.message)))
+                    if not isinstance(each.message, PoisonMessage):
+                        self._receiveQueue.append(
+                            ReceiveEnvelope(self.myAddress,
+                                            PoisonMessage(each.message)))
                     self._sCBStats.inc('Actor.Message Send.Poison Return on Child Abort')
                     each.result = SendStatus.Failed
                     each.completionCallback()
@@ -154,7 +155,8 @@ class systemCommonBase(object):
             import traceback
             thesplog('Declaring transmit of %s as Poison: %s', intent.identify(),
                      traceback.format_exc(), exc_info=True, level=logging.ERROR)
-            self._receiveQueue.append(ReceiveEnvelope(intent.targetAddr, PoisonMessage(intent.message)))
+            if not isinstance(intent.message, PoisonMessage):
+                self._receiveQueue.append(ReceiveEnvelope(intent.targetAddr, PoisonMessage(intent.message)))
             self._sCBStats.inc('Actor.Message Send.Transmit Poison Rejection')
             intent.result = SendStatus.Failed
             intent.completionCallback()

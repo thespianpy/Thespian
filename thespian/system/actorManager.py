@@ -166,8 +166,9 @@ class ActorManager(systemCommonBase):
                                .error('Actor %s @ %s second exception on message %s',
                                       self._actorClass, self.transport.myAddress, msg,
                                       exc_info = True)
-                        self._send_intent(
-                            TransmitIntent(envelope.sender, PoisonMessage(msg)))
+                        if not isinstance(msg, PoisonMessage):
+                            self._send_intent(
+                                TransmitIntent(envelope.sender, PoisonMessage(msg)))
 
 
         if isinstance(msg, ActorExitRequest):
