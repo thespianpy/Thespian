@@ -18,13 +18,34 @@
 ** 2.4
 *** 2.4.3 <2015-11-18 Wed>
 
-  * Ensure that PoisonMessage sending doesn't recurse.
+  * Ensured that PoisonMessage sending doesn't recurse indefinitely.
 
-  * Add missing newline in status output formatting.
+  * Added a missing newline in status output formatting.
 
-  * Add descriptive failure output messaging for IP-based address
+  * Added a descriptive failure output messaging for IP-based address
     connection failures.  This helps with common mistakes, such as
     specifying the "Admin Port" as a string instead of an integer.
+
+  * Fixed a bug where calling ~ActorSystem().shutdown()~ multiple
+    times would throw an exception.
+
+  * Fixed a bug on multi-level import references (e.g. ~import x.y.z~)
+    in sources loaded by ~loadActorSource()~ operations.
+
+  * Fixed a bug where old actors checking in with a restarted
+    ActorSystem caused exceptions.
+
+  * Fixed a TCP transport bug that caused transmits to be abandoned
+    instead of being retried after the back-off timer expired.
+
+  * Updated default thespian.log logfile creation to honor ~$TMPDIR~ if
+    it is set and only default to directing logging to ~/tmp~ if it is
+    not set.
+
+  * Added internal ~wait()~ call for logger child process on shutdown
+    to avoid defunct loggers.
+
+  * Removed a debug printf in the simpleSystemBase.
 
 *** 2.4.2 <2015-10-26 Mon>
 
