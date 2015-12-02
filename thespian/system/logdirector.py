@@ -110,6 +110,7 @@ def startASLogger(loggerAddr, logDefs, transport, aggregatorAddress=None):
     # will receive the LoggerConnected from the child to complete the
     # handshake and the sender will be the actual address of the
     # logger.
+    return logProc
 
 
 class ThespianLogForwardHandler(logging.Handler):

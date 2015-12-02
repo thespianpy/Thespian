@@ -139,10 +139,10 @@ def startAdmin(adminClass, addrOfStarter, endpointPrep, transportClass,
         except Exception as ex:
             thesplog('Unable to adapt log aggregator address "%s" to a transport address: %s',
                      logAggregator, ex, level=logging.WARNING)
-    startASLogger(loggerAddr, logDefs, transport,
-                  logAggregator
-                  if logAggregator != admin.transport.myAddress
-                  else None)
+    admin.asLogProc = startASLogger(loggerAddr, logDefs, transport,
+                                    logAggregator
+                                    if logAggregator != admin.transport.myAddress
+                                    else None)
     #closeUnusedFiles(transport)
     admin.run()
 
@@ -285,6 +285,11 @@ class MultiProcReplicator(object):
             self.transport.scheduleTransmit(None, TransmitIntent(self.asLogger,
                                                                  LoggerExitRequest()))
             self.transport.run(TransmitOnly)
+            if getattr(self, 'asLogProc', None):
+                if self._checkChildLiveness(self.asLogProc):
+                    import time
+                    time.sleep(0.02)  # wait a little to allow logger to exit
+                self._checkChildLiveness(self.asLogProc) # cleanup defunct proc
 
 
 
