@@ -7,7 +7,7 @@
 #+LATEX_HEADER: \product{Thespian}
 #+LATEX_HEADER: \component{Python Actor System}
 #+LATEX_HEADER: \doctype{Release Notes}
-#+LATEX_HEADER: \docrev{2.4.2}{2015 Oct 26}
+#+LATEX_HEADER: \docrev{2.4.3}{2015 Nov 18}
 #+LATEX_HEADER: \docid{TheDoc-06}
 #+OPTIONS: ^:nil num:nil
 
@@ -16,6 +16,16 @@
 * 2.x
 
 ** 2.1
+
+*** 2.4.3 <2015-11-18 Wed>
+
+  * Ensure that PoisonMessage sending doesn't recurse.
+
+  * Add missing newline in status output formatting.
+
+  * Add descriptive failure output messaging for IP-based address
+    connection failures.  This helps with common mistakes, such as
+    specifying the "Admin Port" as a string instead of an integer.
 
 *** 2.4.2 <2015-10-26 Mon>
 
