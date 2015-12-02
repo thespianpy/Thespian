@@ -280,8 +280,6 @@ class ActorSystemBase:
                     self._loadValidatedActorSource(msg.sourceHash, msg.sourceZip)
                 elif tgt.instance:
                     if isinstance(msg, Thespian_StatusReq):
-                        print('pendWake: %s'%(['%s=%s'%(T,(str(A),str(W))) for T,V in self._wakeUps.items()
-                                               for A,W in V]))
                         pendWake = [W for K,E in self._wakeUps.items() for T,W in E if T == tgt.address]
                         stsresp = Thespian_ActorStatus(
                             tgt.address,
