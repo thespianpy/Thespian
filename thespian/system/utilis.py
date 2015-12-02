@@ -90,9 +90,9 @@ _thesplog_control_settings = (
 )
 
 # Usually logging would be directed to /var/log, but that is often not
-# user-writeable, so /tmp is used by default; setting THESPLOG_FILE is
-# encouraged.  The below variables are set on first use to allow
-# direction to be set post load of this file.
+# user-writeable, so $TMPDIR (or /tmp) is used by default; setting
+# THESPLOG_FILE is encouraged.  The below variables are set on first
+# use to allow direction to be set post load of this file.
 _thesplog_file = None
 _thesplog_old_file = None
 
@@ -110,13 +110,13 @@ def thesplog_control(baseLevel=logging.DEBUG, useLogging=True, tmpFileMaxSize=0)
        will also use.  The default is True.
 
        The tmpFileMaxSize, if > 10KB, specifies the maximum size of
-       the /tmp/Thespian.log file to write logging output to.  A value
-       of 0 (or < 10KB) means that no logging to the /tmp/Thespian.log
+       the thespian.log file to write logging output to.  A value
+       of 0 (or < 10KB) means that no logging to the thespian.log
        file will be performed.  Note that the actual footprint is
        double this size: when this size is reached, the existing
-       /tmp/Thespian.log file is renamed to /tmp/Thespian.log.old
+       ${TMPDIR}/thespian.log file is renamed to ${TMPDIR}/thespian.log.old
        (removing any existing file with that target name) and then a
-       new empty /tmp/Thespian.log file is created for subsequent
+       new empty thespian.log file is created for subsequent
        logging.
     """
 
@@ -135,7 +135,9 @@ def thesplog(msg, *args, **kw):
                                    logging.CRITICAL: 'CRIT' }.get(l, '??')
             global _thesplog_file, _thesplog_old_file
             if not _thesplog_file:
-                _thesplog_file = os.getenv('THESPLOG_FILE', '/tmp/thespian.log')
+                _thesplog_file = os.getenv('THESPLOG_FILE',
+                                           os.path.join(os.getenv('TMPDIR', '/tmp'),
+                                                        'thespian.log'))
                 _thesplog_old_file = _thesplog_file + '.old'
             try:
                 if os.stat(_thesplog_file).st_size > int(_thesplog_control_settings[2]):
