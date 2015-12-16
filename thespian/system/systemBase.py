@@ -342,3 +342,16 @@ class systemBase(object):
             raise ActorSystemFailure('Unload source failed due to ' +
                                      ('failure response' if self._LOADFAILED else
                                       'timeout (%s)'%str(loadLimit)))
+
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    # Actors that involve themselves in topology
+
+    def preRegisterRemoteSystem(self, remoteAddress, remoteCapabilities):
+        # how do we synthesize the remote Address?  via the capabilities?
+        self.send(self.adminAddr,
+                  ConventionRegister(self.transport.getAddressFromString(remoteAddress),
+                                     remoteCapabilities))
+
+    def deRegisterRemoteSystem(self, remoteAddress):
+        self.send(self.adminAddr,
+                  ConventionDeRegister(self.transport.getAddressFromString(remoteAddress)))

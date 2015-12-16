@@ -206,6 +206,40 @@ class Actor(object):
         """
         return self._myRef.unloadActorSource(sourceHash)
 
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    # Most actors will not use the below, but they can be used
+    # to influence the Convention membership for Thespian
+
+    def preRegisterRemoteSystem(self, remoteAddress, remoteCapabilities):
+        """Called to indicate that a remote Actor System at the specified
+           address is expected to be part of the Convention.  The
+           remoteAddress is interpreted by the current Actor System
+           base and if it is appropriate to the currently running
+           system base, the specified remote will be added to the
+           current convention with the specified initial capabilities,
+           but in a non-attached state.  The remote Actor System
+           cannot actually be used until the local Actor System can
+           communicate with the remote Actor System.
+
+           Most Actors should not involve themselves in Actor System
+           registration, but this can be useful for Actor Systems that
+           can only send outbound messages to inform them of remote
+           systems they should initiate connectivity to.
+        """
+        # how do we synthesize the remote Address?  via the capabilities?
+        self._myRef.preRegisterRemoteSystem(remoteAddress, remoteCapabilities)
+
+    def deRegisterRemoteSystem(self, remoteAddress):
+        """Called to indicate that a previously registered remote Actor System
+           should be removed from registration.  This is usually used
+           when the remote has been shutdown and is not expected to
+           return.  This should normally only be used for systems
+           previously described via the preRegisterRemoteSystem()
+           call.  This removed state is not enforced: if the remote
+           system initiates connectivity with the local system after
+           this call then it will be re-entered into the Convention.
+        """
+        self._myRef.deRegisterRemoteSystem(remoteAddress)
 
 
 

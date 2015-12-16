@@ -1206,6 +1206,75 @@ before the ActorSystem is started:
    The current set of ActorSystem capabilities can be obtained by
    issuing a [[*Thespian_StatusReq][Thespian_StatusReq]] to the ActorSystem.
 
+** preRegisterRemoteSystem
+
+   The ~preRegisterRemoteSystem()~ method is used to inform the local
+   Actor System about a remote Actor System.
+
+   /This method is normally not used or needed, and should be avoided
+   if possible./
+
+   Normally Actor Systems will communicate with each other and
+   automatically perform discovery, and Actors themselves should not
+   be aware or involved this functionality.
+
+   However, there are certain transport configurations where this
+   auto-discovery is not possible.  In these configurations, this
+   method can be used to initiate communications between the two Actor
+   Systems.  This method will only work for Actor System bases that
+   support Conventions (as describe in the [[*Other Actor Systems][Other Actor Systems]]
+   section).
+
+   Because the remote Actor System and the local Actor System cannot
+   perform auto-discovery, the local system also assumes
+   responsibility for actively initiating convention membership checks
+   of the pre-registered remote system.  These pre-registration checks
+   will continue to occur periodically until the pre-registered remote
+   member is removed (via the ~deRegisterRemoteSystem()~ method
+   described below).  The current system will also automatically
+   become the Convention Leader for the remote system.
+
+#+begin_src python
+     self.preRegisterRemoteSystem(self, remoteSystemAddress,
+                                  remoteSystemCapabilities)
+#+end_src
+
+   The ~remoteSystemAddress~ parameter is not a true Actor Address: it
+   specifies the remote system address in string format in a syntax
+   that will be interpreted by the local Actor System.  If the
+   specified string is not recognizeable by the local Actor System, no
+   Convention membership will be added.  For example, the
+   multiprocTCPBase and multiprocUDPBase system bases can recognize
+   "ipaddr:port" formats.
+
+   The ~remoteSystemCapabilities~ parameter specifies a dictionary of
+   the initial remote system capabilities.  These capabilities will be
+   updated with actual capabilities once the two systems have
+   established communications.
+
+** deRegisterRemoteSystem
+
+   The ~deRegisterRemoteSystem()~ method is used to unregister a
+   previously registered remote system.  This method is the
+   counterpart to the ~preRegisterRemoteSystem()~ method and has all
+   the same warnings and caveats that apply to the latter.
+
+   If the remote Actor System is still running and communicating with
+   the local Actor System then it will automatically re-register
+   itself despite having been de-registered by this method.
+
+   If there is no remote Actor System registered for the specified
+   address, or if the address cannot be successfully recognized by the
+   local Actor System, this method will simply return with no effect.
+
+#+begin_src python
+     self.preRegisterRemoteSystem(self, remoteSystemAddress)
+#+end_src
+
+   The ~remoteSystemAddress~ parameter is specified in the same manner
+   as for the ~preRegisterRemoteSystem()~ and is usually the same
+   value that was originall passed to the latter method.
+
 ** ActorTypeDispatcher
 
 An alternative base class for creating Actors is the

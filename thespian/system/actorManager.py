@@ -363,3 +363,22 @@ class ActorManager(systemCommonBase):
 
     def wakeupAfter(self, timePeriod):
         self.transport.addWakeup(timePeriod)
+
+    # ----------------------------------------------------------------------
+    # Actors that involve themselves in topology
+
+    def preRegisterRemoteSystem(self, remoteAddress, remoteCapabilities):
+        # how do we synthesize the remote Address?  via the capabilities?
+        from thespian.system.messages.convention import ConventionRegister
+        self._send_intent(
+            TransmitIntent(self._adminAddr,
+                           ConventionRegister(
+                               self.transport.getAddressFromString(remoteAddress),
+                               remoteCapabilities)))
+
+    def deRegisterRemoteSystem(self, remoteAddress):
+        from thespian.system.messages.convention import ConventionDeRegister
+        self._send_intent(
+            TransmitIntent(self._adminAddr,
+                           ConventionDeRegister(
+                               self.transport.getAddressFromString(remoteAddress))))
