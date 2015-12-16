@@ -531,6 +531,10 @@ class ConventioneerAdmin(GlobalNamesAdmin):
     def h_PendingActor(self, envelope):
         sourceHash = envelope.message.sourceHash
         childRequirements = envelope.message.targetActorReq
+        thesplog('Pending Actor request for %s%s reqs %s from %s',
+                 envelope.message.actorClassName,
+                 ' (%s)'%sourceHash if sourceHash else '',
+                 childRequirements, envelope.sender)
         # If this request was forwarded by a remote Admin and the
         # sourceHash is not known locally, request it from the sending
         # remote Admin
@@ -585,6 +589,10 @@ class ConventioneerAdmin(GlobalNamesAdmin):
                     bestC = foldl(lambda best,possible:
                                   best if best[1] <= possible[1] else possible,
                                   C)[0]
+                    thesplog('Requesting creation of %s%s on remote admin %s',
+                             envelope.message.actorClassName,
+                             ' (%s)'%sourceHash if sourceHash else '',
+                             bestC)
                 self._send_intent(TransmitIntent(bestC, envelope.message))
                 return True
         except InvalidActorSourceHash:
