@@ -217,6 +217,9 @@ utilization document.
   * The [[http://www.erlang.org][Erlang]] language has Actor support built-in (see
     http://www.erlang.org/doc/getting_started/conc_prog.html).
 
+  The Wikipedia site has a good list of Actor Model implementations,
+  but please let us know of others that should be listed here.
+
 * Download
 
   The recommended way to obtain Thespian is by using ~pip~ to download
