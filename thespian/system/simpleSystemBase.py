@@ -285,20 +285,7 @@ class ActorSystemBase:
                         killActor = isinstance(ps.msg, ActorExitRequest)
                         self._callActorWithMessage(tgt, ps, msg, sndr)
                         if killActor:
-                            try:
-                                self.actorRegistry[ps.toActor.actorAddressString].instance = None
-                            except AttributeError:
-                                logging.getLogger('Thespian').warning(
-                                    'Actor %s had no instance to reset on kill',
-                                    ps.toActor.actorAddressString)
-                            for gn in self._globalNames:
-                                if self._globalNames[gn] == ps.toActor:
-                                    del self._globalNames[gn]
-                                    break
-                            tgt._system._systemBase.actor_send(
-                                self.actorRegistry[self.system.systemAddress.actorAddressString].address,
-                                tgt.parent,
-                                ChildActorExited(ps.toActor))
+                            self._killActor(tgt, ps)
                 else:
                     # This is a Dead Actor and there is no
                     # DeadLetterHandler.  Just discard the message
@@ -335,6 +322,23 @@ class ActorSystemBase:
                     del tgt._yung[tgt._yung.index(ps.msg.childAddress)]
                 except ValueError:
                     pass
+
+
+    def _killActor(self, tgt, ps):
+        try:
+            self.actorRegistry[ps.toActor.actorAddressString].instance = None
+        except AttributeError:
+            logging.getLogger('Thespian').warning(
+                'Actor %s had no instance to reset on kill',
+                ps.toActor.actorAddressString)
+        for gn in self._globalNames:
+            if self._globalNames[gn] == ps.toActor:
+                del self._globalNames[gn]
+                break
+        tgt._system._systemBase.actor_send(
+            self.actorRegistry[self.system.systemAddress.actorAddressString].address,
+            tgt.parent,
+            ChildActorExited(ps.toActor))
 
 
     def _generateStatusResponse(self, msg, tgt, sndr):
