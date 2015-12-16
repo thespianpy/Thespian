@@ -28,10 +28,13 @@ class ThisSystem(object):
            Also, a port of 0 or None should match any other port.
         """
         if t1 == t2: return True  # easiest
-        localIDs = _localAddresses + self._myAddresses
-        if t1[0] in localIDs and t2[0] in localIDs:
-            # Got a match, compare ports
-            return t1[1] == t2[1] or t1[1] in [None, 0] or t2[1] in [None, 0]
+        # Start by comparing ports, and if they are a match, check all possible addresses.
+        if t1[1] == t2[1] or t1[1] in [None, 0] or t2[1] in [None, 0]:
+            if t1[0] == t2[0]: return True  # ip's match, ports are "equivalent"
+            # Check known alternate addresses for this box.
+            localIDs = _localAddresses + self._myAddresses
+            if t1[0] in localIDs and t2[0] in localIDs:
+                return True
         return False
 
 
