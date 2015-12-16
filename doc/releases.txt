@@ -11,7 +11,8 @@ Table of Contents
 
 2.x
 .. 2.5
-..... 2.5.0 <2015-11-19 Thu>
+..... 2.5.1 <2015-12-16 Wed>
+..... 2.5.0 <2015-12-16 Wed>
 .. 2.4
 ..... 2.4.4 <2015-12-16 Wed>
 ..... 2.4.3 <2015-11-18 Wed>
@@ -39,7 +40,18 @@ Table of Contents
 2.5
 ───
 
-2.5.0 <2015-11-19 Thu>
+2.5.1 <2015-12-16 Wed>
+╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+
+  ‣ Fixed sourceload path handling: zipfiles use posix paths only, but
+    running loaded sources on Windows with previous versions attempted
+    to use Windows path specifications.
+
+  ‣ Increased level of logging from sourceload failures to ERROR from
+    INFO.
+
+
+2.5.0 <2015-12-16 Wed>
 ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 
   ‣ Allow value specification with the `@requireCapability' decorator.
