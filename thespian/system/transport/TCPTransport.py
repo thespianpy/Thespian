@@ -713,7 +713,7 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
         self._transmitIntents = {}
         self._waitingTransmits = []
         for intent in procIntents:
-            if hasattr(intent, '_pauseUntil'):
+            if hasattr(intent, '_pauseUntil') and not intent.expired():
                 self._transmitIntents[intent.socket.fileno()] = intent
                 continue
             if self._nextTransmitStepCheck(intent, -1):
