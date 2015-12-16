@@ -242,12 +242,11 @@ def System2(conn, base, capabilities):
 
 
 class TestMultiProcessSystem(unittest.TestCase):
-    testbase='MultiprocTCP'
-    scope='func'
-
     """These tests run the primary ActorSystem locally and the System2
     Actorsystem in a separate process."""
 
+    testbase='MultiprocTCP'
+    scope='func'
     portBase = 0
     baseName = 'multiprocTCPBase'
 
