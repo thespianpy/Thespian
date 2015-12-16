@@ -10,12 +10,17 @@ Table of Contents
 ─────────────────
 
 2.x
-.. 2.1
+.. 2.4
+..... 2.4.4 <2015-12-16 Wed>
+..... 2.4.3 <2015-11-18 Wed>
 ..... 2.4.2 <2015-10-26 Mon>
 ..... 2.4.1 <2015-10-20 Mon>
 ..... 2.4.0 <2015-10-18 Sun>
+.. 2.3
 ..... 2.3.0 <2015-10-04 Sun>
+.. 2.2
 ..... 2.2.0 <2015-09-27 Sun>
+.. 2.1
 ..... 2.1.6 <2015-09-27 Sun>
 ..... 2.1.5 <2015-09-20 Sun>
 ..... 2.1.4 Initial Public Release <2015-08-31 Mon>
@@ -29,8 +34,59 @@ Table of Contents
 2.x
 ═══
 
-2.1
+2.4
 ───
+
+2.4.4 <2015-12-16 Wed>
+╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+
+  ‣ Removed TCP connect timeout that overrode non-blocking mode.
+
+  ‣ Fixed TCP address equality comparison when zero port specification
+    compared.  A port of zero matches any other port if the address
+    portion is the same; previously this only worked for comparing to
+    known local addresses, not arbitrary addresses when the port was 0.
+
+  ‣ Fixed error text when using `tell()' with a bad Actor Address
+    (previously identified the wrong call).
+
+  ‣ Ensure Actor System `createActor()' calls are not aborted
+    prematurely by leftover responses to previous operations
+    (e.g. timeout-unclaimed `ask()' responses).
+
+
+2.4.3 <2015-11-18 Wed>
+╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+
+  ‣ Ensured that PoisonMessage sending doesn't recurse indefinitely.
+
+  ‣ Added a missing newline in status output formatting.
+
+  ‣ Added a descriptive failure output messaging for IP-based address
+    connection failures.  This helps with common mistakes, such as
+    specifying the "Admin Port" as a string instead of an integer.
+
+  ‣ Fixed a bug where calling `ActorSystem().shutdown()' multiple times
+    would throw an exception.
+
+  ‣ Fixed a bug on multi-level import references (e.g. `import x.y.z')
+    in sources loaded by `loadActorSource()' operations.
+
+  ‣ Fixed a bug where old actors checking in with a restarted
+    ActorSystem caused exceptions.
+
+  ‣ Fixed a TCP transport bug that caused transmits to be abandoned
+    instead of being retried after the back-off timer expired.
+
+  ‣ Updated default thespian.log logfile creation to honor `$TMPDIR' if
+    it is set and only default to directing logging to `/tmp' if it is
+    not set.
+
+  ‣ Added internal `wait()' call for logger child process on shutdown to
+    avoid defunct loggers.
+
+  ‣ Removed a debug printf in the simpleSystemBase.
+
 
 2.4.2 <2015-10-26 Mon>
 ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
@@ -71,6 +127,9 @@ Table of Contents
   ‣ Miscellaneous test and logging updates.
 
 
+2.3
+───
+
 2.3.0 <2015-10-04 Sun>
 ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 
@@ -88,6 +147,9 @@ Table of Contents
   ‣ Update "Thespian Generation" common Capabilities to version (2,3).
     Previous 2.2.0 release erroneously did not update this value.
 
+
+2.2
+───
 
 2.2.0 <2015-09-27 Sun>
 ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
@@ -115,6 +177,9 @@ Table of Contents
     `THESPLOG_FILE' and `THESPLOG_FILE_MAXSIZE' environment variable
     controls.
 
+
+2.1
+───
 
 2.1.6 <2015-09-27 Sun>
 ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
