@@ -106,6 +106,7 @@ serializer = pickle
 LISTEN_DEPTH=100  # max # of listens to sign up for at a time
 MAX_INCOMING_SOCKET_PERIOD=timedelta(minutes=7)  # max time to hold open an incoming socket
 MAX_CONSECUTIVE_READ_FAILURES = 20
+MAX_IDLE_SOCKET_PERIOD=timedelta(minutes=20) # close idle sockets after this amount of time
 
 
 class TCPEndpoint(TransportInit__Base):
@@ -168,6 +169,14 @@ class RoutedTCPv4ActorAddress(TCPv4ActorAddress):
         super(RoutedTCPv4ActorAddress, self).__init__(anIPAddr, anIPPort,
                                                       external=external)
         self.routing = [adminAddr]
+
+
+class IdleSocket(object):
+    def __init__(self, socket):
+        self.socket = socket
+        self.validity = ExpiryTime(MAX_IDLE_SOCKET_PERIOD)
+    def expired(self):
+        return self.validity.expired()
 
 
 class TCPTransport(asyncTransportBase, wakeupTransportBase):
@@ -418,7 +427,7 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
     def _finishIntent(self, intent, status=SendStatus.Sent):
         if hasattr(intent, 'socket'):
             if hasattr(self, '_openSockets'):
-                self._openSockets[intent.targetAddr] = intent.socket
+                self._openSockets[intent.targetAddr] = IdleSocket(intent.socket)
             else:
                 _safeSocketShutdown(intent.socket)
             delattr(intent, 'socket')
@@ -458,7 +467,7 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
 
     def _next_XMIT_1(self, intent):
         if hasattr(self, '_openSockets') and intent.targetAddr in self._openSockets:
-            intent.socket = self._openSockets[intent.targetAddr]
+            intent.socket = self._openSockets[intent.targetAddr].socket
             # This intent takes the open socket; there should be only
             # one intent per target but this "take" prevents an
             # erroneous second target intent from causing corruption.
@@ -641,7 +650,8 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
                                       for I in self._incomingSockets
                                       if not I.backoffPause()])))
             if hasattr(self, '_openSockets'):
-                wrecv.extend(list(map(lambda s: s.fileno(), self._openSockets.values())))
+                wrecv.extend(list(map(lambda s: s.socket.fileno(),
+                                      self._openSockets.values())))
 
             delays = list([R for R in [self.run_time.remaining()] +
                            [T.delay() for T in self._transmitIntents] +
@@ -699,15 +709,19 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
                 for rmtaddr,idle in list(idleSockets):
                     # n.b. _openSockets may change while iterating, but
                     # only current element
-                    if each == idle.fileno():
-                        incoming = TCPIncomingPersistent(rmtaddr, idle)
+                    if each == idle.socket.fileno():
+                        incoming = TCPIncomingPersistent(rmtaddr, idle.socket)
                         rinc = self._handlePossibleIncoming(incoming, each)
                         if rinc:
                             self._incomingSockets.append(incoming)
                             # While receiving data, the socket "belongs" to the receiver
                             del self._openSockets[rmtaddr]
                         elif rinc is None:
+                            # Socket was closed by remote
                             del self._openSockets[rmtaddr]
+                    elif idle.expired():
+                        _safeSocketShutdown(idle.socket)
+                        del self._openSockets[rmtaddr]
 
             # Handle timeouts
             self._transmitIntents = [I for I in self._transmitIntents
@@ -760,7 +774,8 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
             return None
         if not rval:
             if isinstance(incomingSocket, TCPIncomingPersistent):
-                self._openSockets[incomingSocket.fromAddress] = incomingSocket.socket
+                self._openSockets[incomingSocket.fromAddress] = \
+                    IdleSocket(incomingSocket.socket)
             else:
                 incomingSocket.close()
         return rval
