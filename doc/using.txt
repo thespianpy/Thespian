@@ -59,8 +59,10 @@ Table of Contents
 .. 5.11 actorSystemCapabilityCheck
 ..... 5.11.1 requireCapability decorator
 .. 5.12 updateCapability
-.. 5.13 ActorTypeDispatcher
-..... 5.13.1 Type Handling Deferral
+.. 5.13 preRegisterRemoteSystem
+.. 5.14 deRegisterRemoteSystem
+.. 5.15 ActorTypeDispatcher
+..... 5.15.1 Type Handling Deferral
 6 ActorSystem API
 .. 6.1 Exceptions
 .. 6.2 ActorSystem
@@ -1129,6 +1131,11 @@ Table of Contents
   that can be used in subsequent createActor calls to instantiate Actors
   found in that sourcefile.
 
+  There must be a valid Source Authority registered (via the
+  registerSourceAuthority method) to validate the loaded source; by
+  default this method does nothing if no Source Authority has been
+  loaded.  See Security Considerations for more information.
+
   See the description of the same function in the ActorSystem API
   section for more details.
 
@@ -1185,10 +1192,18 @@ Table of Contents
 
   To facilitate easy specification of requirements, there is a
   `requireCapability' class decorator defined which can be used to
-  specify that a capability must be present in the system capabilities
-  and that it's value must be "truthy" (i.e. some expression that
-  evaluates as truthful).  The decorator can be repeated multiple times
-  for a single Actor and it may be used in conjunction with an actual
+  specify that a capability must be present in the system capabilities.
+
+  ┌────
+  │     @requireCapability(capabilityName[, capabilityValue])
+  └────
+
+  The `requireCapability' decorator can also specify a value for the
+  capability; if no value is specified then the capability's value must
+  be "truthy" (i.e. some expression that evaluates as truthful).
+
+  The decorator can be repeated multiple times for a single Actor and it
+  may be used in conjunction with an actual
   `actorSystemCapabilityCheck()' method.
 
   For example:
@@ -1205,7 +1220,7 @@ Table of Contents
   │         def receiveMessage(self, msg, sender): pass
   └────
 
-  is equivalent to:
+  is equivalent to the following combined use:
 
   ┌────
   │     @requireCapability('Has Lightbulb')
@@ -1219,7 +1234,18 @@ Table of Contents
   │         def receiveMessage(self, msg, sender): pass
   └────
 
-  In the above example, the `MyActor' Actor can be instantiated in an
+  or the equivalent use of only the decorator:
+
+  ┌────
+  │     @requireCapability('Has Lightbulb')
+  │     @requireCapability('Lit')
+  │     @requireCapability(Color', 'Yellow')
+  │     class MyActor(Actor):
+  │ 
+  │         def receiveMessage(self, msg, sender): pass
+  └────
+
+  In the above examples, the `MyActor' Actor can be instantiated in an
   ActorSystem that had the capabilities of:
 
   ┌────
@@ -1289,7 +1315,78 @@ Table of Contents
   a Thespian_StatusReq to the ActorSystem.
 
 
-5.13 ActorTypeDispatcher
+5.13 preRegisterRemoteSystem
+────────────────────────────
+
+  The `preRegisterRemoteSystem()' method is used to inform the local
+  Actor System about a remote Actor System.
+
+  /This method is normally not used or needed, and should be avoided if
+  possible./
+
+  Normally Actor Systems will communicate with each other and
+  automatically perform discovery, and Actors themselves should not be
+  aware or involved this functionality.
+
+  However, there are certain transport configurations where this
+  auto-discovery is not possible.  In these configurations, this method
+  can be used to initiate communications between the two Actor Systems.
+  This method will only work for Actor System bases that support
+  Conventions (as describe in the Other Actor Systems section).
+
+  Because the remote Actor System and the local Actor System cannot
+  perform auto-discovery, the local system also assumes responsibility
+  for actively initiating convention membership checks of the
+  pre-registered remote system.  These pre-registration checks will
+  continue to occur periodically until the pre-registered remote member
+  is removed (via the `deRegisterRemoteSystem()' method described
+  below).  The current system will also automatically become the
+  Convention Leader for the remote system.
+
+  ┌────
+  │      self.preRegisterRemoteSystem(self, remoteSystemAddress,
+  │                                   remoteSystemCapabilities)
+  └────
+
+  The `remoteSystemAddress' parameter is not a true Actor Address: it
+  specifies the remote system address in string format in a syntax that
+  will be interpreted by the local Actor System.  If the specified
+  string is not recognizeable by the local Actor System, no Convention
+  membership will be added.  For example, the multiprocTCPBase and
+  multiprocUDPBase system bases can recognize "ipaddr:port" formats.
+
+  The `remoteSystemCapabilities' parameter specifies a dictionary of the
+  initial remote system capabilities.  These capabilities will be
+  updated with actual capabilities once the two systems have established
+  communications.
+
+
+5.14 deRegisterRemoteSystem
+───────────────────────────
+
+  The `deRegisterRemoteSystem()' method is used to unregister a
+  previously registered remote system.  This method is the counterpart
+  to the `preRegisterRemoteSystem()' method and has all the same
+  warnings and caveats that apply to the latter.
+
+  If the remote Actor System is still running and communicating with the
+  local Actor System then it will automatically re-register itself
+  despite having been de-registered by this method.
+
+  If there is no remote Actor System registered for the specified
+  address, or if the address cannot be successfully recognized by the
+  local Actor System, this method will simply return with no effect.
+
+  ┌────
+  │      self.preRegisterRemoteSystem(self, remoteSystemAddress)
+  └────
+
+  The `remoteSystemAddress' parameter is specified in the same manner as
+  for the `preRegisterRemoteSystem()' and is usually the same value that
+  was originall passed to the latter method.
+
+
+5.15 ActorTypeDispatcher
 ────────────────────────
 
   An alternative base class for creating Actors is the
@@ -1404,7 +1501,7 @@ Table of Contents
   └────
 
 
-5.13.1 Type Handling Deferral
+5.15.1 Type Handling Deferral
 ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 
   In a normal Python subclass, it is possible for a method in the
@@ -1784,6 +1881,10 @@ Table of Contents
   that can be used in subsequent createActor calls to instantiate Actors
   found in that sourcefile.
 
+  There must be a valid Source Authority registered (via the
+  registerSourceAuthority method) to validate the loaded source; by
+  default this method does nothing if no Source Authority has been
+  loaded.  See Security Considerations for more information.
 
   Although a plaintext zipfile may be loaded, it is highly recommended
   that production environments encrypt the zipFile using some sort of
@@ -1841,6 +1942,9 @@ Table of Contents
      instead of just " `import importlib' " in Actor sources that will
      be loaded via `loadActorSource()'.
 
+  4. Loaded sources should expect that `__file__' or other internals can
+     be set to None.
+
 
 6.9.2 Security Considerations
 ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
@@ -1880,13 +1984,21 @@ Table of Contents
   the manner in which the Source Authority is established.
 
   By default, at Actor System startup time, there is no Source
-  Authority, thus allowing any `loadActorSource()' input to be loaded
-  and utilized.  This is convenient for debugging and simple local
-  applications, but not recommended for production deployments.  Typical
-  best practices for production initialization of a Thespian environment
-  are to startup the ActorSystem and then immediately load a Source
-  Authority that will validate all subsequent sources loaded into that
-  system.
+  Authority.  When there is no Source Authority, any `loadActorSource()'
+  input is ignored.  This ensures that all Thespian systems are secure
+  by default.  For debugging and simple local applications this may not
+  be convenient; in these situations, a Source Authority similar to the
+  following may be used to automatically accept and enable all loaded
+  sources:
+
+  ┌────
+  │ from thespian.actors import *
+  │ class SimpleSourceAuthority(ActorTypeDispatcher):
+  │     def receiveMsg_str(self, msg, sender):
+  │         self.registerSourceAuthority()
+  │     def receiveMsg_ValidateSource(self, msg, sender):
+  │         self.send(sender, ValidatedSource(msg.sourceHash, msg.sourceData))
+  └────
 
   Note that it is possible to disable the `loadActorSource()'
   functionality entirely by registering an Actor as the Source Authority
@@ -2462,6 +2574,50 @@ Table of Contents
                              listens; if not specified (no colon is found)
                              then the port num defaults to the *Admin
                              Port* setting.
+
+  *Admin Routing*: if this capability is present and has a true value,
+                   this indicates that all Actors in remote Actor Systems
+                   must send all messages to local Actors through the
+                   Admin.  This is commonly used where the Actor System is
+                   running on a host node that has a firewall that only
+                   allows the Admin Port to have network ingress
+                   permissions.
+
+                   Note that this capability has no effect on the way in
+                   which the Actors themselves are implemented; it only
+                   changes the way that the Actor System routes messages.
+
+  *Outbound Only*: if this capability is present and has a true value then
+                   it means that this Actor System (and all of the Actors
+                   within it) can only initiate outbound connections.
+                   Inbound connections are not supported.
+
+                   This configuration may be needed for a system that is
+                   behind a firewall with very strict ingress rules but
+                   looser egress rules.
+
+                   Specifying this capability as True will implicitly
+                   force "Admin Routing" to be true as well, regardless of
+                   the user setting.  This is because it is impractical
+                   for this system to maintain outbound connections to all
+                   possible remote Actors, so it will maintain a
+                   persistent connection to other Admins only and forward
+                   packets via them using the "Admin Routing"
+                   functionality.
+
+                   In addition, this system will not be able to join in
+                   conventions with other systems unless the other systems
+                   are declared via the `preRegisterRemoteSystem()' call,
+                   since they cannot initiate an inbound registration to
+                   this system.
+
+                   Remote systems may encounter periodic delays in message
+                   forwarding messages to an Outbound Only system because
+                   they must await a connection establishment from that
+                   system (which may not occur until the next Convention
+                   Registration time period has elapsed).  (This mode also
+                   requires socket re-use by the TCP transport, which is
+                   the normal operational mode).
 
 
 8.5 multiprocUDPBase

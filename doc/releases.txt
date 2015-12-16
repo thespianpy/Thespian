@@ -10,6 +10,8 @@ Table of Contents
 ─────────────────
 
 2.x
+.. 2.5
+..... 2.5.0 <2015-11-19 Thu>
 .. 2.4
 ..... 2.4.4 <2015-12-16 Wed>
 ..... 2.4.3 <2015-11-18 Wed>
@@ -33,6 +35,79 @@ Table of Contents
 
 2.x
 ═══
+
+2.5
+───
+
+2.5.0 <2015-11-19 Thu>
+╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+
+  ‣ Allow value specification with the `@requireCapability' decorator.
+
+  ‣ Add the `preRegisterRemoteSystem' and `deRegisterRemoteSystem' Actor
+    API methods.  These assist in identifying remote Actor Systems that
+    might not normally have connectivity.  These are most useful with
+    the 'Outbound Only' capability (see below).
+
+  ‣ Updated the TCP system base to persist and re-use open socket
+    connections; previous versions would always close the socket after
+    sending or recieving a single message.  This change can increase
+    network efficiency and reduce latency.  This change is backward
+    compatible with previous Thespian 2.x versions and will devolve into
+    the older disconnecting-mode of operation.
+
+  ‣ Added ~"Admin Routing": True~ capability specification (TCP system
+    base only).  The presence of this capability indicates that all
+    traffic routed to any Actor on that Actor System must be forwarded
+    via the Admin on that Actor System (Thespian handles the forwarding
+    automatically when this capability is set).  This configuration is
+    useful when two Actor Systems are separated by firewalls that only
+    allow a limited set of ports to communicate through the firewall;
+    setting the Admin port to one of the firewall-allowed ports and
+    setting the "Admin Routing" capability will route all traffic via
+    the Admin (at a small performance penalty).  Enabling this setting
+    is /not/ backward compatible with previous Thespian 2.x versions.
+    This setting should be considered /Beta/ functionality at this time.
+
+  ‣ Added ~"Outbound Only": True~ capability specification (TCP system
+    base only).  The presence of this capability indicates that the
+    current system cannot accept incoming connections.  This setting
+    implies ~"Admin Routing": True~ for this same system.  This setting
+    causes all Actor traffic to be routed through the Admin, and the
+    Admin will open and leave open persistent connections to all remote
+    Admins.  This setting is useful where a firewall or VPN
+    configuration will only allow outbound connections, but it incurs
+    additional performance penalties and potential delays while an
+    outbound connection is being re-established.  Enabling this setting
+    is /not/ backward compatible with previous Thespian 2.x versions.
+    This setting should be considered /Beta/ functionality at this time.
+
+  ‣ The "Thespian ActorSystem Version" for the TCP system base has been
+    updated to "2" from "1" to indicate the above changes.
+
+  ‣ All systems that have attempted to create an Actor will be
+    remembered to avoid infinited creation loops.
+
+  ‣ Logging updates and enhancements.
+
+  ‣ Enhance shutdown by ensuring the exiting status is set before
+    shutting down children to handle their responses appropriately and
+    avoid race conditions.
+
+  ‣ Show statistics values before labels in the status output for better
+    readability.
+
+  ‣ Design document updates.
+
+  ‣ The simple system base now properly implements the `wakeupAfter()'
+    delays.  It will not hang if only wakeups are pending, but it will
+    deliver them after at least the appropriate delay and relative to
+    `tell()', `ask()' and `listen()' timeouts.
+
+  ‣ All `loadActorSource()' calls are ignored if there is no registered
+    Source Authority.  This changes the disposition of an Actor System
+    to secure/protected by default.
+
 
 2.4
 ───
