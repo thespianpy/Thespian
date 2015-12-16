@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
 <title>Thespian Actors User's Guide</title>
-<!-- 2015-10-19 Mon 05:49 -->
+<!-- 2015-12-16 Wed 01:23 -->
 <meta  http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta  name="generator" content="Org-mode" />
 <meta  name="author" content="Kevin Quick &lt;kquick@godaddy.com&gt;" />
@@ -99,7 +99,7 @@
 <script type="text/javascript" src="styles/bigblow/js/bigblow.js"></script>
 <script type="text/javascript" src="styles/bigblow/js/hideshow.js"></script>
 <script type="text/javascript" src="styles/lib/js/jquery.stickytableheaders.min.js"></script>
-<link href="thespian.css" rel="stylesheet">
+<link href="thespian.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript">
 /*
 @licstart  The following is the entire license notice for the
@@ -232,9 +232,11 @@ for the JavaScript code in this tag.
 </ul>
 </li>
 <li><a href="#sec-5-12">5.12. updateCapability</a></li>
-<li><a href="#sec-5-13">5.13. ActorTypeDispatcher</a>
+<li><a href="#sec-5-13">5.13. preRegisterRemoteSystem</a></li>
+<li><a href="#sec-5-14">5.14. deRegisterRemoteSystem</a></li>
+<li><a href="#sec-5-15">5.15. ActorTypeDispatcher</a>
 <ul>
-<li><a href="#sec-5-13-1">5.13.1. Type Handling Deferral</a></li>
+<li><a href="#sec-5-15-1">5.15.1. Type Handling Deferral</a></li>
 </ul>
 </li>
 </ul>
@@ -334,6 +336,7 @@ for the JavaScript code in this tag.
 </ul>
 </div>
 </div>
+
 
 <div id="outline-container-sec-1" class="outline-2">
 <h2 id="sec-1"><span class="section-number-2">1</span> Actor Overview</h2>
@@ -1763,6 +1766,13 @@ instantiate Actors found in that sourcefile.
 </p>
 
 <p>
+There must be a valid Source Authority registered (via the
+<a href="#sec-5-8">registerSourceAuthority</a> method) to validate the loaded source; by
+default this method does nothing if no Source Authority has been
+loaded.  See <a href="#sec-6-9-2">Security Considerations</a> for more information.
+</p>
+
+<p>
 See the description of the same function in the <a href="#sec-6">ActorSystem API</a>
 section for more details.
 </p>
@@ -1841,11 +1851,27 @@ message.
 <p>
 To facilitate easy specification of requirements, there is a
 <code>requireCapability</code> class decorator defined which can be used to
-specify that a capability must be present in the system capabilities
-and that it's value must be "truthy" (i.e. some expression that
-evaluates as truthful).  The decorator can be repeated multiple
-times for a single Actor and it may be used in conjunction with an
-actual <code>actorSystemCapabilityCheck()</code> method.
+specify that a capability must be present in the system
+capabilities.
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-python">    <span class="org-type">@requireCapability</span>(capabilityName[, capabilityValue])
+</pre>
+</div>
+
+<p>
+The <code>requireCapability</code> decorator can also specify a
+value for the capability; if no value is specified then the
+capability's value must be "truthy" (i.e. some expression that
+evaluates as truthful).
+</p>
+
+<p>
+The decorator can be repeated multiple times for a single Actor and
+it may be used in conjunction with an actual
+<code>actorSystemCapabilityCheck()</code> method.
 </p>
 
 <p>
@@ -1867,7 +1893,7 @@ For example:
 </div>
 
 <p>
-is equivalent to:
+is equivalent to the following combined use:
 </p>
 
 <div class="org-src-container">
@@ -1885,7 +1911,22 @@ is equivalent to:
 </div>
 
 <p>
-In the above example, the <code>MyActor</code> Actor can be instantiated
+or the equivalent use of only the decorator:
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-python">    <span class="org-type">@requireCapability</span>(<span class="org-string">'Has Lightbulb'</span>)
+    <span class="org-type">@requireCapability</span>(<span class="org-string">'Lit'</span>)
+    <span class="org-type">@requireCapability</span>(Color<span class="org-string">', '</span>Yellow<span class="org-string">')</span>
+<span class="org-string">    class MyActor(Actor):</span>
+
+<span class="org-string">        def receiveMessage(self, msg, sender): pass</span>
+</pre>
+</div>
+
+<p>
+In the above examples, the <code>MyActor</code> Actor can be instantiated
 in an ActorSystem that had the capabilities of:
 </p>
 
@@ -1983,8 +2024,109 @@ issuing a <a href="#sec-7-9">Thespian_StatusReq</a> to the ActorSystem.
 </div>
 
 <div id="outline-container-sec-5-13" class="outline-3">
-<h3 id="sec-5-13"><span class="section-number-3">5.13</span> ActorTypeDispatcher</h3>
+<h3 id="sec-5-13"><span class="section-number-3">5.13</span> preRegisterRemoteSystem</h3>
 <div class="outline-text-3" id="text-5-13">
+<p>
+The <code>preRegisterRemoteSystem()</code> method is used to inform the local
+Actor System about a remote Actor System.
+</p>
+
+<p>
+<i>This method is normally not used or needed, and should be avoided
+if possible.</i>
+</p>
+
+<p>
+Normally Actor Systems will communicate with each other and
+automatically perform discovery, and Actors themselves should not
+be aware or involved this functionality.
+</p>
+
+<p>
+However, there are certain transport configurations where this
+auto-discovery is not possible.  In these configurations, this
+method can be used to initiate communications between the two Actor
+Systems.  This method will only work for Actor System bases that
+support Conventions (as describe in the <a href="#sec-4-10">Other Actor Systems</a>
+section).
+</p>
+
+<p>
+Because the remote Actor System and the local Actor System cannot
+perform auto-discovery, the local system also assumes
+responsibility for actively initiating convention membership checks
+of the pre-registered remote system.  These pre-registration checks
+will continue to occur periodically until the pre-registered remote
+member is removed (via the <code>deRegisterRemoteSystem()</code> method
+described below).  The current system will also automatically
+become the Convention Leader for the remote system.
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-python">     <span class="org-keyword">self</span>.preRegisterRemoteSystem(<span class="org-keyword">self</span>, remoteSystemAddress,
+                                  remoteSystemCapabilities)
+</pre>
+</div>
+
+<p>
+The <code>remoteSystemAddress</code> parameter is not a true Actor Address: it
+specifies the remote system address in string format in a syntax
+that will be interpreted by the local Actor System.  If the
+specified string is not recognizeable by the local Actor System, no
+Convention membership will be added.  For example, the
+multiprocTCPBase and multiprocUDPBase system bases can recognize
+"ipaddr:port" formats.
+</p>
+
+<p>
+The <code>remoteSystemCapabilities</code> parameter specifies a dictionary of
+the initial remote system capabilities.  These capabilities will be
+updated with actual capabilities once the two systems have
+established communications.
+</p>
+</div>
+</div>
+
+<div id="outline-container-sec-5-14" class="outline-3">
+<h3 id="sec-5-14"><span class="section-number-3">5.14</span> deRegisterRemoteSystem</h3>
+<div class="outline-text-3" id="text-5-14">
+<p>
+The <code>deRegisterRemoteSystem()</code> method is used to unregister a
+previously registered remote system.  This method is the
+counterpart to the <code>preRegisterRemoteSystem()</code> method and has all
+the same warnings and caveats that apply to the latter.
+</p>
+
+<p>
+If the remote Actor System is still running and communicating with
+the local Actor System then it will automatically re-register
+itself despite having been de-registered by this method.
+</p>
+
+<p>
+If there is no remote Actor System registered for the specified
+address, or if the address cannot be successfully recognized by the
+local Actor System, this method will simply return with no effect.
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-python">     <span class="org-keyword">self</span>.preRegisterRemoteSystem(<span class="org-keyword">self</span>, remoteSystemAddress)
+</pre>
+</div>
+
+<p>
+The <code>remoteSystemAddress</code> parameter is specified in the same manner
+as for the <code>preRegisterRemoteSystem()</code> and is usually the same
+value that was originall passed to the latter method.
+</p>
+</div>
+</div>
+
+<div id="outline-container-sec-5-15" class="outline-3">
+<h3 id="sec-5-15"><span class="section-number-3">5.15</span> ActorTypeDispatcher</h3>
+<div class="outline-text-3" id="text-5-15">
 <p>
 An alternative base class for creating Actors is the
 <code>ActorTypeDispatcher</code> which extends the <code>Actor</code> base class.  The
@@ -2113,9 +2255,9 @@ Did not recognize the message type: &lt;type 'float'&gt;
 </pre>
 </div>
 
-<div id="outline-container-sec-5-13-1" class="outline-4">
-<h4 id="sec-5-13-1"><span class="section-number-4">5.13.1</span> Type Handling Deferral</h4>
-<div class="outline-text-4" id="text-5-13-1">
+<div id="outline-container-sec-5-15-1" class="outline-4">
+<h4 id="sec-5-15-1"><span class="section-number-4">5.15.1</span> Type Handling Deferral</h4>
+<div class="outline-text-4" id="text-5-15-1">
 <p>
 In a normal Python subclass, it is possible for a method in the
 subclass to call a method in the base class by using the <code>super()</code>
@@ -2643,6 +2785,12 @@ zipfile that can be used in subsequent <a href="#sec-5-3">createActor</a> calls 
 instantiate Actors found in that sourcefile.
 </p>
 
+<p>
+There must be a valid Source Authority registered (via the
+<a href="#sec-5-8">registerSourceAuthority</a> method) to validate the loaded source; by
+default this method does nothing if no Source Authority has been
+loaded.  See <a href="#sec-6-9-2">Security Considerations</a> for more information.
+</p>
 
 <p>
 Although a plaintext zipfile may be loaded, it is highly recommended
@@ -2715,6 +2863,10 @@ of <code>importlib</code>; use " <code>import thespian.importlib as importlib</c
 instead of just " <code>import importlib</code> " in Actor sources that
 will be loaded via <code>loadActorSource()</code>.
 </li>
+
+<li>Loaded sources should expect that <code>__file__</code> or other internals
+can be set to None.
+</li>
 </ol>
 </div>
 </div>
@@ -2770,14 +2922,22 @@ the manner in which the Source Authority is established.
 
 <p>
 By default, at Actor System startup time, there is no Source
-Authority, thus allowing any <code>loadActorSource()</code> input to be loaded
-and utilized.  This is convenient for debugging and simple local
-applications, but not recommended for production deployments.
-Typical best practices for production initialization of a Thespian
-environment are to startup the ActorSystem and then immediately load
-a Source Authority that will validate all subsequent sources loaded
-into that system.
+Authority.  When there is no Source Authority, any
+<code>loadActorSource()</code> input is ignored.  This ensures that all
+Thespian systems are secure by default.  For debugging and simple
+local applications this may not be convenient; in these situations,
+a Source Authority similar to the following may be used to
+automatically accept and enable all loaded sources:
 </p>
+
+<pre class="example">
+from thespian.actors import *
+class SimpleSourceAuthority(ActorTypeDispatcher):
+    def receiveMsg_str(self, msg, sender):
+        self.registerSourceAuthority()
+    def receiveMsg_ValidateSource(self, msg, sender):
+        self.send(sender, ValidatedSource(msg.sourceHash, msg.sourceData))
+</pre>
 
 <p>
 Note that it is possible to disable the <code>loadActorSource()</code>
@@ -3576,9 +3736,62 @@ portnum is the <b>Admin Port</b> upon which that Admin listens; if
 not specified (no colon is found) then the port num defaults to
 the <b>Admin Port</b> setting.
 </dd>
+
+<dt> <b>Admin Routing</b> </dt><dd>if this capability is present and has a true
+value, this indicates that all Actors in remote Actor Systems
+must send all messages to local Actors through the Admin.  This
+is commonly used where the Actor System is running on a host
+node that has a firewall that only allows the Admin Port to
+have network ingress permissions.  
+
+<p>
+Note that this capability has no effect on the way in which the
+Actors themselves are implemented; it only changes the way that
+the Actor System routes messages.
+</p>
+</dd>
+
+<dt> <b>Outbound Only</b> </dt><dd>if this capability is present and has a true
+value then it means that this Actor System (and all of the
+Actors within it) can only initiate outbound connections.
+Inbound connections are not supported.
+
+<p>
+This configuration may be needed for a system that is behind a
+firewall with very strict ingress rules but looser egress
+rules.
+</p>
+
+<p>
+Specifying this capability as True will implicitly force "Admin
+Routing" to be true as well, regardless of the user setting.
+This is because it is impractical for this system to maintain
+outbound connections to all possible remote Actors, so it will
+maintain a persistent connection to other Admins only and
+forward packets via them using the "Admin Routing"
+functionality.
+</p>
+
+<p>
+In addition, this system will not be able to join in
+conventions with other systems unless the other systems are
+declared via the <code>preRegisterRemoteSystem()</code> call, since they
+cannot initiate an inbound registration to this system.
+</p>
+
+<p>
+Remote systems may encounter periodic delays in message
+forwarding messages to an Outbound Only system because they
+must await a connection establishment from that system (which
+may not occur until the next Convention Registration time
+period has elapsed).  (This mode also requires socket re-use by
+the TCP transport, which is the normal operational mode).
+</p>
+</dd>
 </dl>
 </div>
 </div>
+
 
 
 <div id="outline-container-sec-8-5" class="outline-3">
@@ -3801,7 +4014,7 @@ difference will remain unaddressed.
 </div></div>
 <div id="postamble" class="status">
 <p class="author">Author: Kevin Quick &lt;kquick@godaddy.com&gt;</p>
-<p class="date">Created: 2015-10-19 Mon 05:49</p>
+<p class="date">Created: 2015-12-16 Wed 01:23</p>
 <p class="creator"><a href="http://www.gnu.org/software/emacs/">Emacs</a> 24.5.2 (<a href="http://orgmode.org">Org</a> mode 8.2.10)</p>
 <p class="validation"><a href="http://validator.w3.org/check?uri=referer">Validate</a></p>
 </div>
