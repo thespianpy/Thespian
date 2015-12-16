@@ -105,7 +105,7 @@ class TestASimpleSystem(ActorSystemTestCase):
         aS.tell(aa, 'Sleep')
         time.sleep(0.1)
 
-        rsp = aS.ask(aa, Thespian_StatusReq())
+        rsp = aS.ask(aa, Thespian_StatusReq(), 3)
         formatStatus(rsp)
         self.assertIsInstance(rsp, Thespian_ActorStatus)
         self.assertEqual(len(rsp.pendingMessages), 0)
