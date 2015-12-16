@@ -388,7 +388,7 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
         # Disable Nagle to transmit headers and acks asap; our sends are usually small
         intent.socket.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
 
-        intent.socket.settimeout(timePeriodSeconds(intent.delay()))
+        #intent.socket.settimeout(timePeriodSeconds(intent.delay()))
         try:
             intent.socket.connect(*intent.targetAddr.addressDetails.connectArgs)
         except socket.error as err:
