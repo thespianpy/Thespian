@@ -264,44 +264,48 @@ class ActorSystemBase:
             if self.procLimit and numsends > self.procLimit:
                 raise RuntimeError('Too many sends')
             self._realizeWakeups()
-            ps = self._pendingSends.pop(0)
-            if ps.attempts > 4:
-                continue  # discard message if PoisonMessage deliveries are also failing
-            elif ps.attempts > 2:
-                if isinstance(ps.msg, PoisonMessage):
-                    continue # no recursion on Poison
-                rcvr, sndr, msg = ps.sender, ps.toActor, PoisonMessage(ps.msg)
-            else:
-                rcvr, sndr, msg = ps.toActor, ps.sender, ps.msg
-            tgt = self.actorRegistry.get(rcvr.actorAddressString, None) or \
-                  self.actorRegistry.get('DeadLetterBox', None)
-            if tgt:
-                if rcvr == self.system.systemAddress and isinstance(msg, ValidatedSource):
-                    self._loadValidatedActorSource(msg.sourceHash, msg.sourceZip)
-                elif tgt.instance:
-                    if isinstance(msg, Thespian_StatusReq):
-                        self._generateStatusResponse(msg, tgt, sndr)
-                    else:
-                        killActor = isinstance(ps.msg, ActorExitRequest)
-                        self._callActorWithMessage(tgt, ps, msg, sndr)
-                        if killActor:
-                            self._killActor(tgt, ps)
-                else:
-                    # This is a Dead Actor and there is no
-                    # DeadLetterHandler.  Just discard the message
-                    pass
-            else:
-                # Target Actor no longer exists.  Handle internal
-                # messages and discard all others
-                pass
+            self._runSingleSend(self._pendingSends.pop(0))
 
-            if isinstance(ps.msg, ChildActorExited):
-                deadAddr = ps.msg.childAddress.actorAddressString
-                childref = self.actorRegistry.get(deadAddr, None)
-                if childref and not childref.instance:
-                    # Not replaced, so complete removal, including children
-                    childref.shutdown()
-                    self.actorRegistry[deadAddr] = None
+
+    def _runSingleSend(self, ps):
+        if ps.attempts > 4:
+            return  # discard message if PoisonMessage deliveries are also failing
+        elif ps.attempts > 2:
+            if isinstance(ps.msg, PoisonMessage):
+                return # no recursion on Poison
+            rcvr, sndr, msg = ps.sender, ps.toActor, PoisonMessage(ps.msg)
+        else:
+            rcvr, sndr, msg = ps.toActor, ps.sender, ps.msg
+
+        tgt = self.actorRegistry.get(rcvr.actorAddressString, None) or \
+              self.actorRegistry.get('DeadLetterBox', None)
+        if tgt:
+            if rcvr == self.system.systemAddress and isinstance(msg, ValidatedSource):
+                self._loadValidatedActorSource(msg.sourceHash, msg.sourceZip)
+            elif tgt.instance:
+                if isinstance(msg, Thespian_StatusReq):
+                    self._generateStatusResponse(msg, tgt, sndr)
+                else:
+                    killActor = isinstance(ps.msg, ActorExitRequest)
+                    self._callActorWithMessage(tgt, ps, msg, sndr)
+                    if killActor:
+                        self._killActor(tgt, ps)
+            else:
+                # This is a Dead Actor and there is no
+                # DeadLetterHandler.  Just discard the message
+                pass
+        else:
+            # Target Actor no longer exists.  Handle internal
+            # messages and discard all others
+            pass
+
+        if isinstance(ps.msg, ChildActorExited):
+            deadAddr = ps.msg.childAddress.actorAddressString
+            childref = self.actorRegistry.get(deadAddr, None)
+            if childref and not childref.instance:
+                # Not replaced, so complete removal, including children
+                childref.shutdown()
+                self.actorRegistry[deadAddr] = None
 
 
     def _callActorWithMessage(self, tgt, ps, msg, sndr):
