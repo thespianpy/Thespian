@@ -85,8 +85,6 @@ class RestartParent(Parent):
 
 
 class NoRestartParent(Parent):
-    def __init__(self, *args, **kw):
-        super(NoRestartParent, self).__init__(*args, **kw)
     def receiveMessage(self, msg, sender):
         if isinstance(msg, ChildActorExited):
             pass # ignore this... child not restarted
