@@ -54,9 +54,9 @@ def startupASLogger(addrOfStarter, logEndpoint, logDefs,
         dictConfig(logDefs)
     else:
         logging.basicConfig()
-    # Disable thesplog from within the logging process to try to avoid
-    # recursive logging loops.
-    thesplog_control(logging.WARNING, False, False)
+    # Disable thesplog from within the logging process (by setting the
+    # logfile size to zero) to try to avoid recursive logging loops.
+    thesplog_control(logging.WARNING, False, 0)
     #logging.info('ActorSystem Logging Initialized')
     transport = transportClass(logEndpoint)
     setProcName('logger', transport.myAddress)
