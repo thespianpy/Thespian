@@ -107,6 +107,7 @@ LISTEN_DEPTH=100  # max # of listens to sign up for at a time
 MAX_INCOMING_SOCKET_PERIOD=timedelta(minutes=7)  # max time to hold open an incoming socket
 MAX_CONSECUTIVE_READ_FAILURES = 20
 MAX_IDLE_SOCKET_PERIOD=timedelta(minutes=20) # close idle sockets after this amount of time
+REUSE_SOCKETS = True  # if true, keep sockets open for multiple messages
 
 
 class TCPEndpoint(TransportInit__Base):
@@ -237,8 +238,7 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
         self._transmitIntents = []
         self._incomingSockets = []
         self._incomingEnvelopes = []
-        reuse_sockets = True
-        if reuse_sockets:
+        if REUSE_SOCKETS:
             self._openSockets = {}  # key = remote address, value=socket
 
 
