@@ -384,7 +384,7 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
                True and \
                (intent.targetAddr.addressDetails.routing[0] != self._adminAddr or \
                (intent.targetAddr.addressDetails.routing[0] is None and \
-                intent.targetAddr.addressDtails.routing[1] != self._adminAddr)):
+                intent.targetAddr.addressDetails.routing[1] != self._adminAddr)):
                 intent.changeMessage(
                     ForwardMessage(intent.message,
                                    intent.targetAddr,
