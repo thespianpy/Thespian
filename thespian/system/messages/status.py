@@ -105,9 +105,9 @@ def _common_formatStatus(tofd, response, childActorTag, showAddress=str):
     if response.miscKeyVals:
         miscKeys = list(response.miscKeyVals.keys())
         miscKeys.sort()
-        maxlen = max([len(K) for K in miscKeys])
+        maxValLen = max(map(len, map(str, response.miscKeyVals.values())))
         for K in miscKeys:
-            tofd.write('  |> %%%ds: %%%%s\n' % maxlen % K % str(response.miscKeyVals[K]))
+            tofd.write('  |> %%%ds - %%s\n'%maxValLen%(str(response.miscKeyVals[K]), K))
 
 
 def formatStatus(response, showAddress=str, tofd=None):
