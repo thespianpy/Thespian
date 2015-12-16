@@ -44,34 +44,57 @@ class TestRegistration(unittest.TestCase):
     scope = 'func'
 
     def setUp(self):
+        self.asys1 = None
+        self.asys2 = None
+        self.baseport = 0
+
+    def startup(self):
         # asys1 is the main Actor System the tests will interact with
         self.asys1 = ActorSystem('multiprocTCPBase',
                                  capabilities={'dog':'food',
-                                               'Admin Port': 11192},
+                                               'Admin Port': 11192 + self.baseport},
                                  logDefs = simpleActorTestLogging(),
                                  transientUnique = True)
         # asys2 is a different Actor System that is initially
         # independent, but can support a Horse Actor.
         self.asys2 = ActorSystem('multiprocTCPBase',
                                  capabilities={'barn': 'oats',
-                                               'Admin Port': 11193},
+                                               'Admin Port': 11193 + self.baseport},
                                  logDefs = simpleActorTestLogging(),
                                  transientUnique = True)
 
+
     def tearDown(self):
-        self.asys1.shutdown()
+        # n.b. shutdown the second actor system first:
+        #   1. Some tests ask asys1 to create an actor
+        #   2. That actor is actually supported by asys2
+        #   3. There is an external port the tester uses for each asys
+        #   4. When asys2 is shutdown, it will attempt to notify the
+        #      parent of the actor that the actor is dead
+        #   5. This parent is the external port for asys1.
+        #   6. If asys1 is shutdown first, then asys2 must time out
+        #      on the transmit attempt (usually 5 minutes) before
+        #      it can exit.
+        #   7. If the test is re-run within this 5 minute period, it will fail
+        #      because the old asys2 is still existing but in shutdown state
+        #      (and will therefore rightfully refuse new actions).
+        # By shutting down asys2 first, the parent notification can be
+        # performed and subsequent runs don't encounter the lingering
+        # asys2.
         self.asys2.shutdown()
+        self.asys1.shutdown()
 
     def test_Registration(self):
+        self.startup()
         regActor = self.asys1.createActor(PreRegistrationActor)
         self.assertRaises(NoCompatibleSystemForActor, self.asys1.createActor, Horse)
         self.assertRaises(NoCompatibleSystemForActor, self.asys1.createActor, Cow)
 
-        rsp = self.asys1.ask(regActor, ("Register", "127.0.0.1:11193",
+        rsp = self.asys1.ask(regActor, ("Register", "127.0.0.1:%d"%(11193+self.baseport),
                                         {'moo': True}),
                              timedelta(seconds=2))
-        showAdminStatus(self.asys1, '127.0.0.1:11192')
-        showAdminStatus(self.asys2, '127.0.0.1:11193')
+        showAdminStatus(self.asys1, '127.0.0.1:%d'%(11192+self.baseport))
+        showAdminStatus(self.asys2, '127.0.0.1:%d'%(11193+self.baseport))
         horse = self.asys1.createActor(Horse)
         self.assertEqual(self.asys1.ask(horse, 'bor', 2), 'Neigh: bor')
 
@@ -84,6 +107,8 @@ class TestRegistration(unittest.TestCase):
 
 
     def testBadRegistrationAddress(self):
+        self.baseport = 3
+        self.startup()
         regActor = ActorSystem().createActor(PreRegistrationActor)
         rsp = ActorSystem().ask(regActor, ("RegisterNOT", "10.101.10:9999",
                                            {'cat': 'meow'}),
@@ -91,10 +116,12 @@ class TestRegistration(unittest.TestCase):
         self.assertEqual(rsp, "OK")
 
     def test_deRegistration(self):
+        self.baseport = 6
+        self.startup()
         regActor = self.asys1.createActor(PreRegistrationActor)
         self.assertRaises(NoCompatibleSystemForActor, self.asys1.createActor, Horse)
 
-        rsp = self.asys1.ask(regActor, ("Register", "127.0.0.1:11193",
+        rsp = self.asys1.ask(regActor, ("Register", "127.0.0.1:%d"%(11193+self.baseport),
                                         {'barn': 'oats'}),
                              timedelta(seconds=2))
         self.assertEqual(rsp, "OK")
@@ -103,11 +130,11 @@ class TestRegistration(unittest.TestCase):
         self.assertEqual(self.asys1.ask(horse, 'bor', 2), 'Neigh: bor')
         self.assertEqual(self.asys2.ask(horse, 'sound', 2), 'Neigh: sound')
 
-        rsp = self.asys1.ask(regActor, ("Deregister", "127.0.0.1:11193"),
+        rsp = self.asys1.ask(regActor, ("Deregister", "127.0.0.1:%d"%(11193+self.baseport)),
                              timedelta(seconds=2))
         self.assertEqual(rsp, "OK")
-        showAdminStatus(self.asys1, '127.0.0.1:11192')
-        showAdminStatus(self.asys2, '127.0.0.1:11193')
+        showAdminStatus(self.asys1, '127.0.0.1:%d'%(11192+self.baseport))
+        showAdminStatus(self.asys2, '127.0.0.1:%d'%(11193+self.baseport))
 
         # Unfortunately, this is harder than expected, because often
         # there ends up being a dual-registration: one with the
@@ -119,11 +146,13 @@ class TestRegistration(unittest.TestCase):
         self.assertEqual(self.asys2.ask(horse, 'still running', 2), 'Neigh: still running')
 
     def test_publicAddrDeRegistration(self):
+        self.baseport = 9
+        self.startup()
         regActor = self.asys1.createActor(PreRegistrationActor)
         regActorIP = str(regActor).split('|')[1].split(':')[0]  # brittle
         self.assertRaises(NoCompatibleSystemForActor, self.asys1.createActor, Horse)
 
-        rsp = self.asys1.ask(regActor, ("Register", regActorIP+":11193",
+        rsp = self.asys1.ask(regActor, ("Register", regActorIP+":%d"%(11193+self.baseport),
                                         {'barn': 'oats'}),
                              timedelta(seconds=2))
         self.assertEqual(rsp, "OK")
@@ -132,11 +161,11 @@ class TestRegistration(unittest.TestCase):
         self.assertEqual(self.asys1.ask(horse, 'bor', 2), 'Neigh: bor')
         self.assertEqual(self.asys2.ask(horse, 'sound', 2), 'Neigh: sound')
 
-        rsp = self.asys1.ask(regActor, ("Deregister", regActorIP+":11193"),
+        rsp = self.asys1.ask(regActor, ("Deregister", regActorIP+":%d"%(11193+self.baseport)),
                              timedelta(seconds=2))
         self.assertEqual(rsp, "OK")
-        showAdminStatus(self.asys1, regActorIP+':11192')
-        showAdminStatus(self.asys2, regActorIP+':11193')
+        showAdminStatus(self.asys1, regActorIP+':%d'%(11192+self.baseport))
+        showAdminStatus(self.asys2, regActorIP+':%d'%(11193+self.baseport))
 
         self.assertRaises(NoCompatibleSystemForActor, self.asys1.createActor, Horse)
         self.assertEqual(self.asys2.ask(horse, 'still running', 2), 'Neigh: still running')
