@@ -11,6 +11,9 @@ even between processes on separate systems.
 
 """
 
+DEFAULT_ADMIN_PORT = 1900
+
+
 # n.b. The core of this is very similar to asyncore/asynchat.
 # Unfortunately, those modules are deprecated in Python 3.4 in favor
 # of asyncio, which is powerful... and complex.  Thespian aims to
@@ -176,7 +179,7 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
                 externalAddr = convAddr.split(':')
                 externalAddr = externalAddr[0], int(externalAddr[1])
             else:
-                externalAddr          = (convAddr, capabilities.get('Admin Port', 1900))
+                externalAddr          = (convAddr, capabilities.get('Admin Port', DEFAULT_ADMIN_PORT))
             templateAddr          = ActorAddress(TCPv4ActorAddress(None, 0, external = externalAddr))
             self._adminAddr       = self.getAdminAddr(capabilities)
             self._parentAddr      = None
@@ -228,9 +231,9 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
 
     @staticmethod
     def getAdminAddr(capabilities):
-        return ActorAddress(TCPv4ActorAddress(None, capabilities.get('Admin Port', 1900),
+        return ActorAddress(TCPv4ActorAddress(None, capabilities.get('Admin Port', DEFAULT_ADMIN_PORT),
                                               external = (TCPTransport.getConventionAddress(capabilities) or
-                                                          ('', capabilities.get('Admin Port', 1900)) or
+                                                          ('', capabilities.get('Admin Port', DEFAULT_ADMIN_PORT)) or
                                                           True)))
 
     @staticmethod
@@ -240,7 +243,7 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
         else:
             addrparts = addrspec.split(':')
         if 1 == len(addrparts):
-            return ActorAddress(TCPv4ActorAddress(addrparts[0], 1900, external=True))
+            return ActorAddress(TCPv4ActorAddress(addrparts[0], DEFAULT_ADMIN_PORT, external=True))
         return ActorAddress(TCPv4ActorAddress(addrparts[0], addrparts[1], external=True))
 
     @staticmethod
