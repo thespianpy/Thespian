@@ -206,10 +206,10 @@ class TransmitIntent(PauseWithBackoff):
         return True
 
     def timeToRetry(self, socketAvail=False):
-        if hasattr(self, '_retryTime'):
-            return self._retryTime <= datetime.now()
         if socketAvail and hasattr(self, '_awaitingTXSlot'):
             delattr(self, '_awaitingTXSlot')
+        if hasattr(self, '_retryTime'):
+            return self._retryTime <= datetime.now()
         return socketAvail
 
     def delay(self):
