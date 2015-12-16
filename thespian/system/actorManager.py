@@ -36,7 +36,9 @@ class ActorManager(systemCommonBase):
         self._actorClass = childClass  # nb. this may be a string, and sourceHash is not loaded yet
         self._childReqs  = childRequirements
         self.actorInst   = None
-        thesplog('Starting Actor %s at %s', childClass, self.transport.myAddress,
+        thesplog('Starting Actor %s at %s (parent %s, admin %s)',
+                 childClass, self.transport.myAddress,
+                 self._parentAddr, adminAddr,
                  level = logging.INFO, primary=True)
 
 
