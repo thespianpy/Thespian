@@ -374,11 +374,13 @@ class ActorManager(systemCommonBase):
             TransmitIntent(self._adminAddr,
                            ConventionRegister(
                                self.transport.getAddressFromString(remoteAddress),
-                               remoteCapabilities)))
+                               remoteCapabilities,
+                               preRegister=True)))
 
     def deRegisterRemoteSystem(self, remoteAddress):
         from thespian.system.messages.convention import ConventionDeRegister
         self._send_intent(
             TransmitIntent(self._adminAddr,
                            ConventionDeRegister(
-                               self.transport.getAddressFromString(remoteAddress))))
+                               self.transport.getAddressFromString(remoteAddress),
+                               preRegistered=True)))

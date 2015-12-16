@@ -12,19 +12,26 @@ from thespian.actors import ActorSystemMessage
 
 class ConventionRegister(ActorSystemMessage):
     "Message sent between ActorSystems to join the systems together in a Convention."
-    def __init__(self, adminAddress, capabilities, firstTime=False):
+    def __init__(self, adminAddress, capabilities, firstTime=False, preRegister=False):
         '''firstTime: this is my first registration: I am a new remote system.
                       Anything you thought you knew about me might be wrong.'''
         self.adminAddress = adminAddress
         self.capabilities = capabilities
         self.firstTime = firstTime
+        self.preRegister = preRegister  # n.b. added in 2.5.0; use getattr
 
 
 class ConventionDeRegister(ActorSystemMessage):
     "Message sent between ActorSystems to exit a previously joined Convention."
-    def __init__(self, adminAddress):
+    def __init__(self, adminAddress, preRegistered=False):
         self.adminAddress = adminAddress
+        self.preRegistered = preRegistered  # n.b. added in 2.5.0; use getattr
 
+
+class ConventionInvite(ActorSystemMessage):
+    """Message sent periodically to preRegistered remote systems inviting
+       them to send a ConventionRegister message back."""
+    pass
 
 class NotifyOnSystemRegistration(ActorSystemMessage):
     """Message sent to the Admin to register or de-register the specified

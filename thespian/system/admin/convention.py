@@ -127,6 +127,11 @@ class HysteresisDelaySender(object):
 
 
 
+class PreRegistration(object):
+    def __init__(self):
+        self.pingValid          = ExpiryTime(timedelta(seconds=0))
+        self.pingPending        = False
+
 
 class ConventionMemberData(object):
     def __init__(self, address, capabilities):
@@ -135,7 +140,23 @@ class ConventionMemberData(object):
         self.registryValid      = ExpiryTime(CONVENTION_REREGISTRATION_PERIOD *
                                              CONVENTION_REGISTRATION_MISS_MAX)
         self.hasRemoteActors    = []  # (localParent, remoteActor) addresses created remotely
-        self.lastMessaged       = None # datetime of access; use with CONVENTION_HYSTERESIS_PERIOD
+        #self.lastMessaged       = None # datetime of access; use with CONVENTION_HYSTERESIS_PERIOD
+
+        # preRegistered is not None if the ConventionRegister has the
+        # preRegister flag set.  This indicates a call from
+        # preRegisterRemoteSystem.  The pingValid is only used for
+        # preRegistered systems and is used to determine how long an
+        # active check of the preRegistered remote is valid.  If
+        # pingValid is expired, the local attempts to send a
+        # QueryExists message (which will retry) and a QueryAck will
+        # reset pingValid to another CONVENTION_REGISTRATION_PERIOD.
+        # The pingPending is true while the QueryExists is pending and
+        # will suppress additional pingPending messages.  A success or
+        # failure completion of a QueryExists message will reset
+        # pingPending to false.  Note that pinging occurs continually
+        # for a preRegistered remote, regardless of whether or not its
+        # Convention membership is currently valid.
+        self.preRegistered      = None   # or PreRegistration object
     def createdActor(self, localParentAddress, newActorAddress):
         entry = localParentAddress, newActorAddress
         if entry not in self.hasRemoteActors:
@@ -232,6 +253,11 @@ class ConventioneerAdmin(GlobalNamesAdmin):
         return self._conventionAddress is None or self._conventionAddress == self.myAddress
 
 
+    def h_ConventionInvite(self, envelope):
+        self._conventionAddress = envelope.sender
+        self.setupConvention()
+
+
     def h_ConventionRegister(self, envelope):
         if self.isShuttingDown(): return
         self._sCBStats.inc('Admin Handle Convention Registration')
@@ -249,6 +275,13 @@ class ConventioneerAdmin(GlobalNamesAdmin):
                      registrant,
                      level=logging.WARNING)
             return True
+        if getattr(envelope.message, 'preRegister', False):  # getattr used; see definition
+            preReg = PreRegistration()  # will attempt registration immediately
+        else:
+            preReg = (registrant.actorAddressString in self._conventionMembers and
+                      self._conventionMembers[registrant.actorAddressString].preRegistered)
+            if preReg:
+                preReg.pingValid = ExpiryTime(CONVENTION_REREGISTRATION_PERIOD)
         #erase our knowledge of actors associated with potential former instance of this system
         if envelope.message.firstTime:
             self._remoteSystemCleanup(registrant)
@@ -257,6 +290,7 @@ class ConventioneerAdmin(GlobalNamesAdmin):
         newReg = registrant.actorAddressString not in self._conventionMembers
         self._conventionMembers[registrant.actorAddressString] = \
                 ConventionMemberData(registrant, envelope.message.capabilities)
+        self._conventionMembers[registrant.actorAddressString].preRegistered = preReg
         if self.isConventionLeader():
 
             if newReg:
@@ -293,6 +327,13 @@ class ConventioneerAdmin(GlobalNamesAdmin):
                      remoteAdmin,
                      level=logging.WARNING)
             return True
+        if getattr(envelope.message, 'preRegistered', False): # see definition for getattr use
+            if remoteAdmin.actorAddressString in self._conventionMembers:
+                self._conventionMembers[remoteAdmin.actorAddressString].preRegistered = None
+                # Let normal timeout process complete the
+                # deregistration; conversly, if the remote is still
+                # active don't prematurely remove it.
+                return True
         self._remoteSystemCleanup(remoteAdmin)
         return True
 
@@ -345,7 +386,17 @@ class ConventioneerAdmin(GlobalNamesAdmin):
                 # is expected that Actors can handle this.
 
             # Remove remote system from conventionMembers
-            del self._conventionMembers[registrant.actorAddressString]
+            if not cmr.preRegistered:
+                del self._conventionMembers[registrant.actorAddressString]
+            else:
+                # This conventionMember needs to stay because the
+                # current system needs to continue issuing
+                # registration pings.  By setting the registryValid
+                # expiration to forever, this member won't re-time-out
+                # and will therefore be otherwise ignored... until it
+                # registers again at which point the membership will
+                # be updated with new settings.
+                cmr.registryValid = ExpiryTime(None)
 
         if registrant == self._conventionAddress:
             # Convention Leader has exited.  Do NOT set
@@ -378,6 +429,26 @@ class ConventioneerAdmin(GlobalNamesAdmin):
             if self._conventionAddress and self._conventionRegistration.expired():
                 self.setupConvention()
 
+        for each in self._conventionMembers:
+            member = self._conventionMembers[each]
+            if member.preRegistered and \
+               member.preRegistered.pingValid.expired() and \
+               not member.preRegistered.pingPending:
+                member.preRegistered.pingPending = True
+                member.preRegistered.pingValid = ExpiryTime(CONVENTION_RESTART_PERIOD
+                                                            if member.registryValid.expired()
+                                                            else CONVENTION_REREGISTRATION_PERIOD)
+                self._hysteresisSender.sendWithHysteresis(
+                    TransmitIntent(member.remoteAddress, ConventionInvite(),
+                                   onSuccess = self._preRegQueryNotPending,
+                                   onError = self._preRegQueryNotPending))
+
+
+    def _preRegQueryNotPending(self, result, finishedIntent):
+        remoteAddr = finishedIntent.targetAddr
+        if remoteAddr.actorAddressString in self._conventionMembers:
+            if self._conventionMembers[remoteAddr.actorAddressString].preRegistered:
+                self._conventionMembers[remoteAddr.actorAddressString].preRegistered.pingPending = False
 
     def run(self):
         try:
@@ -389,6 +460,10 @@ class ConventioneerAdmin(GlobalNamesAdmin):
                             ExpiryTime(None) if self._hysteresisSender.delay.expired() else
                             self._hysteresisSender.delay
                 )
+                # n.b. delay does not account for soon-to-expire
+                # pingValids, but since delay will not be longer than
+                # a CONVENTION_REREGISTRATION_PERIOD, the worst case
+                # is a doubling of a pingValid period (which should be fine).
                 self.transport.run(self.handleIncoming, delay.remaining())
                 self._checkConvention()
                 self._hysteresisSender.checkSends()
@@ -448,6 +523,9 @@ class ConventioneerAdmin(GlobalNamesAdmin):
         return allowed.lower() == 'yes' or \
             (allowed == 'LeaderOnly' and
              pendingActorEnvelope.sender == self._conventionAddress)
+
+
+    # ---- Remote Actor interactions ----------------------------------------------
 
 
     def h_PendingActor(self, envelope):
