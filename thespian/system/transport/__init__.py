@@ -190,20 +190,32 @@ class TransmitIntent(PauseWithBackoff):
     def addCallback(self, onSuccess=None, onFailure=None):
         self._callbackTo = ResultCallback(onSuccess, onFailure, self._callbackTo)
 
-    def retry(self):
+    def awaitingTXSlot(self):
+        self._awaitingTXSlot = True
+
+
+    def retry(self, immediately=False):
         if self._attempts > MAX_TRANSMIT_RETRIES:
             return False
         if self._quitTime < datetime.now():
             return False
         self._attempts += 1
-        self._retryTime = datetime.now() + (self._attempts * self.transmit_retry_period)
+        self._retryTime = datetime.now()
+        if not immediately:
+            self._retryTime += self._attempts * self.transmit_retry_period
         return True
 
-    def timeToRetry(self):
-        return hasattr(self, '_retryTime') and self._retryTime <= datetime.now()
+    def timeToRetry(self, socketAvail=False):
+        if hasattr(self, '_retryTime'):
+            return self._retryTime <= datetime.now()
+        if socketAvail and hasattr(self, '_awaitingTXSlot'):
+            delattr(self, '_awaitingTXSlot')
+        return socketAvail
 
     def delay(self):
         now = datetime.now()
+        if getattr(self, '_awaitingTXSlot', False):
+            return max(timedelta(seconds=0), self._quitTime - now)
         return max(timedelta(seconds=0),
                    min(self._quitTime - now,
                        getattr(self, '_retryTime', self._quitTime) - now,
