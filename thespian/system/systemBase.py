@@ -150,8 +150,15 @@ class systemBase(object):
                                         globalName=globalName,
                                         sourceHash=sourceHash),
                            onError = self._newPrimarySendFailed))
-        response = self.transport.run(self._newActorCallback,
-                                      MAX_CHILD_ACTOR_CREATE_DELAY)
+        endwait = datetime.now() + MAX_CHILD_ACTOR_CREATE_DELAY
+        self.transport.run(self._newActorCallback,
+                           MAX_CHILD_ACTOR_CREATE_DELAY)
+        # Other items might abort the transport run... like transmit
+        # failures on a previous ask() that itself already timed out.
+        while self._newActorAddress is None and not self._pcrFAILED and datetime.now() < endwait:
+            self.transport.run(self._newActorCallback,
+                               MAX_CHILD_ACTOR_CREATE_DELAY)
+
         if self._pcrFAILED:
             if self._pcrFAILED == PendingActorResponse.ERROR_Invalid_SourceHash:
                 raise InvalidActorSourceHash(sourceHash)
