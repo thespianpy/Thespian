@@ -13,6 +13,7 @@ import logging.handlers
 from datetime import datetime, timedelta
 import thespian.test.helpers
 from thespian.actors import *
+import random
 from thespian.test import ActorSystemTestCase, LocallyManagedActorSystem
 from thespian.system.utilis import timePeriodSeconds
 
@@ -54,7 +55,7 @@ class LoadTester(LocallyManagedActorSystem):
 
     def prepSys(self, systemBase, logDefs=None, extraCapabilities=None):
         self.sysBase = systemBase
-        capabilities = {'Admin Port': 14335}
+        capabilities = {'Admin Port': int(random.uniform(3000, 64000))}
         if extraCapabilities: capabilities.update(extraCapabilities)
         self.setSystemBase(systemBase,
                            systemCapabilities = capabilities,
