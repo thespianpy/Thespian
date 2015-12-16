@@ -483,6 +483,18 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
                         # automatically.
                     else:
                         _safeSocketShutdown(intent.socket)
+                        # Here waiting intents need to be re-queued
+                        # since otherwise they won't run until timeout
+                        waiting, runnable = partition(lambda I: I.targetAddr == intent.targetAddr,
+                                                      self._waitingTransmits)
+                        self._waitingTransmits = waiting
+                        for R in runnable:
+                            if self._nextTransmitStep(R):
+                                if hasattr(intent, 'socket'):
+                                    thesplog('<S> waiting intent is now re-processing: %s', R.identify())
+                                    self._transmitIntents[R.socket.fileno()] = intent
+                                else:
+                                    self._waitingTransmits.append(R)
             else:
                 _safeSocketShutdown(intent.socket)
             delattr(intent, 'socket')
