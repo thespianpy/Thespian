@@ -418,48 +418,42 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
                                                           intent.message))
             return self._finishIntent(intent)
         if isinstance(intent.targetAddr.addressDetails, RoutedTCPv4ActorAddress):
-             #self.myAddress != self._adminAddr or \
-            if not isinstance(intent.message, ForwardMessage) and \
-               intent.targetAddr != self._adminAddr and \
-               True and \
-               (intent.targetAddr.addressDetails.routing[0] != self._adminAddr or \
-               (intent.targetAddr.addressDetails.routing[0] is None and \
-                intent.targetAddr.addressDetails.routing[1] != self._adminAddr)):
-                intent.changeMessage(
-                    ForwardMessage(intent.message,
-                                   intent.targetAddr,
-                                   self.myAddress,
-                                   intent.targetAddr.addressDetails.routing))
-                if intent.message.fwdTargets[0] == None:
-                    if self.myAddress == self._adminAddr:
-                        intent.message.fwdTargets = intent.message.fwdTargets[1:]
-                    else:
-                        intent.message.fwdTargets[0] = self._adminAddr
+            if not isinstance(intent.message, ForwardMessage):
+                routing = [A or self._adminAddr
+                           for A in intent.targetAddr.addressDetails.routing]
+                while routing and routing[0] == self.myAddress:
+                    routing = routing[1:]
+                if routing:
+                    if len(routing) != 1 or routing[0] != intent.targetAddr:
+                        intent.changeMessage(
+                            ForwardMessage(intent.message,
+                                           intent.targetAddr,
+                                           self.myAddress, routing))
+                        # Changing the target addr to the next relay target
+                        # for the transmit machinery, but the levels above may
+                        # process completion based on the original target
+                        # (e.g. systemCommon _checkNextTransmit), so add a
+                        # completion operation that will reset the target back
+                        # to the original (this occurs before other callbacks
+                        # because callbacks are called in reverse order of
+                        # addition).
+                        intent.addCallback(lambda r,i,ta=intent.targetAddr: i.changeTargetAddr(ta))
+                        intent.changeTargetAddr(intent.message.fwdTargets[0])
 
-                # Changing the target addr to the next relay target
-                # for the transmit machinery, but the levels above may
-                # process completion based on the original target
-                # (e.g. systemCommon _checkNextTransmit), so add a
-                # completion operation that will reset the target back
-                # to the original (this occurs before other callbacks
-                # because callbacks are called in reverse order of
-                # addition).
-                intent.addCallback(lambda r,i,ta=intent.targetAddr: i.changeTargetAddr(ta))
-                intent.changeTargetAddr(intent.message.fwdTargets[0])
-
-                try:
-                    intent.serMsg = self.serializer(intent)
-                except Exception:
-                    # The above should never throw an exception
-                    # because the core message has already been
-                    # checked and serialized and the only change is
-                    # the target address routing.  An exception
-                    # indicates that one of the routing addresses is
-                    # still local-only... which should never happen.
-                    thesplog('Exception serializing ForwardMessage wrapper'
-                             ' of %s through %s', intent.message.fwdMessage,
-                             list(map(str, intent.message.fwdTargets)))
-                    raise
+                        try:
+                            intent.serMsg = self.serializer(intent)
+                        except Exception:
+                            # The above should never throw an exception
+                            # because the core message has already been
+                            # checked and serialized and the only change is
+                            # the target address routing.  An exception
+                            # indicates that one of the routing addresses is
+                            # still local-only... which should never happen.
+                            thesplog('Exception serializing ForwardMessage wrapper'
+                                     ' of %s through %s', intent.message.fwdMessage,
+                                     list(map(str, intent.message.fwdTargets)),
+                                     level=logging.ERROR)
+                            raise
         intent.stage = self._XMITStepSendConnect
         if self._nextTransmitStep(intent):
             if hasattr(intent, 'socket'):
