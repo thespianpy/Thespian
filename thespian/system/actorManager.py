@@ -190,6 +190,8 @@ class ActorManager(systemCommonBase):
 
 
     def _shutdownActor(self, shutdownChildren=True):
+        self._exiting = True  # set exiting mode
+
         children = self.childAddresses
         if shutdownChildren and children:
             for each in children:
@@ -199,8 +201,6 @@ class ActorManager(systemCommonBase):
 
         else:
             self._sayGoodbye()
-
-        self._exiting = True  # set exiting mode
 
         if shutdownChildren and children:
             # Should wait for children to exit before this Actor exits, but drop everything else
