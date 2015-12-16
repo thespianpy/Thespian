@@ -19,7 +19,7 @@
 import logging, string, types, functools
 from datetime import datetime, timedelta
 from thespian.actors import *
-from thespian.system.utilis import actualActorClass
+from thespian.system.utilis import actualActorClass, timePeriodSeconds, toTimeDeltaOrNone
 try:
     from logging.config import dictConfig
 except ImportError:
@@ -257,14 +257,26 @@ class ActorSystemBase:
             del self._wakeUps[each]
 
 
-    def _runSends(self):
+    def _runSends(self, timeout=None):
         numsends = 0
-        while self._pendingSends:
-            numsends += 1
-            if self.procLimit and numsends > self.procLimit:
-                raise RuntimeError('Too many sends')
+        endtime = ((datetime.now() + toTimeDeltaOrNone(timeout))
+                   if timeout else None)
+        while not endtime or datetime.now() < endtime:
+            while self._pendingSends:
+                numsends += 1
+                if self.procLimit and numsends > self.procLimit:
+                    raise RuntimeError('Too many sends')
+                self._realizeWakeups()
+                self._runSingleSend(self._pendingSends.pop(0))
+            if not endtime:
+                return
+            now = datetime.now()
+            valid_wakeups = [(W-now) for W in self._wakeUps if W <= endtime]
+            if not valid_wakeups:
+                return
+            import time
+            time.sleep(max(0, timePeriodSeconds(min(valid_wakeups))))
             self._realizeWakeups()
-            self._runSingleSend(self._pendingSends.pop(0))
 
 
     def _runSingleSend(self, ps):
@@ -458,7 +470,7 @@ class ActorSystemBase:
         # check remaining time between Actor calls and return if the
         # timeout period has been exceeded, but that still wouldn't
         # allow interruption of blocked Actors.
-        self._runSends()
+        self._runSends(timeout)
         sender = self.actorRegistry['System:ExternalRequester']
         while getattr(sender.instance, 'responses', None):
             response = sender.instance.responses.pop(0)
