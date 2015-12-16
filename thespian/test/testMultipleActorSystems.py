@@ -5,6 +5,7 @@ import thespian.test.helpers
 from thespian.test import ActorSystemTestCase, simpleActorTestLogging
 from thespian.actors import *
 from multiprocessing import Process, Pipe
+from datetime import timedelta
 
 
 def wait_for_things_to_happen():
@@ -261,6 +262,12 @@ def System2(conn, base, capabilities):
     conn.close()
 
 
+class PreRegActor(ActorTypeDispatcher):
+    def receiveMsg_str(self, regaddr, sender):
+        self.preRegisterRemoteSystem(regaddr, {})
+        self.send(sender, 'Registered')
+
+
 class TestMultiProcessSystem(unittest.TestCase):
     """These tests run the primary ActorSystem locally and the System2
     Actorsystem in a separate process."""
@@ -281,12 +288,15 @@ class TestMultiProcessSystem(unittest.TestCase):
                             #'Convention Address': not specified, but is the leader anyhow
         }
         self.system1Caps.update(getattr(self, 'extra_capabilities', {}))
+        if getattr(self, 'leaderTXOnly', False):
+            self.system1Caps['Outbound Only'] = True
 
         self.system2Caps = { 'Admin Port': system2Port,
-                             'Convention Address.IPv4': ('localhost:%d'%system1Port),
                              'Humanitarian': True,
                              'Adoption': True}
         self.system2Caps.update(getattr(self, 'extra_capabilities', {}))
+        if not getattr(self, 'leaderTXOnly', False):
+            self.system2Caps['Convention Address.IPv4'] = 'localhost:%d'%system1Port
 
         self.parent_conn, child_conn = Pipe()
         self.child = Process(target=System2,
@@ -299,6 +309,13 @@ class TestMultiProcessSystem(unittest.TestCase):
                     capabilities = self.system1Caps,
                     logDefs = simpleActorTestLogging())
         sleep(0.15)  # allow System2 to start and join the Convention
+
+        if getattr(self, 'leaderTXOnly', False):
+            self.assertEqual('Registered',
+                             ActorSystem().ask(ActorSystem().createActor(PreRegActor),
+                                               'localhost:%d'%system2Port,
+                                               timedelta(seconds=3)))
+            sleep(0.25)  # allow System2 to start and join the Convention
 
     def tearDown(self):
         ActorSystem().shutdown()
@@ -510,6 +527,10 @@ class TestMultiProcessSystem(unittest.TestCase):
 
 class TestMultiProcessSystemAdminRouting(TestMultiProcessSystem):
     extra_capabilities = { 'Admin Routing': True }
+
+
+class TestMultiProcessSystemOutboundOnly(TestMultiProcessSystem):
+    leaderTXOnly = True
 
 
 class TestMPUDPSystem(TestMultiProcessSystem):

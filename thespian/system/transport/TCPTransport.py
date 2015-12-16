@@ -169,10 +169,23 @@ class TCPIncomingPersistent(TCPIncoming_Common): pass
 
 
 class RoutedTCPv4ActorAddress(TCPv4ActorAddress):
-    def __init__(self, anIPAddr, anIPPort, adminAddr, external=False):
+    def __init__(self, anIPAddr, anIPPort, adminAddr, txOnly, external=False):
         super(RoutedTCPv4ActorAddress, self).__init__(anIPAddr, anIPPort,
                                                       external=external)
-        self.routing = [adminAddr]
+        self.routing = [None, adminAddr] if txOnly else [adminAddr]
+    def __str__(self):
+        return '-'.join(['(TCP|%s:%d'%self.sockname] + list(map(str,self.routing))) + ')'
+
+
+class TXOnlyAdminTCPv4ActorAddress(TCPv4ActorAddress):
+    # Only assigned to the Admin; allows remote admins to know to wait
+    # for a connection instead of trying to initiate one.
+    def __init__(self, anIPAddr, anIPPort, external):
+        super(TXOnlyAdminTCPv4ActorAddress, self).__init__(anIPAddr, anIPPort,
+                                                           external=external)
+        self.routing = [None]  # remotes must communicate via their local admin
+
+    def __str__(self): return '(TCP|%s:%d>)'%self.sockname
 
 
 class IdleSocket(object):
@@ -197,6 +210,8 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
             # External process that is going to talk "in".  There is
             # no parent, and the child is the systemAdmin.
             capabilities, logDefs = args
+            adminRouting     = False
+            self.txOnly      = False  # communications from outside-in are always local and therefore not restricted.
             convAddr = capabilities.get('Convention Address.IPv4', '')
             if convAddr and type(convAddr) == type( (1,2) ):
                 externalAddr = convAddr
@@ -208,9 +223,8 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
             templateAddr     = ActorAddress(TCPv4ActorAddress(None, 0, external = externalAddr))
             self._adminAddr  = self.getAdminAddr(capabilities)
             self._parentAddr = None
-            adminRouting     = False
         elif isinstance(initType, TCPEndpoint):
-            instanceNum, assignedAddr, self._parentAddr, self._adminAddr, adminRouting = initType.args
+            instanceNum, assignedAddr, self._parentAddr, self._adminAddr, adminRouting, self.txOnly = initType.args
             templateAddr = assignedAddr or ActorAddress(TCPv4ActorAddress(None, 0,
                                                                           external = (self._parentAddr or
                                                                                       self._adminAddr or
@@ -236,6 +250,12 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
                 templateAddr.addressDetails.connectArgs[0][0],
                 self.socket.getsockname()[1],
                 self._adminAddr,
+                txOnly = self.txOnly,
+                external = True))
+        elif self._adminAddr == templateAddr and self.txOnly:
+            self.myAddress = ActorAddress(TXOnlyAdminTCPv4ActorAddress(
+                templateAddr.addressDetails.connectArgs[0][0],
+                self.socket.getsockname()[1],
                 external = True))
         else:
             self.myAddress = ActorAddress(TCPv4ActorAddress(
@@ -267,10 +287,12 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
 
     @staticmethod
     def getAdminAddr(capabilities):
-        return ActorAddress(TCPv4ActorAddress(None, capabilities.get('Admin Port', DEFAULT_ADMIN_PORT),
-                                              external = (TCPTransport.getConventionAddress(capabilities) or
-                                                          ('', capabilities.get('Admin Port', DEFAULT_ADMIN_PORT)) or
-                                                          True)))
+        return ActorAddress(
+            (TXOnlyAdminTCPv4ActorAddress if capabilities.get('Outbound Only', False) else TCPv4ActorAddress)
+            (None, capabilities.get('Admin Port', DEFAULT_ADMIN_PORT),
+             external = (TCPTransport.getConventionAddress(capabilities) or
+                         ('', capabilities.get('Admin Port', DEFAULT_ADMIN_PORT)) or
+                         True)))
 
     @staticmethod
     def getAddressFromString(addrspec):
@@ -347,7 +369,8 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
         return TCPEndpoint(a1, a2,
                            self.myAddress,
                            self._adminAddr,
-                           capabilities.get('Admin Routing', False))
+                           capabilities.get('Admin Routing', False) or capabilities.get('Outbound Only', False),
+                           capabilities.get('Outbound Only', False))
 
     def connectEndpoint(self, endPoint):
         pass
@@ -531,6 +554,13 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
                 intent.awaitingTXSlot()
                 return True
             # Fall through to get a new Socket for this intent
+        if isinstance(intent.targetAddr.addressDetails, TXOnlyAdminTCPv4ActorAddress) and \
+           intent.targetAddr != self._adminAddr:
+            # Cannot initiate outbound connection to this remote Admin; wait for
+            # incoming connection instead.
+            intent.backoffPause(True)  # KWQ... not really
+            intent.stage = self._XMITStepRetry
+            return self._nextTransmitStep(intent)
         intent.socket = socket.socket(*intent.targetAddr.addressDetails.socketArgs)
         intent.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         intent.socket.setblocking(0)

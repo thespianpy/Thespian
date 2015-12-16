@@ -2399,6 +2399,35 @@ The multiprocTCPBase uses the following [[*ActorSystem Capabilities][ActorSystem
        Actors themselves are implemented; it only changes the way that
        the Actor System routes messages.
 
+  * *Outbound Only* :: if this capability is present and has a true
+       value then it means that this Actor System (and all of the
+       Actors within it) can only initiate outbound connections.
+       Inbound connections are not supported.
+
+       This configuration may be needed for a system that is behind a
+       firewall with very strict ingress rules but looser egress
+       rules.
+
+       Specifying this capability as True will implicitly force "Admin
+       Routing" to be true as well, regardless of the user setting.
+       This is because it is impractical for this system to maintain
+       outbound connections to all possible remote Actors, so it will
+       maintain a persistent connection to other Admins only and
+       forward packets via them using the "Admin Routing"
+       functionality.
+
+       In addition, this system will not be able to join in
+       conventions with other systems unless the other systems are
+       declared via the ~preRegisterRemoteSystem()~ call, since they
+       cannot initiate an inbound registration to this system.
+
+       Remote systems may encounter periodic delays in message
+       forwarding messages to an Outbound Only system because they
+       must await a connection establishment from that system (which
+       may not occur until the next Convention Registration time
+       period has elapsed).  (This mode also requires socket re-use by
+       the TCP transport, which is the normal operational mode).
+
 
 
 ** multiprocUDPBase
