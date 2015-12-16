@@ -216,7 +216,7 @@ class TestSolitaryActorSystem(unittest.TestCase):
 class TestSolitaryActorSystemAdminRouting(TestSolitaryActorSystem):
     "These tests run with only the primary ActorSystem enabled."
 
-    testbase='MultiprocTCP'
+    testbase='MultiprocTCPAdminRouting'
     scope='func'
     extra_capabilities = { 'Admin Routing': True }
 
@@ -242,7 +242,7 @@ class TestSolitaryMPUDPActorSystem(TestSolitaryActorSystem):
 
 
 class TestSolitaryMPUDPActorSystemAdminRouting(TestSolitaryActorSystem):
-    testbase='MultiprocUDP'
+    testbase='MultiprocUDPAdminRouting'
     scope='func'
 
     def setUp(self):
@@ -526,10 +526,12 @@ class TestMultiProcessSystem(unittest.TestCase):
 
 
 class TestMultiProcessSystemAdminRouting(TestMultiProcessSystem):
+    testbase = 'MultiprocTCPAdminRouting'
     extra_capabilities = { 'Admin Routing': True }
 
 
 class TestMultiProcessSystemOutboundOnly(TestMultiProcessSystem):
+    testbase = 'MultiprocTCPOutboundOnly'
     leaderTXOnly = True
 
 

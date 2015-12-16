@@ -447,6 +447,7 @@ class TestManyActorSystem(unittest.TestCase):
 
 
 class TestManyActorSystemAdminRouting(TestManyActorSystem):
+    testbase = 'MultiprocTCPAdminRouting'
     extraCapabilities = { 'Admin Routing': True }
 
 
@@ -573,6 +574,7 @@ class TestConventionWatcher(unittest.TestCase):
 
 
 class TestConventionWatcherAdminRouting(TestConventionWatcher):
+    testbase = 'MultiprocTCPAdminRouting'
     extraCapabilities = { 'Admin Routing': True }
 
 
@@ -698,6 +700,7 @@ class TestConventionDeregistration(unittest.TestCase):
 
 
 class TestConventionDeregistrationAdminRouting(TestConventionDeregistration):
+    testbase = 'MultiprocTCPAdminRouting'
     extraCapabilities = { 'Admin Routing': True }
 
 
