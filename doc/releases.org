@@ -7,7 +7,7 @@
 #+LATEX_HEADER: \product{Thespian}
 #+LATEX_HEADER: \component{Python Actor System}
 #+LATEX_HEADER: \doctype{Release Notes}
-#+LATEX_HEADER: \docrev{2.4.3}{2015 Dec 1}
+#+LATEX_HEADER: \docrev{2.4.4}{2015 Dec 16}
 #+LATEX_HEADER: \docid{TheDoc-06}
 #+OPTIONS: ^:nil num:nil
 
@@ -16,6 +16,24 @@
 * 2.x
 
 ** 2.4
+
+*** 2.4.4 <2015-12-16 Wed>
+
+  * Removed TCP connect timeout that overrode non-blocking mode.
+
+  * Fixed TCP address equality comparison when zero port specification
+    compared.  A port of zero matches any other port if the address
+    portion is the same; previously this only worked for comparing to
+    known local addresses, not arbitrary addresses when the port
+    was 0.
+
+  * Fixed error text when using ~tell()~ with a bad Actor Address
+    (previously identified the wrong call).
+
+  * Ensure Actor System ~createActor()~ calls are not aborted
+    prematurely by leftover responses to previous operations
+    (e.g. timeout-unclaimed ~ask()~ responses).
+
 *** 2.4.3 <2015-11-18 Wed>
 
   * Ensured that PoisonMessage sending doesn't recurse indefinitely.
