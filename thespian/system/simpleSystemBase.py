@@ -280,19 +280,7 @@ class ActorSystemBase:
                     self._loadValidatedActorSource(msg.sourceHash, msg.sourceZip)
                 elif tgt.instance:
                     if isinstance(msg, Thespian_StatusReq):
-                        pendWake = [W for K,E in self._wakeUps.items() for T,W in E if T == tgt.address]
-                        stsresp = Thespian_ActorStatus(
-                            tgt.address,
-                            tgt.instance.__class__.__name__,
-                            tgt._system.systemAddress)
-                        stsresp.addWakeups(self._wakeUps)
-                        for C in tgt._yung: stsresp.addChild(C)
-                        for M in self._pendingSends:
-                            if M[1] == tgt.address:
-                                stsresp.addPendingMessage(self.address, M[0],M[2])
-                        self._pendingSends.append(PendingSend(tgt.address,
-                                                              stsresp,
-                                                              sndr))
+                        self._generateStatusResponse(msg, tgt, sndr)
                     else:
                         killActor = isinstance(ps.msg, ActorExitRequest)
                         try:
@@ -344,6 +332,18 @@ class ActorSystemBase:
                     childref.shutdown()
                     self.actorRegistry[deadAddr] = None
 
+
+    def _generateStatusResponse(self, msg, tgt, sndr):
+        pendWake = [W for K,E in self._wakeUps.items() for T,W in E if T == tgt.address]
+        stsresp = Thespian_ActorStatus(tgt.address,
+                                       tgt.instance.__class__.__name__,
+                                       tgt._system.systemAddress)
+        stsresp.addWakeups(self._wakeUps)
+        for C in tgt._yung: stsresp.addChild(C)
+        for M in self._pendingSends:
+            if M[1] == tgt.address:
+                stsresp.addPendingMessage(self.address, M[0],M[2])
+        self._pendingSends.append(PendingSend(tgt.address, stsresp, sndr))
 
     def _newRefAndActor(self, actorSystem, parentAddr, actorAddr, actorClass,
                         sourceHash = None, isTopLevel = False):
