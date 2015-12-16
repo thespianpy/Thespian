@@ -60,7 +60,7 @@ try:
 except ImportError:
     from zipfile import BadZipfile
     BadZipFile = BadZipfile
-from os import path as ospath
+import posixpath as ospath # because zip only uses posix notation
 import logging
 import imp
 import ast
