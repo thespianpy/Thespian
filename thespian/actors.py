@@ -460,7 +460,7 @@ class ActorSystem(object):
     def tell(self, actorAddr, msg):
         "Sends msg to the Actor at the specified address.  No response is expected or awaited."
         if not isinstance(actorAddr, ActorAddress):
-            raise ValueError('Actor ask address is not a valid ActorAddress')
+            raise ValueError('Actor tell address is not a valid ActorAddress: %s'%(type(actorAddr)))
         self._systemBase.tell(actorAddr, msg)
 
     def listen(self, timeout=None):
