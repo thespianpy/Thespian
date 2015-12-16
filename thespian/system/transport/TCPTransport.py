@@ -100,6 +100,31 @@ import pickle
 import errno
 
 
+def err_bind_inuse(err): return err == errno.EADDRINUSE
+def err_conn_refused(err): return err == errno.ECONNREFUSED
+def err_send_inprogress(err): return err in [errno.EINPROGRESS, errno.EAGAIN]
+def err_send_connrefused(err): return err == errno.ECONNREFUSED
+def err_recv_retry(err): return err == errno.EAGAIN
+def err_recv_connreset(err): return err == errno.ECONNRESET
+def err_select_retry(err): return err in [errno.EINVAL, errno.EINTER]
+try:
+    # Access these to see if the exist
+    errno.WSAEINVAL
+    errno.WSAEWOULDBLOCK
+    # They exist, so use them
+    def err_inprogress(err):
+        return err in [errno.EINPROGRESS,
+                                            errno.WSAEINVAL,
+                                            errno.WSAEWOULDBLOCK]
+    def err_recv_inprogress(err):
+        return err in [errno.EAGAIN, errno.EWOULDBLOCK,
+                                            errno.WSAEWOULDBLOCK]
+except Exception:
+    # The above constants don't exist; use Linux standards
+    def err_inprogress(err): return err == errno.EINPROGRESS
+    def err_recv_inprogress(err): return err in [errno.EAGAIN, errno.EWOULDBLOCK]
+
+
 serializer = pickle
 # json cannot be used because Messages are often structures, which cannot be converted to JSON.
 
@@ -349,7 +374,7 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
                 # no other process bound
                 return False
             except socket.error as ex:
-                if ex.errno == errno.EADDRINUSE:
+                if err_bind_inuse(ex.errno):
                     return True
                 # Some other error... not sure if that means an admin is running or not.
                 return False  # assume not
@@ -579,14 +604,14 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
             intent.socket.connect(*intent.targetAddr.addressDetails.connectArgs)
         except socket.error as err:
             # EINPROGRESS means non-blocking socket connect is in progress...
-            if err.errno != errno.EINPROGRESS:
+            if not err_inprogress(err.errno):
                 thesplog('Socket connect failure %s to %s on %s (returning %s)',
                          err, intent.targetAddr, intent.socket,
                          intent.completionCallback,
                          level=logging.WARNING)
                 return self._finishIntent(intent,
                                           SendStatus.DeadTarget \
-                                          if err.errno == errno.ECONNREFUSED \
+                                          if err_conn_refused(err.errno) \
                                           else SendStatus.Failed)
             intent.backoffPause(True)
         except Exception as ex:
@@ -606,10 +631,10 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
             #intent.socket.sendall(intent.serMsg)
             intent.amtSent += intent.socket.send(intent.serMsg[intent.amtSent:])
         except socket.error as err:
-            if err.errno in [errno.EINPROGRESS, errno.EAGAIN]:
+            if err_send_inprogress(err.errno):
                 intent.backoffPause(True)
                 return True
-            if err.errno == errno.ECONNREFUSED:
+            if err_send_connrefused(err.errno):
                 # in non-blocking, sometimes connection attempts are
                 # discovered here rather than for the actual connect
                 # request.
@@ -649,10 +674,10 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
         try:
             rcv = intent.socket.recv(intent.ackbuf.remainingAmount())
         except socket.error as err:
-            if errno.EAGAIN == err.errno:
+            if err_recv_retry(err.errno):
                 intent.backoffPause(True)
                 return True
-            if errno.ECONNRESET == err.errno:
+            if err_recv_connreset(err.errno):
                 thesplog('Remote %s closed connection before ack received at %s',
                          str(intent.targetAddr), str(self.myAddress),
                          level=logging.WARNING)
@@ -800,9 +825,7 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
                          delay, level=logging.ERROR)
                 raise
             except select.error as ex:
-                if ex.args[0] in (errno.EINVAL,  # probably a change in descriptors
-                                  errno.EINTR,
-                              ):
+                if err_select_retry(ex.args[0]): # errno.EINVAL is probably a change in descriptors
                     thesplog('select retry on %s', ex, level=logging.ERROR)
                     continue
                 raise
@@ -983,7 +1006,7 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
             inc.failCount = 0
         except socket.error as e:
             inc.failCount = getattr(inc, 'failCount', 0) + 1
-            if e.errno in [errno.EAGAIN, errno.EWOULDBLOCK] and inc.failCount < MAX_CONSECUTIVE_READ_FAILURES:
+            if err_recv_inprogress(e.errno) and inc.failCount < MAX_CONSECUTIVE_READ_FAILURES:
                 inc.backoffPause(True)
                 return inc
             inc.close()
