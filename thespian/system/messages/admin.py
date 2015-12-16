@@ -74,6 +74,7 @@ class PendingActor(ActorSystemMessage):
         self.targetActorReq = targetActorReq
         self.globalName     = globalName
         self.sourceHash     = sourceHash
+        self.alreadyTried   = [] # array of convention actor addresses rejecting this request
 
     def __str__(self):
         return 'PendingActor#%d_of_%s'%(self.instanceNum, str(self.forActor)) + \

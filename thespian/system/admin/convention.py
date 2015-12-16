@@ -570,6 +570,7 @@ class ConventioneerAdmin(GlobalNamesAdmin):
                     for K in self._conventionMembers
                     if not self._conventionMembers[K].registryValid.expired()
                     and self._conventionMembers[K].remoteAddress != envelope.sender # source Admin
+                    and self._conventionMembers[K].remoteAddress not in getattr(envelope.message, 'alreadyTried', [])
                     and acceptsCaps(self._conventionMembers[K].remoteCapabilities)]
                 if not remoteCandidates:
                     if self.isConventionLeader():
@@ -593,6 +594,7 @@ class ConventioneerAdmin(GlobalNamesAdmin):
                              envelope.message.actorClassName,
                              ' (%s)'%sourceHash if sourceHash else '',
                              bestC)
+                envelope.message.alreadyTried.append(self.myAddress)
                 self._send_intent(TransmitIntent(bestC, envelope.message))
                 return True
         except InvalidActorSourceHash:
