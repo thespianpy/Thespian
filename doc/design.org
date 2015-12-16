@@ -313,6 +313,66 @@ help address these challenges for ActorSystem implementations.
     corresponding notification of a PendingActorResponse message
     allows an association to be made via ~associateUseableAddress()~.
 
+** Transport Layer
+
+The transport layer performs the activities of sending and receiving
+messages for this Actor.  Whenever the Actor's receiveMessage is not
+running and handling an actual message, the code in the transport
+layer is running to exchange messages or waiting on new messages.
+
+*** Async Transport Base
+
+The ~asyncTransportBase.py~ provides common functionality for
+transmitting and receiving via an underlying asynchronous mechanism.
+It is used as a base class by the actual asynchronous transport class.
+
+The asyncTransportBase prepares the transmit intents for actual
+transmit operations, including queueing locally if there are too many
+transmits (total, independent of target address) active at the current
+time.
+
+Normally the transmit will complete (or fail) at a future time as
+driven by the asynchronous core; newly received messages can be
+processed while previous messages are still being transmitted.
+However, if there are too many transmits queued, this class will
+switch to blocking mode until the number of pending transmits has
+reduced, thereby applying a back-pressure algorithm to regulate the
+flow of messages within the Actor System.
+
+Transmits are presented at the standard ~scheduleTransmit~ entrypoint,
+at which point the following occur:
+
+   1. If there is an addressManager, it is consulted to prepare the
+      message.  This may include modification of either the message or
+      the target or both (e.g. DeadLetterEnvelope wrapper and
+      DeadLetter handler re-addressing).
+
+   2. The message is serialized (the serializer is supplied by the
+      underlying transmit implementation) and attached to the transmit
+      intent.
+
+   3. A callback is attached to the intent that will check and
+      activate any queued transmits
+
+   4. If there are too many transmits in progress, this transmit
+      intent is queued (and will be retried based on the callback
+      attached in step 3 above).
+
+      * If the number of transmits is above a high watermark, then the
+        transport is run in TransmitOnly mode until the number of
+        pending transmits drops below a separate watermark.  This is
+        done as blocking operations at this point without returning,
+        so the Actor is effectively paused while the transmits drain,
+        implementing back pressure.
+
+   5. This transmit is entered into an active list to prevent
+      recursion (e.g. a callback failure from the actual transmit
+      attempting a retry immediately).
+
+   6. The subclass' _scheduleTransmitActual is called with the
+      transmit itself to actually send it.  Note that there will be
+      several transmits in progress, independent of what their target
+      address is.
 
 * File and Directory Layout
 
