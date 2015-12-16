@@ -557,10 +557,7 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
             # If there is an active or pending Intent for this target,
             # just queue this one (by returning True)
             if [T for T in self._transmitIntents.values()
-                if T.targetAddr == intent.targetAddr] or \
-                [T for T in self._waitingTransmits
-                 if T.targetAddr == intent.targetAddr]:
-                #T.backoffPause(True) # KWQ: will induce artificial pause, but prevents spinning in main loop because there is no pause
+                if T.targetAddr == intent.targetAddr and hasattr(T, 'socket')]:
                 intent.awaitingTXSlot()
                 return True
             # Fall through to get a new Socket for this intent
