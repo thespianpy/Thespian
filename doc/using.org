@@ -1085,11 +1085,21 @@ before the ActorSystem is started:
 
   To facilitate easy specification of requirements, there is a
   ~requireCapability~ class decorator defined which can be used to
-  specify that a capability must be present in the system capabilities
-  and that it's value must be "truthy" (i.e. some expression that
-  evaluates as truthful).  The decorator can be repeated multiple
-  times for a single Actor and it may be used in conjunction with an
-  actual ~actorSystemCapabilityCheck()~ method.
+  specify that a capability must be present in the system
+  capabilities.
+
+#+begin_src python
+    @requireCapability(capabilityName[, capabilityValue])
+#+end_src
+
+  The ~requireCapability~ decorator can also specify a
+  value for the capability; if no value is specified then the
+  capability's value must be "truthy" (i.e. some expression that
+  evaluates as truthful).
+
+  The decorator can be repeated multiple times for a single Actor and
+  it may be used in conjunction with an actual
+  ~actorSystemCapabilityCheck()~ method.
 
   For example:
 
@@ -1105,7 +1115,7 @@ before the ActorSystem is started:
         def receiveMessage(self, msg, sender): pass
 #+end_src
 
-   is equivalent to:
+   is equivalent to the following combined use:
 
 #+begin_src python
     @requireCapability('Has Lightbulb')
@@ -1119,7 +1129,18 @@ before the ActorSystem is started:
         def receiveMessage(self, msg, sender): pass
 #+end_src
 
-   In the above example, the ~MyActor~ Actor can be instantiated
+   or the equivalent use of only the decorator:
+
+#+begin_src python
+    @requireCapability('Has Lightbulb')
+    @requireCapability('Lit')
+    @requireCapability(Color', 'Yellow')
+    class MyActor(Actor):
+
+        def receiveMessage(self, msg, sender): pass
+#+end_src
+
+   In the above examples, the ~MyActor~ Actor can be instantiated
    in an ActorSystem that had the capabilities of:
 
 #+begin_src python

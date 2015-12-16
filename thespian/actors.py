@@ -506,14 +506,16 @@ class ActorSystem(object):
 
 
 
-def requireCapability(cap):
+def requireCapability(cap, value=True):
     '''Actor class decorator for requiring a capability.'''
     def go(cls):
         capCheck0 = None
-        if hasattr(cls, 'actorSystemCapabilityCheck'): capCheck0 = cls.actorSystemCapabilityCheck
+        if hasattr(cls, 'actorSystemCapabilityCheck'):
+            capCheck0 = cls.actorSystemCapabilityCheck
         @staticmethod
         def capCheck1(caps, reqs):
-            return caps.get(cap, False) and (capCheck0(caps,reqs) if capCheck0 else True)
+            return caps.get(cap, False) == value and (capCheck0(caps,reqs)
+                                                      if capCheck0 else True)
         cls.actorSystemCapabilityCheck = capCheck1
         return cls
     return go

@@ -15,6 +15,17 @@
 
 * 2.x
 
+v v v v v v v
+** 2.1
+
+=============
+** 2.1
+
+*** 2.5.0 <2015-11-19 Thu>
+
+  * Allow value specification with the ~@requireCapability~ decorator.
+
+*************
 ** 2.4
 
 *** 2.4.4 <2015-12-16 Wed>
@@ -34,6 +45,7 @@
     prematurely by leftover responses to previous operations
     (e.g. timeout-unclaimed ~ask()~ responses).
 
+^ ^ ^ ^ ^ ^ ^
 *** 2.4.3 <2015-11-18 Wed>
 
   * Ensured that PoisonMessage sending doesn't recurse indefinitely.

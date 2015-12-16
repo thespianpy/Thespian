@@ -42,6 +42,18 @@ class TestRequireCapability(TestCase):
         self.assertFalse(TestRequireCapability.req2rev.actorSystemCapabilityCheck({'qwer':False,'asdf':False}, 0))
         self.assertFalse(TestRequireCapability.req2rev.actorSystemCapabilityCheck({'qwer':True,'asdf':False}, 0))
 
+    @requireCapability('frog', 'ribbet')
+    class req3rev: pass
+    def test_threeReq(self):
+        check3 = TestRequireCapability.req3rev.actorSystemCapabilityCheck
+        self.assertTrue(check3({'frog':'ribbet'}, 0))
+        self.assertFalse(check3({'frog':'moo'}, 0))
+        self.assertFalse(check3({'frog':True}, 0))
+        self.assertFalse(check3({'frog':False}, 0))
+        self.assertFalse(check3({'frog':1}, 0))
+        self.assertFalse(check3({'frog':0}, 0))
+        self.assertFalse(check3({'frog':None}, 0))
+        self.assertFalse(check3({'Frog':'ribbet'}, 0))
 
 class TestRequireRequirements(TestCase):
     scope="unit"
