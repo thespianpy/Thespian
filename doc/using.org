@@ -7,7 +7,7 @@
 #+LATEX_HEADER: \product{Thespian}
 #+LATEX_HEADER: \component{Python Actor System}
 #+LATEX_HEADER: \doctype{Usage}
-#+LATEX_HEADER: \docrev{2.8}{2015 Oct 18}
+#+LATEX_HEADER: \docrev{2.9}{2015 Dec 16}
 #+LATEX_HEADER: \docid{TheDoc-02}
 #+OPTIONS: ^:nil
 
@@ -1823,6 +1823,9 @@ actorSys = ActorSystem(systemBase = None,
       of ~importlib~; use " ~import thespian.importlib as importlib~ "
       instead of just " ~import importlib~ " in Actor sources that
       will be loaded via ~loadActorSource()~.
+
+   4. Loaded sources should expect that ~__file__~ or other internals
+      can be set to None.
 
 *** Security Considerations
 
