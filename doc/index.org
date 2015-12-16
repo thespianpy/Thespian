@@ -21,7 +21,7 @@ Thespian is a Python library providing a framework for developing
 concurrent, distributed, fault tolerant applications.
 
 Thespian is built on the [[http://wikipedia.org/wiki/Actor_model][Actor Model]] which allows applications to be
-written as a group of indpendently executing but cooperating "Actors"
+written as a group of independently executing but cooperating "Actors"
 which communicate via messages.  These Actors run within the Actor
 System provided by the Thespian library.
 
