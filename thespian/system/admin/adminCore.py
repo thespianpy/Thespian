@@ -13,14 +13,14 @@ from thespian.system.sourceLoader import SourceHashFinder
 class AdminCore(systemCommonBase):
 
     def __init__(self, transport, address, capabilities, logdefs):
-        thesplog('Starting Admin', level=logging.DEBUG)
+        thesplog('++++ Starting Admin', level=logging.DEBUG)
         super(AdminCore, self).__init__(address, transport)
         self.capabilities = capabilities
         self.logdefs      = logdefs
         self._pendingChildren = {}  # key = childLocalAddr instance #, value = PendingActorEnvelope
         # Things that help us look like an Actor, even though we're not
         self._sourceHash  = None
-        thesplog('Admin started @ %s', self.transport.myAddress, level=logging.INFO, primary=True)
+        thesplog('++++ Admin started @ %s', self.transport.myAddress, level=logging.INFO, primary=True)
         self._nannying = {}  # key=child actorAddress, value=parent Address
         self._deadLetterHandler = None
         self._sources = {}  # Index is sourcehash, value is requestor
@@ -103,6 +103,7 @@ class AdminCore(systemCommonBase):
 
     def h_SystemShutdown(self, envelope):
         self._exiting = envelope.sender
+        thesplog('---- shutdown initiated by %s', envelope.sender, level=logging.DEBUG)
 
         # Send failure notices and clear out any pending children.  If
         # any pending child ready notifications are received after
@@ -141,6 +142,7 @@ class AdminCore(systemCommonBase):
     def _sayGoodbye(self):
         self._cleanupAdmin()
         self._send_intent(TransmitIntent(self._exiting, SystemShutdownCompleted()))
+        thesplog('---- shutdown completed', level=logging.INFO)
 
 
     def h_ChildActorExited(self, envelope):
