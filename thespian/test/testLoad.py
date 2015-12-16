@@ -53,13 +53,14 @@ def report(what, sysBase, elapsed, nMessages, nActors):
 
 class LoadTester(LocallyManagedActorSystem):
 
-    def prepSys(self, systemBase, logDefs=None, extraCapabilities=None):
+    def prepSys(self, systemBase, logDefs=None, extraCapabilities=None, name=None):
         self.sysBase = systemBase
         capabilities = {'Admin Port': int(random.uniform(3000, 64000))}
         if extraCapabilities: capabilities.update(extraCapabilities)
         self.setSystemBase(systemBase,
                            systemCapabilities = capabilities,
                            logDefs = logDefs)
+        self.name = name or systemBase
 
     def endSys(self):  ActorSystem().shutdown()
 
@@ -82,7 +83,7 @@ class LoadTester(LocallyManagedActorSystem):
             aS.tell(actors[0], msg)
         endtime = datetime.now()
         elapsed = endtime - starttime
-        report('Discarding', self.sysBase, elapsed, nMessages, actorDepth)
+        report('Discarding', self.name, elapsed, nMessages, actorDepth)
         [aS.tell(A, ActorExitRequest()) for A in actors]
 
 
@@ -114,7 +115,7 @@ class LoadTester(LocallyManagedActorSystem):
         endtime = datetime.now()
         elapsed = endtime - starttime
         report('Discard, Last Ask (%s)'%(rmsg.sum if rmsg else '<timeout>'),
-               self.sysBase, elapsed,
+               self.name, elapsed,
                nMessages, actorDepth)
         [aS.tell(A, ActorExitRequest()) for A in actors]
 
@@ -137,7 +138,7 @@ class LoadTester(LocallyManagedActorSystem):
             aS.ask(actors[0], msg, 30)
         endtime = datetime.now()
         elapsed = endtime - starttime
-        report('Asking', self.sysBase, elapsed, nMessages, actorDepth)
+        report('Asking', self.name, elapsed, nMessages, actorDepth)
         [aS.tell(A, ActorExitRequest()) for A in actors]
 
 
@@ -192,18 +193,18 @@ noLogging = { 'version' : 1,
 if __name__ == "__main__":
 
     for tm in [N for N in dir(LoadTester) if N.startswith('test')]:
-        for tbase in [
-                'simpleSystemBase',
-                'multiprocUDPBase',
-                'multiprocTCPBase',
-
+        for tbase,tcap,tname in [
+                ('simpleSystemBase',{}, None),
+                ('multiprocUDPBase',{}, None),
+                ('multiprocTCPBase',{}, None),
+                ('multiprocTCPBase', {'Admin Forwarding': True}, 'mpTCP-AdminFwd'),
                 # multiprocQueueBase seems to get into a semaphore
                 # deadlock in multiprocessing/queues.py (under
                 # Python 2.6)
                 # 'multiprocQueueBase',
         ]:
             tci = LoadTester()
-            tci.prepSys(tbase, noLogging) # each use diff admin
+            tci.prepSys(tbase, noLogging, extraCapabilities=tcap, name=tname) # each use diff admin
 
             getattr(tci,tm)()
 
@@ -212,5 +213,5 @@ if __name__ == "__main__":
             endstop = datetime.now()
             stoptime = endstop - startstop
             if stoptime > timedelta(seconds=2):
-                print('  [%s stoptime: %s]'%(tbase, str(stoptime)))
+                print('  [%s stoptime: %s]'%(tname or tbase, str(stoptime)))
 
