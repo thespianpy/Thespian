@@ -518,8 +518,6 @@ class ActorSystemBase:
                                                   ValidateSource(hval, d),
                                                   self._sourceAuthority))
             self._runSends()
-        else:
-            self._loadValidatedActorSource(hval, d)
         return hval
 
     def _loadValidatedActorSource(self, sourceHash, sourceZip):

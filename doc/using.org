@@ -1035,6 +1035,11 @@ before the ActorSystem is started:
   zipfile that can be used in subsequent [[*createActor][createActor]] calls to
   instantiate Actors found in that sourcefile.
 
+  There must be a valid Source Authority registered (via the
+  [[*registerSourceAuthority][registerSourceAuthority]] method) to validate the loaded source; by
+  default this method does nothing if no Source Authority has been
+  loaded.  See [[*Security Considerations][Security Considerations]] for more information.
+
   See the description of the same function in the [[*ActorSystem API][ActorSystem API]]
   section for more details.
 
@@ -1752,6 +1757,10 @@ actorSys = ActorSystem(systemBase = None,
   zipfile that can be used in subsequent [[*createActor][createActor]] calls to
   instantiate Actors found in that sourcefile.
 
+  There must be a valid Source Authority registered (via the
+  [[*registerSourceAuthority][registerSourceAuthority]] method) to validate the loaded source; by
+  default this method does nothing if no Source Authority has been
+  loaded.  See [[*Security Considerations][Security Considerations]] for more information.
 
 [fn:PEP302] The PEP302 Python extension specification defines the
   ability to add a custom package finder/loader that coordinates with
@@ -1852,13 +1861,21 @@ actorSys = ActorSystem(systemBase = None,
   the manner in which the Source Authority is established.
 
   By default, at Actor System startup time, there is no Source
-  Authority, thus allowing any ~loadActorSource()~ input to be loaded
-  and utilized.  This is convenient for debugging and simple local
-  applications, but not recommended for production deployments.
-  Typical best practices for production initialization of a Thespian
-  environment are to startup the ActorSystem and then immediately load
-  a Source Authority that will validate all subsequent sources loaded
-  into that system.
+  Authority.  When there is no Source Authority, any
+  ~loadActorSource()~ input is ignored.  This ensures that all
+  Thespian systems are secure by default.  For debugging and simple
+  local applications this may not be convenient; in these situations,
+  a Source Authority similar to the following may be used to
+  automatically accept and enable all loaded sources:
+
+#+BEGIN_EXAMPLE python
+from thespian.actors import *
+class SimpleSourceAuthority(ActorTypeDispatcher):
+    def receiveMsg_str(self, msg, sender):
+        self.registerSourceAuthority()
+    def receiveMsg_ValidateSource(self, msg, sender):
+        self.send(sender, ValidatedSource(msg.sourceHash, msg.sourceData))
+#+END_EXAMPLE
 
   Note that it is possible to disable the ~loadActorSource()~
   functionality entirely by registering an Actor as the Source

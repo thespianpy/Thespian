@@ -285,11 +285,15 @@ class AdminCore(systemCommonBase):
         if self._sourceAuthority:
             self._send_intent(TransmitIntent(self._sourceAuthority, envelope.message))
             return
-        self._loadValidatedActorSource(sourceHash, envelope.message.sourceData)
+        # Any attempt to load sources is ignored if there is no active
+        # Source Authority.  This is a security measure to protect the
+        # un-protected.
 
     def h_ValidatedSource(self, envelope):
         self._loadValidatedActorSource(envelope.message.sourceHash,
                                        envelope.message.sourceZip)
+        thesplog('Source hash %s validated by Source Authority; now available.',
+                 envelope.message.sourceHash)
 
     def _loadValidatedActorSource(self, sourceHash, sourceZip):
         if sourceHash in self._sources:

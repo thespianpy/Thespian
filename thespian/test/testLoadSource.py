@@ -108,18 +108,27 @@ def cow_says():
 '''
 
 dogSource = '''
-from thespian.actors import Actor, requireCapability
+from thespian.actors import ActorTypeDispatcher, requireCapability
+from datetime import timedelta
+
 @requireCapability('Dogs Allowed')
-class DogActor(Actor):
-    def receiveMessage(self, msg, sender):
-        if type(msg) == type(""):
-            self.send(sender, 'Woof! '+str(msg))
-        elif type(msg) == type( (1,2) ):
-            self.send(msg[1], ('Ruff Ruff: ' + str(msg[0]), sender))
-        elif type(msg) == type([]):
-            newHash = self.loadActorSource(msg[0])
-            import time
-            time.sleep(0.1) # allow load to finish
+class DogActor(ActorTypeDispatcher):
+    def receiveMsg_str(self, msg, sender):
+        self.send(sender, 'Woof! '+str(msg))
+    def receiveMsg_tuple(self, msg, sender):
+        self.send(msg[1], ('Ruff Ruff: ' + str(msg[0]), sender))
+    def receiveMsg_list(self, msg, sender):
+        newHash = self.loadActorSource(msg[0])
+        # Need to wait for source to load, but waiting with a sleep
+        # may prevent the load request from processing, so use wakeupAfter
+        if not hasattr(self, 'tgtsends'):
+            self.tgtsends = []
+        self.tgtsends.append( (msg, sender, newHash) )
+        self.wakeupAfter(timedelta(milliseconds=15))
+    def receiveMsg_WakeupMessage(self, wakeupmsg, wakeupsender):
+        pending = self.tgtsends
+        self.tgtsends = []
+        for msg, sender, newHash in pending:
             newA = self.createActor(msg[1], sourceHash = newHash)
             self.send(newA, ('Bark! ' + msg[2], sender))
             self.unloadActorSource(newHash)
@@ -211,6 +220,13 @@ class BarActor(Actor):
     def receiveMessage(self, msg, sender):
         if type(msg) == type(""):
             self.send(sender, 'SAW: '+str(msg))
+
+
+class SimpleSourceAuthority(ActorTypeDispatcher):
+    def receiveMsg_str(self, msg, sender):
+        self.registerSourceAuthority()
+    def receiveMsg_ValidateSource(self, msg, sender):
+        self.send(sender, ValidatedSource(msg.sourceHash, msg.sourceData))
 
 
 class CreateTestSourceZips(object):
@@ -428,40 +444,56 @@ class TestASimpleSystem(unittest.TestCase, CreateTestSourceZips):
             self.systems[each].shutdown()
         self.removeZips()
 
+    def _registerSA(self):
+        for each in self.systems:
+            self.systems[each].tell(self.systems[each].createActor(SimpleSourceAuthority), 'go')
+        time.sleep(0.1)  # wait for source authorities to register
+
     def test00_systemsRunnable(self):
         self.startSystems(0)
 
     def test01_verifyFooActorNotAvailableByName(self):
         self.startSystems(10)
+        self._registerSA()
         self.assertRaises(ImportError, self.systems['One'].createActor, 'foo.FooActor')
         bar = self.systems['One'].createActor('thespian.test.testLoadSource.BarActor')
         self.assertEqual('SAW: hello', self.systems['One'].ask(bar, 'hello', 1))
 
     def test01_verifyFooActorNotAvailableWithBogusSourceHash(self):
         self.startSystems(20)
+        self._registerSA()
         self.assertRaises(InvalidActorSourceHash,
                           self.systems['One'].createActor,
                           'foo.FooActor', sourceHash = 'this is bogus')
 
     def test01_verifyloadSourceHandlesBadFilename(self):
         self.startSystems(30)
+        self._registerSA()
         self.assertRaises(IOError,
                           self.systems['One'].loadActorSource, 'bad file name here')
 
 
     def _loadFooSource(self):
         srchash = self.systems['One'].loadActorSource(self.foozipFname)
+        time.sleep(0.1)  # allow time for validation of source by source authority
         self.assertIsNotNone(srchash)
         return srchash
 
     def test02_verifyMainActorAvailableWhenLoaded(self):
         self.startSystems(40)
+        self._registerSA()
         srchash = self._loadFooSource()
         foo = self.systems['One'].createActor('foo.FooActor', sourceHash=srchash)
         self.assertEqual('GOT: good one', self.systems['One'].ask(foo, 'good one', 1))
 
+    def test02_verifyNoSourceAuthorityIgnoresLoad(self):
+        self.startSystems(40)
+        srchash = self._loadFooSource()
+        self.assertRaises(InvalidActorSourceHash, self.systems['One'].createActor, 'foo.FooActor', sourceHash=srchash)
+
     def test02_verifySubActorAvailableWhenLoaded(self):
         self.startSystems(50)
+        self._registerSA()
         srchash = self._loadFooSource()
         foo = self.systems['One'].createActor('foo.FooActor', sourceHash=srchash)
         self.assertEqual('GOT: good one', self.systems['One'].ask(foo, 'good one', 1))
@@ -469,18 +501,21 @@ class TestASimpleSystem(unittest.TestCase, CreateTestSourceZips):
 
     def test02_verifySubModuleAvailableWhenLoaded(self):
         self.startSystems(60)
+        self._registerSA()
         srchash = self._loadFooSource()
         cow = self.systems['One'].createActor('barn.cow.moo.MooActor', sourceHash=srchash)
         self.assertEqual('Moo: got milk', self.systems['One'].ask(cow, 'got milk', 1))
 
     def test02_verifyAllAbsoluteImportPossibilities(self):
         self.startSystems(70)
+        self._registerSA()
         srchash = self._loadFooSource()
         pig = self.systems['One'].createActor('barn.pig.PigActor', sourceHash=srchash)
         self.assertEqual('Oink Cluck Honk ready? Moooo', self.systems['One'].ask(pig, 'ready?', 1))
 
     def test02_verifyAllRelativeImportPossibilities(self):
         self.startSystems(80)
+        self._registerSA()
         srchash = self._loadFooSource()
         sow = self.systems['One'].createActor('barn.sow.SowActor', sourceHash=srchash)
         self.assertEqual('Moooo Oink Cluck Honk ready?', self.systems['One'].ask(sow, 'ready?', 1))
@@ -488,18 +523,21 @@ class TestASimpleSystem(unittest.TestCase, CreateTestSourceZips):
     def test02_verifyAllOLDSTYLERelativeImportPossibilities(self):
         if sys.version_info < (3,0):
             self.startSystems(85)
+            self._registerSA()
             srchash = self._loadFooSource()
             piglet = self.systems['One'].createActor('barn.piglet.PigletActor', sourceHash=srchash)
             self.assertEqual('Moooo Oink Cluck Honk ready?', self.systems['One'].ask(piglet, 'ready?', 1))
 
     def test02_verifyDeepImportReferences(self):
         self.startSystems(85)
+        self._registerSA()
         srchash = self._loadFooSource()
         roo = self.systems['One'].createActor('roo.RooActor', sourceHash=srchash)
         self.assertEqual('roo says whatever', self.systems['One'].ask(roo, 'roo says', 1))
 
     def test02_verifyHashSourceAvailablePostLoadFromMembers(self):
         self.startSystems(90)
+        self._registerSA()
         srchash = self._loadFooSource()
         foo = self.systems['One'].createActor('foo.FooActor', sourceHash=srchash)
         self.assertEqual('GOT: good one', self.systems['One'].ask(foo, 'good one', 1))
@@ -509,6 +547,7 @@ class TestASimpleSystem(unittest.TestCase, CreateTestSourceZips):
 
     def test02_verifyHashSourceNotInGlobalNamespace(self):
         self.startSystems(100)
+        self._registerSA()
         srchash = self._loadFooSource()
         foo = self.systems['One'].createActor('foo.FooActor', sourceHash=srchash)
         self.assertEqual('GOT: good one', self.systems['One'].ask(foo, 'good one', 1))
@@ -527,12 +566,14 @@ class TestASimpleSystem(unittest.TestCase, CreateTestSourceZips):
     # available in the namespace to cause these tests (test03_) to fail.
     def test03_verifyFooActorNotAvailableWithoutModuleQualifiersOrHash(self):
         self.startSystems(110)
+        self._registerSA()
         srchash = self._loadFooSource()
         self.assertRaises(InvalidActorSpecification,
                           self.systems['One'].createActor, 'FooActor')
 
     def test03_verifyFooActorNotAvailableWithoutCorrectHash(self):
         self.startSystems(120)
+        self._registerSA()
         # No sourceHash specified, so the module foo is searched for
         # in the standard search path.
         srchash = self._loadFooSource()
@@ -540,6 +581,7 @@ class TestASimpleSystem(unittest.TestCase, CreateTestSourceZips):
 
     def test03_verifyFooActorNotAvailableWithoutModuleQualifiers(self):
         self.startSystems(130)
+        self._registerSA()
         srchash = self._loadFooSource()
         # The FooActor is not available without module qualifiers even if proper hash is specified
         self.assertRaises(InvalidActorSpecification,
@@ -548,6 +590,7 @@ class TestASimpleSystem(unittest.TestCase, CreateTestSourceZips):
 
     def test04_verifyReloadOfChangedModuleAllowsBothToExistSimultaneously(self):
         self.startSystems(140)
+        self._registerSA()
         srchash = self._loadFooSource()
         foo = self.systems['One'].createActor('foo.FooActor', sourceHash=srchash)
         self.assertEqual('GOT: good one', self.systems['One'].ask(foo, 'good one', 1))
@@ -569,6 +612,7 @@ class TestASimpleSystem(unittest.TestCase, CreateTestSourceZips):
         srchash2 = self.systems['One'].loadActorSource(foo2zipFname)
         self.assertIsNotNone(srchash2)
         self.assertNotEqual(srchash, srchash2)
+        time.sleep(0.1)  # allow time for loaded source to be validated by source authority
 
         foo2 = self.systems['One'].createActor('foo.FooActor', sourceHash=srchash2)
         self.assertEqual('TOG: good one', self.systems['One'].ask(foo2, 'good one', 1))
@@ -581,9 +625,11 @@ class TestASimpleSystem(unittest.TestCase, CreateTestSourceZips):
 
     def test04_verifyMultipleSeparateModulesLoaded(self):
         self.startSystems(150)
+        self._registerSA()
         srchash = self._loadFooSource()
         srchash2 = self.systems['One'].loadActorSource(self.dogzipFname)
         self.assertIsNotNone(srchash2)
+        time.sleep(0.1)  # allow time for loaded source to be validated by source authority
         foo = self.systems['One'].createActor('foo.FooActor', sourceHash=srchash)
         dog = self.systems['One'].createActor('dog.DogActor', sourceHash=srchash2)
         self.assertEqual('GOT: good one', self.systems['One'].ask(foo, 'good one', 1))
@@ -592,9 +638,11 @@ class TestASimpleSystem(unittest.TestCase, CreateTestSourceZips):
 
     def test04_verifyMultipleSeparateModulesRequireCorrectSourceHashOnCreate(self):
         self.startSystems(160)
+        self._registerSA()
         srchash = self._loadFooSource()
         srchash2 = self.systems['One'].loadActorSource(self.dogzipFname)
         self.assertIsNotNone(srchash2)
+        time.sleep(0.1)  # allow time for loaded source to be validated by source authority
         foo = self.systems['One'].createActor('foo.FooActor', sourceHash=srchash)
         self.assertRaises(ImportError, self.systems['One'].createActor,
                           'dog.DogActor', sourceHash=srchash)  # wrong source hash
@@ -602,6 +650,7 @@ class TestASimpleSystem(unittest.TestCase, CreateTestSourceZips):
 
     def test05_verifyUnloadOfHashedSourcePreventsActorCreation(self):
         self.startSystems(170)
+        self._registerSA()
         srchash = self._loadFooSource()
         foo = self.systems['One'].createActor('foo.FooActor', sourceHash=srchash)
         self.assertEqual('GOT: good one', self.systems['One'].ask(foo, 'good one', 1))
@@ -615,6 +664,7 @@ class TestASimpleSystem(unittest.TestCase, CreateTestSourceZips):
 
     def test04_actorsCanLoadAndUnloadSource(self):
         self.startSystems(270)
+        self._registerSA()
         # Load first source
         srchash = self.systems['One'].loadActorSource(self.dogzipFname)
         import time
@@ -624,13 +674,14 @@ class TestASimpleSystem(unittest.TestCase, CreateTestSourceZips):
         # Verify that actor can be used
         self.assertEqual(self.systems['One'].ask(dogActor, 'tick', 1), 'Woof! tick')
         # Now ask that actor to load and use a different source
-        self.assertEqual(self.systems['One'].ask(dogActor, [self.foozipFname, 'barn.cow.moo.MooActor', 'tock'], 1),
+        self.assertEqual(self.systems['One'].ask(dogActor, [self.foozipFname, 'barn.cow.moo.MooActor', 'tock'], 5),
                          'And MOO: Bark! tock' )
 
 
 
     def test05_verifyUnloadOfHashedSourceDoesNotKillActiveActors(self):
         self.startSystems(180)
+        self._registerSA()
         srchash = self._loadFooSource()
         foo = self.systems['One'].createActor('foo.FooActor', sourceHash=srchash)
         self.assertEqual(12.1, round(self.systems['One'].ask(foo, 8.3, 1), 2))
@@ -688,6 +739,7 @@ class TestASimpleSystem(unittest.TestCase, CreateTestSourceZips):
 
     def test05_verifyMultipleSeparateModulesCanUseOtherAfterFirstUnloaded(self):
         self.startSystems(190)
+        self._registerSA()
         srchash = self._loadFooSource()
         srchash2 = self.systems['One'].loadActorSource(self.dogzipFname)
         self.assertIsNotNone(srchash2)
@@ -700,6 +752,7 @@ class TestASimpleSystem(unittest.TestCase, CreateTestSourceZips):
 
     def test04_verifyReloadOfChangedModuleAndUnloadOfOriginal(self):
         self.startSystems(200)
+        self._registerSA()
         srchash = self._loadFooSource()
         foo = self.systems['One'].createActor('foo.FooActor', sourceHash=srchash)
         self.assertEqual('GOT: good one', self.systems['One'].ask(foo, 'good one', 1))
@@ -723,6 +776,7 @@ class TestASimpleSystem(unittest.TestCase, CreateTestSourceZips):
         srchash2 = self.systems['One'].loadActorSource(foo2zipSource)
         self.assertIsNotNone(srchash2)
         self.assertNotEqual(srchash, srchash2)
+        time.sleep(0.1) # allow load to finish
 
         self.systems['One'].unloadActorSource(srchash)
         self.systems['One'].tell(foo, ActorExitRequest())

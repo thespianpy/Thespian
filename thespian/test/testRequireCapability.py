@@ -28,6 +28,7 @@ class TestRequireCapability(TestCase):
         self.assertTrue(TestRequireCapability.req2.actorSystemCapabilityCheck({'qwer':True,'asdf':True}, 0))
         self.assertFalse(TestRequireCapability.req2.actorSystemCapabilityCheck({'qwer':False,'asdf':False}, 0))
         self.assertFalse(TestRequireCapability.req2.actorSystemCapabilityCheck({'qwer':True,'asdf':False}, 0))
+
     @requireCapability('qwer')
     @requireCapability('asdf')
     class req2rev: pass
