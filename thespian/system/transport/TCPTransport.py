@@ -832,7 +832,7 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
                         if self._socketFile(self._openSockets[I]) == errfileno:
                             closed_openSocks.append(I)
                     for each in closed_openSocks:
-                        del self._openSockets[I]
+                        del self._openSockets[each]
 
             origPendingSends = len(self._transmitIntents) + len(self._waitingTransmits)
 
