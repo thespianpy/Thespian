@@ -52,10 +52,12 @@ def report(what, sysBase, elapsed, nMessages, nActors):
 
 class LoadTester(LocallyManagedActorSystem):
 
-    def prepSys(self, systemBase, logDefs=None):
+    def prepSys(self, systemBase, logDefs=None, extraCapabilities=None):
         self.sysBase = systemBase
+        capabilities = {'Admin Port': 14335}
+        if extraCapabilities: capabilities.update(extraCapabilities)
         self.setSystemBase(systemBase,
-                           systemCapabilities = {'Admin Port': 14335},
+                           systemCapabilities = capabilities,
                            logDefs = logDefs)
 
     def endSys(self):  ActorSystem().shutdown()
@@ -153,6 +155,12 @@ class TestMultiprocTCPSystem(TestASimpleSystem):
     testbase='MultiprocTCP'
     def setUp(self):
         self.prepSys('multiprocTCPBase')
+
+class TestMultiprocTCPSystemAdminForwarding(TestASimpleSystem):
+    testbase='MultiprocTCP'
+    def setUp(self):
+        self.prepSys('multiprocTCPBase',
+                     extraCapabilities={'Admin Routing': True})
 
 class TestMultiprocQueueSystem(TestASimpleSystem):
     testbase='MultiprocQueue'

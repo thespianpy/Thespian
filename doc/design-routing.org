@@ -1,0 +1,119 @@
+* Routing Messages
+
+Under normal circumstances, messages are sent directly to the target
+address (route D below).  However, there are times when messages
+should be relayed through the Admin (e.g. if only the Admin has an
+open external port connection).
+
+#+BEGIN_SRC ditaa :file routes.png
+
+   /-----------------------------\   /---------------------\
+   |                             |   |                     |
+   |         +-->-----------------------------------+      |
+   |         |                   |   |              |      |
+   |    +----+----+              |   |  +--------+  |      |
+   |    | Admin1  +->-------------------+ Admin2 |  |      |
+   |    |         |    B         |   |  |        |  |      |
+   |    |         |          +----->----+        |  |A     |
+   |    +----+----+         C|   |   |  +------+-+  |      |
+   |         |               |   |   |         |    |      |
+   |         |        +------+-+ |   |     B,C v    |      |
+   |         +------<-+ Actor2 | |   |         |    |      |
+   |          A,B     |        +--->---+       |    |      |
+   |                  +----+---+ |   | |     +-+----+-+    |
+   |    +---------+        :     |   | +-----+ Actor3 |    |
+   |    | Actor1  +-<------+     |   |    D  |        |    |
+   |    |         |              |   |       +--------+    |
+   |    +---------+              |   |                     |
+   |                             |   |                     |
+   \-----------------------------/   \---------------------/
+
+#+END_SRC
+
+In the figure above, there are 4 routes from Actor2 to Actor3:
+
+   1. A :: Actor2 must send to the local Admin, which sends directly
+           to the remote Actor3.
+   2. B :: Actor2 must send to the local Admin, which then forwards to
+           the remote Admin, which sends to Actor3.
+   3. C :: Actor2 must send to the remote Admin, which then forwards
+           to Actor3.
+   4. D :: Actor2 sends directly to Actor3.
+
+The normal Actor communications path is 4, but the other paths may be
+used if there are routing constraints.  For all configurations, Actor1
+and Actor2 should be able to communicate directly.
+
+If the remote system (Admin2) can only respond on a specific port,
+then Admin2 should be bound to that port and route B or C utilized.
+
+If the remote system (Admin2) cannot accept inbound connections, then
+route B must be used so that Admin1 can queue messages waiting for
+transmit to Admin2/Actor3.
+
+Route A is not practically needed: any configuration where route A
+would be used it should be possible to simply use either D or B.
+
+** Addresses
+
+Addresses are obtained by an Actor from the following sources:
+
+   * ~createActor()~ results
+   * sender identification on ~receiveMessage()~
+   * passed inside of a message
+
+** Admin Routing
+
+  In the system managed by Admin2, the "Admin Routing" capability
+  should be set to True to indicate that Actor3 cannot be targeted by
+  external addresses.
+
+  When generating the Address for Actor3, it will have a "routing"
+  element of Admin; this causes sends to that address to check if the
+  sender's Admin is the same address as the routing element.  If so,
+  the message can be sent directly (supporting the Actor1/Actor2
+  communications path), otherwise the sender must wrap the message in
+  a ForwardMessage and send the ForwardMessage to the routing address
+  (Admin).
+
+  This enables path C.
+
+** Unidirectional Connectivity
+
+  If either of Admin1 or Admin2 cannot accept inbound connections and
+  can only make outbound connections, then path B should be used (at
+  least for sending to the system that can only make outbound
+  connections).
+
+  For example, if Admin1 can only make outbound connections, then
+  Admin2 should be pre-registered.  Path D can be used for data from
+  Actor2 to Actor3, but path B must be used for data from Actor3 to
+  Actor2.
+
+  If outbound-only is enabled, "Admin Routing" is enabled by default.
+  When generating an Address in a system that is outbound-only, the
+  address will have a "routing" element of (None, Admin).  This
+  indicates to remote senders that they should send the packet to
+  their local Admin first (the None portion) and their Admin should
+  forward to the Admin in the routing element for delivery.  If the
+  sending and receiving actor are both in the same system, the
+  sender's Admin will match the Admin in the routing packet and the
+  direct Actor-to-Actor send can be performed instead.
+
+  This enables path B.
+
+* TBD
+
+** Buffer system
+
+  Would be nice to use two actor systems on the same node, the primary
+  with outside connectivity and non-root, the secondary with root and
+  internally connected only.
+
+  One actor system runs on address 127.0.0.1 only?
+
+  Internal-only system specifies outbound-only, but need to have
+  additional hops?
+
+  This needs additional convention interaction as well, since
+  currently only first degree conventions are supported.

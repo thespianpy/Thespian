@@ -96,8 +96,8 @@ def startupASLogger(addrOfStarter, logEndpoint, logDefs,
                                   exception_count, datetime.now() - last_exception_time)
                     return
 
-def startASLogger(loggerAddr, logDefs, transport, aggregatorAddress=None):
-    endpointPrep = transport.prepEndpoint(loggerAddr)
+def startASLogger(loggerAddr, logDefs, transport, capabilities, aggregatorAddress=None):
+    endpointPrep = transport.prepEndpoint(loggerAddr, capabilities)
     multiprocessing.process._current_process._daemonic = False
     logProc = multiprocessing.Process(target=startupASLogger,
                                       args = (transport.myAddress, endpointPrep,

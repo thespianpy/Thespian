@@ -2388,6 +2388,18 @@ The multiprocTCPBase uses the following [[*ActorSystem Capabilities][ActorSystem
        not specified (no colon is found) then the port num defaults to
        the *Admin Port* setting.
 
+  * *Admin Routing* :: if this capability is present and has a true
+       value, this indicates that all Actors in remote Actor Systems
+       must send all messages to local Actors through the Admin.  This
+       is commonly used where the Actor System is running on a host
+       node that has a firewall that only allows the Admin Port to
+       have network ingress permissions.  
+
+       Note that this capability has no effect on the way in which the
+       Actors themselves are implemented; it only changes the way that
+       the Actor System routes messages.
+
+
 
 ** multiprocUDPBase
 

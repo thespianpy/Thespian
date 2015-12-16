@@ -252,3 +252,14 @@ class SendStatus(object):
     Failed = SENDSTS_FAILED()
     DeadTarget = SENDSTS_DEADTARGET()
 
+
+class ForwardMessage(object):
+    "Used as a wrapper when forwarding messages via intermediaries"
+    # n.b. ForwardMessage is not based the ActorSystemMessage base class
+    # because it only exists at the transport layer.
+
+    def __init__(self, fwdMessage, fwdTo, fwdFrom, fwdChain=None):
+        self.fwdMessage = fwdMessage
+        self.fwdTo      = fwdTo  # final destination
+        self.fwdFrom    = fwdFrom  # original sender
+        self.fwdTargets = (fwdChain or []) + [fwdTo]  # list of targets; last is fwdTo

@@ -180,8 +180,9 @@ class TestSolitaryActorSystem(unittest.TestCase):
     scope='func'
 
     def setUp(self):
-        ActorSystem('multiprocTCPBase',
-                    capabilities={'dog':'food'},
+        caps = {'dog':'food'}
+        caps.update(getattr(self, 'extra_capabilities', {}))
+        ActorSystem('multiprocTCPBase', capabilities=caps,
                     logDefs = simpleActorTestLogging())
 
     def tearDown(self):
@@ -210,6 +211,14 @@ class TestSolitaryActorSystem(unittest.TestCase):
                                ActorSystem().createActor, Stewart)
 
 
+class TestSolitaryActorSystemAdminRouting(TestSolitaryActorSystem):
+    "These tests run with only the primary ActorSystem enabled."
+
+    testbase='MultiprocTCP'
+    scope='func'
+    extra_capabilities = { 'Admin Routing': True }
+
+
 class TestSolitaryMPQueueActorSystem(TestSolitaryActorSystem):
     testbase='MultiprocQueue'
     scope='func'
@@ -227,6 +236,16 @@ class TestSolitaryMPUDPActorSystem(TestSolitaryActorSystem):
     def setUp(self):
         ActorSystem('multiprocUDPBase',
                     capabilities={'dog':'food'},
+                    logDefs = simpleActorTestLogging())
+
+
+class TestSolitaryMPUDPActorSystemAdminRouting(TestSolitaryActorSystem):
+    testbase='MultiprocUDP'
+    scope='func'
+
+    def setUp(self):
+        ActorSystem('multiprocUDPBase',
+                    capabilities={'dog':'food', 'Admin Routing': True},
                     logDefs = simpleActorTestLogging())
 
 
@@ -260,15 +279,19 @@ class TestMultiProcessSystem(unittest.TestCase):
                             'Admin Port': system1Port,
                             #'Convention Address': not specified, but is the leader anyhow
         }
+        self.system1Caps.update(getattr(self, 'extra_capabilities', {}))
+
+        self.system2Caps = { 'Admin Port': system2Port,
+                             'Convention Address.IPv4': ('localhost:%d'%system1Port),
+                             'Humanitarian': True,
+                             'Adoption': True}
+        self.system2Caps.update(getattr(self, 'extra_capabilities', {}))
 
         self.parent_conn, child_conn = Pipe()
         self.child = Process(target=System2,
                              args=(child_conn,
                                    self.baseName,
-                                   { 'Admin Port': system2Port,
-                                     'Convention Address.IPv4': ('localhost:%d'%system1Port),
-                                     'Humanitarian': True,
-                                     'Adoption': True},
+                                   self.system2Caps,
                                ))
         self.child.start()
         ActorSystem(self.baseName,
@@ -482,6 +505,10 @@ class TestMultiProcessSystem(unittest.TestCase):
         self.startSystems(21)
         jolie = ActorSystem().createActor(Jolie, 'Parent')
         self.assertEqual(ActorSystem().ask(jolie, 'Hello', 2), 'Yes, Hello')
+
+
+class TestMultiProcessSystemAdminRouting(TestMultiProcessSystem):
+    extra_capabilities = { 'Admin Routing': True }
 
 
 class TestMPUDPSystem(TestMultiProcessSystem):

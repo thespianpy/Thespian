@@ -119,7 +119,10 @@ class asyncTransportBase(object):
         # including this serialization should be idempotent).
 
         transmitIntent.serMsg = self.serializer(transmitIntent)
+        self._schedulePreparedIntent(transmitIntent)
 
+
+    def _schedulePreparedIntent(self, transmitIntent):
         # If there's nothing to send, that's implicit success
         if not transmitIntent.serMsg:
             transmitIntent.result = SendStatus.Sent

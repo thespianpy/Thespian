@@ -162,6 +162,13 @@ class TCPIncoming(PauseWithBackoff):
     def __str__(self): return 'TCPInc(%s)<%s>'%(str(self._aResp), str(self._rData))
 
 
+class RoutedTCPv4ActorAddress(TCPv4ActorAddress):
+    def __init__(self, anIPAddr, anIPPort, adminAddr, external=False):
+        super(RoutedTCPv4ActorAddress, self).__init__(anIPAddr, anIPPort,
+                                                      external=external)
+        self.routing = [adminAddr]
+
+
 class TCPTransport(asyncTransportBase, wakeupTransportBase):
     "A transport using TCP IPv4 sockets for communications."
 
@@ -177,14 +184,15 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
                 externalAddr = convAddr
             elif type(convAddr) == type("") and ':' in convAddr:
                 externalAddr = convAddr.split(':')
-                externalAddr = externalAddr[0], int(externalAddr[1])
+                externalAddr      = externalAddr[0], int(externalAddr[1])
             else:
-                externalAddr          = (convAddr, capabilities.get('Admin Port', DEFAULT_ADMIN_PORT))
-            templateAddr          = ActorAddress(TCPv4ActorAddress(None, 0, external = externalAddr))
-            self._adminAddr       = self.getAdminAddr(capabilities)
-            self._parentAddr      = None
+                externalAddr = (convAddr, capabilities.get('Admin Port', DEFAULT_ADMIN_PORT))
+            templateAddr     = ActorAddress(TCPv4ActorAddress(None, 0, external = externalAddr))
+            self._adminAddr  = self.getAdminAddr(capabilities)
+            self._parentAddr = None
+            adminRouting     = False
         elif isinstance(initType, TCPEndpoint):
-            instanceNum, assignedAddr, self._parentAddr, self._adminAddr = initType.args
+            instanceNum, assignedAddr, self._parentAddr, self._adminAddr, adminRouting = initType.args
             templateAddr = assignedAddr or ActorAddress(TCPv4ActorAddress(None, 0,
                                                                           external = (self._parentAddr or
                                                                                       self._adminAddr or
@@ -205,10 +213,17 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
         # self.socket socket name is likely inaddr_any but has the
         # valid port, whereas the templateAddr has our actual public
         # address.
-        self.myAddress = ActorAddress(TCPv4ActorAddress(
+        if adminRouting and self._adminAddr != templateAddr:
+            self.myAddress = ActorAddress(RoutedTCPv4ActorAddress(
                 templateAddr.addressDetails.connectArgs[0][0],
                 self.socket.getsockname()[1],
-                 external = True))
+                self._adminAddr,
+                external = True))
+        else:
+            self.myAddress = ActorAddress(TCPv4ActorAddress(
+                templateAddr.addressDetails.connectArgs[0][0],
+                self.socket.getsockname()[1],
+                external = True))
         self._transmitIntents = []
         self._incomingSockets = []
         self._incomingEnvelopes = []
@@ -293,7 +308,7 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
             ss.close()
 
 
-    def prepEndpoint(self, assignedLocalAddr):
+    def prepEndpoint(self, assignedLocalAddr, capabilities):
         """In the parent, prepare to establish a new communications endpoint
            with a new Child Actor.  The result of this call will be
            passed to a created child process to use when initializing
@@ -306,11 +321,13 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
             return TCPEndpoint(assignedLocalAddr.addressDetails.addressInstanceNum,
                                None,
                                self.myAddress,
-                               self._adminAddr)
+                               self._adminAddr,
+                               capabilities.get('Admin Routing', False))
         return TCPEndpoint(None,
                            assignedLocalAddr,  # assumed to be an actual TCPActorAddress-based address (e.g. admin)
                            self.myAddress,
-                           self._adminAddr)
+                           self._adminAddr,
+                           capabilities.get('Admin Routing', False))
 
     def connectEndpoint(self, endPoint):
         pass
@@ -343,8 +360,52 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
 
     def _scheduleTransmitActual(self, intent):
         if intent.targetAddr == self.myAddress:
-            self._incomingEnvelopes.append(ReceiveEnvelope(intent.targetAddr, intent.message))
+            self._processReceivedEnvelope(ReceiveEnvelope(intent.targetAddr,
+                                                          intent.message))
             return self._finishIntent(intent)
+        if isinstance(intent.targetAddr.addressDetails, RoutedTCPv4ActorAddress):
+             #self.myAddress != self._adminAddr or \
+            if not isinstance(intent.message, ForwardMessage) and \
+               intent.targetAddr != self._adminAddr and \
+               True and \
+               (intent.targetAddr.addressDetails.routing[0] != self._adminAddr or \
+               (intent.targetAddr.addressDetails.routing[0] is None and \
+                intent.targetAddr.addressDtails.routing[1] != self._adminAddr)):
+                intent.changeMessage(
+                    ForwardMessage(intent.message,
+                                   intent.targetAddr,
+                                   self.myAddress,
+                                   intent.targetAddr.addressDetails.routing))
+                if intent.message.fwdTargets[0] == None:
+                    if self.myAddress == self._adminAddr:
+                        intent.message.fwdTargets = intent.message.fwdTargets[1:]
+                    else:
+                        intent.message.fwdTargets[0] = self._adminAddr
+
+                # Changing the target addr to the next relay target
+                # for the transmit machinery, but the levels above may
+                # process completion based on the original target
+                # (e.g. systemCommon _checkNextTransmit), so add a
+                # completion operation that will reset the target back
+                # to the original (this occurs before other callbacks
+                # because callbacks are called in reverse order of
+                # addition).
+                intent.addCallback(lambda r,i,ta=intent.targetAddr: i.changeTargetAddr(ta))
+                intent.changeTargetAddr(intent.message.fwdTargets[0])
+
+                try:
+                    intent.serMsg = self.serializer(intent)
+                except Exception:
+                    # The above should never throw an exception
+                    # because the core message has already been
+                    # checked and serialized and the only change is
+                    # the target address routing.  An exception
+                    # indicates that one of the routing addresses is
+                    # still local-only... which should never happen.
+                    thesplog('Exception serializing ForwardMessage wrapper'
+                             ' of %s through %s', intent.message.fwdMessage,
+                             list(map(str, intent.message.fwdTargets)))
+                    raise
         intent.stage = self._XMITStepSendConnect
         if self._nextTransmitStep(intent):
             self._transmitIntents.append(intent)
@@ -676,9 +737,37 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
             # Continue running, but release this socket
             return False
         inc.socket.sendall(ackMsg)
-        self._incomingEnvelopes.append(rEnv)
+        self._processReceivedEnvelope(rEnv)
         # Continue to run, but this socket is releasable
         return False
+
+
+    def _processReceivedEnvelope(self, envelope):
+        if not isinstance(envelope.message, ForwardMessage):
+            self._incomingEnvelopes.append(envelope)
+            return
+        if envelope.message.fwdTo == self.myAddress:
+            self._incomingEnvelopes.append(ReceiveEnvelope(envelope.message.fwdFrom,
+                                                           envelope.message.fwdMessage))
+            return
+        # The ForwardMessage has not reached the final destination, so
+        # update and target it at the next one.
+        if len(envelope.message.fwdTargets) < 2:
+            thesplog('Incorrectly received ForwardMessage destined for %s at %s: %s',
+                     envelope.message.fwdTo, self.myAddress, envelope.message.fwdMessage,
+                     level=logging.ERROR)
+            return  # discard  (TBD: send back as Poison? DeadLetter? Routing failure)
+        envelope.message.fwdTargets = envelope.message.fwdTargets[1:]
+        re_intent = TransmitIntent(envelope.message.fwdTo, envelope.message)
+        try:
+            re_intent.serMsg = self.serializer(re_intent)
+        except Exception as ex:
+            thesplog('Unexpected exception re-serializing ForwardMessage for forwarding: %s',
+                     str(ex), level=logging.ERROR)
+            return # discard (cannot send back anywhere, so must discard)
+        # Send back through queueing/limiting logic to ensure proper back-pressure.
+        # KWQ: should use systemCommon._send_intent instead?
+        self._schedulePreparedIntent(re_intent)
 
 
     def abort_run(self, drain=False):

@@ -45,7 +45,7 @@ class multiprocessCommon(systemBase):
 
 
     def _startAdmin(self, adminAddr, addrOfStarter, capabilities, logDefs):
-        endpointPrep = self.transport.prepEndpoint(adminAddr)
+        endpointPrep = self.transport.prepEndpoint(adminAddr, capabilities)
 
         multiprocessing.process._current_process._daemonic = False
         admin = multiprocessing.Process(target=startAdmin,
@@ -139,7 +139,7 @@ def startAdmin(adminClass, addrOfStarter, endpointPrep, transportClass,
         except Exception as ex:
             thesplog('Unable to adapt log aggregator address "%s" to a transport address: %s',
                      logAggregator, ex, level=logging.WARNING)
-    admin.asLogProc = startASLogger(loggerAddr, logDefs, transport,
+    admin.asLogProc = startASLogger(loggerAddr, logDefs, transport, capabilities,
                                     logAggregator
                                     if logAggregator != admin.transport.myAddress
                                     else None)
@@ -187,7 +187,7 @@ class MultiProcReplicator(object):
                                              "no system has compatible capabilities")
 
         # KWQ: when child starts it will have this parent address and it will initialize its transport and notify the parent, whereupon the parent will see the incoming message from the child with the id# indicated in the addressmanager localaddress and update the localaddress.  All this should happen in the transport though, not here.
-        endpointPrep = self.transport.prepEndpoint(childAddr)
+        endpointPrep = self.transport.prepEndpoint(childAddr, self.capabilities)
 
         multiprocessing.process._current_process._daemonic = False
 

@@ -141,7 +141,7 @@ class UDPTransport(asyncTransportBase, wakeupTransportBase):
             ss.close()
 
 
-    def prepEndpoint(self, assignedLocalAddr):
+    def prepEndpoint(self, assignedLocalAddr, capabilities):
         """In the parent, prepare to establish a new communications endpoint
            with a new Child Actor.  The result of this call will be
            passed to a created child process to use when initializing

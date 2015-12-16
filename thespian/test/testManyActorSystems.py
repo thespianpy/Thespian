@@ -27,10 +27,25 @@ def remoteSystem(conn, systembase, adminPort, systemCapabilities):
     return False
 
 
-def DagobahSystem(conn, base): remoteSystem(conn, base, 16230, { 'Swamp': True })
-def HothSystem(conn, base):    remoteSystem(conn, base, 16231, { 'Snow':  True })
-def EndorSystem(conn, base):   remoteSystem(conn, base, 16232, { 'Trees': True })
-def NabooSystem(conn, base):   remoteSystem(conn, base, 16233, { 'Ocean': True })
+def DagobahSystem(conn, base, extraCaps):
+    caps = {'Swamp': True}
+    if extraCaps: caps.update(extraCaps)
+    remoteSystem(conn, base, 16230, caps)
+
+def HothSystem(conn, base, extraCaps):
+    caps = { 'Snow':  True }
+    if extraCaps: caps.update(extraCaps)
+    remoteSystem(conn, base, 16231, caps)
+
+def EndorSystem(conn, base, extraCaps):
+    caps = { 'Trees': True }
+    if extraCaps: caps.update(extraCaps)
+    remoteSystem(conn, base, 16232, caps)
+
+def NabooSystem(conn, base, extraCaps):
+    caps = { 'Ocean': True }
+    if extraCaps: caps.update(extraCaps)
+    remoteSystem(conn, base, 16233, caps)
 
 
 class Conversation:
@@ -195,27 +210,37 @@ class TestManyActorSystem(unittest.TestCase):
         # latter is not duplicated in each sub-process.
 
         child_conn, parent_conn = Pipe()
-        child = Process(target=DagobahSystem, args=(child_conn, self.actorSystemBase))
+        child = Process(target=DagobahSystem,
+                        args=(child_conn, self.actorSystemBase,
+                              getattr(self, 'extraCapabilities', None)))
         child.start()
         self.systems['Dagobah'] = (parent_conn, child)
 
         child_conn, parent_conn = Pipe()
-        child = Process(target=HothSystem, args=(child_conn, self.actorSystemBase))
+        child = Process(target=HothSystem,
+                        args=(child_conn, self.actorSystemBase,
+                              getattr(self, 'extraCapabilities', None)))
         child.start()
         self.systems['Hoth'] = (parent_conn, child)
 
         child_conn, parent_conn = Pipe()
-        child = Process(target=EndorSystem, args=(child_conn, self.actorSystemBase))
+        child = Process(target=EndorSystem,
+                        args=(child_conn, self.actorSystemBase,
+                              getattr(self, 'extraCapabilities', None)))
         child.start()
         self.systems['Endor'] = (parent_conn, child)
 
         child_conn, parent_conn = Pipe()
-        child = Process(target=NabooSystem, args=(child_conn, self.actorSystemBase))
+        child = Process(target=NabooSystem,
+                        args=(child_conn, self.actorSystemBase,
+                              getattr(self, 'extraCapabilities', None)))
         child.start()
         self.systems['Naboo'] = (parent_conn, child)
 
-        ActorSystem(self.actorSystemBase, {'Jedi Council': True,
-                                           'Admin Port': 12121},
+        caps = {'Jedi Council': True,
+                'Admin Port': 12121}
+        caps.update(getattr(self, 'extraCapabilities', {}))
+        ActorSystem(self.actorSystemBase, caps,
                     logDefs = simpleActorTestLogging())
 
         for each in self.systems:
@@ -421,6 +446,10 @@ class TestManyActorSystem(unittest.TestCase):
         self.assertEqual(ActorSystem().ask(ewok, 'Greet Guest', 0.25), 'Thanks for the Trees')
 
 
+class TestManyActorSystemAdminRouting(TestManyActorSystem):
+    extraCapabilities = { 'Admin Routing': True }
+
+
 class TestMultiprocUDPSystem(TestManyActorSystem):
     testbase='MultiprocUDP'
     scope='func'
@@ -462,22 +491,30 @@ class TestConventionWatcher(unittest.TestCase):
             # ActorSystems.
 
             parent_conn1, child_conn1 = Pipe()
-            child1 = Process(target=DagobahSystem, args=(child_conn1, self.actorSystemBase))
+            child1 = Process(target=DagobahSystem,
+                             args=(child_conn1, self.actorSystemBase,
+                                   getattr(self, 'extraCapabilities', None)))
             child1.start()
             systems['Dagobah'] = (parent_conn1, child1)
 
             child_conn2, parent_conn2 = Pipe()
-            child2 = Process(target=HothSystem, args=(child_conn2, self.actorSystemBase))
+            child2 = Process(target=HothSystem,
+                             args=(child_conn2, self.actorSystemBase,
+                                   getattr(self, 'extraCapabilities', None)))
             child2.start()
             systems['Hoth'] = (parent_conn2, child2)
 
             child_conn3, parent_conn3 = Pipe()
-            child3 = Process(target=EndorSystem, args=(child_conn3, self.actorSystemBase))
+            child3 = Process(target=EndorSystem,
+                             args=(child_conn3, self.actorSystemBase,
+                                   getattr(self, 'extraCapabilities', None)))
             child3.start()
             systems['Endor'] = (parent_conn3, child3)
 
             child_conn4, parent_conn4 = Pipe()
-            child4 = Process(target=NabooSystem, args=(child_conn4, self.actorSystemBase))
+            child4 = Process(target=NabooSystem,
+                             args=(child_conn4, self.actorSystemBase,
+                                   getattr(self, 'extraCapabilities', None)))
             child4.start()
             systems['Naboo'] = (parent_conn4, child4)
 
@@ -485,8 +522,9 @@ class TestConventionWatcher(unittest.TestCase):
             # registers for Convention entry/exit from other
             # ActorSystems.
 
-            ActorSystem(self.actorSystemBase, {'Jedi Council': True,
-                                               'Admin Port': 12121},
+            caps = {'Jedi Council': True, 'Admin Port': 12121}
+            caps.update(getattr(self, 'extraCapabilities', {}))
+            ActorSystem(self.actorSystemBase, caps,
                         logDefs =  simpleActorTestLogging())
 
             watcher = ActorSystem().createActor(Notified)
@@ -534,6 +572,10 @@ class TestConventionWatcher(unittest.TestCase):
             ActorSystem().shutdown()
 
 
+class TestConventionWatcherAdminRouting(TestConventionWatcher):
+    extraCapabilities = { 'Admin Routing': True }
+
+
 class TestMultiprocUDPSystemWatcher(TestConventionWatcher):
     testbase='MultiprocUDP'
     scope='func'
@@ -560,12 +602,16 @@ class TestConventionDeregistration(unittest.TestCase):
             # ActorSystems.
 
             parent_conn1, child_conn1 = Pipe()
-            child1 = Process(target=DagobahSystem, args=(child_conn1, self.actorSystemBase))
+            child1 = Process(target=DagobahSystem,
+                             args=(child_conn1, self.actorSystemBase,
+                                   getattr(self, 'extraCapabilities', None)))
             child1.start()
             systems['Dagobah'] = (parent_conn1, child1)
 
             parent_conn1, child_conn1 = Pipe()
-            child1 = Process(target=EndorSystem, args=(child_conn1, self.actorSystemBase))
+            child1 = Process(target=EndorSystem,
+                             args=(child_conn1, self.actorSystemBase,
+                                   getattr(self, 'extraCapabilities', None)))
             child1.start()
             systems['Endor'] = (parent_conn1, child1)
 
@@ -573,8 +619,9 @@ class TestConventionDeregistration(unittest.TestCase):
             # registers for Convention entry/exit from other
             # ActorSystems.
 
-            ActorSystem(self.actorSystemBase, {'Jedi Council': True,
-                                               'Admin Port': 12121},
+            caps ={'Jedi Council': True, 'Admin Port': 12121}
+            caps.update(getattr(self, 'extraCapabilities', {}))
+            ActorSystem(self.actorSystemBase, caps,
                         logDefs =  simpleActorTestLogging())
 
             watcher = ActorSystem().createActor(Notified)
@@ -648,6 +695,10 @@ class TestConventionDeregistration(unittest.TestCase):
                 systems[system][0].send('OK, all done')
             sleep(0.3)  # allow other actorsystems (non-convention-leaders) to exit
             ActorSystem().shutdown()
+
+
+class TestConventionDeregistrationAdminRouting(TestConventionDeregistration):
+    extraCapabilities = { 'Admin Routing': True }
 
 
 class TestMultiprocUDPSystemDeregistration(TestConventionDeregistration):
