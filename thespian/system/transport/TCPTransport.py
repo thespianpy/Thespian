@@ -223,8 +223,10 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
             templateAddr     = ActorAddress(TCPv4ActorAddress(None, 0, external = externalAddr))
             self._adminAddr  = self.getAdminAddr(capabilities)
             self._parentAddr = None
+            isAdmin = False
         elif isinstance(initType, TCPEndpoint):
             instanceNum, assignedAddr, self._parentAddr, self._adminAddr, adminRouting, self.txOnly = initType.args
+            isAdmin = assignedAddr == self._adminAddr
             templateAddr = assignedAddr or ActorAddress(TCPv4ActorAddress(None, 0,
                                                                           external = (self._parentAddr or
                                                                                       self._adminAddr or
@@ -245,17 +247,18 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
         # self.socket socket name is likely inaddr_any but has the
         # valid port, whereas the templateAddr has our actual public
         # address.
-        if adminRouting and self._adminAddr != templateAddr:
+        if isAdmin and self.txOnly:
+            # Must be the admin, and in txOnly mode
+            self.myAddress = ActorAddress(TXOnlyAdminTCPv4ActorAddress(
+                templateAddr.addressDetails.connectArgs[0][0],
+                self.socket.getsockname()[1],
+                external = True))
+        elif adminRouting:
             self.myAddress = ActorAddress(RoutedTCPv4ActorAddress(
                 templateAddr.addressDetails.connectArgs[0][0],
                 self.socket.getsockname()[1],
                 self._adminAddr,
                 txOnly = self.txOnly,
-                external = True))
-        elif self._adminAddr == templateAddr and self.txOnly:
-            self.myAddress = ActorAddress(TXOnlyAdminTCPv4ActorAddress(
-                templateAddr.addressDetails.connectArgs[0][0],
-                self.socket.getsockname()[1],
                 external = True))
         else:
             self.myAddress = ActorAddress(TCPv4ActorAddress(
