@@ -490,7 +490,7 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
                         self._waitingTransmits = waiting
                         for R in runnable:
                             if self._nextTransmitStep(R):
-                                if hasattr(intent, 'socket'):
+                                if hasattr(R, 'socket'):
                                     thesplog('<S> waiting intent is now re-processing: %s', R.identify())
                                     self._transmitIntents[R.socket.fileno()] = intent
                                 else:
@@ -599,6 +599,9 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
 
     def _next_XMIT_2(self, intent):
         # Got connected, ready to send
+        if not hasattr(intent, 'socket'):
+            intent.stage = self._XMITStepRetry
+            return self._nextTransmitStep(intent)
         try:
             #intent.socket.sendall(intent.serMsg)
             intent.amtSent += intent.socket.send(intent.serMsg[intent.amtSent:])
