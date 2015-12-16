@@ -435,12 +435,14 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
         intent.completionCallback()
         return False  # intent no longer needs to be attempted
 
-    def _nextTransmitStepCheck(self, intent, fileno):
+    def _nextTransmitStepCheck(self, intent, fileno, closed=False):
         # Return True if this intent is still valid, False if it has
         # been completed.  If fileno is -1, this means check if there is
         # time remaining still on this intent
-        if (hasattr(intent, 'socket') and intent.socket.fileno() == fileno) or \
+        if self._socketFile(intent) == fileno or \
            (fileno == -1 and intent.timeToRetry()):
+            if closed:
+                intent.stage = self._XMITStepRetry
             return self._nextTransmitStep(intent)
         if intent.expired():
             # Transmit timed out (consider this permanent)
@@ -661,9 +663,8 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
 
             if not hasattr(self, '_aborting_run') and not xmitOnly:
                 wrecv.extend([self.socket.fileno()])
-            # rrecv, rsend, _ign2 = select.select(wrecv, wsend, [], delay)
             try:
-                rrecv, rsend, _ign2 = select.select(wrecv, wsend, set(wsend+wrecv),
+                rrecv, rsend, rerr = select.select(wrecv, wsend, set(wsend+wrecv),
                                                     delay)
             except ValueError as ex:
                 thesplog('ValueError on select(#%d: %s, #%d: %s, #%d: %s, %s)',
@@ -680,9 +681,24 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
                 raise
 
 
-            if _ign2:
-                thesplog('WHOA... something else to do for sockets: %s',
-                         _ign2, level=logging.WARNING)
+            if rerr:
+                for errsock in rerr:
+                    if errsock == self.socket.fileno():
+                        thesplog('SELECT FATAL ERROR ON MAIN LISTEN SOCKET',
+                                 level=logging.ERROR)
+                        raise RuntimeError('Fatal listen socket error; aborting')
+
+                    self._incomingSockets = [S for S in self._incomingSockets
+                                             if self._handlePossibleIncoming(S, errsock, closed=True)]
+                    self._transmitIntents = [I for I in self._transmitIntents
+                                             if self._nextTransmitStepCheck(I, errsock, closed=True)]
+
+                    closed_openSocks = []
+                    for I in self._openSockets:
+                        if self._socketFile(self._openSockets[I]) == errsock:
+                            closed_openSocks.append(I)
+                    for each in closed_openSocks:
+                        del self._openSockets[I]
 
             origPendingSends = len(self._transmitIntents)
 
@@ -731,7 +747,7 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
 
             # Check if it's time to quit
             if [] == rrecv and [] == rsend:
-                if [] == _ign2 and self.run_time.expired():
+                if [] == rerr and self.run_time.expired():
                     # Timeout, give up
                     return None
                 continue
@@ -762,8 +778,10 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
             (ActorAddress(TCPv4ActorAddress(*(rmtAddr))), lsock))
 
 
-    def _handlePossibleIncoming(self, incomingSocket, fileno):
-        if incomingSocket.socket and (incomingSocket.socket.fileno() == fileno or \
+    def _handlePossibleIncoming(self, incomingSocket, fileno, closed=False):
+        if closed:
+            rval = None
+        elif incomingSocket.socket and (incomingSocket.socket.fileno() == fileno or \
                                       not incomingSocket.delay()):
             rval = self._handleReadableIncoming(incomingSocket)
         else:
