@@ -7,7 +7,7 @@
 #+LATEX_HEADER: \product{Thespian}
 #+LATEX_HEADER: \component{Python Actor System}
 #+LATEX_HEADER: \doctype{Release Notes}
-#+LATEX_HEADER: \docrev{2.5.0}{2015 Dec 16}
+#+LATEX_HEADER: \docrev{2.5.1}{2015 Dec 16}
 #+LATEX_HEADER: \docid{TheDoc-06}
 #+OPTIONS: ^:nil num:nil
 
@@ -17,7 +17,16 @@
 
 ** 2.5
 
-*** 2.5.0 <2015-11-19 Thu>
+*** 2.5.1 <2015-12-16 Wed>
+
+  * Fixed sourceload path handling: zipfiles use posix paths only, but
+    running loaded sources on Windows with previous versions attempted
+    to use Windows path specifications.
+
+  * Increased level of logging from sourceload failures to ERROR from
+    INFO.
+
+*** 2.5.0 <2015-12-16 Wed>
 
   * Allow value specification with the ~@requireCapability~ decorator.
 
