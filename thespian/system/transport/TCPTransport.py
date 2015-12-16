@@ -298,14 +298,15 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
                          True)))
 
     @staticmethod
-    def getAddressFromString(addrspec):
+    def getAddressFromString(addrspec, adminRouting=False):
         if isinstance(addrspec, tuple):
             addrparts = addrspec
         else:
             addrparts = addrspec.split(':')
+        addrtype = RoutedTCPv4ActorAddress if adminRouting else TCPv4ActorAddress
         if 1 == len(addrparts):
-            return ActorAddress(TCPv4ActorAddress(addrparts[0], DEFAULT_ADMIN_PORT, external=True))
-        return ActorAddress(TCPv4ActorAddress(addrparts[0], addrparts[1], external=True))
+            return ActorAddress(addrtype(addrparts[0], DEFAULT_ADMIN_PORT, external=True))
+        return ActorAddress(addrtype(addrparts[0], addrparts[1], external=True))
 
     @staticmethod
     def getConventionAddress(capabilities):
