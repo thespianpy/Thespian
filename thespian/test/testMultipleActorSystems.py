@@ -40,7 +40,8 @@ class ActorsLikeDogs(Actor):
             else:
                 pass # discard message from bestFriend; normal for this test
         else:
-            self.send(sender, 'Greetings.')
+            if sender != self.myAddress:
+                self.send(sender, 'Greetings.')
 
 class AskFriendsMsg:
     def __init__(self, query, otherFriend, onBehalfOf):
