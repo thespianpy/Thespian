@@ -283,23 +283,7 @@ class ActorSystemBase:
                         self._generateStatusResponse(msg, tgt, sndr)
                     else:
                         killActor = isinstance(ps.msg, ActorExitRequest)
-                        try:
-                            # This if is to avoid sending PoisonMessage(ChildActorExited) back to child
-                            if not isinstance(ps.msg, ChildActorExited) or ps.msg == msg:
-                                tgt.instance._receive(msg, sndr)
-                        except Exception as ex:
-                            logging.getLogger('Thespian').warning(
-                                'Failure of Actor %s during message processing (attempt %s)',
-                                tgt.address, ps.attempts,
-                                exc_info = True)
-                            ps.attempts += 1
-                            self._pendingSends.append(ps)
-                        else:
-                            if isinstance(ps.msg, ChildActorExited):
-                                try:
-                                    del tgt._yung[tgt._yung.index(ps.msg.childAddress)]
-                                except ValueError:
-                                    pass
+                        self._callActorWithMessage(tgt, ps, msg, sndr)
                         if killActor:
                             try:
                                 self.actorRegistry[ps.toActor.actorAddressString].instance = None
@@ -331,6 +315,26 @@ class ActorSystemBase:
                     # Not replaced, so complete removal, including children
                     childref.shutdown()
                     self.actorRegistry[deadAddr] = None
+
+
+    def _callActorWithMessage(self, tgt, ps, msg, sndr):
+        try:
+            # This if is to avoid sending PoisonMessage(ChildActorExited) back to child
+            if not isinstance(ps.msg, ChildActorExited) or ps.msg == msg:
+                tgt.instance._receive(msg, sndr)
+        except Exception as ex:
+            logging.getLogger('Thespian').warning(
+                'Failure of Actor %s during message processing (attempt %s)',
+                tgt.address, ps.attempts,
+                exc_info = True)
+            ps.attempts += 1
+            self._pendingSends.append(ps)
+        else:
+            if isinstance(ps.msg, ChildActorExited):
+                try:
+                    del tgt._yung[tgt._yung.index(ps.msg.childAddress)]
+                except ValueError:
+                    pass
 
 
     def _generateStatusResponse(self, msg, tgt, sndr):
