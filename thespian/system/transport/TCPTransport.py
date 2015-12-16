@@ -348,12 +348,12 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
         super(TCPTransport, self).deadAddress(addressManager, childAddr)
 
 
-    _XMITStepSendConnect    = 1
-    _XMITStepSendData       = 2
-    _XMITStepShutdownWrite  = 3
-    _XMITStepWaitForAck     = 4
-    _XMITStepCloseAndFinish = 5
-    _XMITStepRetry          = 6
+    _XMITStepSendConnect   = 1
+    _XMITStepSendData      = 2
+    _XMITStepShutdownWrite = 3
+    _XMITStepWaitForAck    = 4
+    _XMITStepFinishCleanup = 5
+    _XMITStepRetry         = 6
 
     def serializer(self, intent):
         return toSendBuffer((self.myAddress, intent.message), serializer.dumps)
@@ -512,7 +512,7 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
             # intent.socket.shutdown(socket.SHUT_WR)
         except socket.error:
             # No shutdown handling, just close
-            intent.stage = self._XMITStepCloseAndFinish
+            intent.stage = self._XMITStepFinishCleanup
             return self._nextTransmitStep(intent)
         intent.ackbuf = ReceiveBuffer(serializer.loads)
         intent.stage = self._XMITStepWaitForAck
@@ -546,7 +546,7 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
             if ackmsg in [ackPacket, ackDataErrPacket]:
                 intent.result = SendStatus.Sent if ackmsg == ackPacket \
                                 else SendStatus.BadPacket
-                intent.stage = self._XMITStepCloseAndFinish
+                intent.stage = self._XMITStepFinishCleanup
                 return self._nextTransmitStep(intent)
             thesplog('Unrecognized ACK packet')
         # Invalid ack, or no receive but socket closed.  Reschedule transmit.
