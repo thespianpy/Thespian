@@ -151,12 +151,12 @@ def _safeSocketShutdown(sock):
 
 
 class TCPIncoming_Common(PauseWithBackoff):
-    def __init__(self, rmtAddr, baseSock):
+    def __init__(self, rmtAddr, baseSock, rcvBuf=None):
         super(TCPIncoming_Common, self).__init__()
         self._openSock = baseSock
         self._rmtAddr  = rmtAddr # may be None until a message is rcvd
                                  # with identification
-        self._rData = ReceiveBuffer(serializer.loads)
+        self._rData = rcvBuf or ReceiveBuffer(serializer.loads)
         self._expires = datetime.now() + MAX_INCOMING_SOCKET_PERIOD
         self.failCount = 0
     @property
@@ -694,22 +694,43 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
                      str(intent.targetAddr), str(self.myAddress), err,
                      level=logging.ERROR, exc_info=True)
             rcv = ''  # Remote closed connection
-        if rcv:
-            intent.ackbuf.addMore(rcv)
-            if not intent.ackbuf.isDone():
-                # Continue waiting for ACK
-                return True
-            ackmsg, intent.extraRead = intent.ackbuf.completed()
-            if ackmsg in [ackPacket, ackDataErrPacket]:
-                intent.result = SendStatus.Sent if ackmsg == ackPacket \
-                                else SendStatus.BadPacket
-                intent.stage = self._XMITStepFinishCleanup
-                return self._nextTransmitStep(intent)
-            thesplog('<<< Unrecognized ACK packet: %s', ackmsg)
-        # Invalid ack, or no receive but socket closed.  Reschedule transmit.
-        intent.backoffPause(True)
-        intent.stage = self._XMITStepRetry
-        return self._nextTransmitStep(intent)
+        if not rcv:
+            # Socket closed.  Reschedule transmit.
+            intent.backoffPause(True)
+            intent.stage = self._XMITStepRetry
+            return self._nextTransmitStep(intent)
+        return self._check_XMIT_4_done(intent, rcv)
+
+    def _check_XMIT_4_done(self, intent, rcv):
+        intent.ackbuf.addMore(rcv)
+        if not intent.ackbuf.isDone():
+            # Continue waiting for ACK
+            return True
+        ackmsg, intent.extraRead = intent.ackbuf.completed()
+        if ackmsg in [ackPacket, ackDataErrPacket]:
+            intent.result = SendStatus.Sent if ackmsg == ackPacket \
+                            else SendStatus.BadPacket
+            intent.stage = self._XMITStepFinishCleanup
+            return self._nextTransmitStep(intent)
+        # Must have received a transmit packet from the remote;
+        # process as a received incoming.
+        intent.ackbuf.removeExtra()
+        if self._addedDataToIncoming(TCPIncomingPersistent(intent.targetAddr,
+                                                           intent.socket,
+                                                           intent.ackbuf),
+                                     True):
+            # intent.ackbuf.completed() said ackmsg was a full receive packet, but
+            # _addedDataToIncoming disagreed.  This should NEVER HAPPEN.
+            thesplog('<<< Should never happen: not full receive while waiting for ACK. Aborting socket.',
+                     level=logging.CRITICAL)
+            intent.ackbuf = ReceiveBuffer(serializer.loads)
+            intent.backoffPause(True)
+            intent.stage = self._XMITStepRetry
+            return self._nextTransmitStep(intent)
+        intent.ackbuf = ReceiveBuffer(serializer.loads)
+        nxtrcv = intent.extraRead
+        intent.extraRead = ''
+        return self._check_XMIT_4_done(intent, nxtrcv)
 
     def _next_XMIT_5(self, intent):
         return self._finishIntent(intent, intent.result)
@@ -980,7 +1001,7 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
             return incomingSocket
 
 
-    def _finishIncoming(self, incomingSocket):
+    def _finishIncoming(self, incomingSocket, fromRealAddr):
         # Only called if incomingSocket can continue to be used; if
         # there was an error then incomingSocket should be closed and
         # released.
@@ -1026,7 +1047,7 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
         return self._addedDataToIncoming(inc)
 
 
-    def _addedDataToIncoming(self, inc):
+    def _addedDataToIncoming(self, inc, skipFinish=False):
         if not inc.receivedAllData():
             # Continue running and monitoring this socket
             return inc
@@ -1049,7 +1070,7 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
             newinc = TCPIncomingPersistent(inc.fromAddress, inc.socket)
             newinc.addData(rdata)
             return self._addedDataToIncoming(newinc)
-        self._finishIncoming(inc)
+        if not skipFinish: self._finishIncoming(inc, rEnv.sender)
         return None
 
 

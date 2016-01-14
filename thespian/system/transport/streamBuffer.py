@@ -56,6 +56,8 @@ class ReceiveBuffer:
         # might be true if no size could be reasonably read from the data so-far
         return (self._size is not None and len(self._buf) == self._size) or \
             (self._size is None and len(self._buf) > 40)  # corrupted packet
+    def removeExtra(self):
+        self._extra = b''
     def completed(self):
         "Returns the packet and any extra data if fully read, otherwise None"
         if self._size is not None and len(self._buf) == self._size:
