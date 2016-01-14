@@ -500,7 +500,7 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
                         _safeSocketShutdown(intent.socket)
                         # Here waiting intents need to be re-queued
                         # since otherwise they won't run until timeout
-                        waiting, runnable = partition(lambda I: I.targetAddr == intent.targetAddr,
+                        runnable, waiting = partition(lambda I: I.targetAddr == intent.targetAddr,
                                                       self._waitingTransmits)
                         self._waitingTransmits = waiting
                         for R in runnable:
