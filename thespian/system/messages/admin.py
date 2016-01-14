@@ -99,6 +99,10 @@ class PendingActorResponse(ActorSystemMessage):
         self.globalName    = globalName
         self.errorStr      = errorStr # supplemental to errorCode; may be blank
 
+    def __str__(self):
+        return 'PendingActorResponse(for %s inst# %s) errCode %s actual %s'%(
+            self.forActor, self.instanceNum, self.errorCode, self.actualAddress)
+
 
 class HandleDeadLetters(ActorSystemMessage):
     """Message sent to the Admin to register or de-register the specified
