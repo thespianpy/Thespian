@@ -531,7 +531,7 @@ class ConventioneerAdmin(GlobalNamesAdmin):
     def h_PendingActor(self, envelope):
         sourceHash = envelope.message.sourceHash
         childRequirements = envelope.message.targetActorReq
-        thesplog('Pending Actor request for %s%s reqs %s from %s',
+        thesplog('Pending Actor request received for %s%s reqs %s from %s',
                  envelope.message.actorClassName,
                  ' (%s)'%sourceHash if sourceHash else '',
                  childRequirements, envelope.sender)
@@ -618,7 +618,7 @@ class ConventioneerAdmin(GlobalNamesAdmin):
             return True
         except Exception as ex:
             import traceback
-            thesplog('Exception "%s" handling PendingActor: %s', ex, traceback.format_exc())
+            thesplog('Exception "%s" handling PendingActor: %s', ex, traceback.format_exc(), level=logging.ERROR)
             self._sendPendingActorResponse(envelope, None,
                                            errorCode = PendingActorResponse.ERROR_Invalid_ActorClass,
                                            errorStr = str(ex))
