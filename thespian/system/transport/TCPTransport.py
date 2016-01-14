@@ -830,8 +830,7 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
             if not hasattr(self, '_aborting_run') and not xmitOnly:
                 wrecv.extend([self.socket.fileno()])
             try:
-                rrecv, rsend, rerr = select.select(wrecv, wsend, set(wsend+wrecv),
-                                                    delay)
+                rrecv, rsend, rerr = select.select(wrecv, wsend, set(wsend+wrecv), delay)
             except ValueError as ex:
                 thesplog('ValueError on select(#%d: %s, #%d: %s, #%d: %s, %s)',
                          len(wrecv), wrecv, len(wsend), wsend,
@@ -998,6 +997,7 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
         fromAddr = incomingSocket.fromAddress
         if fromAddr and isinstance(incomingSocket, TCPIncomingPersistent):
             if fromAddr in self._openSockets:
+
                 _safeSocketShutdown(self._openSockets[fromAddr].socket)
             self._openSockets[fromAddr] = IdleSocket(incomingSocket.socket)
             for T in self._transmitIntents.values():
