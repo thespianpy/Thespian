@@ -504,7 +504,10 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
                                                       self._waitingTransmits)
                         self._waitingTransmits = waiting
                         for R in runnable:
-                            if self._nextTransmitStep(R):
+                            if status == SendStatus.DeadTarget:
+                                R.result = status
+                                R.completionCallback()
+                            elif self._nextTransmitStep(R):
                                 if hasattr(R, 'socket'):
                                     thesplog('<S> waiting intent is now re-processing: %s', R.identify())
                                     self._transmitIntents[R.socket.fileno()] = intent
