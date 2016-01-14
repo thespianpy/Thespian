@@ -13,14 +13,14 @@ from thespian.system.sourceLoader import SourceHashFinder
 class AdminCore(systemCommonBase):
 
     def __init__(self, transport, address, capabilities, logdefs):
-        thesplog('++++ Starting Admin', level=logging.DEBUG)
+        thesplog('++++ Starting Admin from %s', sys.modules['thespian'].__file__, level=logging.DEBUG)
         super(AdminCore, self).__init__(address, transport)
         self.capabilities = capabilities
         self.logdefs      = logdefs
         self._pendingChildren = {}  # key = childLocalAddr instance #, value = PendingActorEnvelope
         # Things that help us look like an Actor, even though we're not
         self._sourceHash  = None
-        thesplog('++++ Admin started @ %s', self.transport.myAddress, level=logging.INFO, primary=True)
+        thesplog('++++ Admin started @ %s / %s', self.transport.myAddress, str(ThespianGeneration), level=logging.INFO, primary=True)
         self._nannying = {}  # key=child actorAddress, value=parent Address
         self._deadLetterHandler = None
         self._sources = {}  # Index is sourcehash, value is requestor
