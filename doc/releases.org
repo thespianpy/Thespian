@@ -7,7 +7,7 @@
 #+LATEX_HEADER: \product{Thespian}
 #+LATEX_HEADER: \component{Python Actor System}
 #+LATEX_HEADER: \doctype{Release Notes}
-#+LATEX_HEADER: \docrev{2.5.1}{2015 Dec 16}
+#+LATEX_HEADER: \docrev{2.5.2}{2016 Jan 13}
 #+LATEX_HEADER: \docid{TheDoc-06}
 #+OPTIONS: ^:nil num:nil
 
@@ -16,6 +16,42 @@
 * 2.x
 
 ** 2.5
+
+*** 2.5.2 <2016-01-13 Wed>
+
+  * Enhanced and fixed logging messages, including severity indications.
+
+  * Formatting updates in the design document.
+
+  * Update allowable multi-system actor response times in tests.
+
+  * Limit status key/value output column alignment width to 40 characters.
+
+  * Added TCPTransport idle sockets to status reports.
+
+  * Fix multiple TCPTransport transmit retry handling and re-queueing bugs.
+
+  * Enhance TCPTransport to gracefully handle receive of a remote
+    message while waiting for an ACK of a locally transmitted message.
+
+  * Update TCPTransport for full address/target re-evaluation on
+    message forwarding to properly handle dead targets and related
+    scenarios.
+
+  * Immediate cancel of all pending transmits to a remote target on
+    Connection Refused (remote target is dead).
+
+  * Fixed TCPTransport to never use a negative delay (occurs if
+    pending wait time on an event has already expired) and use a zero
+    delay instead.
+
+  * No socket-level timeout on connects from TCPTransport; timeout management
+    is done internally to TCPTransport.
+
+  * Allow connection to Admin even if the reported address is
+    different than the expected address.  This allows support for
+    systems that change addresses or which have multiple viable
+    addresses.
 
 *** 2.5.1 <2015-12-16 Wed>
 
