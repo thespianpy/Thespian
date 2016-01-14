@@ -453,10 +453,9 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
                     routing = routing[1:]
                 if routing:
                     if len(routing) != 1 or routing[0] != intent.targetAddr:
-                        intent.changeMessage(
-                            ForwardMessage(intent.message,
-                                           intent.targetAddr,
-                                           self.myAddress, routing))
+                        intent.changeMessage(ForwardMessage(intent.message,
+                                                            intent.targetAddr,
+                                                            self.myAddress, routing))
                         # Changing the target addr to the next relay target
                         # for the transmit machinery, but the levels above may
                         # process completion based on the original target
@@ -467,21 +466,9 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
                         # addition).
                         intent.addCallback(lambda r,i,ta=intent.targetAddr: i.changeTargetAddr(ta))
                         intent.changeTargetAddr(intent.message.fwdTargets[0])
+                        self.scheduleTransmit(getattr(self, '_addressMgr', None), intent)
+                        return
 
-                        try:
-                            intent.serMsg = self.serializer(intent)
-                        except Exception:
-                            # The above should never throw an exception
-                            # because the core message has already been
-                            # checked and serialized and the only change is
-                            # the target address routing.  An exception
-                            # indicates that one of the routing addresses is
-                            # still local-only... which should never happen.
-                            thesplog('Exception serializing ForwardMessage wrapper'
-                                     ' of %s through %s', intent.message.fwdMessage,
-                                     list(map(str, intent.message.fwdTargets)),
-                                     level=logging.ERROR)
-                            raise
         intent.stage = self._XMITStepSendConnect
         if self._nextTransmitStep(intent):
             if hasattr(intent, 'socket'):
@@ -1089,16 +1076,10 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
                      envelope.message.fwdTo, self.myAddress, envelope.message.fwdMessage,
                      level=logging.ERROR)
             return  # discard  (TBD: send back as Poison? DeadLetter? Routing failure)
+        nextTgt = envelope.message.fwdTargets[0]
         envelope.message.fwdTargets = envelope.message.fwdTargets[1:]
-        re_intent = TransmitIntent(envelope.message.fwdTo, envelope.message)
-        try:
-            re_intent.serMsg = self.serializer(re_intent)
-        except Exception as ex:
-            thesplog('Unexpected exception re-serializing ForwardMessage for forwarding: %s',
-                     str(ex), level=logging.ERROR)
-            return # discard (cannot send back anywhere, so must discard)
-        # Send back through queueing/limiting logic to ensure proper back-pressure.
-        self._schedulePreparedIntent(re_intent)
+        self.scheduleTransmit(getattr(self, '_addressMgr', None),
+                              TransmitIntent(nextTgt, envelope.message))
 
 
     def abort_run(self, drain=False):
