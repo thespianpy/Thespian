@@ -147,8 +147,8 @@ class BaseCapabilityUpdates(object):
         self.systems['One'].updateCapability('Red', True)
         self.systems['Two'].updateCapability('Green', True)
         self.systems['Three'].updateCapability('Blue', True)
-        reasonableActorResponseTime = 0.2
-        time.sleep(reasonableActorResponseTime*3)  # Allow for propagation (with hysteresis)
+        reasonableActorResponseTime = 2.0
+        time.sleep(reasonableActorResponseTime)  # Allow for propagation (with hysteresis)
         # Create one actor in each system
         red = self.systems['One'].createActor(RedActor)
         green = self.systems['One'].createActor(GreenActor)
@@ -357,7 +357,7 @@ class BaseCapabilityUpdates(object):
         self.systems['One'].updateCapability('Red', True)
         self.systems['Two'].updateCapability('Green', True)
         self.systems['Three'].updateCapability('Blue', True)
-        reasonableActorResponseTime = 0.2
+        reasonableActorResponseTime = 0.3
         time.sleep(reasonableActorResponseTime*6)  # Allow for propagation (with hysteresis)
         # Create Actors
         red = self.systems['One'].createActor(RedActor)
@@ -419,7 +419,7 @@ class BaseCapabilityUpdates(object):
 
     def test07_removingNonExistentCapabilitiesHasNoEffect(self):
         self.startSystems(100)
-        reasonableActorResponseTime = 0.65
+        reasonableActorResponseTime = 1.0
         # Setup systems
         self.systems['One'].updateCapability('Red', True)
         self.systems['Two'].updateCapability('Green', True)
@@ -470,7 +470,7 @@ class BaseCapabilityUpdates(object):
 
     def test08_settingCapabilityToSameValueHasNoEffect(self):
         self.startSystems(110)
-        reasonableActorResponseTime = 0.5
+        reasonableActorResponseTime = 0.9
         # Setup systems
         self.systems['One'].updateCapability('Red', True)
         self.systems['Two'].updateCapability('Green', True)

@@ -318,9 +318,10 @@ class TestMultiProcessSystem(unittest.TestCase):
             sleep(0.25)  # allow System2 to start and join the Convention
 
     def tearDown(self):
-        ActorSystem().shutdown()
         if hasattr(self, 'parent_conn'):
             self.parent_conn.send('OK, all done')
+            sleep(0.25)
+        ActorSystem().shutdown()
         if hasattr(self, 'child'):
             self.child.join()
 
