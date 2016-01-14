@@ -825,7 +825,9 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
                            [W.delay() for W in self._waitingTransmits] +
                            [self._incomingSockets[I].delay() for I in self._incomingSockets]
                            if R is not None])
-            delay = timePeriodSeconds(min(delays)) if delays else None
+            # n.b. if a long period of time has elapsed (e.g. laptop sleeping) then delays
+            # could be negative.
+            delay = max(0, timePeriodSeconds(min(delays))) if delays else None
 
             if not hasattr(self, '_aborting_run') and not xmitOnly:
                 wrecv.extend([self.socket.fileno()])
