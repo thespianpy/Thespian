@@ -568,7 +568,6 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
                 # re-opened on the next retry period, which is a
                 # reasonable approach.
                 del self._openSockets[intent.targetAddr]
-                intent.socket.settimeout(timePeriodSeconds(intent.delay()))
                 intent.stage = self._XMITStepSendData
                 intent.amtSent = 0
                 return self._nextTransmitStep(intent)
