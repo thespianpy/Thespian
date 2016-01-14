@@ -65,6 +65,10 @@ class ReceiveBuffer:
         return None
 
 
+def isControlMessage(msg):
+    return msg in [ackPacket, ackDataErrPacket]
+
+
 ackPacket = 'ACK'
 ackDataErrPacket = 'ACK+DATAERR'
 ackMsg = toSendBuffer(ackPacket)

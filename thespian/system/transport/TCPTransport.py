@@ -88,7 +88,8 @@ from thespian.system.transport import *
 from thespian.system.transport.IPBase import TCPv4ActorAddress
 from thespian.system.transport.streamBuffer import (toSendBuffer, ReceiveBuffer,
                                                     ackMsg, ackPacket,
-                                                    ackDataErrMsg, ackDataErrPacket)
+                                                    ackDataErrMsg, ackDataErrPacket,
+                                                    isControlMessage)
 from thespian.system.transport.asyncTransportBase import asyncTransportBase
 from thespian.system.transport.wakeupTransportBase import wakeupTransportBase
 from thespian.system.addressManager import ActorLocalAddress
@@ -700,7 +701,7 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
             # Continue waiting for ACK
             return True
         ackmsg, intent.extraRead = intent.ackbuf.completed()
-        if ackmsg in [ackPacket, ackDataErrPacket]:
+        if isControlMessage(ackmsg):
             intent.result = SendStatus.Sent if ackmsg == ackPacket \
                             else SendStatus.BadPacket
             intent.stage = self._XMITStepFinishCleanup
@@ -1048,6 +1049,8 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
             return inc
         try:
             rdata, extra = inc.data
+            if isControlMessage(rdata):
+                raise ValueError('Error: received control message "%s"; expecting incoming data.'%(str(rdata)))
             rEnv = ReceiveEnvelope(*rdata)
         except Exception:
             import traceback
