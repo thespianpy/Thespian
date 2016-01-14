@@ -189,7 +189,7 @@ class systemCommonBase(object):
                          completedIntent.identify(),
                          str(self._addrManager.sendToAddress(completedIntent.targetAddr)),
                          fkey,
-                         str(map(str,self._finalTransmitPending.keys())),
+                         str(list(map(str,self._finalTransmitPending.keys()))),
                          level=logging.WARNING)
                 self._sCBStats.inc('Action.Message Send.Unknown Completion')
                 return
