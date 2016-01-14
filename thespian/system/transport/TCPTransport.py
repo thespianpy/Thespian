@@ -510,7 +510,7 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
                             elif self._nextTransmitStep(R):
                                 if hasattr(R, 'socket'):
                                     thesplog('<S> waiting intent is now re-processing: %s', R.identify())
-                                    self._transmitIntents[R.socket.fileno()] = intent
+                                    self._transmitIntents[R.socket.fileno()] = R
                                 else:
                                     self._waitingTransmits.append(R)
             else:
