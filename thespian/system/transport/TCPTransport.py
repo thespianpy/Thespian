@@ -1046,7 +1046,8 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
             rEnv = ReceiveEnvelope(*rdata)
         except Exception:
             import traceback
-            thesplog('OUCH!  Error deserializing received data: %s', traceback.format_exc())
+            thesplog('OUCH!  Error deserializing received data: %s  (rdata="%s", extra="%s")',
+                     traceback.format_exc(), rdata, extra)
             try:
                 inc.socket.sendall(ackDataErrMsg)
             except Exception:
