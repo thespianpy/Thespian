@@ -1,4 +1,5 @@
 
+#+BEGIN_SRC ditaa :file heirarchy.png
 
                  ActorSystem                                   Admin                 Actor
                       |                                          |                     |
@@ -35,6 +36,8 @@
     multiprocessUDPTransport <--------------------|
                                                   ...
 
+
+#+END_SRC
 
 * Primary Components
 
@@ -105,7 +108,7 @@
     transport.  The specific Transport implementation used is
     determined by the SystemBase, but a SystemBase may use a number of
     Transports.  For example, all of the multiproc SystemBase family
-    instances can utilize any of tme multiprocess Transports (like
+    instances can utilize any of the multiprocess Transports (like
     Queue, UDP, TCP, etc.).
 
     Most Transports are coupled to the SystemBase type (e.g. multiproc).
@@ -140,9 +143,6 @@
      c. returns
 
 
-*** TODO Test: call scheduleTransmit with message containing local address
-*** TODO Test: call scheduleTransmit with target as local address
-  
 * Functionality Details
 
 ** Supervision
@@ -377,34 +377,35 @@ at which point the following occur:
 * File and Directory Layout
 
   * thespian/
-    * actors.py  -- primary (and usually only) module imported by Actors
-    * shell.py   -- interactive shell for querying and testing Actors
-    * system/    -- contains all implementation aspects
-      * actorManager.py  -- base code encapsulating an Actor and regulating its behavior
-      * addressManager.py -- manages addresses and translation from local to external addresses
-      * dictconfig.py -- backport of logging.dictconfig for use in Python2.6
-      * logdirector.py -- provides external logging process for multiprocess system bases
-      * multiprocCommon.py -- common code for multiprocess system bases
-      * multiprocessSystemBase.py -- older Thespian 1.0 multiprocess
+    * actors.py  :: primary (and usually only) module imported by Actors
+    * shell.py   :: interactive shell for querying and testing Actors
+    * system/    :: contains all implementation aspects
+      * actorManager.py  :: base code encapsulating an Actor and regulating its behavior
+      * addressManager.py :: manages addresses and translation from local to external addresses
+      * dictconfig.py :: backport of logging.dictconfig for use in Python2.6
+      * logdirector.py :: provides external logging process for multiprocess system bases
+      * multiprocCommon.py :: common code for multiprocess system bases
+      * multiprocessSystemBase.py :: older Thespian 1.0 multiprocess
         system base with TCP communications.  Widely used, but now
         deprecated in favor of newer system bases.
-      * systemBase.py  -- common elements for the [[*SystemBase][SystemBase]] implementation
-      * multiprocCommon.py -- common elements for starting Admins or
+      * systemBase.py  :: common elements for the [[*SystemBase][SystemBase]] implementation
+      * multiprocCommon.py :: common elements for starting Admins or
         Actors as separate processes.
-      * transport/  -- details for different underlying transports
-        * TCPTransport.py -- simple TCP transport.  Robust.
-        * UDPTransport.py -- simple UDP transport.  Robust with
+      * sourceLoader.py :: supports loadActorSource, implementing a PEP-302 compliant importer 
+      * transport/  :: details for different underlying transports
+        * TCPTransport.py :: simple TCP transport.  Robust.
+        * UDPTransport.py :: simple UDP transport.  Robust with
           limitations.
-        * MultiprocessQueueTransport.py -- uses multiprocess.Queue for
+        * MultiprocessQueueTransport.py :: uses multiprocess.Queue for
           transport. Limited to the current system and suffers from
           occasional deadlocks.
       * admin/
 
         Implementation of the system Admin
 
-        * adminCore.py   -- common elements for all Admin implementations
-        * globalNames.py -- handling for Actors with global names (across all admins)
-        * convention.py  -- convention management for multi-system cooperating ActorSystems.
+        * adminCore.py   :: common elements for all Admin implementations
+        * globalNames.py :: handling for Actors with global names (across all admins)
+        * convention.py  :: convention management for multi-system cooperating ActorSystems.
 
       * messages/
 
@@ -419,8 +420,12 @@ at which point the following occur:
         Implementation of transport layer for system bases.  Each
         system base will select a transport to use to communicate between Actors.
 
-    * test/    -- contains most functional tests
-      * 00README.txt -- description of tests and how to run them
+    * test/    :: contains most functional tests
+      * 00README.txt :: description of tests and how to run them
+
+    * scripts/
+      * run_unit_tests.sh :: shell script to run only stable unit tests
+      * run_main_functional_tests.sh :: shell script to run only stable functional tests
 
 
 * Future
