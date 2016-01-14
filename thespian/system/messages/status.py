@@ -105,7 +105,8 @@ def _common_formatStatus(tofd, response, childActorTag, showAddress=str):
     if response.miscKeyVals:
         miscKeys = list(response.miscKeyVals.keys())
         miscKeys.sort()
-        maxValLen = max(map(len, map(str, response.miscKeyVals.values())))
+        # Adjust all output for the longest value... up to 40 characters max
+        maxValLen = min(40, max(map(len, map(str, response.miscKeyVals.values()))))
         for K in miscKeys:
             tofd.write('  |> %%%ds - %%s\n'%maxValLen%(str(response.miscKeyVals[K]), K))
 
