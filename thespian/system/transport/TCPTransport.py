@@ -1074,9 +1074,11 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
             return
         # The ForwardMessage has not reached the final destination, so
         # update and target it at the next one.
-        if len(envelope.message.fwdTargets) < 2:
-            thesplog('Incorrectly received ForwardMessage destined for %s at %s: %s',
-                     envelope.message.fwdTo, self.myAddress, envelope.message.fwdMessage,
+        if len(envelope.message.fwdTargets) < 1 and envelope.message.fwdTo != self.myAddress:
+            thesplog('Incorrectly received ForwardMessage destined for %s at %s via %s: %s',
+                     envelope.message.fwdTo, self.myAddress,
+                     list(map(str, envelope.message.fwdTargets)),
+                     envelope.message.fwdMessage,
                      level=logging.ERROR)
             return  # discard  (TBD: send back as Poison? DeadLetter? Routing failure)
         nextTgt = envelope.message.fwdTargets[0]
