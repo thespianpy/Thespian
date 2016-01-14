@@ -90,7 +90,6 @@ class systemBase(object):
         response = self.transport.run(None, MAX_ADMIN_STATUS_REQ_DELAY)
         return not getattr(self, '_VERIFYFAILED', False) and \
             response and \
-            response.sender == self.adminAddr and \
             isinstance(response.message, QueryAck) \
             and not response.message.inShutdown
 
