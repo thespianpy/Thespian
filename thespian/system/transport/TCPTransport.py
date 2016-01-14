@@ -223,6 +223,8 @@ class IdleSocket(object):
         self.validity = ExpiryTime(MAX_IDLE_SOCKET_PERIOD)
     def expired(self):
         return self.validity.expired()
+    def __str__(self):
+        return 'Idle-socket %s (%s)'%(str(self.socket), str(self.validity))
 
 
 class TCPTransport(asyncTransportBase, wakeupTransportBase):
