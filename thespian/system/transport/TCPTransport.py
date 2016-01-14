@@ -356,6 +356,9 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
             resp.addReceivedMessage(each.sender, self.myAddress, str(each.message))
         asyncTransportBase._updateStatusResponse(self, resp)
         wakeupTransportBase._updateStatusResponse(self, resp)
+        for num,each in enumerate(self._openSockets):
+            resp.addKeyVal('sock#%d-fd%d'%(num, self._openSockets[each].socket.fileno()),
+                           str(each))
 
 
     @staticmethod
