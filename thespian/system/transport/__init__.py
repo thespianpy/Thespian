@@ -64,6 +64,7 @@ class ReceiveEnvelope(object):
         if smsg == msgt:
             return 'ReceiveEnvelope(from: %s, msg: %s)'%(self.sender, smsg)
         return 'ReceiveEnvelope(from: %s, %s msg: %s)'%(self.sender, msgt, smsg)
+    def __str__(self): return self.identify()
 
 
 
@@ -234,12 +235,17 @@ class TransmitIntent(PauseWithBackoff):
             smsg = '<msg-cannot-convert-to-ascii>'
         if len(smsg) > MAX_SHOWLEN:
             smsg = smsg[:MAX_SHOWLEN] + '...'
+        now = datetime.now()
         return 'TransportIntent(' + '-'.join(filter(None, [
             str(self.targetAddr),
             'pending' if self.result is None else '='+str(self.result),
             '' if self.result is not None else 'ExpiresIn_' + str(self.delay()),
+            'WAITSLOT' if getattr(self, '_awaitingTXSlot', False) else None,
             'retry#%d'%self._attempts if self._attempts else '',
-            str(type(self.message)), smsg
+            str(type(self.message)), smsg,
+            'quit_%s'%str(self._quitTime-now),
+            'retry_%s'%str(self._retryTime-now) if getattr(self, '_retryTime', None) else None,
+            'pause_%s'%str(self._pauseUntil-now) if getattr(self, '_pauseUntil', None) else None,
             ])) + ')'
 
 
@@ -275,3 +281,8 @@ class ForwardMessage(object):
         self.fwdTo      = fwdTo  # final destination
         self.fwdFrom    = fwdFrom  # original sender
         self.fwdTargets = (fwdChain or []) + [fwdTo]  # list of targets; last is fwdTo
+    def __str__(self):
+        return 'FWD(%s)%s->%s->%s'%(str(self.fwdMessage),
+                                    str(self.fwdFrom),
+                                    '->'.join(list(map(str, self.fwdTargets))),
+                                    str(self.fwdTo))
