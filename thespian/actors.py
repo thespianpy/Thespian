@@ -226,7 +226,6 @@ class Actor(object):
            can only send outbound messages to inform them of remote
            systems they should initiate connectivity to.
         """
-        # how do we synthesize the remote Address?  via the capabilities?
         self._myRef.preRegisterRemoteSystem(remoteAddress, remoteCapabilities)
 
     def deRegisterRemoteSystem(self, remoteAddress):
