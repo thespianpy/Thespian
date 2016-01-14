@@ -635,7 +635,9 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
                 thesplog('ConnRefused to %s; declaring as DeadTarget.',
                          intent.targetAddr, level=logging.ERROR)
                 return self._finishIntent(intent, SendStatus.DeadTarget)
-            thesplog('Socket error sending: %s / %s', str(err), err.errno, level=logging.ERROR)
+            thesplog('Socket error sending to %s on %s: %s / %s: %s',
+                     intent.targetAddr, intent.socket, str(err), err.errno,
+                     intent, level=logging.ERROR)
             intent.stage = self._XMITStepRetry
             return self._nextTransmitStep(intent)
         except Exception:
