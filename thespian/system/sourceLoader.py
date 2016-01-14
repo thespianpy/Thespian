@@ -192,7 +192,8 @@ class HashLoader(LoaderBase):
                 converter)
             do_exec(code, module.__dict__)
         except Exception as ex:
-            thesplog('sourceload realization failure: %s', ex, level=logging.ERROR)
+            thesplog('sourceload realization failure in %s: %s',
+                     moduleName, ex, level=logging.ERROR)
             #return None
             raise
 
