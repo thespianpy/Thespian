@@ -20,7 +20,7 @@ class AdminCore(systemCommonBase):
         self._pendingChildren = {}  # key = childLocalAddr instance #, value = PendingActorEnvelope
         # Things that help us look like an Actor, even though we're not
         self._sourceHash  = None
-        thesplog('++++ Admin started @ %s / %s', self.transport.myAddress, str(ThespianGeneration), level=logging.INFO, primary=True)
+        thesplog('++++ Admin started @ %s / gen %s', self.transport.myAddress, str(ThespianGeneration), level=logging.INFO, primary=True)
         self._nannying = {}  # key=child actorAddress, value=parent Address
         self._deadLetterHandler = None
         self._sources = {}  # Index is sourcehash, value is requestor
