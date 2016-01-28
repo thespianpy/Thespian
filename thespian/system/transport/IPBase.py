@@ -106,7 +106,7 @@ class IPActorAddress(object):
         return self.af == o.af and self.socktype == o.socktype and self.proto == o.proto and \
             thisSystem.cmpIP2Tuple(self.af, self.socktype, self.proto, self.sockname, o.sockname)
     def __ne__(self, o): return not self.__eq__(o)
-    def __hash__(self): return hash(str(self))
+    def __hash__(self): return hash((self.socketArgs, self.connectArgs))
     def __str__(self):
         if self.af == socket.AF_INET:
             if self.socktype == socket.SOCK_STREAM:
