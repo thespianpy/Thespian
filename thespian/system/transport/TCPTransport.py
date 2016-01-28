@@ -200,7 +200,7 @@ class RoutedTCPv4ActorAddress(TCPv4ActorAddress):
                                                       external=external)
         self.routing = [None, adminAddr] if txOnly else [adminAddr]
     def __str__(self):
-        return '-'.join(['(TCP|%s:%d'%self.sockname] + list(map(str,self.routing))) + ')'
+        return '~'.join(['(TCP|%s:%d'%self.sockname] + list(map(str,self.routing))) + ')'
 
 
 class TXOnlyAdminTCPv4ActorAddress(TCPv4ActorAddress):
