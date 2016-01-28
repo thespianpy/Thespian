@@ -451,6 +451,9 @@ class ConventioneerAdmin(GlobalNamesAdmin):
                 self._conventionMembers[remoteAddr.actorAddressString].preRegistered.pingPending = False
 
     def run(self):
+        # Main loop for convention management.  Wraps the lower-level
+        # transport with a stop at the next needed convention
+        # registration period to re-register.
         try:
             while not self.isShuttingDown():
                 delay = min(self._conventionRegistration or \
