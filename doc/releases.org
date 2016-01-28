@@ -7,7 +7,7 @@
 #+LATEX_HEADER: \product{Thespian}
 #+LATEX_HEADER: \component{Python Actor System}
 #+LATEX_HEADER: \doctype{Release Notes}
-#+LATEX_HEADER: \docrev{2.5.2}{2016 Jan 13}
+#+LATEX_HEADER: \docrev{2.5.3}{2016 Jan 28}
 #+LATEX_HEADER: \docid{TheDoc-06}
 #+OPTIONS: ^:nil num:nil
 
@@ -16,6 +16,18 @@
 * 2.x
 
 ** 2.5
+
+*** 2.5.3 <2016-01-28 Thu>
+
+  * Fixed hash representation of TCP routed and tx-only addresses to
+    provide consistent hash values and match the equality-sense of the
+    addresses.
+
+  * Better convention management, especially for pre-registered members.
+
+  * Minor update to ActorAddress string representation for TCP routed
+    addresses.
+
 
 *** 2.5.2 <2016-01-13 Wed>
 
