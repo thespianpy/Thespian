@@ -129,16 +129,16 @@ class HysteresisDelaySender(object):
 
 class PreRegistration(object):
     def __init__(self):
-        self.pingValid          = ExpiryTime(timedelta(seconds=0))
-        self.pingPending        = False
+        self.pingValid   = ExpiryTime(timedelta(seconds=0))
+        self.pingPending = False
+    def refresh(self):
+        self.pingValid = ExpiryTime(CONVENTION_REREGISTRATION_PERIOD)
 
 
 class ConventionMemberData(object):
     def __init__(self, address, capabilities):
         self.remoteAddress      = address
         self.remoteCapabilities = capabilities
-        self.registryValid      = ExpiryTime(CONVENTION_REREGISTRATION_PERIOD *
-                                             CONVENTION_REGISTRATION_MISS_MAX)
         self.hasRemoteActors    = []  # (localParent, remoteActor) addresses created remotely
         #self.lastMessaged       = None # datetime of access; use with CONVENTION_HYSTERESIS_PERIOD
 
@@ -157,10 +157,28 @@ class ConventionMemberData(object):
         # for a preRegistered remote, regardless of whether or not its
         # Convention membership is currently valid.
         self.preRegistered      = None   # or PreRegistration object
+        self._reset_valid_timer()
     def createdActor(self, localParentAddress, newActorAddress):
         entry = localParentAddress, newActorAddress
         if entry not in self.hasRemoteActors:
             self.hasRemoteActors.append(entry)
+
+    def refresh(self, remoteCapabilities):
+        self.remoteCapabilities = remoteCapabilities
+        self._reset_valid_timer()
+        if self.preRegistered:
+            self.preRegistered.refresh()
+
+    def _reset_valid_timer(self):
+        # registryValid is a timer that is usually set to a multiple
+        # of the convention re-registration period.  Each successful
+        # convention re-registration resets the timer to the maximum
+        # value (actually, it replaces this structure with a newly
+        # generated structure).  If the timer expires, the remote is
+        # declared as dead and the registration is removed (or
+        # quiesced if it is a pre-registration).
+        self.registryValid = ExpiryTime(CONVENTION_REREGISTRATION_PERIOD *
+                                        CONVENTION_REGISTRATION_MISS_MAX)
 
     def __str__(self):
         return 'ActorSystem @ %s, registry valid for %s with %s'%(str(self.remoteAddress),
@@ -265,7 +283,7 @@ class ConventioneerAdmin(GlobalNamesAdmin):
         registrant = envelope.message.adminAddress
         thesplog('Got Convention registration from %s (%s) (new? %s)',
                  registrant, 'first time' if envelope.message.firstTime else 're-registering',
-                 registrant.actorAddressString not in self._conventionMembers,
+                 registrant not in self._conventionMembers,
                  level=logging.INFO)
         if registrant == self.myAddress:
             # Either remote failed getting an external address and is
@@ -275,22 +293,23 @@ class ConventioneerAdmin(GlobalNamesAdmin):
                      registrant,
                      level=logging.WARNING)
             return True
-        if getattr(envelope.message, 'preRegister', False):  # getattr used; see definition
-            preReg = PreRegistration()  # will attempt registration immediately
-        else:
-            preReg = (registrant.actorAddressString in self._conventionMembers and
-                      self._conventionMembers[registrant.actorAddressString].preRegistered)
-            if preReg:
-                preReg.pingValid = ExpiryTime(CONVENTION_REREGISTRATION_PERIOD)
-        #erase our knowledge of actors associated with potential former instance of this system
         if envelope.message.firstTime:
+            # erase knowledge of actors associated with potential
+            # former instance of this system
             self._remoteSystemCleanup(registrant)
         if registrant == self._conventionAddress:
             self._conventionLeaderIsGone = False
-        newReg = registrant.actorAddressString not in self._conventionMembers
-        self._conventionMembers[registrant.actorAddressString] = \
+        newReg = registrant not in self._conventionMembers
+        if newReg:
+            self._conventionMembers[registrant] = \
                 ConventionMemberData(registrant, envelope.message.capabilities)
-        self._conventionMembers[registrant.actorAddressString].preRegistered = preReg
+            if getattr(envelope.message, 'preRegister', False):  # getattr used; see definition
+                self._conventionMembers[registrant].preRegistered = \
+                    PreRegistration()  # will attempt registration immediately
+        else:
+            self._conventionMembers[registrant] \
+                .refresh(envelope.message.capabilities)
+
         if self.isConventionLeader():
 
             if newReg:
@@ -328,12 +347,8 @@ class ConventioneerAdmin(GlobalNamesAdmin):
                      level=logging.WARNING)
             return True
         if getattr(envelope.message, 'preRegistered', False): # see definition for getattr use
-            if remoteAdmin.actorAddressString in self._conventionMembers:
-                self._conventionMembers[remoteAdmin.actorAddressString].preRegistered = None
-                # Let normal timeout process complete the
-                # deregistration; conversly, if the remote is still
-                # active don't prematurely remove it.
-                return True
+            if remoteAdmin in self._conventionMembers:
+                self._conventionMembers[remoteAdmin].preRegistered = None
         self._remoteSystemCleanup(remoteAdmin)
         return True
 
@@ -356,10 +371,10 @@ class ConventioneerAdmin(GlobalNamesAdmin):
         """
         thesplog('Convention cleanup or deregistration for %s (new? %s)',
                  registrant,
-                 registrant.actorAddressString not in self._conventionMembers,
+                 registrant not in self._conventionMembers,
                  level=logging.INFO)
-        if registrant.actorAddressString in self._conventionMembers:
-            cmr = self._conventionMembers[registrant.actorAddressString]
+        if registrant in self._conventionMembers:
+            cmr = self._conventionMembers[registrant]
 
             # Send exited notification to conventionNotificationHandler (if any)
             if self.isConventionLeader():
@@ -387,7 +402,7 @@ class ConventioneerAdmin(GlobalNamesAdmin):
 
             # Remove remote system from conventionMembers
             if not cmr.preRegistered:
-                del self._conventionMembers[registrant.actorAddressString]
+                del self._conventionMembers[registrant]
             else:
                 # This conventionMember needs to stay because the
                 # current system needs to continue issuing
@@ -446,9 +461,10 @@ class ConventioneerAdmin(GlobalNamesAdmin):
 
     def _preRegQueryNotPending(self, result, finishedIntent):
         remoteAddr = finishedIntent.targetAddr
-        if remoteAddr.actorAddressString in self._conventionMembers:
-            if self._conventionMembers[remoteAddr.actorAddressString].preRegistered:
-                self._conventionMembers[remoteAddr.actorAddressString].preRegistered.pingPending = False
+        if remoteAddr in self._conventionMembers:
+            if self._conventionMembers[remoteAddr].preRegistered:
+                self._conventionMembers[remoteAddr].preRegistered.pingPending = False
+
 
     def run(self):
         # Main loop for convention management.  Wraps the lower-level
