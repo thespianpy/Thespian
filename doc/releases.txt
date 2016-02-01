@@ -11,6 +11,7 @@ Table of Contents
 
 2.x
 .. 2.5
+..... 2.5.4 <2016-02-01 Mon>
 ..... 2.5.3 <2016-01-28 Thu>
 ..... 2.5.2 <2016-01-13 Wed>
 ..... 2.5.1 <2015-12-16 Wed>
@@ -41,6 +42,20 @@ Table of Contents
 
 2.5
 ───
+
+2.5.4 <2016-02-01 Mon>
+╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+
+  ‣ Calling `loadSource()' multiple times for the same source does
+    nothing instead of unloading and reloading the source.  This
+    provides more consistent behavior, especially when working with
+    objects instantiated from the original source.
+
+  ‣ Fixed possible scenario where logging of errors from TCP transport
+    would encounter further problems.
+
+  ‣ Test updates.
+
 
 2.5.3 <2016-01-28 Thu>
 ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
