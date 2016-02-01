@@ -1047,6 +1047,7 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
         if not inc.receivedAllData():
             # Continue running and monitoring this socket
             return inc
+        rdata, extra = '', ''
         try:
             rdata, extra = inc.data
             if isControlMessage(rdata):
