@@ -282,6 +282,9 @@ class AdminCore(systemCommonBase):
             self.unloadActorSource(sourceHash)
             logging.getLogger('Thespian').info('Source hash %s unloaded', sourceHash)
             return
+        if sourceHash in self._sources:
+            logging.getLogger('Thespian').info('Source hash %s already loaded', sourceHash)
+            return
         if self._sourceAuthority:
             self._send_intent(TransmitIntent(self._sourceAuthority, envelope.message))
             return
@@ -296,11 +299,6 @@ class AdminCore(systemCommonBase):
                  envelope.message.sourceHash)
 
     def _loadValidatedActorSource(self, sourceHash, sourceZip):
-        if sourceHash in self._sources:
-            self.unloadActorSource(sourceHash)
-            if not sourceZip:
-                logging.getLogger('Thespian').info('Unloaded source hash %s', sourceHash)
-                return
         # Validate the source file; this doesn't actually utilize the
         # sourceZip, but it ensures that the sourceZip isn't garbage
         # before registering it as active source.
