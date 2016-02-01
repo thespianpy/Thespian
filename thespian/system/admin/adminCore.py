@@ -301,7 +301,9 @@ class AdminCore(systemCommonBase):
             if not sourceZip:
                 logging.getLogger('Thespian').info('Unloaded source hash %s', sourceHash)
                 return
-        # Validate the source file
+        # Validate the source file; this doesn't actually utilize the
+        # sourceZip, but it ensures that the sourceZip isn't garbage
+        # before registering it as active source.
         try:
             f = SourceHashFinder(sourceHash, lambda v: v, sourceZip)
             namelist = f.getZipNames()
