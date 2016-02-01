@@ -293,11 +293,16 @@ class TestTransmitIntent(unittest.TestCase):
         self.assertFalse(ti.timeToRetry())
 
         for N in range(MAX_TRANSMIT_RETRIES+1):
+            # Indicate "failure" and the need to retry
             self.assertTrue(ti.retry())
+            # Wait for the indication that it is time to retry
+            time_to_retry = False
             for x in range(90):
-                if ti.timeToRetry(): break
-                sleep(timePeriodSeconds(period))
-            self.assertTrue(ti.timeToRetry())
+                # Only call timeToRetry once, because it auto-resets
+                time_to_retry = ti.timeToRetry()
+                if time_to_retry: break
+                sleep(timePeriodSeconds(period*1.5))
+            self.assertTrue(time_to_retry)
 
         self.assertFalse(ti.retry())
 
