@@ -226,6 +226,10 @@ class IdleSocket(object):
         return self.validity.expired()
     def __str__(self):
         return 'Idle-socket %s (%s)'%(str(self.socket), str(self.validity))
+    def shutdown(self, shtarg=socket.SHUT_RDWR):
+        self.socket.shutdown(shtarg)
+    def close(self):
+        self.socket.close()
 
 
 class TCPTransport(asyncTransportBase, wakeupTransportBase):
@@ -442,6 +446,55 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
 
     def serializer(self, intent):
         return toSendBuffer((self.myAddress, intent.message), serializer.dumps)
+
+    def lostRemote(self, rmtaddr):
+        """[optional] Called by adminstrative levels (e.g. convention.py) to
+           indicate that the indicated remote address is no longer
+           accessible.  This is customarily used only by the Admin in
+           "Admin Routing" scenarios when the remote is shutdown or
+           de-registered to allow the transport to cleanup (e.g. close
+           open sockets, etc.).
+        """
+        if hasattr(self, '_openSockets'):
+            if rmtaddr in self._openSockets:
+                _safeSocketShutdown(self._openSockets[rmtaddr])
+                del self._openSockets[rmtaddr]
+        for each in [i for i in self._transmitIntents
+                     if self._transmitIntents[i].targetAddr == rmtaddr]:
+            self._cancel_fd_ops(each)
+        for each in [i for i in self._incomingSockets
+                     if self._incomingSockets[i].fromAddress == rmtaddr]:
+            self._cancel_fd_ops(each)
+
+
+    def _cancel_fd_ops(self, errfileno):
+        if errfileno == self.socket.fileno():
+            thesplog('SELECT FATAL ERROR ON MAIN LISTEN SOCKET',
+                     level=logging.ERROR)
+            raise RuntimeError('Fatal listen socket error; aborting')
+
+        if errfileno in self._incomingSockets:
+            incoming = self._incomingSockets[errfileno]
+            del self._incomingSockets[errfileno]
+            incoming = self._handlePossibleIncoming(incoming, errfileno,
+                                                    closed=True)
+            if incoming:
+                self._incomingSockets[incoming.socket.fileno()] = incoming
+            return
+        if self._processIntents(errfileno, closed=True):
+            return
+        for I,W in enumerate(self._waitingTransmits):
+            del self._waitingTransmits[I]
+            if self._nextTransmitStepCheck(W, errfileno, closed=True):
+                self._waitingTransmits.append(W)
+            return
+        closed_openSocks = []
+        for I in getattr(self, '_openSockets', []):
+            if self._socketFile(self._openSockets[I]) == errfileno:
+                closed_openSocks.append(I)
+        for each in closed_openSocks:
+            del self._openSockets[each]
+
 
     def _scheduleTransmitActual(self, intent):
         if intent.targetAddr == self.myAddress:
@@ -852,32 +905,7 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
 
             if rerr:
                 for errfileno in rerr:
-                    if errfileno == self.socket.fileno():
-                        thesplog('SELECT FATAL ERROR ON MAIN LISTEN SOCKET',
-                                 level=logging.ERROR)
-                        raise RuntimeError('Fatal listen socket error; aborting')
-
-                    if errfileno in self._incomingSockets:
-                        incoming = self._incomingSockets[errfileno]
-                        del self._incomingSockets[errfileno]
-                        incoming = self._handlePossibleIncoming(incoming, errfileno,
-                                                                closed=True)
-                        if incoming:
-                            self._incomingSockets[incoming.socket.fileno()] = incoming
-                        continue
-                    if self._processIntents(eachs, closed=True):
-                        continue
-                    for I,W in enumerate(self._waitingTransmits):
-                        del self._waitingTransmits[I]
-                        if self._nextTransmitStepCheck(W, errfileno, closed=True):
-                            self._waitingTransmits.append(W)
-                        break
-                    closed_openSocks = []
-                    for I in self._openSockets:
-                        if self._socketFile(self._openSockets[I]) == errfileno:
-                            closed_openSocks.append(I)
-                    for each in closed_openSocks:
-                        del self._openSockets[each]
+                    self._cancel_fd_ops(errfileno)
 
             origPendingSends = len(self._transmitIntents) + len(self._waitingTransmits)
 
