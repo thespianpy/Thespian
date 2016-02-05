@@ -7,7 +7,7 @@
 #+LATEX_HEADER: \product{Thespian}
 #+LATEX_HEADER: \component{Python Actor System}
 #+LATEX_HEADER: \doctype{Release Notes}
-#+LATEX_HEADER: \docrev{2.5.4}{2016 Feb 01}
+#+LATEX_HEADER: \docrev{2.5.5}{2016 Feb 05}
 #+LATEX_HEADER: \docid{TheDoc-06}
 #+OPTIONS: ^:nil num:nil
 
@@ -16,6 +16,16 @@
 * 2.x
 
 ** 2.5
+
+*** 2.5.5 <2016-02-05 Fri>
+
+  * Added fix for closing open TCPTransport sockets to a remote Admin
+    that is known to be unavailable (i.e. on explicit or time-based
+    de-registration).
+
+  * Ensure that all sends are routed through the local admin if the
+    local environment is TX-Only ("Outbound Only": True capability)
+    for TCPTransport-based communications.
 
 *** 2.5.4 <2016-02-01 Mon>
 
