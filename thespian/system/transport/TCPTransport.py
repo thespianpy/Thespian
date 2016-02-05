@@ -728,8 +728,8 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
                 intent.backoffPause(True)
                 return True
             if err_recv_connreset(err.errno):
-                thesplog('Remote %s closed connection before ack received at %s',
-                         str(intent.targetAddr), str(self.myAddress),
+                thesplog('Remote %s closed connection before ack received at %s for %s',
+                         str(intent.targetAddr), str(self.myAddress), intent.identify(),
                          level=logging.WARNING)
             else:
                 thesplog('Socket Error waiting for transmit ack from %s to %s: %s',
