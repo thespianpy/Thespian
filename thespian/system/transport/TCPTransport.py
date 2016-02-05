@@ -940,7 +940,8 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
                     curOpen = self._openSockets.get(rmtaddr, None)
                     if curOpen and curOpen != idle:
                         # duplicate sockets to remote, and this one is
-                        # no longer tracked, so close it.
+                        # no longer tracked, so close it and keep
+                        # existing openSocket.
                         _safeSocketShutdown(idle.socket)
                     else:
                         if each == idle.socket.fileno():
