@@ -373,6 +373,8 @@ class ConventioneerAdmin(GlobalNamesAdmin):
                  registrant,
                  registrant not in self._conventionMembers,
                  level=logging.INFO)
+        if hasattr(self.transport, 'lostRemote'):
+            self.transport.lostRemote(registrant)
         if registrant in self._conventionMembers:
             cmr = self._conventionMembers[registrant]
 
