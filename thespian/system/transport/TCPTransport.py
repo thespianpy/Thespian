@@ -507,6 +507,8 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
                            for A in intent.targetAddr.addressDetails.routing]
                 while routing and routing[0] == self.myAddress:
                     routing = routing[1:]
+                if self.txOnly and routing and routing[0] != self._adminAddr:
+                    routing.insert(0, self._adminAddr)
                 if routing:
                     if len(routing) != 1 or routing[0] != intent.targetAddr:
                         intent.changeMessage(ForwardMessage(intent.message,
