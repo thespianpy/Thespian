@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 import logging
 import os
+import tempfile
 from thespian.actors import InvalidActorSpecification
 
 
@@ -136,7 +137,8 @@ def thesplog(msg, *args, **kw):
             global _thesplog_file, _thesplog_old_file
             if not _thesplog_file:
                 _thesplog_file = os.getenv('THESPLOG_FILE',
-                                           os.path.join(os.getenv('TMPDIR', '/tmp'),
+                                           os.path.join(os.getenv('TMPDIR',
+                                                                  tempfile.gettempdir()),
                                                         'thespian.log'))
                 _thesplog_old_file = _thesplog_file + '.old'
             try:
