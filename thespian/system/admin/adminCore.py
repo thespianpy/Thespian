@@ -291,6 +291,9 @@ class AdminCore(systemCommonBase):
         # Any attempt to load sources is ignored if there is no active
         # Source Authority.  This is a security measure to protect the
         # un-protected.
+        logging.getLogger('Thespian').warning(
+            'No source authority to validate source hash %s',
+            sourceHash)
 
     def h_ValidatedSource(self, envelope):
         self._loadValidatedActorSource(envelope.message.sourceHash,
