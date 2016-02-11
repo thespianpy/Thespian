@@ -102,11 +102,15 @@ import errno
 
 
 def err_bind_inuse(err): return err == errno.EADDRINUSE
-def err_conn_refused(err): return err == errno.ECONNREFUSED
+def err_conn_refused(errex): return (errex.errno == errno.ECONNREFUSED or
+                                     (hasattr(errex, 'winerror') and
+                                      errex.winerror == 10057))  # 10057 == WSAENOTCONN
 def err_send_inprogress(err): return err in [errno.EINPROGRESS, errno.EAGAIN]
-def err_send_connrefused(err): return err == errno.ECONNREFUSED
+def err_send_connrefused(errex): return err_conn_refused(errex)
 def err_recv_retry(err): return err == errno.EAGAIN
-def err_recv_connreset(err): return err == errno.ECONNRESET
+def err_recv_connreset(errex): return (errex.errno == errno.ECONNRESET or
+                                       (hasattr(errex, 'winerror') and
+                                        errex.winerror == 10053)) # 10053 == WSAECONNABORTED
 def err_select_retry(err): return err in [errno.EINVAL, errno.EINTR]
 try:
     # Access these to see if the exist
@@ -661,7 +665,7 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
                          level=logging.WARNING)
                 return self._finishIntent(intent,
                                           SendStatus.DeadTarget \
-                                          if err_conn_refused(err.errno) \
+                                          if err_conn_refused(err) \
                                           else SendStatus.Failed)
             intent.backoffPause(True)
         except Exception as ex:
@@ -684,7 +688,7 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
             if err_send_inprogress(err.errno):
                 intent.backoffPause(True)
                 return True
-            if err_send_connrefused(err.errno):
+            if err_send_connrefused(err):
                 # in non-blocking, sometimes connection attempts are
                 # discovered here rather than for the actual connect
                 # request.
@@ -729,7 +733,7 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
             if err_recv_retry(err.errno):
                 intent.backoffPause(True)
                 return True
-            if err_recv_connreset(err.errno):
+            if err_recv_connreset(err):
                 thesplog('Remote %s closed connection before ack received at %s for %s',
                          str(intent.targetAddr), str(self.myAddress), intent.identify(),
                          level=logging.WARNING)
