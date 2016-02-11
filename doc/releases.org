@@ -13,6 +13,12 @@
 
 .
 
+Thespian uses [[http://semver.org][Semantic Versioning]]: "major.minor.bugfix", where major
+version changes indicate incompatible changes, minor versions indicate
+added functionality that is backwards compatible, and bugfix changes
+do not change the API.
+
+
 * 2.x
 
 ** 2.5
