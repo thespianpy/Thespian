@@ -11,6 +11,7 @@ Table of Contents
 
 2.x
 .. 2.5
+..... 2.5.6 <2016-02-11 Thu>
 ..... 2.5.5 <2016-02-05 Fri>
 ..... 2.5.4 <2016-02-01 Mon>
 ..... 2.5.3 <2016-01-28 Thu>
@@ -37,12 +38,46 @@ Table of Contents
 
 .
 
+Thespian uses [Semantic Versioning]: "major.minor.bugfix", where major
+version changes indicate incompatible changes, minor versions indicate
+added functionality that is backwards compatible, and bugfix changes do
+not change the API.
+
+
+[Semantic Versioning] http://semver.org
+
 
 2.x
 ═══
 
 2.5
 ───
+
+2.5.6 <2016-02-11 Thu>
+╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+
+  ‣ Fixes for detection of socket closure in the TCPTransport: corrected
+    errno reference and add handling of additional errors (for Windows
+    and Mac OS/X).
+
+  ‣ Update TCPTransport to ensure select() is never called with empty
+    select lists (needed for Windows).
+
+  ‣ Added small delay in ActorSystem shutdown to allow shutdown-related
+    communications to complete.
+
+  ‣ Update source loading tests to allow Source Authority registration
+    before commencing test.
+
+  ‣ Selection of "temp" directory for writing logs adjusted to be
+    OS-aware.
+
+  ‣ Added logging for actor instantiation failures (normal logging in
+    addition to previously-existing internal logging).
+
+  ‣ Updated default logging for thespian tests to support Windows which
+    cannot inherit an open logging file descriptor in forked children.
+
 
 2.5.5 <2016-02-05 Fri>
 ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
