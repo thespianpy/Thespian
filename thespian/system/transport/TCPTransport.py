@@ -894,6 +894,15 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
 
             if not hasattr(self, '_aborting_run') and not xmitOnly:
                 wrecv.extend([self.socket.fileno()])
+            else:
+                # Windows does not support calling select with three
+                # empty lists, so as a workaround, supply the main
+                # listener if everything else is pending delays (or
+                # completed but unrealized) here, and ensure the main
+                # listener does not accept any listens below.
+                if not wrecv and not wsend:
+                    wrecv.extend([self.socket.fileno()])
+
             try:
                 rrecv, rsend, rerr = select.select(wrecv, wsend, set(wsend+wrecv), delay)
             except ValueError as ex:
@@ -921,7 +930,10 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
 
             # Handle newly receivable data
             for each in rrecv:
-                if each == self.socket.fileno():
+                # n.b. ignore this if trying to quiesce; may have had
+                # to supply this fd to avoid calling select with three
+                # empty lists.
+                if each == self.socket.fileno() and not hasattr(self, '_aborting_run') and not xmitOnly:
                     self._acceptNewIncoming()
                     continue
                 # Get idleSockets before checking incoming and
