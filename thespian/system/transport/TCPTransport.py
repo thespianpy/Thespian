@@ -107,7 +107,7 @@ def err_send_inprogress(err): return err in [errno.EINPROGRESS, errno.EAGAIN]
 def err_send_connrefused(err): return err == errno.ECONNREFUSED
 def err_recv_retry(err): return err == errno.EAGAIN
 def err_recv_connreset(err): return err == errno.ECONNRESET
-def err_select_retry(err): return err in [errno.EINVAL, errno.EINTER]
+def err_select_retry(err): return err in [errno.EINVAL, errno.EINTR]
 try:
     # Access these to see if the exist
     errno.WSAEINVAL
