@@ -301,7 +301,7 @@ class TestTransmitIntent(unittest.TestCase):
                 # Only call timeToRetry once, because it auto-resets
                 time_to_retry = ti.timeToRetry()
                 if time_to_retry: break
-                sleep(timePeriodSeconds(period*1.5))
+                sleep(timePeriodSeconds(period) * 1.5)
             self.assertTrue(time_to_retry)
 
         self.assertFalse(ti.retry())
