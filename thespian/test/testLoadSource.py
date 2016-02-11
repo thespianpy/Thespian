@@ -801,6 +801,7 @@ class TestASimpleSystem(unittest.TestCase, CreateTestSourceZips):
         auth = self.systems['One'].createActor(rot13Authority)
         enabled = self.systems['One'].ask(auth, 'Enable', 1)
         self.assertEqual(enabled, 'Enabled')
+        time.sleep(0.1)  # allow source authority time to register
         srchash = self._loadFooSource()
         self.assertIsNotNone(srchash)
         time.sleep(0.25)  # allow time for load to consult Source Authority
@@ -813,6 +814,7 @@ class TestASimpleSystem(unittest.TestCase, CreateTestSourceZips):
         auth = self.systems['One'].createActor(rot13Authority)
         enabled = self.systems['One'].ask(auth, 'Enable', 1)
         self.assertEqual(enabled, 'Enabled')
+        time.sleep(0.1)  # allow source authority time to register
         srchash = self.systems['One'].loadActorSource(self.foozipEncFile)
         self.assertIsNotNone(srchash)
         time.sleep(0.25)  # allow time for load to consult Source Authority
@@ -825,6 +827,7 @@ class TestASimpleSystem(unittest.TestCase, CreateTestSourceZips):
         auth = self.systems['One'].createActor(rot13Authority)
         enabled = self.systems['One'].ask(auth, 'Enable', 1)
         self.assertEqual(enabled, 'Enabled')
+        time.sleep(0.1)  # allow source authority time to register
         failhash = self.systems['One'].loadActorSource(self.dogzipFname)
         srchash = self.systems['One'].loadActorSource(self.foozipEncFile)
         self.assertIsNotNone(srchash)
@@ -841,6 +844,7 @@ class TestASimpleSystem(unittest.TestCase, CreateTestSourceZips):
         auth = self.systems['One'].createActor(rot13Authority)
         enabled = self.systems['One'].ask(auth, 'Enable', 1)
         self.assertEqual(enabled, 'Enabled')
+        time.sleep(0.1)  # allow source authority time to register
         srchash = self.systems['One'].loadActorSource(self.foozipEncFile)
         self.assertIsNotNone(srchash)
         srchash2 = self.systems['One'].loadActorSource(self.dogzipEncFile)
@@ -857,6 +861,7 @@ class TestASimpleSystem(unittest.TestCase, CreateTestSourceZips):
         auth = self.systems['One'].createActor(rot13Authority)
         enabled = self.systems['One'].ask(auth, 'Enable', 1)
         self.assertEqual(enabled, 'Enabled')
+        time.sleep(0.1)  # allow source authority time to register
         srchash = self.systems['One'].loadActorSource(self.foozipEncFile)
         self.assertIsNotNone(srchash)
         srchash2 = self.systems['One'].loadActorSource(self.dogzipEncFile)
@@ -874,6 +879,7 @@ class TestASimpleSystem(unittest.TestCase, CreateTestSourceZips):
         auth = self.systems['One'].createActor(rot13CorruptAuthority)
         enabled = self.systems['One'].ask(auth, 'Enable', 1)
         self.assertEqual(enabled, 'Enabled')
+        time.sleep(0.1)  # allow source authority time to register
         srchash = self.systems['One'].loadActorSource(self.foozipEncFile)
         self.assertIsNotNone(srchash)
         time.sleep(0.25)  # allow time for load to consult Source Authority
@@ -890,6 +896,7 @@ class TestASimpleSystem(unittest.TestCase, CreateTestSourceZips):
         auth = self.systems['One'].createActor(rot13FailAuthority)
         enabled = self.systems['One'].ask(auth, 'Enable', 1)
         self.assertEqual(enabled, 'Enabled')
+        time.sleep(0.1)  # allow source authority time to register
         srchash = self.systems['One'].loadActorSource(self.foozipEncFile)
         self.assertIsNotNone(srchash)
         time.sleep(0.25)  # allow time for load to consult Source Authority
@@ -1009,6 +1016,7 @@ class TestMultipleMultiProcTCPSystem(ActorSystemTestCase):
         auth = self.systems['One'].createActor(rot13Authority)
         enabled = self.systems['One'].ask(auth, 'Enable', 1)
         self.assertEqual(enabled, 'Enabled')
+        time.sleep(0.1)  # allow source authority time to register
         srchash = self.systems['One'].loadActorSource(self.foozipEncFile)
         self.assertIsNotNone(srchash)
         # Establish capabilities that allow Foo and Moo actors (in different systems)
@@ -1023,6 +1031,7 @@ class TestMultipleMultiProcTCPSystem(ActorSystemTestCase):
         auth = self.systems['One'].createActor(rot13Authority)
         enabled = self.systems['One'].ask(auth, 'Enable', 1)
         self.assertEqual(enabled, 'Enabled')
+        time.sleep(0.1)  # allow source authority time to register
         srchash = self.systems['One'].loadActorSource(self.foozipEncFile)
         self.assertIsNotNone(srchash)
         self.systems['One'].updateCapability('Foo Allowed', True)
@@ -1044,6 +1053,7 @@ class TestMultipleMultiProcTCPSystem(ActorSystemTestCase):
         auth = self.systems['One'].createActor(rot13Authority)
         enabled = self.systems['One'].ask(auth, 'Enable', 1)
         self.assertEqual(enabled, 'Enabled')
+        time.sleep(0.1)  # allow source authority time to register
         srchash = self.systems['One'].loadActorSource(self.foozipEncFile)
         self.assertIsNotNone(srchash)
         self.systems['Two'].updateCapability('Foo Allowed', True)
@@ -1065,6 +1075,7 @@ class TestMultipleMultiProcTCPSystem(ActorSystemTestCase):
         auth = self.systems['One'].createActor(rot13Authority)
         enabled = self.systems['One'].ask(auth, 'Enable', 1)
         self.assertEqual(enabled, 'Enabled')
+        time.sleep(0.1)  # allow source authority time to register
         srchash = self.systems['One'].loadActorSource(self.foozipEncFile)
         self.assertIsNotNone(srchash)
         self.systems['One'].updateCapability('Foo Allowed', True)
@@ -1088,6 +1099,7 @@ class TestMultipleMultiProcTCPSystem(ActorSystemTestCase):
         auth = self.systems['One'].createActor(rot13Authority)
         enabled = self.systems['One'].ask(auth, 'Enable', 1)
         self.assertEqual(enabled, 'Enabled')
+        time.sleep(0.1)  # allow source authority time to register
         srchash = self.systems['One'].loadActorSource(self.foozipEncFile)
         self.assertIsNotNone(srchash)
         self.systems['One'].updateCapability('Foo Allowed', True)
@@ -1110,6 +1122,7 @@ class TestMultipleMultiProcTCPSystem(ActorSystemTestCase):
         auth = self.systems['One'].createActor(rot13Authority)
         enabled = self.systems['One'].ask(auth, 'Enable', 1)
         self.assertEqual(enabled, 'Enabled')
+        time.sleep(0.1)  # allow source authority time to register
         srchash = self.systems['One'].loadActorSource(self.foozipEncFile)
         self.assertIsNotNone(srchash)
         self.systems['One'].updateCapability('Foo Allowed', True)
@@ -1130,7 +1143,9 @@ class TestMultipleMultiProcTCPSystem(ActorSystemTestCase):
         self.startSystems(370)
         auth = self.systems['Two'].createActor(rot13Authority)
         enabled = self.systems['Two'].ask(auth, 'Enable', 1)
+        time.sleep(0.1)  # allow source authority time to register
         self.assertEqual(enabled, 'Enabled')
+        time.sleep(0.1)  # allow source authority time to register
         srchash = self.systems['Two'].loadActorSource(self.foozipEncFile)
         self.assertIsNotNone(srchash)
         time.sleep(0.1)
@@ -1158,6 +1173,7 @@ class TestMultipleMultiProcTCPSystem(ActorSystemTestCase):
         auth = self.systems['One'].createActor(rot13Authority)
         enabled = self.systems['One'].ask(auth, 'Enable', 1)
         self.assertEqual(enabled, 'Enabled')
+        time.sleep(0.1)  # allow source authority time to register
         srchash = self.systems['One'].loadActorSource(self.foozipEncFile)
         self.assertIsNotNone(srchash)
         time.sleep(0.1)
@@ -1189,6 +1205,7 @@ class TestMultipleMultiProcTCPSystem(ActorSystemTestCase):
         auth = self.systems['One'].createActor(rot13Authority)
         enabled = self.systems['One'].ask(auth, 'Enable', 1)
         self.assertEqual(enabled, 'Enabled')
+        time.sleep(0.1)  # allow source authority time to register
         srchash = self.systems['One'].loadActorSource(self.foozipEncFile)
         self.assertIsNotNone(srchash)
         time.sleep(0.1)
@@ -1220,6 +1237,7 @@ class TestMultipleMultiProcTCPSystem(ActorSystemTestCase):
         auth = self.systems['One'].createActor(rot13Authority)
         enabled = self.systems['One'].ask(auth, 'Enable', 1)
         self.assertEqual(enabled, 'Enabled')
+        time.sleep(0.1)  # allow source authority time to register
         srchash = self.systems['One'].loadActorSource(self.foozipEncFile)
         self.assertIsNotNone(srchash)
         self.systems['One'].updateCapability('Foo Allowed', True)
@@ -1242,6 +1260,7 @@ class TestMultipleMultiProcTCPSystem(ActorSystemTestCase):
         auth = self.systems['One'].createActor(rot13Authority)
         enabled = self.systems['One'].ask(auth, 'Enable', 1)
         self.assertEqual(enabled, 'Enabled')
+        time.sleep(0.1)  # allow source authority time to register
         srchash = self.systems['One'].loadActorSource(self.foozipEncFile)
         self.assertIsNotNone(srchash)
         self.systems['One'].updateCapability('Foo Allowed', True)
@@ -1264,6 +1283,7 @@ class TestMultipleMultiProcTCPSystem(ActorSystemTestCase):
         auth = self.systems['One'].createActor(rot13Authority)
         enabled = self.systems['One'].ask(auth, 'Enable', 1)
         self.assertEqual(enabled, 'Enabled')
+        time.sleep(0.1)  # allow source authority time to register
         srchash = self.systems['One'].loadActorSource(self.foozipEncFile)
         self.assertIsNotNone(srchash)
         self.systems['One'].updateCapability('Foo Allowed', True)
