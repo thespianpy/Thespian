@@ -7,7 +7,7 @@
 #+LATEX_HEADER: \product{Thespian}
 #+LATEX_HEADER: \component{Python Actor System}
 #+LATEX_HEADER: \doctype{Release Notes}
-#+LATEX_HEADER: \docrev{2.5.5}{2016 Feb 05}
+#+LATEX_HEADER: \docrev{2.5.6}{2016 Feb 11}
 #+LATEX_HEADER: \docid{TheDoc-06}
 #+OPTIONS: ^:nil num:nil
 
@@ -22,6 +22,31 @@ do not change the API.
 * 2.x
 
 ** 2.5
+
+*** 2.5.6 <2016-02-11 Thu>
+
+  * Fixes for detection of socket closure in the TCPTransport:
+    corrected errno reference and add handling of additional errors
+    (for Windows and Mac OS/X).
+
+  * Update TCPTransport to ensure select() is never called with empty
+    select lists (needed for Windows).
+
+  * Added small delay in ActorSystem shutdown to allow
+    shutdown-related communications to complete.
+
+  * Update source loading tests to allow Source Authority registration
+    before commencing test.
+
+  * Selection of "temp" directory for writing logs adjusted to be
+    OS-aware.
+
+  * Added logging for actor instantiation failures (normal logging in
+    addition to previously-existing internal logging).
+
+  * Updated default logging for thespian tests to support Windows
+    which cannot inherit an open logging file descriptor in forked
+    children.
 
 *** 2.5.5 <2016-02-05 Fri>
 
