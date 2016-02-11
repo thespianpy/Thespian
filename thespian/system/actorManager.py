@@ -56,6 +56,10 @@ class ActorManager(systemCommonBase):
             self._sCBStats.inc('Actor.Instance Created')
         except Exception as ex:
             import traceback
+            logging.getLogger(str(self._actorClass)) \
+                   .error('Actor %s @ %s instantiation exception',
+                          self._actorClass, self.transport.myAddress,
+                          exc_info = True)
             thesplog('Actor %s @ %s instantiation exception: %s', self._actorClass,
                      self.transport.myAddress, traceback.format_exc(),
                      level=logging.ERROR, primary=True)
