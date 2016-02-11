@@ -282,6 +282,9 @@ class MultiProcReplicator(object):
                 logging.root = self.oldLoggerRoot
                 logging.Logger.root = self.oldLoggerRoot
                 logging.Logger.manager = logging.Manager(logging.Logger.root)
+            self.transport.run(TransmitOnly, maximumDuration=timedelta(milliseconds=250))
+            import time
+            time.sleep(0.05)  # allow children to exit and log their exit
             self.transport.scheduleTransmit(None, TransmitIntent(self.asLogger,
                                                                  LoggerExitRequest()))
             self.transport.run(TransmitOnly)
