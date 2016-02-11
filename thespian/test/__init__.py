@@ -16,12 +16,23 @@ def simpleActorTestLogging():
        configuration.
     """
     import sys
+    if sys.platform == 'win32':
+        # Windows will not allow sys.stdout to be passed to a child
+        # process, which breaks the startup/config for some of the
+        # tests.
+        handler = { 'class': 'logging.handlers.RotatingFileHandler',
+                    'filename': 'nosetests.log',
+                    'maxBytes': 256*1024,
+                    'backupCount':3,
+        }
+    else:
+        handler = { 'class': 'logging.StreamHandler',
+                    'stream': sys.stdout,
+        }
     return {
         'version' : 1,
         'handlers': { #'discarder': {'class': 'logging.NullHandler' },
-            'testStream' : { 'class': 'logging.StreamHandler',
-                             'stream': sys.stdout,
-            },
+            'testStream' : handler,
         },
         'root': { 'handlers': ['testStream'] },
         'disable_existing_loggers': False,
