@@ -1,0 +1,353 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+<title>Thespian Comparing Actors to Async and Coroutines</title>
+<!-- 2016-02-14 Sun 12:47 -->
+<meta  http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<meta  name="generator" content="Org-mode" />
+<meta  name="author" content="Kevin Quick &lt;kq1quick@gmail.com&gt;" />
+<style type="text/css">
+ <!--/*--><![CDATA[/*><!--*/
+  .title  { text-align: center; }
+  .todo   { font-family: monospace; color: red; }
+  .done   { color: green; }
+  .tag    { background-color: #eee; font-family: monospace;
+            padding: 2px; font-size: 80%; font-weight: normal; }
+  .timestamp { color: #bebebe; }
+  .timestamp-kwd { color: #5f9ea0; }
+  .right  { margin-left: auto; margin-right: 0px;  text-align: right; }
+  .left   { margin-left: 0px;  margin-right: auto; text-align: left; }
+  .center { margin-left: auto; margin-right: auto; text-align: center; }
+  .underline { text-decoration: underline; }
+  #postamble p, #preamble p { font-size: 90%; margin: .2em; }
+  p.verse { margin-left: 3%; }
+  pre {
+    border: 1px solid #ccc;
+    box-shadow: 3px 3px 3px #eee;
+    padding: 8pt;
+    font-family: monospace;
+    overflow: auto;
+    margin: 1.2em;
+  }
+  pre.src {
+    position: relative;
+    overflow: visible;
+    padding-top: 1.2em;
+  }
+  pre.src:before {
+    display: none;
+    position: absolute;
+    background-color: white;
+    top: -10px;
+    right: 10px;
+    padding: 3px;
+    border: 1px solid black;
+  }
+  pre.src:hover:before { display: inline;}
+  pre.src-sh:before    { content: 'sh'; }
+  pre.src-bash:before  { content: 'sh'; }
+  pre.src-emacs-lisp:before { content: 'Emacs Lisp'; }
+  pre.src-R:before     { content: 'R'; }
+  pre.src-perl:before  { content: 'Perl'; }
+  pre.src-java:before  { content: 'Java'; }
+  pre.src-sql:before   { content: 'SQL'; }
+
+  table { border-collapse:collapse; }
+  caption.t-above { caption-side: top; }
+  caption.t-bottom { caption-side: bottom; }
+  td, th { vertical-align:top;  }
+  th.right  { text-align: center;  }
+  th.left   { text-align: center;   }
+  th.center { text-align: center; }
+  td.right  { text-align: right;  }
+  td.left   { text-align: left;   }
+  td.center { text-align: center; }
+  dt { font-weight: bold; }
+  .footpara:nth-child(2) { display: inline; }
+  .footpara { display: block; }
+  .footdef  { margin-bottom: 1em; }
+  .figure { padding: 1em; }
+  .figure p { text-align: center; }
+  .inlinetask {
+    padding: 10px;
+    border: 2px solid gray;
+    margin: 10px;
+    background: #ffffcc;
+  }
+  #org-div-home-and-up
+   { text-align: right; font-size: 70%; white-space: nowrap; }
+  textarea { overflow-x: auto; }
+  .linenr { font-size: smaller }
+  .code-highlighted { background-color: #ffff00; }
+  .org-info-js_info-navigation { border-style: none; }
+  #org-info-js_console-label
+    { font-size: 10px; font-weight: bold; white-space: nowrap; }
+  .org-info-js_search-highlight
+    { background-color: #ffff00; color: #000000; font-weight: bold; }
+  /*]]>*/-->
+</style>
+<link rel="stylesheet" type="text/css" href="styles/bigblow/css/htmlize.css"/>
+<link rel="stylesheet" type="text/css" href="styles/bigblow/css/bigblow.css"/>
+<link rel="stylesheet" type="text/css" href="styles/bigblow/css/hideshow.css"/>
+<script type="text/javascript" src="styles/bigblow/js/jquery-1.11.0.min.js"></script>
+<script type="text/javascript" src="styles/bigblow/js/jquery-ui-1.10.2.min.js"></script>
+<script type="text/javascript" src="styles/bigblow/js/jquery.localscroll-min.js"></script>
+<script type="text/javascript" src="styles/bigblow/js/jquery.scrollTo-1.4.3.1-min.js"></script>
+<script type="text/javascript" src="styles/bigblow/js/jquery.zclip.min.js"></script>
+<script type="text/javascript" src="styles/bigblow/js/bigblow.js"></script>
+<script type="text/javascript" src="styles/bigblow/js/hideshow.js"></script>
+<script type="text/javascript" src="styles/lib/js/jquery.stickytableheaders.min.js"></script>
+<link href="thespian.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript">
+/*
+@licstart  The following is the entire license notice for the
+JavaScript code in this tag.
+
+Copyright (C) 2012-2013 Free Software Foundation, Inc.
+
+The JavaScript code in this tag is free software: you can
+redistribute it and/or modify it under the terms of the GNU
+General Public License (GNU GPL) as published by the Free Software
+Foundation, either version 3 of the License, or (at your option)
+any later version.  The code is distributed WITHOUT ANY WARRANTY;
+without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE.  See the GNU GPL for more details.
+
+As additional permission under GNU GPL version 3 section 7, you
+may distribute non-source (e.g., minimized or compacted) forms of
+that code without the copy of the GNU GPL normally required by
+section 4, provided you include this license notice and a URL
+through which recipients can access the Corresponding Source.
+
+
+@licend  The above is the entire license notice
+for the JavaScript code in this tag.
+*/
+<!--/*--><![CDATA[/*><!--*/
+ function CodeHighlightOn(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(null != target) {
+     elem.cacheClassElem = elem.className;
+     elem.cacheClassTarget = target.className;
+     target.className = "code-highlighted";
+     elem.className   = "code-highlighted";
+   }
+ }
+ function CodeHighlightOff(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(elem.cacheClassElem)
+     elem.className = elem.cacheClassElem;
+   if(elem.cacheClassTarget)
+     target.className = elem.cacheClassTarget;
+ }
+/*]]>*///-->
+</script>
+</head>
+<body>
+<div id="content">
+<h1 class="title"><a href="http://thespianpy.com/"><img src="thesplogo2.png" alt="Thespian" width="50%" display="inline" /></a> Comparing Actors to Async and Coroutines</h1>
+<p>
+There are many options for performing asynchronous programming in Python,
+one of which is the new asyncio and coroutine functionality introduced
+in recent versions of Python.
+</p>
+
+<p>
+Brett Cannon of the Python core team recently wrote a great
+<a href="http://www.snarky.ca/how-the-heck-does-async-await-work-in-python-3-5">introductory article on async/await</a> functionality in Python.
+In this article, I'll contrast the async/await functionality Brett
+described with the actor model.
+</p>
+
+<p>
+The asyncio functionality introduced into Python is a significant move
+forward from the typical blocking I/O methodology and should be
+preferred over the latter, but actors still present several
+significant advantages over asyncio that makes them the real
+preference for this type of functionality.
+</p>
+
+<p>
+To substantiate this position, this article will first present an
+actor-based alternative to the "rocket launcer" example code in
+Brett's article.
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-python"><span class="org-keyword">from</span> thespian.actors <span class="org-keyword">import</span> *
+<span class="org-keyword">from</span> datetime <span class="org-keyword">import</span> datetime, timedelta
+
+
+<span class="org-keyword">class</span> <span class="org-type">CountDown</span>(Actor):
+    <span class="org-keyword">def</span> <span class="org-function-name">receiveMessage</span>(<span class="org-keyword">self</span>, msg, sender):
+        <span class="org-keyword">if</span> <span class="org-builtin">isinstance</span>(msg, <span class="org-builtin">tuple</span>):
+            <span class="org-keyword">self</span>.starter = sender
+            <span class="org-keyword">self</span>.label, <span class="org-keyword">self</span>.length = msg[:2]
+            <span class="org-keyword">self</span>.delay = msg[2] <span class="org-keyword">if</span> <span class="org-builtin">len</span>(msg) == 3 <span class="org-keyword">else</span> 0
+            <span class="org-keyword">print</span>(<span class="org-keyword">self</span>.label, <span class="org-string">'waiting'</span>, <span class="org-keyword">self</span>.delay, <span class="org-string">'seconds before starting countdown'</span>)
+            <span class="org-keyword">if</span> <span class="org-keyword">self</span>.delay:
+                <span class="org-keyword">self</span>.wakeupAfter(timedelta(seconds=<span class="org-keyword">self</span>.delay))
+                <span class="org-keyword">return</span>
+        <span class="org-keyword">elif</span> <span class="org-builtin">isinstance</span>(msg, ActorExitRequest):
+            <span class="org-keyword">return</span>
+        <span class="org-comment-delimiter"># </span><span class="org-comment">msg is either WakeupMessage or fall-thru from tuple above if</span>
+        <span class="org-comment-delimiter"># </span><span class="org-comment">delay is 0</span>
+        <span class="org-keyword">if</span> <span class="org-keyword">self</span>.delay <span class="org-keyword">is</span> <span class="org-keyword">not</span> <span class="org-constant">None</span>:
+            <span class="org-keyword">print</span>(<span class="org-keyword">self</span>.label, <span class="org-string">'starting after waiting'</span>,
+                  msg.delayPeriod <span class="org-keyword">if</span> <span class="org-builtin">isinstance</span>(msg, WakeupMessage) <span class="org-keyword">else</span> <span class="org-keyword">self</span>.delay)
+            <span class="org-keyword">self</span>.delay = <span class="org-constant">None</span>
+        <span class="org-keyword">if</span> <span class="org-keyword">self</span>.length:
+            <span class="org-keyword">print</span>(<span class="org-keyword">self</span>.label, <span class="org-string">'T-minus'</span>, <span class="org-keyword">self</span>.length)
+            <span class="org-keyword">self</span>.length -= 1
+            <span class="org-keyword">self</span>.wakeupAfter(timedelta(seconds=1))
+        <span class="org-keyword">else</span>:
+            <span class="org-keyword">print</span>(<span class="org-keyword">self</span>.label, <span class="org-string">'lift-off!'</span>)
+            <span class="org-keyword">self</span>.send(<span class="org-keyword">self</span>.starter, <span class="org-keyword">self</span>.myAddress)
+
+
+<span class="org-keyword">def</span> <span class="org-function-name">main</span>(base):
+    <span class="org-variable-name">asys</span> = ActorSystem(base)
+    <span class="org-keyword">try</span>:
+        <span class="org-variable-name">actors</span> = [asys.createActor(CountDown) <span class="org-keyword">for</span> _ <span class="org-keyword">in</span> <span class="org-builtin">range</span>(3)]
+        <span class="org-variable-name">start</span> = datetime.now()
+        asys.tell(actors[0], (<span class="org-string">'A'</span>, 5))
+        asys.tell(actors[1], (<span class="org-string">'B'</span>, 3, 2))
+        asys.tell(actors[2], (<span class="org-string">'C'</span>, 4, 1))
+        <span class="org-keyword">while</span> actors:
+            <span class="org-variable-name">rsp</span> = asys.listen(timedelta(seconds=10))
+            <span class="org-keyword">del</span> actors[actors.index(rsp)]
+        <span class="org-keyword">print</span>(<span class="org-string">'Total elapsed time is'</span>, datetime.now() - start)
+    <span class="org-keyword">finally</span>:
+        asys.shutdown()
+
+
+<span class="org-keyword">if</span> <span class="org-builtin">__name__</span> == <span class="org-string">"__main__"</span>:
+    <span class="org-keyword">import</span> sys
+    <span class="org-comment-delimiter"># </span><span class="org-comment">Try:  python3 actor.py {simpleSystemBase | multiprocUDPBase | multiprocTCPBase }</span>
+    main((sys.argv+[<span class="org-string">'simpleSystemBase'</span>])[1])
+</pre>
+</div>
+
+<p>
+There are naturally other ways of implementing this rather-contrived
+example, as well as many things that could be done to extend it and
+add functionality, but the implementation above is hopefully fairly
+close in intent to Brett's version.
+</p>
+
+<p>
+Using the example above as the basis for comparison,
+the following conclusions may be drawn:
+</p>
+
+<ol class="org-ol">
+<li>Actors are simple to use.  There is very little overhead or
+boilerplate to creating Actors, and the code within them does
+not need to utilize any special keywords or functionality (although
+they certainly can, within the context of that actor).
+
+<p>
+One observation of this is by comparing code size (removing the docstrings
+from Brett's version, but keeping the comments):
+</p>
+
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+
+
+<colgroup>
+<col  class="left" />
+
+<col  class="left" />
+
+<col  class="right" />
+</colgroup>
+<thead>
+<tr>
+<th scope="col" class="left">Implementation</th>
+<th scope="col" class="left">File Size</th>
+<th scope="col" class="right">Lines of code</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="left">async/await</td>
+<td class="left">2.5KB</td>
+<td class="right">79</td>
+</tr>
+
+<tr>
+<td class="left">actor</td>
+<td class="left">1.8KB</td>
+<td class="right">51</td>
+</tr>
+</tbody>
+</table>
+</li>
+</ol>
+
+
+<ol class="org-ol">
+<li>The Actor Model provides a higher-level of abstraction, while
+still providing equivalent functionality.  When working with
+asyncio, the developer must constantly be aware of the needs and
+techniques of that approach, and the resulting code shows these
+concerns throughout.  By contrast, an actor interacts simply be
+sending and receiving messages, which is usually expressed at the
+entry/exit points instead of throughout the body of the code.
+
+<p>
+By extension, the actor-based implementation is more easily read
+and understood.
+</p>
+</li>
+
+<li>The Actor Model separates core code from the scheduling
+infrastructure, which both simplifies the core code and allows
+flexibility in changing the infrastructure.
+
+<p>
+For example, the actor-based implementation above runs by default
+in a single process, single thread, much the same as the
+async/await version.  However, simply by passing the name of a
+different system base as an extra command line argument, the
+actor-based implementation can easily changed to other
+implementations; for example, multiple processes communicating by
+TCP or UDP.
+</p>
+</li>
+
+<li>As an extension of the previous point, it would be relatively
+trivial to extend the actor-based implementation to run the
+different <code>CountDown</code> actors on separate systems.  Extending the
+asyncio version to run across different systems would require
+significantly more effort and introduce more explicit networking
+code into that version.
+</li>
+
+<li>The asyncio is only available in later versions of Python, whereas
+the Thespian actor library supports Python2.6 through Python3.5
+(without requiring any changes to the actors).
+</li>
+</ol>
+
+
+<p>
+There are certainly cases where asyncio is a better solution, and
+coroutines provide useful functionality beyond the realm of asyncio,
+but using actors as a standard concurrently methodology has clear
+advantages.
+</p>
+</div>
+<div id="postamble" class="status">
+<p class="author">Author: Kevin Quick &lt;kq1quick@gmail.com&gt;</p>
+<p class="date">Created: 2016-02-14 Sun 12:47</p>
+<p class="creator"><a href="http://www.gnu.org/software/emacs/">Emacs</a> 24.5.2 (<a href="http://orgmode.org">Org</a> mode 8.2.10)</p>
+<p class="validation"><a href="http://validator.w3.org/check?uri=referer">Validate</a></p>
+</div>
+</body>
+</html>

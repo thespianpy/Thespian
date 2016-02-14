@@ -271,6 +271,8 @@ Table of Contents
 ──────────────────────────────────
 
   ‣ The [Actor Model] at Wikipedia
+  ‣ A video with [Carl Hewitt, Eric Meijer, and Clemens Szyperski
+    discussing the Actor Model]
   ‣ [http://c2.com/cgi/wiki?ActorsModel]
   ‣ [Akka] is a popular Actor Library for Java and Scala; it is roughly
     the equivalent to Thespian for those languages.
@@ -284,6 +286,10 @@ Table of Contents
 
 
   [Actor Model] http://wikipedia.org/wiki/Actor_model
+
+  [Carl Hewitt, Eric Meijer, and Clemens Szyperski discussing the Actor
+  Model]
+  https://channel9.msdn.com/Shows/Going+Deep/Hewitt-Meijer-and-Szyperski-The-Actor-Model-everything-you-wanted-to-know-but-were-afraid-to-ask
 
   [Akka] http://akka.io
 
@@ -344,11 +350,15 @@ Table of Contents
 6.1 Blogs and Success Stories
 ─────────────────────────────
 
-  ‣ [GoDaddy blog article]
+  ‣ [GoDaddy blog article introducing Thespian, 2015 Aug]
+  ‣ [Article comparing Actors to Python asyncio/await, 2016 Feb]
 
   If you have a blog, article, or success story you would like published
   here, please contact one of the project administrators.
 
 
-  [GoDaddy blog article]
+  [GoDaddy blog article introducing Thespian, 2015 Aug]
   http://engineering.godaddy.com/why-godaddy-built-an-actor-system-library
+
+  [Article comparing Actors to Python asyncio/await, 2016 Feb]
+  file:blog/async_blog_2016Feb/async_2016Feb.org
