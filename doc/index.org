@@ -259,7 +259,8 @@ $ pip install thespian
 
 ** Blogs and Success Stories
 
-  * [[http://engineering.godaddy.com/why-godaddy-built-an-actor-system-library][GoDaddy blog article]]
+  * [[http://engineering.godaddy.com/why-godaddy-built-an-actor-system-library][GoDaddy blog article introducing Thespian, 2015 Aug]]
+  * [[file:blog/async_blog_2016Feb/async_2016Feb.org][Article comparing Actors to Python asyncio/await, 2016 Feb]]
 
   If you have a blog, article, or success story you would like
   published here, please contact one of the project administrators.

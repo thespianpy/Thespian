@@ -1,0 +1,143 @@
+#+TITLE: [[http://thespianpy.com/][@@html:<img src="thesplogo2.png" alt="Thespian" width="50%" display="inline" />@@]] Comparing Actors to Async and Coroutines
+#+AUTHOR: Kevin Quick <kq1quick@gmail.com>
+#+SETUPFILE: theme.setup
+#+HTML_HEAD: <link href="thespian.css" rel="stylesheet" type="text/css"/>
+#+LATEX_CLASS: thespian
+#+OPTIONS: ^:nil num:nil
+
+There are many options for performing asynchronous programming in Python,
+one of which is the new asyncio and coroutine functionality introduced
+in recent versions of Python.
+
+Brett Cannon of the Python core team recently wrote a great
+[[http://www.snarky.ca/how-the-heck-does-async-await-work-in-python-3-5][introductory article on async/await]] functionality in Python.
+In this article, I'll contrast the async/await functionality Brett
+described with the actor model.
+
+The asyncio functionality introduced into Python is a significant move
+forward from the typical blocking I/O methodology and should be
+preferred over the latter, but actors still present several
+significant advantages over asyncio that makes them the real
+preference for this type of functionality.
+
+To substantiate this position, this article will first present an
+actor-based alternative to the "rocket launcer" example code in
+Brett's article.
+
+#+BEGIN_SRC python
+from thespian.actors import *
+from datetime import datetime, timedelta
+
+
+class CountDown(Actor):
+    def receiveMessage(self, msg, sender):
+        if isinstance(msg, tuple):
+            self.starter = sender
+            self.label, self.length = msg[:2]
+            self.delay = msg[2] if len(msg) == 3 else 0
+            print(self.label, 'waiting', self.delay, 'seconds before starting countdown')
+            if self.delay:
+                self.wakeupAfter(timedelta(seconds=self.delay))
+                return
+        elif isinstance(msg, ActorExitRequest):
+            return
+        # msg is either WakeupMessage or fall-thru from tuple above if
+        # delay is 0
+        if self.delay is not None:
+            print(self.label, 'starting after waiting',
+                  msg.delayPeriod if isinstance(msg, WakeupMessage) else self.delay)
+            self.delay = None
+        if self.length:
+            print(self.label, 'T-minus', self.length)
+            self.length -= 1
+            self.wakeupAfter(timedelta(seconds=1))
+        else:
+            print(self.label, 'lift-off!')
+            self.send(self.starter, self.myAddress)
+
+
+def main(base):
+    asys = ActorSystem(base)
+    try:
+        actors = [asys.createActor(CountDown) for _ in range(3)]
+        start = datetime.now()
+        asys.tell(actors[0], ('A', 5))
+        asys.tell(actors[1], ('B', 3, 2))
+        asys.tell(actors[2], ('C', 4, 1))
+        while actors:
+            rsp = asys.listen(timedelta(seconds=10))
+            del actors[actors.index(rsp)]
+        print('Total elapsed time is', datetime.now() - start)
+    finally:
+        asys.shutdown()
+
+
+if __name__ == "__main__":
+    import sys
+    # Try:  python3 actor.py {simpleSystemBase | multiprocUDPBase | multiprocTCPBase }
+    main((sys.argv+['simpleSystemBase'])[1])
+#+END_SRC
+
+There are naturally other ways of implementing this rather-contrived
+example, as well as many things that could be done to extend it and
+add functionality, but the implementation above is hopefully fairly
+close in intent to Brett's version.
+
+Using the example above as the basis for comparison,
+the following conclusions may be drawn:
+
+  1. Actors are simple to use.  There is very little overhead or
+     boilerplate to creating Actors, and the code within them does
+     not need to utilize any special keywords or functionality (although
+     they certainly can, within the context of that actor).
+
+     One observation of this is by comparing code size (removing the docstrings
+     from Brett's version, but keeping the comments):
+
+     |----------------+-----------+---------------|
+     | Implementation | File Size | Lines of code |
+     |----------------+-----------+---------------|
+     | async/await    | 2.5KB     |            79 |
+     | actor          | 1.8KB     |            51 |
+     |----------------+-----------+---------------|
+
+
+  2. The Actor Model provides a higher-level of abstraction, while
+     still providing equivalent functionality.  When working with
+     asyncio, the developer must constantly be aware of the needs and
+     techniques of that approach, and the resulting code shows these
+     concerns throughout.  By contrast, an actor interacts simply be
+     sending and receiving messages, which is usually expressed at the
+     entry/exit points instead of throughout the body of the code.
+
+     By extension, the actor-based implementation is more easily read
+     and understood.
+
+  3. The Actor Model separates core code from the scheduling
+     infrastructure, which both simplifies the core code and allows
+     flexibility in changing the infrastructure.
+
+     For example, the actor-based implementation above runs by default
+     in a single process, single thread, much the same as the
+     async/await version.  However, simply by passing the name of a
+     different system base as an extra command line argument, the
+     actor-based implementation can easily changed to other
+     implementations; for example, multiple processes communicating by
+     TCP or UDP.
+
+  4. As an extension of the previous point, it would be relatively
+     trivial to extend the actor-based implementation to run the
+     different ~CountDown~ actors on separate systems.  Extending the
+     asyncio version to run across different systems would require
+     significantly more effort and introduce more explicit networking
+     code into that version.
+
+  5. The asyncio is only available in later versions of Python, whereas
+     the Thespian actor library supports Python2.6 through Python3.5
+     (without requiring any changes to the actors).
+
+
+There are certainly cases where asyncio is a better solution, and
+coroutines provide useful functionality beyond the realm of asyncio,
+but using actors as a standard concurrently methodology has clear
+advantages.
