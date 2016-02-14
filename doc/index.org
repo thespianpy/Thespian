@@ -210,6 +210,7 @@ utilization document.
 ** Background and Related Efforts
 
   * The [[http://wikipedia.org/wiki/Actor_model][Actor Model]] at Wikipedia
+  * A video with [[https://channel9.msdn.com/Shows/Going+Deep/Hewitt-Meijer-and-Szyperski-The-Actor-Model-everything-you-wanted-to-know-but-were-afraid-to-ask][Carl Hewitt, Eric Meijer, and Clemens Szyperski discussing the Actor Model]]
   * http://c2.com/cgi/wiki?ActorsModel
   * [[http://akka.io][Akka]] is a popular Actor Library for Java and Scala; it is roughly
     the equivalent to Thespian for those languages.
