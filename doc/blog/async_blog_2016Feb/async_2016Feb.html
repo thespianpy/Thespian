@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
 <title>Thespian Comparing Actors to Async and Coroutines</title>
-<!-- 2016-02-14 Sun 14:21 -->
+<!-- 2016-02-14 Sun 14:37 -->
 <meta  http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta  name="generator" content="Org-mode" />
 <meta  name="author" content="Kevin Quick &lt;kq1quick@gmail.com&gt;" />
@@ -190,7 +190,8 @@ Brett's article.
             <span class="org-keyword">self</span>.starter = sender
             <span class="org-keyword">self</span>.label, <span class="org-keyword">self</span>.length = msg[:2]
             <span class="org-keyword">self</span>.delay = msg[2] <span class="org-keyword">if</span> <span class="org-builtin">len</span>(msg) == 3 <span class="org-keyword">else</span> 0
-            <span class="org-keyword">print</span>(<span class="org-keyword">self</span>.label, <span class="org-string">'waiting'</span>, <span class="org-keyword">self</span>.delay, <span class="org-string">'seconds before starting countdown'</span>)
+            <span class="org-keyword">print</span>(<span class="org-keyword">self</span>.label, <span class="org-string">'waiting'</span>, <span class="org-keyword">self</span>.delay,
+                  <span class="org-string">'seconds before starting countdown'</span>)
             <span class="org-keyword">if</span> <span class="org-keyword">self</span>.delay:
                 <span class="org-keyword">self</span>.wakeupAfter(timedelta(seconds=<span class="org-keyword">self</span>.delay))
                 <span class="org-keyword">return</span>
@@ -200,7 +201,8 @@ Brett's article.
         <span class="org-comment-delimiter"># </span><span class="org-comment">delay is 0</span>
         <span class="org-keyword">if</span> <span class="org-keyword">self</span>.delay <span class="org-keyword">is</span> <span class="org-keyword">not</span> <span class="org-constant">None</span>:
             <span class="org-keyword">print</span>(<span class="org-keyword">self</span>.label, <span class="org-string">'starting after waiting'</span>,
-                  msg.delayPeriod <span class="org-keyword">if</span> <span class="org-builtin">isinstance</span>(msg, WakeupMessage) <span class="org-keyword">else</span> <span class="org-keyword">self</span>.delay)
+                  msg.delayPeriod <span class="org-keyword">if</span> <span class="org-builtin">isinstance</span>(msg, WakeupMessage) <span class="org-keyword">else</span>
+                  <span class="org-keyword">self</span>.delay)
             <span class="org-keyword">self</span>.delay = <span class="org-constant">None</span>
         <span class="org-keyword">if</span> <span class="org-keyword">self</span>.length:
             <span class="org-keyword">print</span>(<span class="org-keyword">self</span>.label, <span class="org-string">'T-minus'</span>, <span class="org-keyword">self</span>.length)
@@ -346,7 +348,7 @@ advantages.
 </div>
 <div id="postamble" class="status">
 <p class="author">Author: Kevin Quick &lt;kq1quick@gmail.com&gt;</p>
-<p class="date">Created: 2016-02-14 Sun 14:21</p>
+<p class="date">Created: 2016-02-14 Sun 14:37</p>
 <p class="creator"><a href="http://www.gnu.org/software/emacs/">Emacs</a> 24.5.2 (<a href="http://orgmode.org">Org</a> mode 8.2.10)</p>
 <p class="validation"><a href="http://validator.w3.org/check?uri=referer">Validate</a></p>
 </div>
