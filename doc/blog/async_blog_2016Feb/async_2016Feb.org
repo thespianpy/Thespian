@@ -35,7 +35,8 @@ class CountDown(Actor):
             self.starter = sender
             self.label, self.length = msg[:2]
             self.delay = msg[2] if len(msg) == 3 else 0
-            print(self.label, 'waiting', self.delay, 'seconds before starting countdown')
+            print(self.label, 'waiting', self.delay,
+                  'seconds before starting countdown')
             if self.delay:
                 self.wakeupAfter(timedelta(seconds=self.delay))
                 return
@@ -45,7 +46,8 @@ class CountDown(Actor):
         # delay is 0
         if self.delay is not None:
             print(self.label, 'starting after waiting',
-                  msg.delayPeriod if isinstance(msg, WakeupMessage) else self.delay)
+                  msg.delayPeriod if isinstance(msg, WakeupMessage) else
+                  self.delay)
             self.delay = None
         if self.length:
             print(self.label, 'T-minus', self.length)
@@ -74,7 +76,9 @@ def main(base):
 
 if __name__ == "__main__":
     import sys
-    # Try:  python3 actor.py {simpleSystemBase | multiprocUDPBase | multiprocTCPBase }
+    # Try:  python3 actor.py {BASENAME}
+    #   where basename is one of: simpleSystemBase, multiprocUDPBase
+    #                             multiprocTCPBase, multiprocQueueBase }
     main((sys.argv+['simpleSystemBase'])[1])
 #+END_SRC
 
