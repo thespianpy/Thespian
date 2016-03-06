@@ -333,7 +333,7 @@ class PoisonMessage(ActorSystemMessage):
 
 
 class WakeupMessage(ActorSystemMessage):
-    """Message sent as a result of a .wakeupAfter() call.  The .timeSlept value is the amount of time of the delay."""
+    """Message sent as a result of a .wakeupAfter() call.  The .delayPeriod value is the amount of time of the delay."""
     def __init__(self, delayPeriod):
         self.delayPeriod = delayPeriod
     def __str__(self):
