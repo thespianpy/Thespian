@@ -133,18 +133,18 @@ and print that response:
 #+CAPTION: hello.py:
 #+NAME: hello.py
 #+BEGIN_SRC python -n -r -l "#(ref:%s)" :file hello.py
-  from thespian.actors import *
+from thespian.actors import *
 
-  class Hello(Actor): #(ref:baseclass)
-      def receiveMessage(self, message, sender): #(ref:receiveMessage)
-          self.send(sender, 'Hello, world!')  #(ref:send)
+class Hello(Actor): #(ref:baseclass)
+    def receiveMessage(self, message, sender): #(ref:receiveMessage)
+        self.send(sender, 'Hello, world!')  #(ref:send)
 
-  def say_hello():
-      hello = ActorSystem().createActor(Hello)  #(ref:startActorSystem)
-      print(ActorSystem().ask(hello, 'are you there?', 1.5))   #(ref:ask)
+def say_hello():
+    hello = ActorSystem().createActor(Hello)  #(ref:startActorSystem)
+    print(ActorSystem().ask(hello, 'are you there?', 1.5))   #(ref:ask)
 
-  if __name__ == "__main__":
-      say_hello()
+if __name__ == "__main__":
+    say_hello()
 #+END_SRC
 
 The above runs as follows:
@@ -293,35 +293,35 @@ to system limits), and for Actors to create other Actors.
 #+CAPTION: hellogoodbye.py:
 #+NAME: hellogoodbye.py
 #+BEGIN_SRC python -n -r -l "#(ref:%s)" :file hellogoodbye.py
-   from thespian.actors import *
+from thespian.actors import *
 
-   class Hello(Actor):
-       def receiveMessage(self, message, sender):
-           if message == 'are you there?':  #(ref:messageCheck)
-               world = self.createActor(World)  #(ref:createGoodbye)
-               worldmsg = (sender, 'Hello,')  #(ref:messageTuple)
-               self.send(world, worldmsg)
+class Hello(Actor):
+    def receiveMessage(self, message, sender):
+        if message == 'are you there?':  #(ref:messageCheck)
+            world = self.createActor(World)  #(ref:createGoodbye)
+            worldmsg = (sender, 'Hello,')  #(ref:messageTuple)
+            self.send(world, worldmsg)
 
-   class World(Actor):
-       def receiveMessage(self, message, sender):
-           if isinstance(message, tuple):  #(ref:messageIsTuple)
-               orig_sender, pre_world = message
-               self.send(orig_sender, pre_world + ' world!')  #(ref:sendOriginalSender)
+class World(Actor):
+    def receiveMessage(self, message, sender):
+        if isinstance(message, tuple):  #(ref:messageIsTuple)
+            orig_sender, pre_world = message
+            self.send(orig_sender, pre_world + ' world!')  #(ref:sendOriginalSender)
 
-   class Goodbye(Actor):
-       def receiveMessage(self, message, sender):
-           self.send(sender, 'Goodbye')
+class Goodbye(Actor):
+    def receiveMessage(self, message, sender):
+        self.send(sender, 'Goodbye')
 
-   def run_example(systembase=None):
-       hello = ActorSystem(systembase).createActor(Hello)
-       goodbye = ActorSystem().createActor(Goodbye)
-       greeting = ActorSystem().ask(hello, 'are you there?', 1.5)
-       print(greeting + '\n' + ActorSystem().ask(goodbye, None, 0.1))  #(ref:print)
-       ActorSystem().shutdown()   #(ref:actorSysShutdown)
+def run_example(systembase=None):
+    hello = ActorSystem(systembase).createActor(Hello)
+    goodbye = ActorSystem().createActor(Goodbye)
+    greeting = ActorSystem().ask(hello, 'are you there?', 1.5)
+    print(greeting + '\n' + ActorSystem().ask(goodbye, None, 0.1))  #(ref:print)
+    ActorSystem().shutdown()   #(ref:actorSysShutdown)
 
-   if __name__ == "__main__":
-       import sys
-       run_example(sys.argv[1] if len(sys.argv) > 1 else None)
+if __name__ == "__main__":
+    import sys
+    run_example(sys.argv[1] if len(sys.argv) > 1 else None)
 #+END_SRC
 
 The above runs as follows:
@@ -616,19 +616,19 @@ kquick 5595 5594  0 21:51 pts/86  00:00:00 logger ActorAddr-(TCP|10.56.10.5:5186
 #+CAPTION: hello.py:
 #+NAME: hello.py
 #+BEGIN_SRC python -n -r -l "#(ref:%s)" :file hello.py
-  from thespian.actors import *
+from thespian.actors import *
 
-  class Hello(Actor):
-      def receiveMessage(self, message, sender):
-          self.send(sender, 'Hello, world!')  #(ref:message)
+class Hello(Actor):
+    def receiveMessage(self, message, sender):
+        self.send(sender, 'Hello, world!')  #(ref:message)
 
-  def say_hello():
-      hello = ActorSystem().createActor(Hello)  #(ref:ActorSystemSpec)
-      print(ActorSystem().ask(hello, 'are you there?', 1.5))
-      ActorSystem().tell(hello, ActorExitRequest) #(ref:nomorehello)
+def say_hello():
+    hello = ActorSystem().createActor(Hello)  #(ref:ActorSystemSpec)
+    print(ActorSystem().ask(hello, 'are you there?', 1.5))
+    ActorSystem().tell(hello, ActorExitRequest) #(ref:nomorehello)
 
-  if __name__ == "__main__":
-      say_hello()
+if __name__ == "__main__":
+    say_hello()
 #+END_SRC
 
   This example application is using the simpleSystemBase which is not
