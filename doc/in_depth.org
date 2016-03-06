@@ -292,7 +292,7 @@ to system limits), and for Actors to create other Actors.
 
 #+CAPTION: hellogoodbye.py:
 #+NAME: hellogoodbye.py
-#+BEGIN_SRC python -n -r -l "#(ref:%s)" :file hellogoodbye.py
+#+BEGIN_SRC python -n -r -l "#(ref:%s)" :file hellogoodbye.py :tangle code/hellogoodbye.py
 from thespian.actors import *
 
 class Hello(Actor):
@@ -615,7 +615,7 @@ kquick 5595 5594  0 21:51 pts/86  00:00:00 logger ActorAddr-(TCP|10.56.10.5:5186
 
 #+CAPTION: hello.py:
 #+NAME: hello.py
-#+BEGIN_SRC python -n -r -l "#(ref:%s)" :file hello.py
+#+BEGIN_SRC python -n -r -l "#(ref:%s)" :file hello.py :tangle code/hello.py
 from thespian.actors import *
 
 class Hello(Actor):
@@ -752,7 +752,7 @@ $ python
 
 #+CAPTION: test-hellogoodbye.py:
 #+NAME: test-hellogoodbye.py
-#+BEGIN_SRC python -n -r -l "#(ref:%s)" :file test-hellogoodbye.py
+#+BEGIN_SRC python -n -r -l "#(ref:%s)" :file test-hellogoodbye.py  :tangle code/test-hellogoodbye.py
   from hellogoodbye import *
   from unitttest import TestCase
 
@@ -1111,7 +1111,7 @@ used each time it is run:
 
 #+CAPTION: hi.py:
 #+NAME: hi.py
-#+BEGIN_SRC python -n -r -l "#(ref:%s)" :file hi.py
+#+BEGIN_SRC python -n -r -l "#(ref:%s)" :file hi.py :tangle code/hi.py
 from thespian.actors import *
 
 class Hello(Actor):
