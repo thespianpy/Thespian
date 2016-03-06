@@ -5,6 +5,7 @@
 # styles/ bigblow directory tree from that theme exists underneath the
 # doc directory.
 
+#+HTML_HEAD: <link rel="icon" type="image/png" href="/Thespian/favicon.png" />
 #+HTML_HEAD: <link rel="stylesheet" type="text/css" href="../../styles/bigblow/css/htmlize.css"/>
 #+HTML_HEAD: <link rel="stylesheet" type="text/css" href="../../styles/bigblow/css/bigblow.css"/>
 #+HTML_HEAD: <link rel="stylesheet" type="text/css" href="../../styles/bigblow/css/hideshow.css"/>
