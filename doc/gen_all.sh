@@ -4,3 +4,4 @@ for X in doc/*.org ; do
         bash doc/gen_${F}.sh ${X}
     done
 done
+rm -r ${TMPDIR}/{plantuml,dot}-*
