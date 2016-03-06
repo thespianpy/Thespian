@@ -39,3 +39,5 @@ nosetests.xml
 _darcs
 .boring
 *~
+
+doc/internal
