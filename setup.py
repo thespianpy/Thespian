@@ -46,5 +46,8 @@ setup(
     for Cloud-based applications as well, where compute nodes are
     added and removed from the environment dynamically.
 
-  '''
+    ''',
+    keywords = ['actors', 'concurrent', 'concurrency', 'asynchronous',
+                'message passing', 'distributed', 'distributed systems',
+                'fault tolerant']
 )
