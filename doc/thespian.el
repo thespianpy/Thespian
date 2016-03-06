@@ -28,11 +28,34 @@
  (quote ((emacs-lisp . t)
          (dot . t)
          (ditaa . t)
-         (plantuml . t)
+         ;(plantuml . t)  ;; see org-babel-execute:plantuml below
          (python . t)
          (sh . t)
          (org . t)
          (latex . t))))
+
+;; Note: this is extracted from ob-plantuml.el, but oriented instead
+;; to the "plantuml" executable (script) instead of the jar file.
+(defun org-babel-execute:plantuml (body params)
+  "Execute a block of plantuml code with org-babel.
+This function is called by `org-babel-execute-src-block'."
+  (let* ((result-params (split-string (or (cdr (assoc :results params)) "")))
+	 (out-file (or (cdr (assoc :file params))
+		       (error "PlantUML requires a \":file\" header argument")))
+	 (cmdline (cdr (assoc :cmdline params)))
+	 (in-file (org-babel-temp-file "plantuml-"))
+	 (cmd (concat "plantuml "
+			(if (string= (file-name-extension out-file) "svg")
+			    " -tsvg" "")
+			(if (string= (file-name-extension out-file) "eps")
+			    " -teps" "")
+			" -p " cmdline " < "
+			(org-babel-process-file-name in-file)
+			" > "
+			(org-babel-process-file-name out-file))))
+    (with-temp-file in-file (insert (concat "@startuml\n" body "\n@enduml")))
+    (message "%s" cmd) (org-babel-eval cmd "")
+    nil)) ;; signal that output has already been written to file
 
 (setq org-confirm-babel-evaluate nil)
 
