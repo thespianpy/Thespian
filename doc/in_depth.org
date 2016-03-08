@@ -679,6 +679,218 @@ $ python
   in that system base.  The alternative is to dynamically load the new
   source code as described in [[*Dynamic%20Source%20Loading][Dynamic Source Loading]].
 
+** Logging
+
+Thespian supports the standard ~logging~ library, but provides some
+enhanced handling of log messages to accomodate the different system
+bases that may implement Actors in separate processes (or even on
+separate systems): as described in the Logging section of the [[using][Using
+Thespian]] documentation, log messages are forwarded to a "Logging"
+process to be written according to the logging configuration supplied
+when the ~ActorSystem()~ initialization call was made.  In addition,
+for multi-system configurations, any messages of Warning level or
+higher are forwarded to the Convention Leader for logging there as
+well.
+
+Here is the helloworld example again, but with a logging statement
+inserted in one of the actors:
+
+#+CAPTION: hellogoodbyelog.py:
+#+NAME: hellogoodbyelog.py
+#+BEGIN_SRC python -n -r -l "#(ref:%s)" :file hellogoodbyelog.py :tangle code/hellogoodbyelog.py
+import logging
+from thespian.actors import *
+
+class Hello(Actor):
+    def receiveMessage(self, message, sender):
+        logging.info('Hello actor got: %s', message) (#ref:loghello)
+        if message == 'are you there?':
+            world = self.createActor(World)
+            worldmsg = (sender, 'Hello,')
+            self.send(world, worldmsg)
+
+class World(Actor):
+    def receiveMessage(self, message, sender):
+        if isinstance(message, tuple):
+            orig_sender, pre_world = message
+            self.send(orig_sender, pre_world + ' world!')
+
+class Goodbye(Actor):
+    def receiveMessage(self, message, sender):
+        self.send(sender, 'Goodbye')
+
+def run_example(systembase=None):
+    hello = ActorSystem(systembase).createActor(Hello)
+    goodbye = ActorSystem().createActor(Goodbye)
+    greeting = ActorSystem().ask(hello, 'are you there?', 1.5)
+    print(greeting + '\n' + ActorSystem().ask(goodbye, None, 0.1))
+    ActorSystem().shutdown()
+
+if __name__ == "__main__":
+    import sys
+    run_example(sys.argv[1] if len(sys.argv) > 1 else None)
+#+END_SRC
+
+When this is run, the following output is obtained:
+
+#+BEGIN_EXAMPLE
+$ python hellogoodbyelog.py multiprocTCPBase
+INFO: Thespian.Admin:ActorSystem Administrator startup @ ActorAddr-(TCP|12.34.56.78:1900)
+INFO:root:Hello actor got: are you there?
+Hello, world!
+Goodbye
+INFO:root:Hello got: ActorExitRequest
+INFO:root:Hello got: ChildActorExited:ActorAddr-(TCP|12.34.56.78:47034)
+#+END_EXAMPLE
+
+The logging statement on [[loghello][line (loghello)]] has generated the INFO
+statements (except for the first) in the output above because the
+default logging configuration is to write to the console.
+
+To customize the logging (for example, to write to a file called
+~hello.log~), pass the logging configuration dictionary to the
+~ActorSystem()~ call as the ~logDefs~ argument.
+
+#+CAPTION: hellogoodbyelog2.py:
+#+NAME: hellogoodbyelog2.py
+#+BEGIN_SRC python -n -r -l "#(ref:%s)" :file hellogoodbyelog2.py :tangle code/hellogoodbyelog2.py
+import logging
+from thespian.actors import *
+
+class Hello(Actor):
+    def receiveMessage(self, message, sender):
+        logging.info('Hello actor got: %s', message) (#ref:loghello)
+        if message == 'are you there?':
+            world = self.createActor(World)
+            worldmsg = (sender, 'Hello,')
+            self.send(world, worldmsg)
+
+class World(Actor):
+    def receiveMessage(self, message, sender):
+        if isinstance(message, tuple):
+            orig_sender, pre_world = message
+            self.send(orig_sender, pre_world + ' world!')
+
+class Goodbye(Actor):
+    def receiveMessage(self, message, sender):
+        self.send(sender, 'Goodbye')
+
+logcfg = { 'version': 1,  #(ref:logdef)
+           'formatters': { 'normal': {'format': '%(levelname)-8s %(message)s'}},
+           'handlers': { 'h': {'class': 'logging.FileHandler',
+                               'filename': 'hello.log',
+                               'formatter': 'normal',
+                               'level': logging.INFO}},
+           'loggers' : { '': {'handlers': ['h'], 'level': logging.DEBUG}}
+         }
+
+def run_example(systembase=None):
+    hello = ActorSystem(systembase, logDefs=logcfg).createActor(Hello) #(ref:loginit)
+    goodbye = ActorSystem().createActor(Goodbye)
+    greeting = ActorSystem().ask(hello, 'are you there?', 1.5)
+    print(greeting + '\n' + ActorSystem().ask(goodbye, None, 0.1))
+    ActorSystem().shutdown()
+
+if __name__ == "__main__":
+    import sys
+    run_example(sys.argv[1] if len(sys.argv) > 1 else None)
+#+END_SRC
+
+In [[loginit][line (loginit)]] above, the ~logDefs~ argument specifies the logging
+configuration defined at [[logdef][line (logdef)]].  Running this version of the code yields the following:
+
+#+BEGIN_EXAMPLE
+$ python hellogoodbyelog2.py multiprocTCPBase
+Hello, world!
+Goodbye
+$ cat hello.log
+INFO     Hello actor got: are you there?
+INFO     Hello actor got: ActorExitRequest
+INFO     Hello actor got: ChildActorExited:ActorAddr-(TCP|12.34.56.78:52790)
+$
+#+END_EXAMPLE
+
+Note that in the above examples, the multiprocTCPBase is used.  If the
+default simpleSystemBase is used no logging output appears for the
+first example (where no logDefs argument was specified).  This is
+because the default logging level for the simpleSystemBase is set to
+~logging.WARNING~; the second example uses specific logging
+configuration which overrides the default.
+
+*** Source Actor Address Logging
+
+Some system bases are capable of specifying the current Actor's
+address when generating log output lines by setting the "actorAddress"
+attribute, as described in the [[using][Using Thespian]] documentation.
+Unfortunately, the log formatter must handle the case where the
+actorAddress attribute is not present.  To do this, a filter can be
+used to select the right formatter based on the presence or absence of
+this attribute:
+
+#+CAPTION: hellogoodbyelog3.py:
+#+NAME: hellogoodbyelog3.py
+#+BEGIN_SRC python -n -r -l "#(ref:%s)" :file hellogoodbyelog3.py :tangle code/hellogoodbyelog3.py
+import logging
+from thespian.actors import *
+
+class Hello(Actor):
+    def receiveMessage(self, message, sender):
+        logging.info('Hello actor got: %s', message)
+        if message == 'are you there?':
+            world = self.createActor(World)
+            worldmsg = (sender, 'Hello,')
+            self.send(world, worldmsg)
+
+class World(Actor):
+    def receiveMessage(self, message, sender):
+        if isinstance(message, tuple):
+            orig_sender, pre_world = message
+            self.send(orig_sender, pre_world + ' world!')
+
+class Goodbye(Actor):
+    def receiveMessage(self, message, sender):
+        self.send(sender, 'Goodbye')
+
+class actorLogFilter(logging.Filter):
+    def filter(self, logrecord):
+        return 'actorAddress' in logrecord.__dict__
+class notActorLogFilter(logging.Filter):
+    def filter(self, logrecord):
+        return 'actorAddress' not in logrecord.__dict__
+
+logcfg = { 'version': 1,
+           'formatters': {
+               'normal': {'format': '%(levelname)-8s %(message)s'},
+               'actor': {'format': '%(levelname)-8s %(actorAddress)s => %(message)s'}},
+           'filters': { 'isActorLog': { '()': actorLogFilter},
+                        'notActorLog': { '()': notActorLogFilter}},
+           'handlers': { 'h1': {'class': 'logging.FileHandler',
+                                'filename': 'hello.log',
+                                'formatter': 'normal',
+                                'filters': ['notActorLog'],
+                                'level': logging.INFO},
+                         'h2': {'class': 'logging.FileHandler',
+                                'filename': 'hello.log',
+                                'formatter': 'actor',
+                                'filters': ['isActorLog'],
+                                'level': logging.INFO},},
+           'loggers' : { '': {'handlers': ['h1', 'h2'], 'level': logging.DEBUG}}
+         }
+
+def run_example(systembase=None):
+    hello = ActorSystem(systembase, logDefs=logcfg).createActor(Hello)
+    goodbye = ActorSystem().createActor(Goodbye)
+    greeting = ActorSystem().ask(hello, 'are you there?', 1.5)
+    logging.info('Actors are started')
+    print(greeting + '\n' + ActorSystem().ask(goodbye, None, 0.1))
+    logging.info('Finished with example')
+    ActorSystem().shutdown()
+
+if __name__ == "__main__":
+    import sys
+    run_example(sys.argv[1] if len(sys.argv) > 1 else None)
+#+END_SRC
+
 ** Concurrency
 
   In the examples shown above, messages were delivered to the
