@@ -7,6 +7,7 @@
 
 import logging
 from logsetup import logcfg
+from datetime import timedelta
 from thespian.actors import *
 
 class Hello(Actor):
@@ -32,8 +33,9 @@ def run_example(systembase=None):
     asys = ActorSystem(systembase, logDefs=logcfg)
     hello = ActorSystem().createActor(Hello)
     goodbye = ActorSystem().createActor(Goodbye)
-    greeting = ActorSystem().ask(hello, 'are you there?', 1.5)
-    print(greeting + '\n' + ActorSystem().ask(goodbye, None, 0.1))
+    greeting = ActorSystem().ask(hello, 'are you there?', timedelta(seconds=1.5))
+    print(greeting + '\n' + ActorSystem().ask(goodbye, None,
+                                              timedelta(milliseconds=100)))
     ActorSystem().shutdown()
 
 if __name__ == "__main__":
