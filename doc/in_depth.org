@@ -760,7 +760,7 @@ from thespian.actors import *
 
 class Hello(Actor):
     def receiveMessage(self, message, sender):
-        logging.info('Hello actor got: %s', message) (#ref:loghello)
+        logging.info('Hello actor got: %s', message)
         if message == 'are you there?':
             world = self.createActor(World)
             worldmsg = (sender, 'Hello,')
