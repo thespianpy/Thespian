@@ -740,7 +740,7 @@ Table of Contents
   │  3  
   │  4  class Hello(Actor):
   │  5      def receiveMessage(self, message, sender):
-  │  6          logging.info('Hello actor got: %s', message) (#ref:loghello)
+  │  6          logging.info('Hello actor got: %s', message)
   │  7          if message == 'are you there?':
   │  8              world = self.createActor(World)
   │  9              worldmsg = (sender, 'Hello,')
@@ -781,9 +781,10 @@ Table of Contents
   │ INFO:root:Hello got: ChildActorExited:ActorAddr-(TCP|12.34.56.78:47034)
   └────
 
-  The logging statement on line (loghello) has generated the INFO
-  statements (except for the first) in the output above because the
-  default logging configuration is to write to the console.
+  The logging statement on line 6 has generated the INFO statements
+  (except for the first which came from the Thespian ActorSystem itself)
+  in the output above because the default logging configuration is to
+  write to the console.
 
   To customize the logging (for example, to write to a file called
   `hello.log'), pass the logging configuration dictionary to the
@@ -795,7 +796,7 @@ Table of Contents
   │  3  
   │  4  class Hello(Actor):
   │  5      def receiveMessage(self, message, sender):
-  │  6          logging.info('Hello actor got: %s', message) (#ref:loghello)
+  │  6          logging.info('Hello actor got: %s', message)
   │  7          if message == 'are you there?':
   │  8              world = self.createActor(World)
   │  9              worldmsg = (sender, 'Hello,')
@@ -812,30 +813,34 @@ Table of Contents
   │ 20          self.send(sender, 'Goodbye')
   │ 21  
   │ 22  logcfg = { 'version': 1,
-  │ 23             'formatters': { 'normal': {'format': '%(levelname)-8s %(message)s'}},
-  │ 24             'handlers': { 'h': {'class': 'logging.FileHandler',
-  │ 25                                 'filename': 'hello.log',
-  │ 26                                 'formatter': 'normal',
-  │ 27                                 'level': logging.INFO}},
-  │ 28             'loggers' : { '': {'handlers': ['h'], 'level': logging.DEBUG}}
-  │ 29           }
-  │ 30  
-  │ 31  def run_example(systembase=None):
-  │ 32      hello = ActorSystem(systembase, logDefs=logcfg).createActor(Hello)
-  │ 33      goodbye = ActorSystem().createActor(Goodbye)
-  │ 34      greeting = ActorSystem().ask(hello, 'are you there?', 1.5)
-  │ 35      print(greeting + '\n' + ActorSystem().ask(goodbye, None, 0.1))
-  │ 36      ActorSystem().shutdown()
-  │ 37  
-  │ 38  if __name__ == "__main__":
-  │ 39      import sys
-  │ 40      run_example(sys.argv[1] if len(sys.argv) > 1 else None)
+  │ 23             'formatters': {
+  │ 24                 'normal': {
+  │ 25                     'format': '%(levelname)-8s %(message)s'}},
+  │ 26             'handlers': {
+  │ 27                 'h': {'class': 'logging.FileHandler',
+  │ 28                       'filename': 'hello.log',
+  │ 29                       'formatter': 'normal',
+  │ 30                       'level': logging.INFO}},
+  │ 31             'loggers' : {
+  │ 32                 '': {'handlers': ['h'], 'level': logging.DEBUG}}
+  │ 33           }
+  │ 34  
+  │ 35  def run_example(systembase=None):
+  │ 36      hello = ActorSystem(systembase, logDefs=logcfg).createActor(Hello)
+  │ 37      goodbye = ActorSystem().createActor(Goodbye)
+  │ 38      greeting = ActorSystem().ask(hello, 'are you there?', 1.5)
+  │ 39      print(greeting + '\n' + ActorSystem().ask(goodbye, None, 0.1))
+  │ 40      ActorSystem().shutdown()
+  │ 41  
+  │ 42  if __name__ == "__main__":
+  │ 43      import sys
+  │ 44      run_example(sys.argv[1] if len(sys.argv) > 1 else None)
   └────
   Listing 5: hellogoodbyelog2.py:
 
-  In line (loginit) above, the `logDefs' argument specifies the logging
-  configuration defined at line (logdef).  Running this version of the
-  code yields the following:
+  In line 36 above, the `logDefs' argument specifies the logging
+  configuration defined at line 22.  Running this version of the code
+  yields the following:
 
   ┌────
   │ $ python hellogoodbyelog2.py multiprocTCPBase
@@ -896,37 +901,43 @@ Table of Contents
   │ 26      def filter(self, logrecord):
   │ 27          return 'actorAddress' not in logrecord.__dict__
   │ 28  
-  │ 29  logcfg = { 'version': 1,
-  │ 30             'formatters': {
-  │ 31                 'normal': {'format': '%(levelname)-8s %(message)s'},
-  │ 32                 'actor': {'format': '%(levelname)-8s %(actorAddress)s => %(message)s'}},
-  │ 33             'filters': { 'isActorLog': { '()': actorLogFilter},
-  │ 34                          'notActorLog': { '()': notActorLogFilter}},
-  │ 35             'handlers': { 'h1': {'class': 'logging.FileHandler',
-  │ 36                                  'filename': 'hello.log',
-  │ 37                                  'formatter': 'normal',
-  │ 38                                  'filters': ['notActorLog'],
-  │ 39                                  'level': logging.INFO},
-  │ 40                           'h2': {'class': 'logging.FileHandler',
-  │ 41                                  'filename': 'hello.log',
-  │ 42                                  'formatter': 'actor',
-  │ 43                                  'filters': ['isActorLog'],
-  │ 44                                  'level': logging.INFO},},
-  │ 45             'loggers' : { '': {'handlers': ['h1', 'h2'], 'level': logging.DEBUG}}
-  │ 46           }
-  │ 47  
-  │ 48  def run_example(systembase=None):
-  │ 49      hello = ActorSystem(systembase, logDefs=logcfg).createActor(Hello)
-  │ 50      goodbye = ActorSystem().createActor(Goodbye)
-  │ 51      greeting = ActorSystem().ask(hello, 'are you there?', 1.5)
-  │ 52      logging.info('Actors are started')
-  │ 53      print(greeting + '\n' + ActorSystem().ask(goodbye, None, 0.1))
-  │ 54      logging.info('Finished with example')
-  │ 55      ActorSystem().shutdown()
+  │ 29  logcfg = {
+  │ 30    'version': 1,
+  │ 31    'formatters': {
+  │ 32        'normal': {'format': '%(levelname)-8s %(message)s'},
+  │ 33        'actor': {
+  │ 34            'format': '%(levelname)-8s %(actorAddress)s => %(message)s'}},
+  │ 35    'filters': { 'isActorLog': { '()': actorLogFilter},
+  │ 36                 'notActorLog': { '()': notActorLogFilter}},
+  │ 37    'handlers': { 'h1': {'class': 'logging.FileHandler',
+  │ 38                         'filename': 'hello.log',
+  │ 39                         'formatter': 'normal',
+  │ 40                         'filters': ['notActorLog'],
+  │ 41                         'level': logging.INFO},
+  │ 42                  'h2': {'class': 'logging.FileHandler',
+  │ 43                         'filename': 'hello.log',
+  │ 44                         'formatter': 'actor',
+  │ 45                         'filters': ['isActorLog'],
+  │ 46                         'level': logging.INFO},},
+  │ 47    'loggers' : {
+  │ 48        '': {'handlers': ['h1', 'h2'], 'level': logging.DEBUG}}
+  │ 49  }
+  │ 50  
+  │ 51  def run_example(systembase=None):
+  │ 52      hello = ActorSystem(systembase,
+  │ 53                          logDefs=logcfg).createActor(Hello)
+  │ 54      goodbye = ActorSystem().createActor(Goodbye)
+  │ 55      greeting = ActorSystem().ask(hello, 'are you there?', 1.5)
   │ 56  
-  │ 57  if __name__ == "__main__":
-  │ 58      import sys
-  │ 59      run_example(sys.argv[1] if len(sys.argv) > 1 else None)
+  │ 57      logging.info('Actors are started')
+  │ 58      print(greeting + '\n' + ActorSystem().ask(goodbye, None, 0.1))
+  │ 59  
+  │ 60      logging.info('Finished with example')
+  │ 61      ActorSystem().shutdown()
+  │ 62  
+  │ 63  if __name__ == "__main__":
+  │ 64      import sys
+  │ 65      run_example(sys.argv[1] if len(sys.argv) > 1 else None)
   └────
   Listing 6: hellogoodbyelog3.py:
 
