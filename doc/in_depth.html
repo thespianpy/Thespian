@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
 <title>Thespian In-Depth Introduction</title>
-<!-- 2016-03-07 Mon 09:37 -->
+<!-- 2016-03-08 Tue 08:37 -->
 <meta  http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta  name="generator" content="Org-mode" />
 <meta  name="author" content="Kevin Quick &lt;kquick@godaddy.com&gt;" />
@@ -1128,16 +1128,16 @@ inserted in one of the actors:
 <span class="linenr"> 3: </span>
 <span class="linenr"> 4: </span><span class="org-keyword">class</span> <span class="org-type">Hello</span>(Actor):
 <span class="linenr"> 5: </span>    <span class="org-keyword">def</span> <span class="org-function-name">receiveMessage</span>(<span class="org-keyword">self</span>, message, sender):
-<span class="linenr"> 6: </span>        logging.info(<span class="org-string">'Hello actor got: %s'</span>, message) (<span class="org-comment-delimiter">#</span><span class="org-comment">ref:loghello)</span>
+<span id="coderef-loghello" class="coderef-off"><span class="linenr"> 6: </span>        logging.info(<span class="org-string">'Hello actor got: %s'</span>, message)</span>
 <span class="linenr"> 7: </span>        <span class="org-keyword">if</span> message == <span class="org-string">'are you there?'</span>:
-<span class="linenr"> 8: </span>            world = <span class="org-keyword">self</span>.createActor(World)
-<span class="linenr"> 9: </span>            worldmsg = (sender, <span class="org-string">'Hello,'</span>)
+<span class="linenr"> 8: </span>            <span class="org-variable-name">world</span> = <span class="org-keyword">self</span>.createActor(World)
+<span class="linenr"> 9: </span>            <span class="org-variable-name">worldmsg</span> = (sender, <span class="org-string">'Hello,'</span>)
 <span class="linenr">10: </span>            <span class="org-keyword">self</span>.send(world, worldmsg)
 <span class="linenr">11: </span>
 <span class="linenr">12: </span><span class="org-keyword">class</span> <span class="org-type">World</span>(Actor):
 <span class="linenr">13: </span>    <span class="org-keyword">def</span> <span class="org-function-name">receiveMessage</span>(<span class="org-keyword">self</span>, message, sender):
 <span class="linenr">14: </span>        <span class="org-keyword">if</span> <span class="org-builtin">isinstance</span>(message, <span class="org-builtin">tuple</span>):
-<span class="linenr">15: </span>            orig_sender, pre_world = message
+<span class="linenr">15: </span>            <span class="org-variable-name">orig_sender</span>, <span class="org-variable-name">pre_world</span> = message
 <span class="linenr">16: </span>            <span class="org-keyword">self</span>.send(orig_sender, pre_world + <span class="org-string">' world!'</span>)
 <span class="linenr">17: </span>
 <span class="linenr">18: </span><span class="org-keyword">class</span> <span class="org-type">Goodbye</span>(Actor):
@@ -1145,9 +1145,9 @@ inserted in one of the actors:
 <span class="linenr">20: </span>        <span class="org-keyword">self</span>.send(sender, <span class="org-string">'Goodbye'</span>)
 <span class="linenr">21: </span>
 <span class="linenr">22: </span><span class="org-keyword">def</span> <span class="org-function-name">run_example</span>(systembase=<span class="org-constant">None</span>):
-<span class="linenr">23: </span>    hello = ActorSystem(systembase).createActor(Hello)
-<span class="linenr">24: </span>    goodbye = ActorSystem().createActor(Goodbye)
-<span class="linenr">25: </span>    greeting = ActorSystem().ask(hello, <span class="org-string">'are you there?'</span>, 1.5)
+<span class="linenr">23: </span>    <span class="org-variable-name">hello</span> = ActorSystem(systembase).createActor(Hello)
+<span class="linenr">24: </span>    <span class="org-variable-name">goodbye</span> = ActorSystem().createActor(Goodbye)
+<span class="linenr">25: </span>    <span class="org-variable-name">greeting</span> = ActorSystem().ask(hello, <span class="org-string">'are you there?'</span>, 1.5)
 <span class="linenr">26: </span>    <span class="org-keyword">print</span>(greeting + <span class="org-string">'\n'</span> + ActorSystem().ask(goodbye, <span class="org-constant">None</span>, 0.1))
 <span class="linenr">27: </span>    ActorSystem().shutdown()
 <span class="linenr">28: </span>
@@ -1172,9 +1172,10 @@ INFO:root:Hello got: ChildActorExited:ActorAddr-(TCP|12.34.56.78:47034)
 </pre>
 
 <p>
-The logging statement on <i>line (loghello)</i> has generated the INFO
-statements (except for the first) in the output above because the
-default logging configuration is to write to the console.
+The logging statement on <a href="#coderef-loghello"class="coderef" onmouseover="CodeHighlightOn(this, 'coderef-loghello');" onmouseout="CodeHighlightOff(this, 'coderef-loghello');">line 6</a> has generated the INFO
+statements (except for the first which came from the Thespian
+ActorSystem itself) in the output above because the default logging
+configuration is to write to the console.
 </p>
 
 <p>
@@ -1190,47 +1191,51 @@ To customize the logging (for example, to write to a file called
 <span class="linenr"> 3: </span>
 <span class="linenr"> 4: </span><span class="org-keyword">class</span> <span class="org-type">Hello</span>(Actor):
 <span class="linenr"> 5: </span>    <span class="org-keyword">def</span> <span class="org-function-name">receiveMessage</span>(<span class="org-keyword">self</span>, message, sender):
-<span class="linenr"> 6: </span>        logging.info(<span class="org-string">'Hello actor got: %s'</span>, message) (<span class="org-comment-delimiter">#</span><span class="org-comment">ref:loghello)</span>
+<span class="linenr"> 6: </span>        logging.info(<span class="org-string">'Hello actor got: %s'</span>, message)
 <span class="linenr"> 7: </span>        <span class="org-keyword">if</span> message == <span class="org-string">'are you there?'</span>:
-<span class="linenr"> 8: </span>            world = <span class="org-keyword">self</span>.createActor(World)
-<span class="linenr"> 9: </span>            worldmsg = (sender, <span class="org-string">'Hello,'</span>)
+<span class="linenr"> 8: </span>            <span class="org-variable-name">world</span> = <span class="org-keyword">self</span>.createActor(World)
+<span class="linenr"> 9: </span>            <span class="org-variable-name">worldmsg</span> = (sender, <span class="org-string">'Hello,'</span>)
 <span class="linenr">10: </span>            <span class="org-keyword">self</span>.send(world, worldmsg)
 <span class="linenr">11: </span>
 <span class="linenr">12: </span><span class="org-keyword">class</span> <span class="org-type">World</span>(Actor):
 <span class="linenr">13: </span>    <span class="org-keyword">def</span> <span class="org-function-name">receiveMessage</span>(<span class="org-keyword">self</span>, message, sender):
 <span class="linenr">14: </span>        <span class="org-keyword">if</span> <span class="org-builtin">isinstance</span>(message, <span class="org-builtin">tuple</span>):
-<span class="linenr">15: </span>            orig_sender, pre_world = message
+<span class="linenr">15: </span>            <span class="org-variable-name">orig_sender</span>, <span class="org-variable-name">pre_world</span> = message
 <span class="linenr">16: </span>            <span class="org-keyword">self</span>.send(orig_sender, pre_world + <span class="org-string">' world!'</span>)
 <span class="linenr">17: </span>
 <span class="linenr">18: </span><span class="org-keyword">class</span> <span class="org-type">Goodbye</span>(Actor):
 <span class="linenr">19: </span>    <span class="org-keyword">def</span> <span class="org-function-name">receiveMessage</span>(<span class="org-keyword">self</span>, message, sender):
 <span class="linenr">20: </span>        <span class="org-keyword">self</span>.send(sender, <span class="org-string">'Goodbye'</span>)
 <span class="linenr">21: </span>
-<span id="coderef-logdef" class="coderef-off"><span class="linenr">22: </span>logcfg = { <span class="org-string">'version'</span>: 1,</span>
-<span class="linenr">23: </span>           <span class="org-string">'formatters'</span>: { <span class="org-string">'normal'</span>: {<span class="org-string">'format'</span>: <span class="org-string">'%(levelname)-8s %(message)s'</span>}},
-<span class="linenr">24: </span>           <span class="org-string">'handlers'</span>: { <span class="org-string">'h'</span>: {<span class="org-string">'class'</span>: <span class="org-string">'logging.FileHandler'</span>,
-<span class="linenr">25: </span>                               <span class="org-string">'filename'</span>: <span class="org-string">'hello.log'</span>,
-<span class="linenr">26: </span>                               <span class="org-string">'formatter'</span>: <span class="org-string">'normal'</span>,
-<span class="linenr">27: </span>                               <span class="org-string">'level'</span>: logging.INFO}},
-<span class="linenr">28: </span>           <span class="org-string">'loggers'</span> : { <span class="org-string">''</span>: {<span class="org-string">'handlers'</span>: [<span class="org-string">'h'</span>], <span class="org-string">'level'</span>: logging.DEBUG}}
-<span class="linenr">29: </span>         }
-<span class="linenr">30: </span>
-<span class="linenr">31: </span><span class="org-keyword">def</span> <span class="org-function-name">run_example</span>(systembase=<span class="org-constant">None</span>):
-<span id="coderef-loginit" class="coderef-off"><span class="linenr">32: </span>    hello = ActorSystem(systembase, logDefs=logcfg).createActor(Hello)</span>
-<span class="linenr">33: </span>    goodbye = ActorSystem().createActor(Goodbye)
-<span class="linenr">34: </span>    greeting = ActorSystem().ask(hello, <span class="org-string">'are you there?'</span>, 1.5)
-<span class="linenr">35: </span>    <span class="org-keyword">print</span>(greeting + <span class="org-string">'\n'</span> + ActorSystem().ask(goodbye, <span class="org-constant">None</span>, 0.1))
-<span class="linenr">36: </span>    ActorSystem().shutdown()
-<span class="linenr">37: </span>
-<span class="linenr">38: </span><span class="org-keyword">if</span> <span class="org-builtin">__name__</span> == <span class="org-string">"__main__"</span>:
-<span class="linenr">39: </span>    <span class="org-keyword">import</span> sys
-<span class="linenr">40: </span>    run_example(sys.argv[1] <span class="org-keyword">if</span> <span class="org-builtin">len</span>(sys.argv) &gt; 1 <span class="org-keyword">else</span> <span class="org-constant">None</span>)
+<span id="coderef-logdef" class="coderef-off"><span class="linenr">22: </span><span class="org-variable-name">logcfg</span> = { <span class="org-string">'version'</span>: 1,</span>
+<span class="linenr">23: </span>           <span class="org-string">'formatters'</span>: {
+<span class="linenr">24: </span>               <span class="org-string">'normal'</span>: {
+<span class="linenr">25: </span>                   <span class="org-string">'format'</span>: <span class="org-string">'%(levelname)-8s %(message)s'</span>}},
+<span class="linenr">26: </span>           <span class="org-string">'handlers'</span>: {
+<span class="linenr">27: </span>               <span class="org-string">'h'</span>: {<span class="org-string">'class'</span>: <span class="org-string">'logging.FileHandler'</span>,
+<span class="linenr">28: </span>                     <span class="org-string">'filename'</span>: <span class="org-string">'hello.log'</span>,
+<span class="linenr">29: </span>                     <span class="org-string">'formatter'</span>: <span class="org-string">'normal'</span>,
+<span class="linenr">30: </span>                     <span class="org-string">'level'</span>: logging.INFO}},
+<span class="linenr">31: </span>           <span class="org-string">'loggers'</span> : {
+<span class="linenr">32: </span>               <span class="org-string">''</span>: {<span class="org-string">'handlers'</span>: [<span class="org-string">'h'</span>], <span class="org-string">'level'</span>: logging.DEBUG}}
+<span class="linenr">33: </span>         }
+<span class="linenr">34: </span>
+<span class="linenr">35: </span><span class="org-keyword">def</span> <span class="org-function-name">run_example</span>(systembase=<span class="org-constant">None</span>):
+<span id="coderef-loginit" class="coderef-off"><span class="linenr">36: </span>    <span class="org-variable-name">hello</span> = ActorSystem(systembase, logDefs=logcfg).createActor(Hello)</span>
+<span class="linenr">37: </span>    <span class="org-variable-name">goodbye</span> = ActorSystem().createActor(Goodbye)
+<span class="linenr">38: </span>    <span class="org-variable-name">greeting</span> = ActorSystem().ask(hello, <span class="org-string">'are you there?'</span>, 1.5)
+<span class="linenr">39: </span>    <span class="org-keyword">print</span>(greeting + <span class="org-string">'\n'</span> + ActorSystem().ask(goodbye, <span class="org-constant">None</span>, 0.1))
+<span class="linenr">40: </span>    ActorSystem().shutdown()
+<span class="linenr">41: </span>
+<span class="linenr">42: </span><span class="org-keyword">if</span> <span class="org-builtin">__name__</span> == <span class="org-string">"__main__"</span>:
+<span class="linenr">43: </span>    <span class="org-keyword">import</span> sys
+<span class="linenr">44: </span>    run_example(sys.argv[1] <span class="org-keyword">if</span> <span class="org-builtin">len</span>(sys.argv) &gt; 1 <span class="org-keyword">else</span> <span class="org-constant">None</span>)
 </pre>
 </div>
 
 <p>
-In <i>line (loginit)</i> above, the <code>logDefs</code> argument specifies the logging
-configuration defined at <i>line (logdef)</i>.  Running this version of the code yields the following:
+In <a href="#coderef-loginit"class="coderef" onmouseover="CodeHighlightOn(this, 'coderef-loginit');" onmouseout="CodeHighlightOff(this, 'coderef-loginit');">line 36</a> above, the <code>logDefs</code> argument specifies the logging
+configuration defined at <a href="#coderef-logdef"class="coderef" onmouseover="CodeHighlightOn(this, 'coderef-logdef');" onmouseout="CodeHighlightOff(this, 'coderef-logdef');">line 22</a>.  Running this version of the code yields the following:
 </p>
 
 <pre class="example">
@@ -1297,37 +1302,43 @@ this attribute:
 <span class="linenr">26: </span>    <span class="org-keyword">def</span> <span class="org-function-name">filter</span>(<span class="org-keyword">self</span>, logrecord):
 <span class="linenr">27: </span>        <span class="org-keyword">return</span> <span class="org-string">'actorAddress'</span> <span class="org-keyword">not</span> <span class="org-keyword">in</span> logrecord.__dict__
 <span class="linenr">28: </span>
-<span class="linenr">29: </span><span class="org-variable-name">logcfg</span> = { <span class="org-string">'version'</span>: 1,
-<span class="linenr">30: </span>           <span class="org-string">'formatters'</span>: {
-<span class="linenr">31: </span>               <span class="org-string">'normal'</span>: {<span class="org-string">'format'</span>: <span class="org-string">'%(levelname)-8s %(message)s'</span>},
-<span class="linenr">32: </span>               <span class="org-string">'actor'</span>: {<span class="org-string">'format'</span>: <span class="org-string">'%(levelname)-8s %(actorAddress)s =&gt; %(message)s'</span>}},
-<span class="linenr">33: </span>           <span class="org-string">'filters'</span>: { <span class="org-string">'isActorLog'</span>: { <span class="org-string">'()'</span>: actorLogFilter},
-<span class="linenr">34: </span>                        <span class="org-string">'notActorLog'</span>: { <span class="org-string">'()'</span>: notActorLogFilter}},
-<span class="linenr">35: </span>           <span class="org-string">'handlers'</span>: { <span class="org-string">'h1'</span>: {<span class="org-string">'class'</span>: <span class="org-string">'logging.FileHandler'</span>,
-<span class="linenr">36: </span>                                <span class="org-string">'filename'</span>: <span class="org-string">'hello.log'</span>,
-<span class="linenr">37: </span>                                <span class="org-string">'formatter'</span>: <span class="org-string">'normal'</span>,
-<span class="linenr">38: </span>                                <span class="org-string">'filters'</span>: [<span class="org-string">'notActorLog'</span>],
-<span class="linenr">39: </span>                                <span class="org-string">'level'</span>: logging.INFO},
-<span class="linenr">40: </span>                         <span class="org-string">'h2'</span>: {<span class="org-string">'class'</span>: <span class="org-string">'logging.FileHandler'</span>,
-<span class="linenr">41: </span>                                <span class="org-string">'filename'</span>: <span class="org-string">'hello.log'</span>,
-<span class="linenr">42: </span>                                <span class="org-string">'formatter'</span>: <span class="org-string">'actor'</span>,
-<span class="linenr">43: </span>                                <span class="org-string">'filters'</span>: [<span class="org-string">'isActorLog'</span>],
-<span class="linenr">44: </span>                                <span class="org-string">'level'</span>: logging.INFO},},
-<span class="linenr">45: </span>           <span class="org-string">'loggers'</span> : { <span class="org-string">''</span>: {<span class="org-string">'handlers'</span>: [<span class="org-string">'h1'</span>, <span class="org-string">'h2'</span>], <span class="org-string">'level'</span>: logging.DEBUG}}
-<span class="linenr">46: </span>         }
-<span class="linenr">47: </span>
-<span class="linenr">48: </span><span class="org-keyword">def</span> <span class="org-function-name">run_example</span>(systembase=<span class="org-constant">None</span>):
-<span class="linenr">49: </span>    <span class="org-variable-name">hello</span> = ActorSystem(systembase, logDefs=logcfg).createActor(Hello)
-<span class="linenr">50: </span>    <span class="org-variable-name">goodbye</span> = ActorSystem().createActor(Goodbye)
-<span class="linenr">51: </span>    <span class="org-variable-name">greeting</span> = ActorSystem().ask(hello, <span class="org-string">'are you there?'</span>, 1.5)
-<span class="linenr">52: </span>    logging.info(<span class="org-string">'Actors are started'</span>)
-<span class="linenr">53: </span>    <span class="org-keyword">print</span>(greeting + <span class="org-string">'\n'</span> + ActorSystem().ask(goodbye, <span class="org-constant">None</span>, 0.1))
-<span class="linenr">54: </span>    logging.info(<span class="org-string">'Finished with example'</span>)
-<span class="linenr">55: </span>    ActorSystem().shutdown()
+<span class="linenr">29: </span><span class="org-variable-name">logcfg</span> = {
+<span class="linenr">30: </span>  <span class="org-string">'version'</span>: 1,
+<span class="linenr">31: </span>  <span class="org-string">'formatters'</span>: {
+<span class="linenr">32: </span>      <span class="org-string">'normal'</span>: {<span class="org-string">'format'</span>: <span class="org-string">'%(levelname)-8s %(message)s'</span>},
+<span class="linenr">33: </span>      <span class="org-string">'actor'</span>: {
+<span class="linenr">34: </span>          <span class="org-string">'format'</span>: <span class="org-string">'%(levelname)-8s %(actorAddress)s =&gt; %(message)s'</span>}},
+<span class="linenr">35: </span>  <span class="org-string">'filters'</span>: { <span class="org-string">'isActorLog'</span>: { <span class="org-string">'()'</span>: actorLogFilter},
+<span class="linenr">36: </span>               <span class="org-string">'notActorLog'</span>: { <span class="org-string">'()'</span>: notActorLogFilter}},
+<span class="linenr">37: </span>  <span class="org-string">'handlers'</span>: { <span class="org-string">'h1'</span>: {<span class="org-string">'class'</span>: <span class="org-string">'logging.FileHandler'</span>,
+<span class="linenr">38: </span>                       <span class="org-string">'filename'</span>: <span class="org-string">'hello.log'</span>,
+<span class="linenr">39: </span>                       <span class="org-string">'formatter'</span>: <span class="org-string">'normal'</span>,
+<span class="linenr">40: </span>                       <span class="org-string">'filters'</span>: [<span class="org-string">'notActorLog'</span>],
+<span class="linenr">41: </span>                       <span class="org-string">'level'</span>: logging.INFO},
+<span class="linenr">42: </span>                <span class="org-string">'h2'</span>: {<span class="org-string">'class'</span>: <span class="org-string">'logging.FileHandler'</span>,
+<span class="linenr">43: </span>                       <span class="org-string">'filename'</span>: <span class="org-string">'hello.log'</span>,
+<span class="linenr">44: </span>                       <span class="org-string">'formatter'</span>: <span class="org-string">'actor'</span>,
+<span class="linenr">45: </span>                       <span class="org-string">'filters'</span>: [<span class="org-string">'isActorLog'</span>],
+<span class="linenr">46: </span>                       <span class="org-string">'level'</span>: logging.INFO},},
+<span class="linenr">47: </span>  <span class="org-string">'loggers'</span> : {
+<span class="linenr">48: </span>      <span class="org-string">''</span>: {<span class="org-string">'handlers'</span>: [<span class="org-string">'h1'</span>, <span class="org-string">'h2'</span>], <span class="org-string">'level'</span>: logging.DEBUG}}
+<span class="linenr">49: </span>}
+<span class="linenr">50: </span>
+<span class="linenr">51: </span><span class="org-keyword">def</span> <span class="org-function-name">run_example</span>(systembase=<span class="org-constant">None</span>):
+<span class="linenr">52: </span>    <span class="org-variable-name">hello</span> = ActorSystem(systembase,
+<span class="linenr">53: </span>                        logDefs=logcfg).createActor(Hello)
+<span class="linenr">54: </span>    <span class="org-variable-name">goodbye</span> = ActorSystem().createActor(Goodbye)
+<span class="linenr">55: </span>    <span class="org-variable-name">greeting</span> = ActorSystem().ask(hello, <span class="org-string">'are you there?'</span>, 1.5)
 <span class="linenr">56: </span>
-<span class="linenr">57: </span><span class="org-keyword">if</span> <span class="org-builtin">__name__</span> == <span class="org-string">"__main__"</span>:
-<span class="linenr">58: </span>    <span class="org-keyword">import</span> sys
-<span class="linenr">59: </span>    run_example(sys.argv[1] <span class="org-keyword">if</span> <span class="org-builtin">len</span>(sys.argv) &gt; 1 <span class="org-keyword">else</span> <span class="org-constant">None</span>)
+<span class="linenr">57: </span>    logging.info(<span class="org-string">'Actors are started'</span>)
+<span class="linenr">58: </span>    <span class="org-keyword">print</span>(greeting + <span class="org-string">'\n'</span> + ActorSystem().ask(goodbye, <span class="org-constant">None</span>, 0.1))
+<span class="linenr">59: </span>
+<span class="linenr">60: </span>    logging.info(<span class="org-string">'Finished with example'</span>)
+<span class="linenr">61: </span>    ActorSystem().shutdown()
+<span class="linenr">62: </span>
+<span class="linenr">63: </span><span class="org-keyword">if</span> <span class="org-builtin">__name__</span> == <span class="org-string">"__main__"</span>:
+<span class="linenr">64: </span>    <span class="org-keyword">import</span> sys
+<span class="linenr">65: </span>    run_example(sys.argv[1] <span class="org-keyword">if</span> <span class="org-builtin">len</span>(sys.argv) &gt; 1 <span class="org-keyword">else</span> <span class="org-constant">None</span>)
 </pre>
 </div>
 </div>
@@ -2081,7 +2092,7 @@ cloud-based applications.
 </div>
 <div id="postamble" class="status">
 <p class="author">Author: Kevin Quick &lt;kquick@godaddy.com&gt;</p>
-<p class="date">Created: 2016-03-07 Mon 09:37</p>
+<p class="date">Created: 2016-03-08 Tue 08:37</p>
 <p class="creator"><a href="http://www.gnu.org/software/emacs/">Emacs</a> 24.5.2 (<a href="http://orgmode.org">Org</a> mode 8.2.10)</p>
 <p class="validation"><a href="http://validator.w3.org/check?uri=referer">Validate</a></p>
 </div>
