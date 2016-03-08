@@ -74,3 +74,6 @@ This function is called by `org-babel-execute-src-block'."
 ;    (require 'ox-latex)               ---> (require 'org-latex)
 ;    (add-to-list 'org-latex-classes   -->  (add-to-list 'org-export-latex-classes
 ;    -funcall org-latex-export-to-pdf  ---> -funcall org-export-as-pdf
+
+(add-to-list 'load-path "${PWD}")
+(load "${PWD}/doc/settings.el" 't)
