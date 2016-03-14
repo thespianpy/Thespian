@@ -261,7 +261,14 @@ class SourceHashFinder(FinderBase):
         return '{{' + self.srcHash + '}}'
     def _getFromZipFile(self, getter):
         plainsrc = self.decryptor(self.enczfsrc)
-        z = ZipFile(BytesIO(plainsrc))
+        try:
+            z = ZipFile(BytesIO(plainsrc))
+        except BadZipFile as ex:
+            logging.error('Invalid zip contents (%s) for source hash %s: %s',
+                          str(plainsrc) if not plainsrc or len(plainsrc) < 100
+                          else str(plainsrc[:97]) + '...',
+                          self.srcHash, ex)
+            raise
         try:
             return getter(z)
         finally:
@@ -281,7 +288,10 @@ class SourceHashFinder(FinderBase):
     def withZipElementSource(self, elementname, onSrcFunc):
         return self._getFromZipFile(lambda z: onSrcFunc(z.open(elementname, 'rU').read()))
     def find_spec(self, fullname, path=None, target=None):
-        return self.find_module(fullname, path)
+        try:
+            return self.find_module(fullname, path)
+        except BadZipFile as ex:
+            raise ImportError('Source hash %s: %s'%(self.srcHash, str(ex)))
     def find_module(self, fullname, path=None):
         # The fullname indicates which module is to be loaded.  If
         # this import request comes from a module already in the
@@ -340,5 +350,5 @@ def _loadModuleFromVerifiedHashSource(hashFinder, modName, modClass):
     try:
         m = importlib.import_module(impModName, hRoot)
     except (BadZipFile, SyntaxError) as ex:
-        raise ImportError(str(ex))
+        raise ImportError('Source hash %s: %s'%(hRoot, str(ex)))
     return getattr(m, modClass)
