@@ -11,6 +11,7 @@ Table of Contents
 
 2.x
 .. 2.5
+..... 2.5.7 <2016-03-14 Mon>
 ..... 2.5.6 <2016-02-11 Thu>
 ..... 2.5.5 <2016-02-05 Fri>
 ..... 2.5.4 <2016-02-01 Mon>
@@ -36,8 +37,6 @@ Table of Contents
 1.x
 
 
-.
-
 Thespian uses [Semantic Versioning]: "major.minor.bugfix", where major
 version changes indicate incompatible changes, minor versions indicate
 added functionality that is backwards compatible, and bugfix changes do
@@ -52,6 +51,14 @@ not change the API.
 
 2.5
 ───
+
+2.5.7 <2016-03-14 Mon>
+╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+
+  ‣ Updated loaded source lookup failure to throw ImportError exception
+    instead of BadZipFile exception for compatibility with importing
+    code handling the former.
+
 
 2.5.6 <2016-02-11 Thu>
 ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
