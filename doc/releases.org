@@ -11,8 +11,6 @@
 #+LATEX_HEADER: \docid{TheDoc-06}
 #+OPTIONS: ^:nil num:nil
 
-.
-
 Thespian uses [[http://semver.org][Semantic Versioning]]: "major.minor.bugfix", where major
 version changes indicate incompatible changes, minor versions indicate
 added functionality that is backwards compatible, and bugfix changes
