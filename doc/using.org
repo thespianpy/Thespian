@@ -407,7 +407,11 @@ described in [[*Dead Letter Handling][Dead Letter Handling]].
 
 * Guidelines for Actors and their messages
 
-  - All ActorSystem messages are derived from ActorSystemMessage.
+  - All ActorSystem internal messages are derived from
+    ActorSystemMessage.  Messages sent by Actors should not subclass
+    ActorSystemMessage, but Actors may differentiate their messages
+    from Thespian messages by ~isinstance()~ testing against the
+    ActorSystemMessage.
 
   - Actors should discard messages they do not recognize.
 
@@ -2011,17 +2015,23 @@ class SimpleSourceAuthority(ActorTypeDispatcher):
 * ActorSystem Messages
 
   The following Messages can be delivered to Actors by the ActorSystem
-  as a result of events within the ActorSystem itself.
+  as a result of events within the ActorSystem itself.  All of these
+  messages inherit from the ActorSystemMessage.
+
+  In addition, the PoisonMessage may be delivered to external code (as
+  a response to an ~ActorSystem().tell()~ or ~ActorSystem().ask()~
+  call).  All other ActorSystemMessage instances are filtered and not
+  returned to an ~ask()~ or ~tell()~ call.
 
 ** PoisonMessage
 
-   The ~PoisonMessage~ object is delivered to an Actor when a send
-   attempt by that Actor has caused the target Actor to fail.  The
-   ~PoisonMessage~ is a wrapper around the original message that
-   caused the failure.  The originating Actor receives this poison
-   message indication to allow it to perform any desired cleanup or
-   alternative work based on the target Actor failure (see
-   [[*PoisonMessage Returns][PoisonMessage Returns]]).
+   The ~PoisonMessage~ object is delivered to an Actor or to external
+   code when message sent to an Actor has caused the target Actor to
+   fail.  The ~PoisonMessage~ is a wrapper around the original message
+   that caused the failure.  The originating sender receives this
+   poison message indication to allow it to perform any desired
+   cleanup or alternative work based on the target Actor failure (see [[*PoisonMessage
+    Returns][PoisonMessage Returns]]).
 
 *** Attributes
 
