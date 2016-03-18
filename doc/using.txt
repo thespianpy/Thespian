@@ -96,8 +96,8 @@ Table of Contents
 ..... 7.8.1 Attributes
 .. 7.9 Thespian_StatusReq
 ..... 7.9.1 Attributes
-.. 7.10 Thespian_SystemStatusResponse
-.. 7.11 Thespian_ActorStatusResponse
+.. 7.10 Thespian_SystemStatus
+.. 7.11 Thespian_ActorStatus
 8 ActorSystem Implementations
 .. 8.1 Common Capabilities
 .. 8.2 simpleSystemBase
@@ -458,7 +458,11 @@ Table of Contents
 3 Guidelines for Actors and their messages
 ══════════════════════════════════════════
 
-  • All ActorSystem messages are derived from ActorSystemMessage.
+  • All ActorSystem internal messages are derived from
+    ActorSystemMessage.  Messages sent by Actors should not subclass
+    ActorSystemMessage, but Actors may differentiate their messages from
+    Thespian messages by `isinstance()' testing against the
+    ActorSystemMessage.
 
   • Actors should discard messages they do not recognize.
 
@@ -2125,18 +2129,25 @@ Table of Contents
 ══════════════════════
 
   The following Messages can be delivered to Actors by the ActorSystem
-  as a result of events within the ActorSystem itself.
+  as a result of events within the ActorSystem itself.  All of these
+  messages inherit from the ActorSystemMessage.
+
+  In addition, the PoisonMessage may be delivered to external code (as a
+  response to an `ActorSystem().tell()' or `ActorSystem().ask()' call).
+  All other ActorSystemMessage instances are filtered and not returned
+  to an `ask()' or `tell()' call.
 
 
 7.1 PoisonMessage
 ─────────────────
 
-  The `PoisonMessage' object is delivered to an Actor when a send
-  attempt by that Actor has caused the target Actor to fail.  The
-  `PoisonMessage' is a wrapper around the original message that caused
-  the failure.  The originating Actor receives this poison message
-  indication to allow it to perform any desired cleanup or alternative
-  work based on the target Actor failure (see PoisonMessage Returns).
+  The `PoisonMessage' object is delivered to an Actor or to external
+  code when message sent to an Actor has caused the target Actor to
+  fail.  The `PoisonMessage' is a wrapper around the original message
+  that caused the failure.  The originating sender receives this poison
+  message indication to allow it to perform any desired cleanup or
+  alternative work based on the target Actor failure (see PoisonMessage
+  Returns).
 
 
 7.1.1 Attributes
@@ -2325,9 +2336,9 @@ Table of Contents
   provide handling of this message itself.
 
   The response to the `Thespian_StatusReq' is either a
-  Thespian_SystemStatusResponse or a Thespian_ActorStatusResponse
-  message, depending on whether the `Thespian_StatusReq' was sent to an
-  Actor or the ActorSystem.
+  Thespian_SystemStatus or a Thespian_ActorStatus message, depending on
+  whether the `Thespian_StatusReq' was sent to an Actor or the
+  ActorSystem.
 
 
 7.9.1 Attributes
@@ -2336,24 +2347,22 @@ Table of Contents
   The `Thespian_StatusReq' object has no attributes.
 
 
-7.10 Thespian_SystemStatusResponse
-──────────────────────────────────
+7.10 Thespian_SystemStatus
+──────────────────────────
 
-  The `Thespian_SystemStatusResponse' object is returned by the
-  ActorSystem with status information about that ActorSystem.  The
-  information in this message is informational only and subject to
-  change: relying on specific fields or values in this message is not
-  recommended.
+  The `Thespian_SystemStatus' object is returned by the ActorSystem with
+  status information about that ActorSystem.  The information in this
+  message is informational only and subject to change: relying on
+  specific fields or values in this message is not recommended.
 
 
-7.11 Thespian_ActorStatusResponse
-─────────────────────────────────
+7.11 Thespian_ActorStatus
+─────────────────────────
 
-  The `Thespian_SystemStatusResponse' object is returned by the
-  ActorSystem with status information about that ActorSystem.  The
-  information in this message is informational only and subject to
-  change: relying on specific fields or values in this message is not
-  recommended.
+  The `Thespian_ActorStatus' object is returned by the ActorSystem with
+  status information about that ActorSystem.  The information in this
+  message is informational only and subject to change: relying on
+  specific fields or values in this message is not recommended.
 
 
 8 ActorSystem Implementations
