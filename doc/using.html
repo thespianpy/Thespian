@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
 <title>Thespian Actors User's Guide</title>
-<!-- 2016-03-08 Tue 10:27 -->
+<!-- 2016-03-17 Thu 22:26 -->
 <meta  http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta  name="generator" content="Org-mode" />
 <meta  name="author" content="Kevin Quick &lt;kquick@godaddy.com&gt;" />
@@ -312,8 +312,8 @@ for the JavaScript code in this tag.
 <li><a href="#sec-7-9-1">7.9.1. Attributes</a></li>
 </ul>
 </li>
-<li><a href="#sec-7-10">7.10. Thespian_SystemStatusResponse</a></li>
-<li><a href="#sec-7-11">7.11. Thespian_ActorStatusResponse</a></li>
+<li><a href="#sec-7-10">7.10. Thespian_SystemStatus</a></li>
+<li><a href="#sec-7-11">7.11. Thespian_ActorStatus</a></li>
 </ul>
 </li>
 <li><a href="#sec-8">8. ActorSystem Implementations</a>
@@ -837,7 +837,11 @@ message.  See <a href="#sec-4-4">PoisonMessage Returns</a> for more details.
 <h2 id="sec-3"><span class="section-number-2">3</span> Guidelines for Actors and their messages</h2>
 <div class="outline-text-2" id="text-3">
 <ul class="org-ul">
-<li>All ActorSystem messages are derived from ActorSystemMessage.
+<li>All ActorSystem internal messages are derived from
+ActorSystemMessage.  Messages sent by Actors should not subclass
+ActorSystemMessage, but Actors may differentiate their messages
+from Thespian messages by <code>isinstance()</code> testing against the
+ActorSystemMessage.
 </li>
 
 <li>Actors should discard messages they do not recognize.
@@ -3104,7 +3108,16 @@ that sourceHash this request does nothing silently.
 <div class="outline-text-2" id="text-7">
 <p>
 The following Messages can be delivered to Actors by the ActorSystem
-as a result of events within the ActorSystem itself.
+as a result of events within the ActorSystem itself.  All of these
+messages inherit from the ActorSystemMessage.
+</p>
+
+<p>
+In addition, the PoisonMessage, Thespian_SystemStatus, and
+Thespian_ActorStatus messages may be delivered to external code (as
+a response to an <code>ActorSystem().tell()</code> or <code>ActorSystem().ask()</code>
+call).  All other ActorSystemMessage instances are filtered and not
+returned to an <code>ask()</code> or <code>tell()</code> call.
 </p>
 </div>
 
@@ -3112,13 +3125,12 @@ as a result of events within the ActorSystem itself.
 <h3 id="sec-7-1"><span class="section-number-3">7.1</span> PoisonMessage</h3>
 <div class="outline-text-3" id="text-7-1">
 <p>
-The <code>PoisonMessage</code> object is delivered to an Actor when a send
-attempt by that Actor has caused the target Actor to fail.  The
-<code>PoisonMessage</code> is a wrapper around the original message that
-caused the failure.  The originating Actor receives this poison
-message indication to allow it to perform any desired cleanup or
-alternative work based on the target Actor failure (see
-<a href="#sec-4-4">PoisonMessage Returns</a>).
+The <code>PoisonMessage</code> object is delivered to an Actor or to external
+code when message sent to an Actor has caused the target Actor to
+fail.  The <code>PoisonMessage</code> is a wrapper around the original message
+that caused the failure.  The originating sender receives this
+poison message indication to allow it to perform any desired
+cleanup or alternative work based on the target Actor failure (see <a href="#sec-4-4">PoisonMessage Returns</a>).
 </p>
 </div>
 
@@ -3390,7 +3402,7 @@ or provide handling of this message itself.
 
 <p>
 The response to the <code>Thespian_StatusReq</code> is either a
-<a href="#sec-7-10">Thespian_SystemStatusResponse</a> or a <a href="#sec-7-11">Thespian_ActorStatusResponse</a>
+<a href="#sec-7-10">Thespian_SystemStatus</a> or a <a href="#sec-7-11">Thespian_ActorStatus</a>
 message, depending on whether the <code>Thespian_StatusReq</code> was sent to
 an Actor or the ActorSystem.
 </p>
@@ -3407,10 +3419,10 @@ The <code>Thespian_StatusReq</code> object has no attributes.
 </div>
 
 <div id="outline-container-sec-7-10" class="outline-3">
-<h3 id="sec-7-10"><span class="section-number-3">7.10</span> Thespian_SystemStatusResponse</h3>
+<h3 id="sec-7-10"><span class="section-number-3">7.10</span> Thespian_SystemStatus</h3>
 <div class="outline-text-3" id="text-7-10">
 <p>
-The <code>Thespian_SystemStatusResponse</code> object is returned by the
+The <code>Thespian_SystemStatus</code> object is returned by the
 ActorSystem with status information about that ActorSystem.  The
 information in this message is informational only and subject to
 change: relying on specific fields or values in this message is not
@@ -3420,10 +3432,10 @@ recommended.
 </div>
 
 <div id="outline-container-sec-7-11" class="outline-3">
-<h3 id="sec-7-11"><span class="section-number-3">7.11</span> Thespian_ActorStatusResponse</h3>
+<h3 id="sec-7-11"><span class="section-number-3">7.11</span> Thespian_ActorStatus</h3>
 <div class="outline-text-3" id="text-7-11">
 <p>
-The <code>Thespian_SystemStatusResponse</code> object is returned by the
+The <code>Thespian_ActorStatus</code> object is returned by the
 ActorSystem with status information about that ActorSystem.  The
 information in this message is informational only and subject to
 change: relying on specific fields or values in this message is not
@@ -4074,7 +4086,7 @@ difference will remain unaddressed.
 </div></div>
 <div id="postamble" class="status">
 <p class="author">Author: Kevin Quick &lt;kquick@godaddy.com&gt;</p>
-<p class="date">Created: 2016-03-08 Tue 10:27</p>
+<p class="date">Created: 2016-03-17 Thu 22:26</p>
 <p class="creator"><a href="http://www.gnu.org/software/emacs/">Emacs</a> 24.5.2 (<a href="http://orgmode.org">Org</a> mode 8.2.10)</p>
 <p class="validation"><a href="http://validator.w3.org/check?uri=referer">Validate</a></p>
 </div>
