@@ -2132,7 +2132,8 @@ Table of Contents
   as a result of events within the ActorSystem itself.  All of these
   messages inherit from the ActorSystemMessage.
 
-  In addition, the PoisonMessage may be delivered to external code (as a
+  In addition, the PoisonMessage, Thespian_SystemStatus, and
+  Thespian_ActorStatus messages may be delivered to external code (as a
   response to an `ActorSystem().tell()' or `ActorSystem().ask()' call).
   All other ActorSystemMessage instances are filtered and not returned
   to an `ask()' or `tell()' call.

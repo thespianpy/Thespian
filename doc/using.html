@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
 <title>Thespian Actors User's Guide</title>
-<!-- 2016-03-17 Thu 22:07 -->
+<!-- 2016-03-17 Thu 22:26 -->
 <meta  http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta  name="generator" content="Org-mode" />
 <meta  name="author" content="Kevin Quick &lt;kquick@godaddy.com&gt;" />
@@ -3113,7 +3113,8 @@ messages inherit from the ActorSystemMessage.
 </p>
 
 <p>
-In addition, the PoisonMessage may be delivered to external code (as
+In addition, the PoisonMessage, Thespian_SystemStatus, and
+Thespian_ActorStatus messages may be delivered to external code (as
 a response to an <code>ActorSystem().tell()</code> or <code>ActorSystem().ask()</code>
 call).  All other ActorSystemMessage instances are filtered and not
 returned to an <code>ask()</code> or <code>tell()</code> call.
@@ -4085,7 +4086,7 @@ difference will remain unaddressed.
 </div></div>
 <div id="postamble" class="status">
 <p class="author">Author: Kevin Quick &lt;kquick@godaddy.com&gt;</p>
-<p class="date">Created: 2016-03-17 Thu 22:07</p>
+<p class="date">Created: 2016-03-17 Thu 22:26</p>
 <p class="creator"><a href="http://www.gnu.org/software/emacs/">Emacs</a> 24.5.2 (<a href="http://orgmode.org">Org</a> mode 8.2.10)</p>
 <p class="validation"><a href="http://validator.w3.org/check?uri=referer">Validate</a></p>
 </div>
