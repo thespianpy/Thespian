@@ -12,6 +12,11 @@ class EchoActor(Actor):
         self.send(sender, msg)
 
 
+class Kill_The_Messenger(Actor):
+    def receiveMessage(self, message, sender):
+        self.send(sender, ActorExitRequest())
+
+
 class FakeSystemMessage(ActorSystemMessage):
     pass
 
@@ -39,6 +44,17 @@ class TestASimpleSystem(ActorSystemTestCase):
         ActorSystem().tell(echo, FakeSystemMessage())
         time.sleep(0.02)  # allow tell to work before ActorSystem shutdown
 
+    def testKillMessageTell(self):
+        echo = ActorSystem().createActor(EchoActor)
+        ActorSystem().tell(echo, ActorExitRequest())
+        time.sleep(0.02)  # allow tell to work before ActorSystem shutdown
+
+    def testKillMessageTellKiller(self):
+        ktm = ActorSystem().createActor(Kill_The_Messenger)
+        ActorSystem().tell(ktm, 'hello')
+        ActorSystem().tell(ktm, ActorExitRequest())
+        time.sleep(0.02)  # allow tell to work before ActorSystem shutdown
+
     def testSimpleMessageAsk(self):
         echo = ActorSystem().createActor(EchoActor)
         self.assertEqual(ActorSystem().ask(echo, 'hello', smallwait), 'hello')
@@ -48,6 +64,17 @@ class TestASimpleSystem(ActorSystemTestCase):
         # SystemMessages are explicitly filtered from being returned
         # via Ask() or Tell(), with the exception of PoisonMessage.
         self.assertIsNone(ActorSystem().ask(echo, FakeSystemMessage(), smallwait))
+
+    def testKillMessageAsk(self):
+        echo = ActorSystem().createActor(EchoActor)
+        # SystemMessages are explicitly filtered from being returned
+        # via Ask() or Tell(), with the exception of PoisonMessage.
+        self.assertIsNone(ActorSystem().ask(echo, ActorExitRequest(), smallwait))
+
+    def testKillMessageAskKiller(self):
+        ktm = ActorSystem().createActor(Kill_The_Messenger)
+        self.assertIsNone(ActorSystem().ask(ktm, 'hello', smallwait))
+        self.assertIsNone(ActorSystem().ask(ktm, ActorExitRequest(), smallwait))
 
 
 class TestMultiprocUDPSystem(TestASimpleSystem):

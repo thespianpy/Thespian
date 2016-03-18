@@ -238,6 +238,7 @@ class ActorSystemBase:
             'System:ExternalRequester': extreq,
             'System:BadActor': badActor,
         }
+        self._internalAddresses = self.actorRegistry.keys()
 
     def shutdown(self):
         while self._sources:
@@ -300,7 +301,8 @@ class ActorSystemBase:
                 else:
                     killActor = isinstance(ps.msg, ActorExitRequest)
                     self._callActorWithMessage(tgt, ps, msg, sndr)
-                    if killActor:
+                    if killActor and tgt not in [self.actorRegistry[key]
+                                                 for key in self._internalAddresses]:
                         self._killActor(tgt, ps)
             else:
                 # This is a Dead Actor and there is no
