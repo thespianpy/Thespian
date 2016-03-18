@@ -2191,22 +2191,22 @@ class SimpleSourceAuthority(ActorTypeDispatcher):
    or provide handling of this message itself.
 
    The response to the ~Thespian_StatusReq~ is either a
-   [[*Thespian_SystemStatusResponse][Thespian_SystemStatusResponse]] or a [[*Thespian_ActorStatusResponse][Thespian_ActorStatusResponse]]
+   [[*Thespian_SystemStatus][Thespian_SystemStatus]] or a [[*Thespian_ActorStatus][Thespian_ActorStatus]]
    message, depending on whether the ~Thespian_StatusReq~ was sent to
    an Actor or the ActorSystem.
 
 *** Attributes
    The ~Thespian_StatusReq~ object has no attributes.
 
-** Thespian_SystemStatusResponse
-   The ~Thespian_SystemStatusResponse~ object is returned by the
+** Thespian_SystemStatus
+   The ~Thespian_SystemStatus~ object is returned by the
    ActorSystem with status information about that ActorSystem.  The
    information in this message is informational only and subject to
    change: relying on specific fields or values in this message is not
    recommended.
 
-** Thespian_ActorStatusResponse
-   The ~Thespian_SystemStatusResponse~ object is returned by the
+** Thespian_ActorStatus
+   The ~Thespian_ActorStatus~ object is returned by the
    ActorSystem with status information about that ActorSystem.  The
    information in this message is informational only and subject to
    change: relying on specific fields or values in this message is not
