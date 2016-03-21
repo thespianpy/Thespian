@@ -3,6 +3,7 @@
 import sys
 import logging
 import copy
+import atexit
 from thespian.actors import *
 from thespian.system.utilis import thesplog
 from thespian.system.systemCommon import systemCommonBase
@@ -36,6 +37,7 @@ class ActorManager(systemCommonBase):
         self._actorClass = childClass  # nb. this may be a string, and sourceHash is not loaded yet
         self._childReqs  = childRequirements
         self.actorInst   = None
+        atexit.register(self._shutdownActor)
         thesplog('Starting Actor %s at %s (parent %s, admin %s)',
                  childClass, self.transport.myAddress,
                  self._parentAddr, adminAddr,
@@ -194,6 +196,10 @@ class ActorManager(systemCommonBase):
 
 
     def _shutdownActor(self, shutdownChildren=True):
+        if hasattr(atexit, 'unregister'):
+            atexit.unregister(self._shutdownActor)
+        if getattr(self, '_exiting', None):
+            return  # already exiting
         self._exiting = True  # set exiting mode
 
         children = self.childAddresses
