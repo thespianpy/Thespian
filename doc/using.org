@@ -7,7 +7,7 @@
 #+LATEX_HEADER: \product{Thespian}
 #+LATEX_HEADER: \component{Python Actor System}
 #+LATEX_HEADER: \doctype{Usage}
-#+LATEX_HEADER: \docrev{2.10}{2016 Mar 17}
+#+LATEX_HEADER: \docrev{2.11}{2016 Mar 21}
 #+LATEX_HEADER: \docid{TheDoc-02}
 #+OPTIONS: ^:nil
 
