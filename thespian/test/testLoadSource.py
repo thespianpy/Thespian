@@ -215,6 +215,31 @@ else:
     from .chicken import *
 '''
 
+ouroborosSource = '''
+import sys
+import worm.jormungandr
+import os
+
+def ouroboros(): return 'endless'
+
+from thespian.actors import ActorTypeDispatcher
+
+class Serpent(ActorTypeDispatcher):
+    def receiveMsg_str(self, msg, sender):
+        self.send(sender, '<<' + ouroboros() + msg + worm.jormungandr.jormungandr() + '>>')
+'''
+
+jormungandrSource = '''
+print('j1')
+import string
+print('j2')
+import ouroboros
+print('j3')
+import logging
+print('j4')
+
+def jormungandr(): return 'dragon'
+'''
 
 class BarActor(Actor):
     def receiveMessage(self, msg, sender):
@@ -252,6 +277,9 @@ class CreateTestSourceZips(object):
         foozip.writestr('gorse/bush/eeyore.py', eeyoreSource)
         foozip.writestr('pooh/corner/kanga.py', kangaSource)
         foozip.writestr('barn/piglet.py', pigletSource)
+        foozip.writestr('ouroboros.py', ouroborosSource)
+        foozip.writestr('worm/__init__.py', '')
+        foozip.writestr('worm/jormungandr.py', jormungandrSource)
         foozip.writestr('barn/cow/__init__.py', '')
         foozip.writestr('barn/cow/moo.py', mooSource)
         foozip.writestr('roo.py', rooSource)
@@ -303,7 +331,7 @@ class TestRoundTripROT13(unittest.TestCase, CreateTestSourceZips):
         self.assertEqual(names[0], '__init__.py')
         self.assertEqual(names[-2], 'barn/cow/moo.py')
         self.assertEqual(names[-1], 'roo.py')
-        self.assertEqual(len(names), 20)
+        self.assertEqual(len(names), 23)
 
 
 class TestDirectZipfile(unittest.TestCase):
@@ -413,6 +441,12 @@ class TestDirectZipfile(unittest.TestCase):
         # call with a string to make sure deep import references resolve
         self.assertRaises(InvalidActorAddress,
                           f.receiveMessage, "roo", "sender")
+
+    def testOuroboros(self):
+        sys.path.insert(0, self.foozipFname)
+        import ouroboros
+        self.assertEqual(ouroboros.ouroboros(), 'endless')
+        self.assertEqual(ouroboros.worm.jormungandr.jormungandr(), 'dragon')
 
 
 class TestASimpleSystem(unittest.TestCase, CreateTestSourceZips):
@@ -677,6 +711,13 @@ class TestASimpleSystem(unittest.TestCase, CreateTestSourceZips):
         self.assertEqual(self.systems['One'].ask(dogActor, [self.foozipFname, 'barn.cow.moo.MooActor', 'tock'], 5),
                          'And MOO: Bark! tock' )
 
+
+    def test04_circular_import_references(self):
+        self.startSystems(290)
+        self._registerSA()
+        srchash = self._loadFooSource()
+        serpent = self.systems['One'].createActor('ouroboros.Serpent', sourceHash=srchash)
+        self.assertEqual('<<endless-^-v-dragon>>', self.systems['One'].ask(serpent, '-^-v-', 1))
 
 
     def test05_verifyUnloadOfHashedSourceDoesNotKillActiveActors(self):
