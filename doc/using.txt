@@ -31,6 +31,7 @@ Table of Contents
 3 Guidelines for Actors and their messages
 4 Thespian Actor Feature Extensions
 .. 4.1 Message Delivery
+..... 4.1.1 Message Mutability
 .. 4.2 Dead Letter Handling
 .. 4.3 Non-startable Actors
 .. 4.4 PoisonMessage Returns
@@ -548,6 +549,63 @@ Table of Contents
 
   If the recipient exits before the send can be completed, the message
   is redirected to Dead Letter Handling.
+
+
+4.1.1 Message Mutability
+╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+
+  Thespian does not automatically generate copies of messages that are
+  sent, but sends the original directly.  This covers most use cases and
+  has performance advantages in avoidance of extra copying, but it does
+  expose a potential for leakage of information between Actors in some
+  implementations.
+
+  ┌────
+  │ class MyActor(Actor):
+  │     def receiveMessage(self, message, sender):
+  │         ...
+  │         self.send(actor2, NewMessage(...))
+  │         ...
+  └────
+
+  The above example shows a common use case where the message to be sent
+  is generated directly, and no longer used or referenced by the sending
+  Actor after the `.send()' call.  This pattern is entirely safe in all
+  instances.  However, if the sending Actor maintains a reference to the
+  sent message, as in the example below, the sending Actor's copy *may*
+  be modified by code in the recipient.
+
+  ┌────
+  │  1  class ActorA(Actor):
+  │  2      def receiveMessage(self, message, sender):
+  │  3          ...
+  │  4          actorb = self.createActor(ActorB)
+  │  5          newmsg = NewMessage(foo="foo")
+  │  6          self.messages.append(newmsg)
+  │  7          self.send(actorb, newmsg)
+  │  8          ...
+  │  9          for each in self.messages:
+  │ 10              assert each.foo == "foo"
+  │ 11  
+  │ 12  class ActorB(Actor):
+  │ 13      def receiveMessage(self, message, sender):
+  │ 14          message.foo = "bar"
+  └────
+
+  In the example shown above, the assertion in line 10 may fail because
+  ActorB has modified ActorA's original copy in line 14.  Whether or not
+  modification of ActorA's copy occurs is based on timing of execution
+  between the two actors, and also on the system Base that is used.
+  When using a multi-process system base, ActorA's version will not be
+  modified because the two Actors run as separate processes and so
+  ActorB has a separate copy of the message, but the simpleSystemBase
+  (for example) is exposed to this modification.
+
+  If an Actor references a message post-send, it should be aware of this
+  potential.  The mutation may be avoided by ActorA sending a copy of
+  the original message (`self.send(actorb, copy.deepcopy(newmsg))'),
+  although this has negative performance implications (which is why
+  Thespian does not automatically perform this copy).
 
 
 4.2 Dead Letter Handling
@@ -2418,24 +2476,28 @@ Table of Contents
   As described in ActorSystem Capabilities each ActorSystem has a set of
   capabilities that describe that ActorSystem and which can be audited
   by the Actor's actorSystemCapabilityCheck method to determine if the
-  Actor is compatible with the ActorSystem.
+  Actor is compatible with the ActorSystem.  Many capabilities can be
+  set when the ActorSystem is started (see ActorSystem), or updated at
+  run-time (see updateCapability for either the Actor or the ActorSystem
+  API); those marked /read-only/ below may only be viewed, but not set
+  or changed when the ActorSystem is started.
 
   Each ActorSystem may specify capabilities unique to that ActorSystem
   and the application can add capabilities to that ActorSystem; in
   addition, the following common capabilities are defined for all
   ActorSystems:
 
-  *Python Version*: This is set to the tuple value of the Python version
-                    under which the ActorSystem is running (this is the
-                    same value supplied by `sys.version_info').  Any
-                    Actors wishing to enforce any version restrictions use
-                    this capability to do so.
+  *Python Version*: /read-only/ This is set to the tuple value of the
+                    Python version under which the ActorSystem is running
+                    (this is the same value supplied by
+                    `sys.version_info').  Any Actors wishing to enforce
+                    any version restrictions use this capability to do so.
 
-  *Thespian Generation*: This is the Thespian API functionality specifier
-                         as a tuple of two values: `(generation,
-                         enhancement)'.  The first value is the
-                         `generation' and indicates a major functionality
-                         level (which is not necessarily
+  *Thespian Generation*: /read-only/ This is the Thespian API
+                         functionality specifier as a tuple of two values:
+                         `(generation, enhancement)'.  The first value is
+                         the `generation' and indicates a major
+                         functionality level (which is not necessarily
                          backwards-compatible with the previous
                          functionality level).  The second number is the
                          `enhancement' value and is incremented when
@@ -2454,25 +2516,27 @@ Table of Contents
                          is different than the ActorSystem provides in the
                          capabilities
 
-  *Thespian Version*: This is the identifier for the version of Thespian
-                      running in the current environment.  This is a
-                      single numeric value where later releases will have
-                      a higher (but not necessarily successor) value.
+  *Thespian Version*: /read-only/ This is the identifier for the version
+                      of Thespian running in the current environment.
+                      This is a single numeric value where later releases
+                      will have a higher (but not necessarily successor)
+                      value.
 
-  *Thespian ActorSystem Name*: This is the name of the running ActorSystem
-                               implementation.  It is encouraged that
-                               Actors are not written to be unique to any
-                               particular implementation, but this
-                               information is present to allow
+  *Thespian ActorSystem Name*: /read-only/ This is the name of the running
+                               ActorSystem implementation.  It is
+                               encouraged that Actors are not written to
+                               be unique to any particular implementation,
+                               but this information is present to allow
                                ActorSystem-specific capability
                                verification.
 
-  *Thespian ActorSystem Version*: This is the ActorSystem version as a
-                                  single numeric value (similar to the
-                                  `Thespian Version' capability.  This
-                                  value may be incremented separately from
-                                  the `Thespian Version' to indicate an
-                                  update in the underlying ActorSystem
+  *Thespian ActorSystem Version*: /read-only/ This is the ActorSystem
+                                  version as a single numeric value
+                                  (similar to the `Thespian Version'
+                                  capability.  This value may be
+                                  incremented separately from the
+                                  `Thespian Version' to indicate an update
+                                  in the underlying ActorSystem
                                   implementation.  The value of a specific
                                   ActorSystem will increment, but
                                   different ActorSystems have different
@@ -2513,6 +2577,11 @@ Table of Contents
 
   ‣ All Actors run synchronously in the context of the current process
     thread.
+  ‣ It is possible for an Actor to modify global state referenced by
+    other Actors (as a matter of principal, accessing global state is an
+    anti-pattern for the Actor Model).
+  ‣ It is possible for an Actor to modify the caller's version of the
+    message (see Message Mutability).
   ‣ The actorSystemCapabilityCheck is not called for any Actors: all
     actors are created in the current ActorSystem regardless of their
     capability requirements.
@@ -2543,7 +2612,7 @@ Table of Contents
 
   The simpleSystemBase uses the following ActorSystem Capabilities:
 
-  *Thespian ActorSystem Name*: "simpleSystemBase"
+  *Thespian ActorSystem Name*: /read-only/ "simpleSystemBase"
 
 
 8.3 multiprocQueueBase
@@ -2578,10 +2647,10 @@ Table of Contents
 
   The multiprocQueueBase uses the following ActorSystem Capabilities:
 
-  *Thespian ActorSystem Name*: "multiprocQueueBase"
+  *Thespian ActorSystem Name*: /read-only/ "multiprocQueueBase"
 
-  *Admin Address*: the address for the Admin queue. This is an arbitrary
-                   string value; the default is 'ThespianQ'.
+  *Admin Address*: /read-only/ the address for the Admin queue. This is an
+                   arbitrary string value; the default is 'ThespianQ'.
 
 
 8.4 multiprocTCPBase
@@ -2606,7 +2675,7 @@ Table of Contents
 
   The multiprocTCPBase uses the following ActorSystem Capabilities:
 
-  *Thespian ActorSystem Name*: "multiprocTCPBase"
+  *Thespian ActorSystem Name*: /read-only/ "multiprocTCPBase"
 
   *Admin Port*: which specifies the TCP port number upon which the
                 ActorSystem will listen for new communications.  Actors
@@ -2709,7 +2778,7 @@ Table of Contents
 
   The multiprocUDPBase uses the following ActorSystem Capabilities:
 
-  *Thespian ActorSystem Name*: "multiprocUDPBase"
+  *Thespian ActorSystem Name*: /read-only/ "multiprocUDPBase"
 
   *Admin Port*: which specifies the UDP port number upon which the
                 ActorSystem will listen for new communications.  Actors
