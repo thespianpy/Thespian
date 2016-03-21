@@ -496,6 +496,63 @@ described in [[*Dead Letter Handling][Dead Letter Handling]].
   If the recipient exits before the send can be completed, the message
   is redirected to [[*Dead Letter Handling][Dead Letter Handling]].
 
+*** Message Mutability
+
+  Thespian does not automatically generate copies of messages that are
+  sent, but sends the original directly.  This covers most use cases
+  and has performance advantages in avoidance of extra copying, but it
+  does expose a potential for leakage of information between Actors in
+  some implementations.
+
+#+BEGIN_SRC python
+class MyActor(Actor):
+    def receiveMessage(self, message, sender):
+        ...
+        self.send(actor2, NewMessage(...))
+        ...
+#+END_SRC
+
+  The above example shows a common use case where the message to be
+  sent is generated directly, and no longer used or referenced by the
+  sending Actor after the ~.send()~ call.  This pattern is entirely
+  safe in all instances.  However, if the sending Actor maintains a
+  reference to the sent message, as in the example below, the sending
+  Actor's copy *may* be modified by code in the recipient.
+
+#+BEGIN_SRC python -n -r -l "#(ref:%s)"
+class ActorA(Actor):
+    def receiveMessage(self, message, sender):
+        ...
+        actorb = self.createActor(ActorB)
+        newmsg = NewMessage(foo="foo")
+        self.messages.append(newmsg)
+        self.send(actorb, newmsg)
+        ...
+        for each in self.messages:
+            assert each.foo == "foo"  #(ref:assertFoo)
+
+class ActorB(Actor):
+    def receiveMessage(self, message, sender):
+        message.foo = "bar"   #(ref:changeFoo)
+#+END_SRC
+
+  In the example shown above, the assertion in [[(assertFoo)][line (assertFoo)]] may
+  fail because ActorB has modified ActorA's original copy in [[(changeFoo)][line
+  (changeFoo)]].  Whether or not modification of ActorA's copy occurs is
+  based on timing of execution between the two actors, and also on the
+  system Base that is used.  When using a multi-process system base,
+  ActorA's version will not be modified because the two Actors run as
+  separate processes and so ActorB has a separate copy of the message,
+  but the [[*simpleSystemBase][simpleSystemBase]] (for example) is exposed to this modification.
+
+  If an Actor references a message post-send, it should be aware of
+  this potential.  The mutation may be avoided by ActorA sending a
+  copy of the original message (~self.send(actorb,
+  copy.deepcopy(newmsg))~), although this has negative performance
+  implications (which is why Thespian does not automatically perform
+  this copy).
+
+
 ** Dead Letter Handling
 
   If the ActorSystem is unable to deliver a message to the target
@@ -2342,6 +2399,11 @@ ActorSystems:
 
     * All Actors run synchronously in the context of the current
       process thread.
+    * It is possible for an Actor to modify global state referenced by
+      other Actors (as a matter of principal, accessing global state
+      is an anti-pattern for the Actor Model).
+    * It is possible for an Actor to modify the caller's version of
+      the message (see [[*Message%20Mutability][Message Mutability]]).
     * The [[*actorSystemCapabilityCheck][actorSystemCapabilityCheck]] is not called for any Actors: all
       actors are created in the current ActorSystem regardless of
       their capability requirements.
