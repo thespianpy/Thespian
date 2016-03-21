@@ -15,6 +15,7 @@ from thespian.system.messages.multiproc import *
 from thespian.system.sourceLoader import loadModuleFromHashSource
 from functools import partial
 import multiprocessing
+import signal
 from datetime import timedelta
 
 
@@ -298,6 +299,24 @@ class MultiProcReplicator(object):
 
 from thespian.system.actorManager import ActorManager
 
+def signal_detector(name, addr):
+    def signal_detected(signum, frame):
+        thesplog('Actor %s @ %s got signal: %s', name, addr, signum,
+                 level = logging.WARNING)
+        # Simply exit; just by catching the signal the atexit handlers are enabled
+        # if this signal is going to cause a process exit.
+    return signal_detected
+
+
+def shutdown_signal_detector(name, addr, am):
+    def shutdown_signal_detected(signum, frame):
+        thesplog('Actor %s @ %s got shutdown signal: %s', name, addr, signum,
+                 level = logging.WARNING)
+        am.transport.scheduleTransmit(None, TransmitIntent(am.transport.myAddress,
+                                                           ActorExitRequest()))
+    return shutdown_signal_detected
+
+
 def startChild(childClass, endpoint, transportClass,
                sourceHash, sourceToLoad,
                parentAddr, adminAddr, notifyAddr, loggerAddr,
@@ -345,6 +364,31 @@ def startChild(childClass, endpoint, transportClass,
                                   TransmitIntent(notifyAddr,
                                                  EndpointConnected(endpoint.addrInst)))
     setProcName(getattr(childClass, '__name__', str(childClass)), am.transport.myAddress)
+
+    sighandler = signal_detector(getattr(childClass, '__name__', str(childClass)),
+                                 am.transport.myAddress)
+    sigexithandler = shutdown_signal_detector(getattr(childClass, '__name__', str(childClass)),
+                                              am.transport.myAddress,
+                                              am)
+    for each in range(signal.NSIG):
+        # n.b. normally Python intercepts SIGINT to turn it into a
+        # KeyboardInterrupt exception.  However, these Actors should
+        # be detached from the keyboard, so revert to normal SIGINT
+        # behavior.
+        if each not in [signal.SIGCONT, signal.SIGPIPE,
+                        signal.SIGKILL, signal.SIGSTOP,  # cannot catch these
+        ]:
+            try:
+                signal.signal(each,
+                              sigexithandler
+                              if each in [signal.SIGTERM, signal.SIGKILL,
+                                          signal.SIGQUIT, signal.SIGABRT]
+                              else sighandler)
+            except (RuntimeError,ValueError):
+                # OK, this signal can't be caught for this
+                # environment.  We did our best.
+                pass
+
     am.run()
 
 

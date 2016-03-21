@@ -345,7 +345,9 @@ class MultiprocessQueueTransport(asyncTransportBase, wakeupTransportBase):
         return wrappedMsg
 
     def _scheduleTransmitActual(self, transmitIntent):
-        if transmitIntent.targetAddr in self._queues:
+        if transmitIntent.targetAddr == self.myAddress:
+            self._myInputQ.put( (self._myQAddress, transmitIntent.serMsg), True)
+        elif transmitIntent.targetAddr in self._queues:
             self._queues[transmitIntent.targetAddr].put((self._myQAddress, transmitIntent.serMsg), True)
         else:
             # None means sent by parent, so don't send BACK to parent if unknown

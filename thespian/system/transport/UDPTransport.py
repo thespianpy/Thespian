@@ -75,6 +75,7 @@ class UDPTransport(asyncTransportBase, wakeupTransportBase):
                                                             external=True))
         else:
             thesplog('UDPTransport init of type %s unsupported', str(initType), level=logging.ERROR)
+        self._rcvd = []
 
 
     def protectedFileNumList(self):
@@ -175,10 +176,15 @@ class UDPTransport(asyncTransportBase, wakeupTransportBase):
         return serializer.dumps(intent.message)
 
     def _scheduleTransmitActual(self, transmitIntent):
-        # UDPTransport transmit is serially blocking, but both sender
-        # and receiver provide lots of buffering.  At present, there
-        # is no receipt confirmation (KWQ: but there should be)
-        r = self.socket.sendto(transmitIntent.serMsg, transmitIntent.targetAddr.addressDetails.sockname)
+        if transmitIntent.targetAddr == self.myAddress:
+            self._rcvd.append(ReceiveEnvelope(transmitIntent.targetAddr,
+                                              transmitIntent.message))
+            r = True
+        else:
+            # UDPTransport transmit is serially blocking, but both sender
+            # and receiver provide lots of buffering.  At present, there
+            # is no receipt confirmation (KWQ: but there should be)
+            r = self.socket.sendto(transmitIntent.serMsg, transmitIntent.targetAddr.addressDetails.sockname)
         transmitIntent.result = SendStatus.Sent if r else SendStatus.BadPacket
         transmitIntent.completionCallback()
 
@@ -192,23 +198,35 @@ class UDPTransport(asyncTransportBase, wakeupTransportBase):
         self._aborting_run = False
 
         while not self.run_time.expired() and not self._aborting_run:
-            sresp, _ign1, _ign2 = select.select([self.socket.fileno()], [], [],
-                                                self.run_time.remainingSeconds())
-            if [] == sresp:
-                if [] == _ign1 and [] == _ign2:
-                    # Timeout, give up
-                    return None
-                thesplog('Waiting for read event, but got %s %s', _ign1, _ign2, level=logging.WARNING)
-                continue
-            rawmsg, sender = self.socket.recvfrom(65535)
-            sendAddr = ActorAddress(UDPv4ActorAddress(*sender, external=True))
-            try:
-                msg = serializer.loads(rawmsg)
-            except Exception as ex:
-                continue
+            if self._rcvd:
+                rcvdEnv = self._rcvd.pop()
+            else:
+                try:
+                    sresp, _ign1, _ign2 = select.select([self.socket.fileno()], [], [],
+                                                        self.run_time.remainingSeconds())
+                except select.error as se:
+                    import errno
+                    if se[0] != errno.EINTR:
+                        thesplog('Error during select: %s', se)
+                        return None
+                    continue
+
+                if [] == sresp:
+                    if [] == _ign1 and [] == _ign2:
+                        # Timeout, give up
+                        return None
+                    thesplog('Waiting for read event, but got %s %s', _ign1, _ign2, level=logging.WARNING)
+                    continue
+                rawmsg, sender = self.socket.recvfrom(65535)
+                sendAddr = ActorAddress(UDPv4ActorAddress(*sender, external=True))
+                try:
+                    msg = serializer.loads(rawmsg)
+                except Exception as ex:
+                    continue
+                rcvdEnv = ReceiveEnvelope(sendAddr, msg)
             if incomingHandler is None:
-                return ReceiveEnvelope(sendAddr, msg)
-            if not incomingHandler(ReceiveEnvelope(sendAddr, msg)):
+                return rcvdEnv
+            if not incomingHandler(rcvdEnv):
                 return  # handler returned False, indicating run() should exit
 
         return None
