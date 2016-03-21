@@ -370,7 +370,7 @@ def startChild(childClass, endpoint, transportClass,
     sigexithandler = shutdown_signal_detector(getattr(childClass, '__name__', str(childClass)),
                                               am.transport.myAddress,
                                               am)
-    for each in range(signal.NSIG):
+    for each in range(1, signal.NSIG):
         # n.b. normally Python intercepts SIGINT to turn it into a
         # KeyboardInterrupt exception.  However, these Actors should
         # be detached from the keyboard, so revert to normal SIGINT
@@ -384,7 +384,7 @@ def startChild(childClass, endpoint, transportClass,
                               if each in [signal.SIGTERM, signal.SIGKILL,
                                           signal.SIGQUIT, signal.SIGABRT]
                               else sighandler)
-            except (RuntimeError,ValueError):
+            except (RuntimeError,ValueError,EnvironmentError) as ex:
                 # OK, this signal can't be caught for this
                 # environment.  We did our best.
                 pass
