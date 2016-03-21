@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
 <title>Thespian Actors User's Guide</title>
-<!-- 2016-03-17 Thu 22:26 -->
+<!-- 2016-03-21 Mon 13:00 -->
 <meta  http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta  name="generator" content="Org-mode" />
 <meta  name="author" content="Kevin Quick &lt;kquick@godaddy.com&gt;" />
@@ -192,7 +192,11 @@ for the JavaScript code in this tag.
 <li><a href="#sec-3">3. Guidelines for Actors and their messages</a></li>
 <li><a href="#sec-4">4. Thespian Actor Feature Extensions</a>
 <ul>
-<li><a href="#sec-4-1">4.1. Message Delivery</a></li>
+<li><a href="#sec-4-1">4.1. Message Delivery</a>
+<ul>
+<li><a href="#sec-4-1-1">4.1.1. Message Mutability</a></li>
+</ul>
+</li>
 <li><a href="#sec-4-2">4.2. Dead Letter Handling</a></li>
 <li><a href="#sec-4-3">4.3. Non-startable Actors</a></li>
 <li><a href="#sec-4-4">4.4. PoisonMessage Returns</a></li>
@@ -958,7 +962,79 @@ If the recipient exits before the send can be completed, the message
 is redirected to <a href="#sec-4-2">Dead Letter Handling</a>.
 </p>
 </div>
+
+<div id="outline-container-sec-4-1-1" class="outline-4">
+<h4 id="sec-4-1-1"><span class="section-number-4">4.1.1</span> Message Mutability</h4>
+<div class="outline-text-4" id="text-4-1-1">
+<p>
+Thespian does not automatically generate copies of messages that are
+sent, but sends the original directly.  This covers most use cases
+and has performance advantages in avoidance of extra copying, but it
+does expose a potential for leakage of information between Actors in
+some implementations.
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-python"><span class="org-keyword">class</span> <span class="org-type">MyActor</span>(Actor):
+    <span class="org-keyword">def</span> <span class="org-function-name">receiveMessage</span>(<span class="org-keyword">self</span>, message, sender):
+        ...
+        <span class="org-keyword">self</span>.send(actor2, NewMessage(...))
+        ...
+</pre>
 </div>
+
+<p>
+The above example shows a common use case where the message to be
+sent is generated directly, and no longer used or referenced by the
+sending Actor after the <code>.send()</code> call.  This pattern is entirely
+safe in all instances.  However, if the sending Actor maintains a
+reference to the sent message, as in the example below, the sending
+Actor's copy <b>may</b> be modified by code in the recipient.
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-python"><span class="linenr"> 1: </span><span class="org-keyword">class</span> <span class="org-type">ActorA</span>(Actor):
+<span class="linenr"> 2: </span>    <span class="org-keyword">def</span> <span class="org-function-name">receiveMessage</span>(<span class="org-keyword">self</span>, message, sender):
+<span class="linenr"> 3: </span>        ...
+<span class="linenr"> 4: </span>        <span class="org-variable-name">actorb</span> = <span class="org-keyword">self</span>.createActor(ActorB)
+<span class="linenr"> 5: </span>        <span class="org-variable-name">newmsg</span> = NewMessage(foo=<span class="org-string">"foo"</span>)
+<span class="linenr"> 6: </span>        <span class="org-keyword">self</span>.messages.append(newmsg)
+<span class="linenr"> 7: </span>        <span class="org-keyword">self</span>.send(actorb, newmsg)
+<span class="linenr"> 8: </span>        ...
+<span class="linenr"> 9: </span>        <span class="org-keyword">for</span> each <span class="org-keyword">in</span> <span class="org-keyword">self</span>.messages:
+<span id="coderef-assertFoo" class="coderef-off"><span class="linenr">10: </span>            <span class="org-keyword">assert</span> each.foo == <span class="org-string">"foo"</span></span>
+<span class="linenr">11: </span>
+<span class="linenr">12: </span><span class="org-keyword">class</span> <span class="org-type">ActorB</span>(Actor):
+<span class="linenr">13: </span>    <span class="org-keyword">def</span> <span class="org-function-name">receiveMessage</span>(<span class="org-keyword">self</span>, message, sender):
+<span id="coderef-changeFoo" class="coderef-off"><span class="linenr">14: </span>        <span class="org-variable-name">message.foo</span> = <span class="org-string">"bar"</span></span>
+</pre>
+</div>
+
+<p>
+In the example shown above, the assertion in <a href="#coderef-assertFoo"class="coderef" onmouseover="CodeHighlightOn(this, 'coderef-assertFoo');" onmouseout="CodeHighlightOff(this, 'coderef-assertFoo');">line 10</a> may
+fail because ActorB has modified ActorA's original copy in <a href="#coderef-changeFoo"class="coderef" onmouseover="CodeHighlightOn(this, 'coderef-changeFoo');" onmouseout="CodeHighlightOff(this, 'coderef-changeFoo');">line
+14</a>.  Whether or not modification of ActorA's copy occurs is
+based on timing of execution between the two actors, and also on the
+system Base that is used.  When using a multi-process system base,
+ActorA's version will not be modified because the two Actors run as
+separate processes and so ActorB has a separate copy of the message,
+but the <a href="#sec-8-2">simpleSystemBase</a> (for example) is exposed to this modification.
+</p>
+
+<p>
+If an Actor references a message post-send, it should be aware of
+this potential.  The mutation may be avoided by ActorA sending a
+copy of the original message (<code>self.send(actorb,
+  copy.deepcopy(newmsg))</code>), although this has negative performance
+implications (which is why Thespian does not automatically perform
+this copy).
+</p>
+</div>
+</div>
+</div>
+
 
 <div id="outline-container-sec-4-2" class="outline-3">
 <h3 id="sec-4-2"><span class="section-number-3">4.2</span> Dead Letter Handling</h3>
@@ -3542,7 +3618,11 @@ details are available in each section:
 As described in <a href="#sec-4-9">ActorSystem Capabilities</a> each ActorSystem has a set of
 capabilities that describe that ActorSystem and which can be audited
 by the Actor's <a href="#sec-5-11">actorSystemCapabilityCheck</a> method to determine if the
-Actor is compatible with the ActorSystem.
+Actor is compatible with the ActorSystem.  Many capabilities can be
+set when the ActorSystem is started (see <a href="#sec-1-3">ActorSystem</a>), or updated at
+run-time (see <a href="#sec-5-12">updateCapability</a> for either the Actor or the ActorSystem
+API); those marked <i>read-only</i> below may only be viewed, but not set
+or changed when the ActorSystem is started.
 </p>
 
 <p>
@@ -3553,13 +3633,13 @@ ActorSystems:
 </p>
 
 <dl class="org-dl">
-<dt> <b>Python Version</b> </dt><dd>This is set to the tuple value of the Python
+<dt> <b>Python Version</b> </dt><dd><i>read-only</i> This is set to the tuple value of the Python
 version under which the ActorSystem is running (this is the same
 value supplied by <code>sys.version_info</code>).  Any Actors wishing to
 enforce any version restrictions use this capability to do so.
 </dd>
 
-<dt> <b>Thespian Generation</b> </dt><dd>This is the Thespian API functionality
+<dt> <b>Thespian Generation</b> </dt><dd><i>read-only</i> This is the Thespian API functionality
 specifier as a tuple of two values: <code>(generation, enhancement)</code>.
 The first value is the <code>generation</code> and indicates a major
 functionality level (which is not necessarily backwards-compatible
@@ -3579,20 +3659,20 @@ different than the ActorSystem provides in the capabilities
 </p>
 </dd>
 
-<dt> <b>Thespian Version</b> </dt><dd>This is the identifier for the version of
+<dt> <b>Thespian Version</b> </dt><dd><i>read-only</i> This is the identifier for the version of
 Thespian running in the current environment.  This is a single
 numeric value where later releases will have a higher (but not
 necessarily successor) value.
 </dd>
 
-<dt> <b>Thespian ActorSystem Name</b> </dt><dd>This is the name of the running
+<dt> <b>Thespian ActorSystem Name</b> </dt><dd><i>read-only</i> This is the name of the running
 ActorSystem implementation.  It is encouraged that Actors are not
 written to be unique to any particular implementation, but this
 information is present to allow ActorSystem-specific capability
 verification.
 </dd>
 
-<dt> <b>Thespian ActorSystem Version</b> </dt><dd>This is the ActorSystem version
+<dt> <b>Thespian ActorSystem Version</b> </dt><dd><i>read-only</i> This is the ActorSystem version
 as a single numeric value (similar to the <code>Thespian Version</code>
 capability.  This value may be incremented separately from the
 <code>Thespian Version</code> to indicate an update in the underlying
@@ -3644,6 +3724,13 @@ Testing and other very simplistic Actor environments:
 <li>All Actors run synchronously in the context of the current
 process thread.
 </li>
+<li>It is possible for an Actor to modify global state referenced by
+other Actors (as a matter of principal, accessing global state
+is an anti-pattern for the Actor Model).
+</li>
+<li>It is possible for an Actor to modify the caller's version of
+the message (see <i>Message Mutability</i>).
+</li>
 <li>The <a href="#sec-5-11">actorSystemCapabilityCheck</a> is not called for any Actors: all
 actors are created in the current ActorSystem regardless of
 their capability requirements.
@@ -3686,7 +3773,7 @@ The simpleSystemBase uses the following <a href="#sec-4-9">ActorSystem Capabilit
 </p>
 
 <dl class="org-dl">
-<dt> <b>Thespian ActorSystem Name</b> </dt><dd>"simpleSystemBase"
+<dt> <b>Thespian ActorSystem Name</b> </dt><dd><i>read-only</i> "simpleSystemBase"
 </dd>
 </dl>
 </div>
@@ -3735,10 +3822,10 @@ The multiprocQueueBase uses the following <a href="#sec-4-9">ActorSystem Capabil
 </p>
 
 <dl class="org-dl">
-<dt> <b>Thespian ActorSystem Name</b> </dt><dd>"multiprocQueueBase"
+<dt> <b>Thespian ActorSystem Name</b> </dt><dd><i>read-only</i> "multiprocQueueBase"
 </dd>
 
-<dt> <b>Admin Address</b> </dt><dd>the address for the Admin queue. This is an
+<dt> <b>Admin Address</b> </dt><dd><i>read-only</i> the address for the Admin queue. This is an
 arbitrary string value; the default is 'ThespianQ'.
 </dd>
 </dl>
@@ -3778,7 +3865,7 @@ The multiprocTCPBase uses the following <a href="#sec-4-9">ActorSystem Capabilit
 </p>
 
 <dl class="org-dl">
-<dt> <b>Thespian ActorSystem Name</b> </dt><dd>"multiprocTCPBase"
+<dt> <b>Thespian ActorSystem Name</b> </dt><dd><i>read-only</i> "multiprocTCPBase"
 </dd>
 
 <dt> <b>Admin Port</b> </dt><dd>which specifies the TCP port number upon which the
@@ -3911,7 +3998,7 @@ The multiprocUDPBase uses the following <a href="#sec-4-9">ActorSystem Capabilit
 </p>
 
 <dl class="org-dl">
-<dt> <b>Thespian ActorSystem Name</b> </dt><dd>"multiprocUDPBase"
+<dt> <b>Thespian ActorSystem Name</b> </dt><dd><i>read-only</i> "multiprocUDPBase"
 </dd>
 
 <dt> <b>Admin Port</b> </dt><dd>which specifies the UDP port number upon which the
@@ -4086,7 +4173,7 @@ difference will remain unaddressed.
 </div></div>
 <div id="postamble" class="status">
 <p class="author">Author: Kevin Quick &lt;kquick@godaddy.com&gt;</p>
-<p class="date">Created: 2016-03-17 Thu 22:26</p>
+<p class="date">Created: 2016-03-21 Mon 13:00</p>
 <p class="creator"><a href="http://www.gnu.org/software/emacs/">Emacs</a> 24.5.2 (<a href="http://orgmode.org">Org</a> mode 8.2.10)</p>
 <p class="validation"><a href="http://validator.w3.org/check?uri=referer">Validate</a></p>
 </div>
