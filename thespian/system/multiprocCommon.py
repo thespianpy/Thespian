@@ -209,7 +209,7 @@ class MultiProcReplicator(object):
                                               childRequirements,
                                               self.capabilities,
                                               fileNumsToClose),
-                                        name='Actor_%s__%s'%(childClass, str(childAddr)))
+                                        name='Actor_%s__%s'%(getattr(childClass, '__name__', childClass), str(childAddr)))
         child.start()
         # Also note that while non-daemonic children cause the current
         # process to automatically join() those children on exit,
