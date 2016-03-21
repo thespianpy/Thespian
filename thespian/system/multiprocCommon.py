@@ -21,6 +21,25 @@ from datetime import timedelta
 
 MAX_ADMIN_STARTUP_DELAY = timedelta(seconds=5)
 
+uncatchable_signals = []
+for sname in ['SIGCONT', 'SIGPIPE', 'SIGKILL', 'SIGSTOP']:
+    try:
+        uncatchable_signals.append(eval('signal.%s'%sname))
+    except AttributeError:
+        pass   # not defined for this OS
+exit_signals = []
+for sname in ['SIGTERM', 'SIGKILL', 'SIGQUIT', 'SIGABRT']:
+    try:
+        exit_signals.append(eval('signal.%s'%sname))
+    except AttributeError:
+        pass   # not defined for this OS
+child_exit_signals = []
+for sname in ['SIGCHLD']:
+    try:
+        child_exit_signals.append(eval('signal.%s'%sname))
+    except AttributeError:
+        pass   # not defined for this OS
+
 
 def detach_child(childref):
     if hasattr(multiprocessing.process, '_children'):
@@ -413,23 +432,19 @@ def startChild(childClass, endpoint, transportClass,
     sigexithandler = shutdown_signal_detector(getattr(childClass, '__name__', str(childClass)),
                                               am.transport.myAddress,
                                               am)
+
     for each in range(1, signal.NSIG):
         # n.b. normally Python intercepts SIGINT to turn it into a
         # KeyboardInterrupt exception.  However, these Actors should
         # be detached from the keyboard, so revert to normal SIGINT
         # behavior.
-        if each not in [signal.SIGCONT, signal.SIGPIPE,
-                        signal.SIGKILL, signal.SIGSTOP,  # cannot catch these
-        ]:
-            if each == signal.SIGCHLD:
+        if each not in uncatchable_signals:
+            if each in child_exit_signals:
                 signal.signal(each, am.childDied)
                 continue
             try:
                 signal.signal(each,
-                              sigexithandler
-                              if each in [signal.SIGTERM, signal.SIGKILL,
-                                          signal.SIGQUIT, signal.SIGABRT]
-                              else sighandler)
+                              sigexithandler if each in exit_signals else sighandler)
             except (RuntimeError,ValueError,EnvironmentError) as ex:
                 # OK, this signal can't be caught for this
                 # environment.  We did our best.
