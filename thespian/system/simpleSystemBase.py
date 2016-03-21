@@ -238,7 +238,7 @@ class ActorSystemBase:
             'System:ExternalRequester': extreq,
             'System:BadActor': badActor,
         }
-        self._internalAddresses = self.actorRegistry.keys()
+        self._internalAddresses = list(self.actorRegistry.keys())
 
     def shutdown(self):
         while self._sources:
