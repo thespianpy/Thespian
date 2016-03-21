@@ -6,7 +6,7 @@ direct usage."""
 import logging
 from thespian.actors import *
 from thespian.system.systemBase import systemBase
-from thespian.system.utilis import thesplog, checkActorCapabilities
+from thespian.system.utilis import thesplog, checkActorCapabilities, partition
 from thespian.system.transport import *
 from thespian.system.logdirector import *
 from thespian.system.utilis import setProcName, StatsManager
@@ -148,6 +148,19 @@ def startAdmin(adminClass, addrOfStarter, endpointPrep, transportClass,
     admin.run()
 
 
+class ChildInfo(object):
+    def __init__(self, childAddr, childClass, childProc, childNum):
+        self.childAddr = childAddr
+        self.childClass = childClass
+        self.childProc = childProc
+        self.childNum  = childNum
+    def __str__(self):
+        return "Child #%s: %s @ %s (proc %s)"%(str(self.childNum),
+                                               str(self.childClass),
+                                               str(getattr(self, 'childRealAddr', self.childAddr)),
+                                               str(self.childProc))
+
+
 def startASLogger(loggerAddr, logDefs, transport, capabilities, aggregatorAddress=None):
     endpointPrep = transport.prepEndpoint(loggerAddr, capabilities)
     multiprocessing.process._current_process._daemonic = False
@@ -162,7 +175,7 @@ def startASLogger(loggerAddr, logDefs, transport, capabilities, aggregatorAddres
     # will receive the LoggerConnected from the child to complete the
     # handshake and the sender will be the actual address of the
     # logger.
-    return logProc
+    return ChildInfo(loggerAddr, 'logger', logProc, endpointPrep.addrInst)
 
 
 
@@ -240,25 +253,37 @@ class MultiProcReplicator(object):
         detach_child(child)
 
         if not hasattr(self, '_child_procs'): self._child_procs = []
-        self._child_procs.append(child)
+        self._child_procs.append(ChildInfo(childAddr, childClass, child, endpointPrep.addrInst))
         self.transport.connectEndpoint(endpointPrep)
 
 
     @staticmethod
-    def _checkChildLiveness(child):
-        if not child.is_alive():
+    def _checkChildLiveness(childInfo):
+        if not childInfo.childProc.is_alive():
             # Don't join forever; that might hang and it's ok to leave
             # zombies as long as we continue to make progress.
-            child.join(0.5)
+            childInfo.childProc.join(0.5)
             return False
         return True
 
     def _childExited(self, childAddr):
-        self._child_procs = [C for C in getattr(self, '_child_procs', [])
-                             if self._checkChildLiveness(C)]
+        self._child_procs = list(filter(self._checkChildLiveness, getattr(self, '_child_procs', [])))
 
+    def childDied(self, signum, frame):
+        # Signal handler for SIGCHLD; figure out which child and synthesize a ChildActorExited to handle it
+        self._child_procs, dead = partition(self._checkChildLiveness,  getattr(self, '_child_procs', []))
+        for each in dead:
+            addr = getattr(each, 'childRealAddr', each.childAddr)
+            self.transport.scheduleTransmit(None, TransmitIntent(self.transport.myAddress,
+                                                                 ChildActorExited(addr)))
 
     def h_EndpointConnected(self, envelope):
+        for C in getattr(self, '_child_procs', []):
+            if envelope.message.childInstance == C.childNum:
+                C.childRealAddr = envelope.sender
+                break
+        else:
+            thesplog('Unknown child process endpoint connected: %s', envelope, level=logging.WARNING)
         self._pendingActorReady(envelope.message.childInstance, envelope.sender)
         return True
 
@@ -396,6 +421,9 @@ def startChild(childClass, endpoint, transportClass,
         if each not in [signal.SIGCONT, signal.SIGPIPE,
                         signal.SIGKILL, signal.SIGSTOP,  # cannot catch these
         ]:
+            if each == signal.SIGCHLD:
+                signal.signal(each, am.childDied)
+                continue
             try:
                 signal.signal(each,
                               sigexithandler

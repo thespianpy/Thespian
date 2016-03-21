@@ -14,6 +14,23 @@ class KillMeActor(Actor):
         self.send(sender, os.getpid())
 
 
+class ParentActor(Actor):
+    def receiveMessage(self, msg, sender):
+        if msg == 'child':
+            self.send(self.createActor(ChildActor), sender)
+        if msg == 'hello':
+            if not hasattr(self, 'rspmsg'):
+                self.rspmsg = 'world'
+            self.send(sender, self.rspmsg)
+        if isinstance(msg, ChildActorExited):
+            self.rspmsg = 'goodbye'
+
+class ChildActor(Actor):
+    def receiveMessage(self, msg, sender):
+        if isinstance(msg, ActorAddress):
+            self.send(msg, os.getpid())
+
+
 smallwait = datetime.timedelta(milliseconds=50)
 
 
@@ -33,6 +50,15 @@ class TestASimpleSystem(ActorSystemTestCase):
         self.assertTrue(killme_pid)  # not 0 or None
         os.kill(killme_pid, signal.SIGCONT)
         self.assertEqual(killme_pid, ActorSystem().ask(killme, 'pid again?', smallwait))
+
+    def testChildSigCont(self):
+        parent = ActorSystem().createActor(ParentActor)
+        self.assertEqual('world', ActorSystem().ask(parent, 'hello', smallwait))
+        child_pid  = ActorSystem().ask(parent, 'child', smallwait*3)
+        self.assertTrue(child_pid)  # not 0 or None
+        os.kill(child_pid, signal.SIGCONT)
+        self.assertEqual('world', ActorSystem().ask(parent, 'hello', smallwait))
+
 
 
 class MultiProcTests(object):
@@ -60,6 +86,36 @@ class MultiProcTests(object):
     def testSigTerm(self): self._handle_deadly_signal(signal.SIGTERM)
     def testSigQuit(self): self._handle_deadly_signal(signal.SIGQUIT)
     def testSigAbrt(self): self._handle_deadly_signal(signal.SIGABRT)
+
+    def testChildSigInt(self):
+        parent = ActorSystem().createActor(ParentActor)
+        self.assertEqual('world', ActorSystem().ask(parent, 'hello', smallwait))
+        child_pid  = ActorSystem().ask(parent, 'child', smallwait*3)
+        self.assertTrue(child_pid)  # not 0 or None
+        os.kill(child_pid, signal.SIGINT)
+        # Child is not killed and continues running
+        time.sleep(0.02) # allow signal to be delivered
+        self.assertEqual('world', ActorSystem().ask(parent, 'hello', smallwait))
+
+    def testChildSigTerm(self):
+        parent = ActorSystem().createActor(ParentActor)
+        self.assertEqual('world', ActorSystem().ask(parent, 'hello', smallwait))
+        child_pid  = ActorSystem().ask(parent, 'child', smallwait*3)
+        self.assertTrue(child_pid)  # not 0 or None
+        os.kill(child_pid, signal.SIGTERM)
+        # Child is killed, but can send ChildActorExited to parent atexit
+        time.sleep(0.20) # allow signal to be delivered
+        self.assertEqual('goodbye', ActorSystem().ask(parent, 'hello', smallwait))
+
+    def testChildSigKill(self):
+        parent = ActorSystem().createActor(ParentActor)
+        self.assertEqual('world', ActorSystem().ask(parent, 'hello', smallwait))
+        child_pid  = ActorSystem().ask(parent, 'child', smallwait*3)
+        self.assertTrue(child_pid)  # not 0 or None
+        os.kill(child_pid, signal.SIGKILL)
+        # Child is killed immediately and can take no action; parent handles SIGCHLD
+        time.sleep(0.20) # allow signal to be delivered
+        self.assertEqual('goodbye', ActorSystem().ask(parent, 'hello', smallwait))
 
 
 class TestMultiprocUDPSystem(TestASimpleSystem, MultiProcTests):
