@@ -152,20 +152,20 @@ class HashLoader(LoaderBase):
         mod.__loader__ = self
         if self.isModuleDir:
             mod.__path__ = []
-            mod.__package__ = (spec.name if spec.name.startswith(spec.origin + '.') else spec.origin + '.' + spec.name)
+            mod.__package__ = (spec.name if spec.name.startswith(spec.origin) else spec.origin + '.' + spec.name)
         else:
             pkgname = spec.name.rpartition('.')[0]
             if not pkgname.startswith(spec.origin):
                 if not pkgname:
                     pkgname = spec.origin
                 else:
-                    pkgname = spec.origin + '.' + pkgname
+                    pkgname = spec.origin + pkgname
             mod.__package__ = pkgname
         return mod
 
     def exec_module(self, module):
         moduleName = module.__name__
-        hashRoot = self.finder.hashRoot() + '.'
+        hashRoot = self.finder.hashRoot()
         if moduleName.startswith(hashRoot):
             moduleName = moduleName[len(hashRoot):]
         if self.isModuleDir:
@@ -198,7 +198,7 @@ class HashLoader(LoaderBase):
             raise
 
     def load_module(self, moduleName):
-        hashRoot = self.finder.hashRoot() + '.'
+        hashRoot = self.finder.hashRoot()
         if not moduleName.startswith(self.finder.hashRoot()) and \
            moduleName != 'six':   # six has it's own loader; adding the hashRoot will confound it
             moduleName = hashRoot + moduleName
@@ -235,7 +235,7 @@ class HashRootLoader(LoaderBase):
         mod.__file__    = moduleName
         mod.__loader__  = self
         mod.__path__    = moduleName
-        mod.__package__ = 'RPKG.' + moduleName
+        mod.__package__ = '{{RPKG}}' + moduleName
         code = compile('', mod.__file__, "exec")
         do_exec(code, mod.__dict__)
         return mod
@@ -309,8 +309,8 @@ class SourceHashFinder(FinderBase):
         if path:
             if not hasattr(path, 'startswith') or not path.startswith(pkgMark): return None
             # Both path and fullname may overlap.   For example:
-            #   path     = {{hash}}.foo.bar
-            #   fullname = {{hash}}.foo.bar.cow.moo
+            #   path     = {{hash}}foo.bar
+            #   fullname = {{hash}}foo.bar.cow.moo
         skipCnt = len(pkgMark) if fullname.startswith(pkgMark) else 0
         pathname = ospath.join(*tuple(fullname[skipCnt:].split('.')))
         if not pathname:
@@ -321,7 +321,7 @@ class SourceHashFinder(FinderBase):
                 if B == pathname:
                     return ModLoader(fullname, self, pkgMark, False)
                 if B == pathname + '/__init__':
-                    myname = fullname if fullname.startswith(pkgMark + '.') else (pkgMark + '.' + fullname)
+                    myname = fullname if fullname.startswith(pkgMark) else (pkgMark + fullname)
                     return ModLoader(myname, self, pkgMark, True)
         return None
 
@@ -346,7 +346,8 @@ def loadModuleFromHashSource(sourceHash, sources, modName, modClass):
 def _loadModuleFromVerifiedHashSource(hashFinder, modName, modClass):
     hRoot = hashFinder.hashRoot()
     pkg = importlib.import_module(hRoot)
-    impModName = modName if modName.startswith(hRoot + '.') else (hRoot + '.' + modName)
+    #impModName = modName if modName.startswith(hRoot + '.') else (hRoot + '.' + modName)
+    impModName = modName if modName.startswith(hRoot) else (hRoot + modName)
     try:
         m = importlib.import_module(impModName, hRoot)
     except (BadZipFile, SyntaxError) as ex:
