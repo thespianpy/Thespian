@@ -11,6 +11,7 @@ Table of Contents
 
 2.x
 .. 2.5
+..... 2.5.8 <2016-03-21 Mon>
 ..... 2.5.7 <2016-03-14 Mon>
 ..... 2.5.6 <2016-02-11 Thu>
 ..... 2.5.5 <2016-02-05 Fri>
@@ -51,6 +52,41 @@ not change the API.
 
 2.5
 ───
+
+2.5.8 <2016-03-21 Mon>
+╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+
+  ‣ Added protection to prevent simpleSystemBase internal addresses from
+    being killed ([Issue #5]).
+
+  ‣ Updated documentation to clarify the status, availability, and
+    intended usage of ActorSystemMessage messages ([Issue #6]).
+
+  ‣ Updated documentation to describe the potential for Message
+    Mutability for some ActorSystem bases as a tradeoff for performance
+    ([Issue #7]).
+
+  ‣ Added internal atexit and signal handling functionality to attempt
+    normal Actor shutdown (via `ActorExitRequest' message delivery) in
+    all circumstances.
+
+  ‣ Added internal SIGCHLD signal handling to send `ChildActorExited'
+    messages to parent Actors in cases where the child process was
+    unable to send that message before exiting.
+
+  ‣ Updated documentation to clarify which ActorSystem Capabilities are
+    read-only (for each system base).
+
+  ‣ Modified internal loaded source hash tagging for better handling of
+    circular import references in loaded sources.
+
+
+  [Issue #5] https://github.com/godaddy/Thespian/issues/5
+
+  [Issue #6] https://github.com/godaddy/Thespian/issues/6
+
+  [Issue #7] https://github.com/godaddy/Thespian/issues/7
+
 
 2.5.7 <2016-03-14 Mon>
 ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
