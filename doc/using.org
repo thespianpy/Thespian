@@ -2262,19 +2262,23 @@ details are available in each section:
 As described in [[*ActorSystem Capabilities][ActorSystem Capabilities]] each ActorSystem has a set of
 capabilities that describe that ActorSystem and which can be audited
 by the Actor's [[*actorSystemCapabilityCheck][actorSystemCapabilityCheck]] method to determine if the
-Actor is compatible with the ActorSystem.
+Actor is compatible with the ActorSystem.  Many capabilities can be
+set when the ActorSystem is started (see [[*ActorSystem][ActorSystem]]), or updated at
+run-time (see [[*updateCapability][updateCapability]] for either the Actor or the ActorSystem
+API); those marked /read-only/ below may only be viewed, but not set
+or changed when the ActorSystem is started.
 
 Each ActorSystem may specify capabilities unique to that ActorSystem
 and the application can add capabilities to that ActorSystem; in
 addition, the following common capabilities are defined for all
 ActorSystems:
 
-  * *Python Version* :: This is set to the tuple value of the Python
+  * *Python Version* :: /read-only/ This is set to the tuple value of the Python
     version under which the ActorSystem is running (this is the same
     value supplied by ~sys.version_info~).  Any Actors wishing to
     enforce any version restrictions use this capability to do so.
 
-  * *Thespian Generation* :: This is the Thespian API functionality
+  * *Thespian Generation* :: /read-only/ This is the Thespian API functionality
     specifier as a tuple of two values: ~(generation, enhancement)~.
     The first value is the ~generation~ and indicates a major
     functionality level (which is not necessarily backwards-compatible
@@ -2291,18 +2295,18 @@ ActorSystems:
     import as the ~ThespianGeneration~ value; if this local value is
     different than the ActorSystem provides in the capabilities
 
-  * *Thespian Version* :: This is the identifier for the version of
+  * *Thespian Version* :: /read-only/ This is the identifier for the version of
     Thespian running in the current environment.  This is a single
     numeric value where later releases will have a higher (but not
     necessarily successor) value.
 
-  * *Thespian ActorSystem Name* :: This is the name of the running
+  * *Thespian ActorSystem Name* :: /read-only/ This is the name of the running
     ActorSystem implementation.  It is encouraged that Actors are not
     written to be unique to any particular implementation, but this
     information is present to allow ActorSystem-specific capability
     verification.
 
-  * *Thespian ActorSystem Version* :: This is the ActorSystem version
+  * *Thespian ActorSystem Version* :: /read-only/ This is the ActorSystem version
     as a single numeric value (similar to the ~Thespian Version~
     capability.  This value may be incremented separately from the
     ~Thespian Version~ to indicate an update in the underlying
@@ -2368,7 +2372,7 @@ ActorSystems:
 
   The simpleSystemBase uses the following [[*ActorSystem Capabilities][ActorSystem Capabilities]]:
 
-  * *Thespian ActorSystem Name* :: "simpleSystemBase"
+  * *Thespian ActorSystem Name* :: /read-only/ "simpleSystemBase"
 
 ** multiprocQueueBase
 
@@ -2401,9 +2405,9 @@ in a Convention as described in [[*Multiple Systems][Multiple Systems]].
 
 The multiprocQueueBase uses the following [[*ActorSystem Capabilities][ActorSystem Capabilities]]:
 
-  * *Thespian ActorSystem Name* :: "multiprocQueueBase"
+  * *Thespian ActorSystem Name* :: /read-only/ "multiprocQueueBase"
 
-  * *Admin Address* :: the address for the Admin queue. This is an
+  * *Admin Address* :: /read-only/ the address for the Admin queue. This is an
     arbitrary string value; the default is 'ThespianQ'.
 
 ** multiprocTCPBase
@@ -2427,7 +2431,7 @@ configuration.
 
 The multiprocTCPBase uses the following [[*ActorSystem Capabilities][ActorSystem Capabilities]]:
 
-  * *Thespian ActorSystem Name* :: "multiprocTCPBase"
+  * *Thespian ActorSystem Name* :: /read-only/ "multiprocTCPBase"
 
   * *Admin Port* :: which specifies the TCP port number upon which the
     ActorSystem will listen for new communications.  Actors and the
@@ -2522,7 +2526,7 @@ configuration.
 
 The multiprocUDPBase uses the following [[*ActorSystem Capabilities][ActorSystem Capabilities]]:
 
-  * *Thespian ActorSystem Name* :: "multiprocUDPBase"
+  * *Thespian ActorSystem Name* :: /read-only/ "multiprocUDPBase"
 
   * *Admin Port* :: which specifies the UDP port number upon which the
     ActorSystem will listen for new communications.  Actors and the
