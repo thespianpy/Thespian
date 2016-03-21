@@ -11,6 +11,7 @@ Table of Contents
 
 2.x
 .. 2.5
+..... 2.5.9 <2016-03-21 Mon>
 ..... 2.5.8 <2016-03-21 Mon>
 ..... 2.5.7 <2016-03-14 Mon>
 ..... 2.5.6 <2016-02-11 Thu>
@@ -52,6 +53,14 @@ not change the API.
 
 2.5
 ───
+
+2.5.9 <2016-03-21 Mon>
+╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+
+  ‣ Fix signal handling introduced in 2.5.8 release to support Windows
+    and other operating systems that don't define the full set of
+    standard Unix signals.
+
 
 2.5.8 <2016-03-21 Mon>
 ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
