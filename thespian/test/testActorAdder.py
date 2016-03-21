@@ -169,6 +169,14 @@ class TestMultiprocTCPSystem(TestASimpleSystem):
 
 class TestMultiprocQueueSystem(TestASimpleSystem):
     testbase='MultiprocQueue'
+
+    unstable = 1  # Under high stress conditions, MultiprocQueue
+                  # actors seem to get stuck in the internals of the
+                  # multiprocess.Queue infrastructure.  There are
+                  # other indications (both internal to Thespian and
+                  # externally) that there may be some issues with
+                  # Queue.
+
     def setUp(self):
         self.setSystemBase('multiprocQueueBase')
         super(TestMultiprocQueueSystem, self).setUp()
