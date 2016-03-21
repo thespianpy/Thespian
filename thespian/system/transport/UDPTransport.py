@@ -179,6 +179,12 @@ class UDPTransport(asyncTransportBase, wakeupTransportBase):
         if transmitIntent.targetAddr == self.myAddress:
             self._rcvd.append(ReceiveEnvelope(transmitIntent.targetAddr,
                                               transmitIntent.message))
+            # Under some python implementations, signal handling
+            # (which could generate an ActorShutdownRequest) can be
+            # performed without interrupting the underlying syscall,
+            # so this message is otherwise ignored but causes the
+            # select.select below to return.
+            r = self.socket.sendto(b'BuMP', transmitIntent.targetAddr.addressDetails.sockname)
             r = True
         else:
             # UDPTransport transmit is serially blocking, but both sender
@@ -218,6 +224,8 @@ class UDPTransport(asyncTransportBase, wakeupTransportBase):
                     thesplog('Waiting for read event, but got %s %s', _ign1, _ign2, level=logging.WARNING)
                     continue
                 rawmsg, sender = self.socket.recvfrom(65535)
+                if rawmsg == b'BuMP':
+                    continue
                 sendAddr = ActorAddress(UDPv4ActorAddress(*sender, external=True))
                 try:
                     msg = serializer.loads(rawmsg)
