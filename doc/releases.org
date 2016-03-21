@@ -7,7 +7,7 @@
 #+LATEX_HEADER: \product{Thespian}
 #+LATEX_HEADER: \component{Python Actor System}
 #+LATEX_HEADER: \doctype{Release Notes}
-#+LATEX_HEADER: \docrev{2.5.8}{2016 Mar 21}
+#+LATEX_HEADER: \docrev{2.5.9}{2016 Mar 21}
 #+LATEX_HEADER: \docid{TheDoc-06}
 #+OPTIONS: ^:nil num:nil
 
@@ -20,6 +20,12 @@ do not change the API.
 * 2.x
 
 ** 2.5
+
+*** 2.5.9 <2016-03-21 Mon>
+
+  * Fix signal handling introduced in 2.5.8 release to support Windows
+    and other operating systems that don't define the full set of
+    standard Unix signals.
 
 *** 2.5.8 <2016-03-21 Mon>
 
