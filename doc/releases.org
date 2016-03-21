@@ -7,7 +7,7 @@
 #+LATEX_HEADER: \product{Thespian}
 #+LATEX_HEADER: \component{Python Actor System}
 #+LATEX_HEADER: \doctype{Release Notes}
-#+LATEX_HEADER: \docrev{2.5.7}{2016 Mar 14}
+#+LATEX_HEADER: \docrev{2.5.8}{2016 Mar 21}
 #+LATEX_HEADER: \docid{TheDoc-06}
 #+OPTIONS: ^:nil num:nil
 
@@ -20,6 +20,33 @@ do not change the API.
 * 2.x
 
 ** 2.5
+
+*** 2.5.8 <2016-03-21 Mon>
+
+  * Added protection to prevent simpleSystemBase internal addresses
+    from being killed ([[https://github.com/godaddy/Thespian/issues/5][Issue #5]]).
+
+  * Updated documentation to clarify the status, availability, and
+    intended usage of ActorSystemMessage messages ([[https://github.com/godaddy/Thespian/issues/6][Issue #6]]).
+
+  * Updated documentation to describe the potential for Message
+    Mutability for some ActorSystem bases as a tradeoff for
+    performance ([[https://github.com/godaddy/Thespian/issues/7][Issue #7]]).
+
+  * Added internal atexit and signal handling functionality to attempt
+    normal Actor shutdown (via ~ActorExitRequest~ message delivery) in all
+    circumstances.
+
+  * Added internal SIGCHLD signal handling to send ~ChildActorExited~
+    messages to parent Actors in cases where the child process was
+    unable to send that message before exiting.
+
+  * Updated documentation to clarify which ActorSystem Capabilities
+    are read-only (for each system base).
+
+  * Modified internal loaded source hash tagging for better handling
+    of circular import references in loaded sources.
+
 
 *** 2.5.7 <2016-03-14 Mon>
 
