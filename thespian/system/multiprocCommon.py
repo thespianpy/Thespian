@@ -148,6 +148,24 @@ def startAdmin(adminClass, addrOfStarter, endpointPrep, transportClass,
     admin.run()
 
 
+def startASLogger(loggerAddr, logDefs, transport, capabilities, aggregatorAddress=None):
+    endpointPrep = transport.prepEndpoint(loggerAddr, capabilities)
+    multiprocessing.process._current_process._daemonic = False
+    logProc = multiprocessing.Process(target=startupASLogger,
+                                      args = (transport.myAddress, endpointPrep,
+                                              logDefs,
+                                              transport.__class__, aggregatorAddress))
+    logProc.daemon = True
+    logProc.start()
+    transport.connectEndpoint(endpointPrep)
+    # When the caller that owns the transport starts their run(), it
+    # will receive the LoggerConnected from the child to complete the
+    # handshake and the sender will be the actual address of the
+    # logger.
+    return logProc
+
+
+
 class MultiProcReplicator(object):
 
     def _startChildActor(self, childAddr, childClass, parentAddr, notifyAddr,
