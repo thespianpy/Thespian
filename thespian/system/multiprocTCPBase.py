@@ -23,4 +23,5 @@ class ActorSystemBase(multiprocessCommon):
     def __init__(self, system, logDefs = None):
         system.capabilities['Thespian ActorSystem Name'] = 'multiprocTCPBase'
         system.capabilities['Thespian ActorSystem Version'] = 2
+        system.capabilities['Thespian Watch Supported'] = True
         super(ActorSystemBase, self).__init__(system, logDefs)

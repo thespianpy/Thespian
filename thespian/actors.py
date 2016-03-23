@@ -342,7 +342,28 @@ class WakeupMessage(ActorSystemMessage):
     def __ne__(self, o): return not self.__eq__(o)
 
 
+class ThespianWatch(object):
+    """If an Actor's receiveMessage returns this object, it specifies a
+    list of fileno's to watch for activity/availability (in addition
+    to the normal mailbox for the Actor).  If any of these fileno's
+    become ready, the Actor's receiveMessage will be called with a
+    WatchMessage and a list of those ready fileno's.
+
+    Support for watch capability is dependent on the system base and
+    hosting operating system.  ...
+    """
+    def __init__(self, filenos):
+        self.filenos = filenos
+
+class WatchMessage(ActorSystemMessage):
+    """Message sent to an Actor with a subset of the filenos in the
+       ThespianWatch that are ready/active"""
+    def __init__(self, ready):
+        self.ready = ready
+
+
 class DeadEnvelope(ActorSystemMessage):
+
     """Envelope for a message that was addressed to an address that's now
        dead.  This message should be routed to the dead letter
        handler.
@@ -585,10 +606,11 @@ class ActorTypeDispatcher(Actor):
             if hasattr(self, methodName):
                 for klasses in inspect.getmro(self.__class__):
                     if hasattr(klasses, methodName):
-                        if getattr(klasses, methodName)(self, message, sender) != self.SUPER:
-                            return
+                        rval = getattr(klasses, methodName)(self, message, sender)
+                        if rval != self.SUPER:
+                            return rval
         if hasattr(self, 'receiveUnrecognizedMessage'):
-            self.receiveUnrecognizedMessage(message, sender)
+            return self.receiveUnrecognizedMessage(message, sender)
 
 
 from thespian.system.messages.status import (Thespian_StatusReq,

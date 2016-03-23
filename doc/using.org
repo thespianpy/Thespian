@@ -669,6 +669,66 @@ class ActorB(Actor):
   There is no provision for cancelling a pending wakeup; the Actor
   should simply ignore the ~WakeupMessage~ when it is received.
 
+** Watching File Descriptors
+
+  The Actor model itself is a pure specification that is good for
+  concurrent computational tasks, but real-world Actors must often
+  interact with or control the external world via sockets, files, or
+  other interface elements.
+
+  One way to accomplish this is to use the ~.wakeupAfter()~
+  functionality described in the previous section to periodically run
+  the Actor, whereupon it may check to see if there is any pending I/O
+  for these interface elements.  Each interface element should be
+  accessed in "non-blocking" mode so that the Actor itself can exit
+  immediately if there is no work to be done (thereby allowing the
+  Actor to process new messages as soon as they are received).  The
+  [[https://github.com/godaddy/Thespian/blobl/master/examples/httpserver/http_server1.py][http_server1.py]] file is an example of a simple HTTP server based on
+  this model.
+
+  The above model is fairly limited however: it is essentially a
+  busy-wait loop that consumes resources even when there is no work to
+  do, and its responsiveness is limited by the period of the wakeup
+  calls.  An alternative approach provided by /some/ Thespian
+  SytemBases is the "Watch" extension (as indicated by a System
+  Capability of "Thespian Watch Supported" with a value of True).
+
+  When using the Watch extension, the Actor should return a
+  ~ThespianWatch~ object each time its ~.receiveMessage()~ method is
+  called.  The ~ThespianWatch~ object is initialized with a list of
+  file descriptors (from sockets or files) that should be watched, and
+  if any of these have readable data, the Actor will be called with a
+  ~WatchMessage~ message.  The ~WatchMessage.ready~ member is a list
+  of the supplied file descriptors that can be read from.  The
+  ~ThespianWatch~ is *only* valid for that single return from the
+  Actor's ~.receiveMessage()~ call, and it must be supplied each time
+  the ~.receiveMessage()~ returns to specify any file descriptors that
+  should be watched during the wait for the next ~.receiveMessage()~
+  invocation.
+
+  The [[https://github.com/godaddy/Thespian/blobl/master/examples/httpserver/http_server2.py][http_server2.py]] file is an example of a simple HTTP server that
+  is similar to the http_server1.py but this example is modified to
+  use the Watch extension.
+
+  The Watch extension has a number of limitations:
+
+   1. It is not available for all ActorSystem bases (only those with a
+      system capability of "Thespian Watch Supported" where the value
+      is True).
+
+   2. It is OS-dependent: on Linux, any file object may be watched,
+      but on Windows only sockets may be watched.
+
+   3. It only watches for "readable" events, not writable or exception
+      events.
+
+   4. It implies the use of ~select.select()~.
+
+   5. There is no timeout (use ~.wakeupAfter()~ for this).
+
+  Writing Actors which utilize the Watch extension may siginificantly
+  limit the portability of these Actors.
+
 ** Actor Troupes
 
    If specified appropriately, multiple instances of an Actor can be
@@ -958,6 +1018,37 @@ before the ActorSystem is started:
    Actor with each attempt; if the Actor modifies the message before
    failing with an exception, the retried or Poison-returned version
    will contain the modifications made by the original attempt.
+
+*** Return Value
+
+   Ordinarily the return value from an Actor's ~receiveMessage()~
+   method is ignored, but if the underlying ActorSystem implementation
+   supports the Thespian Watch extension (see [[*Watching File Descriptors][Watching File
+   Descriptors]]) then the Actor may return a ThespianWatch object which
+   specifies a list of the file numbers to watch for incoming data;
+   the Actor's ~receiveMessage()~ will subsequently be passed a
+   [[*WatchMessage][WatchMessage]] with the file number(s) for which data is available.
+
+   Any other value or object returned from ~.receiveMessage()~ will be
+   ignored.
+
+   The <<ThespianWatch>> object is initialized with the list of file
+   numbers to watch for incoming data from.
+
+#+begin_src python
+from thespian.actors import Actor, ThespianWatch
+
+class MyActor(Actor):
+    def receiveMessage(self, message, sender):
+       ...process message...
+       return ThespianWatch([self.socket1.fileno(),
+                             self.socket2.fileno()])
+#+end_src
+
+   Any invalid or closed file descriptors will be ignored.  The file
+   descriptors are watched only until the next call to the Actor's
+   ~.receiveMessage()~ method, so each call to this method must return
+   the set of file descriptors that should be watched when it exits.
 
 ** createActor
 
@@ -2107,6 +2198,23 @@ class SimpleSourceAuthority(ActorTypeDispatcher):
   * ~.delayPeriod~ which is the python ~datetime.timedelta~ value of
     the delay period that has expired.
 
+** WatchMessage
+
+  The ~WatchMessage~ is delivered to the Actor by the ActorSystem when
+  one or more file descriptors has available data.  The WatchMessage
+  specifies which file numbers have data vailable.
+
+  This functionality is not available from all ActorSystem
+  implementations.  See [[*Watching File Descriptors][Watching File Descriptors]] for more
+  information.
+
+*** Attributes
+
+  * ~.ready~ specifies a list of file numbers for which data is
+    available.  This will be a subset of the original set of file
+    numbers returned from the Actor's ~receiveMessage()~ method in the
+    [[ThespianWatch]] return value.
+
 ** ActorExitRequest
 
    The ~ActorExitRequest~ object is sent to any Actor to request that
@@ -2556,6 +2664,12 @@ The multiprocTCPBase uses the following [[*ActorSystem Capabilities][ActorSystem
        may not occur until the next Convention Registration time
        period has elapsed).  (This mode also requires socket re-use by
        the TCP transport, which is the normal operational mode).
+
+  * *Thespian Watch Supported* :: /read-only/ If True, then an Actor
+       may return the ~ThespianWatch~ object from its ~receiveMessage()~
+       method and be called back later when input is available on any
+       of the numbered file descriptors passed in the ~ThespianWatch~
+       object.
 
 
 

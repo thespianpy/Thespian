@@ -114,6 +114,7 @@ def err_recv_connreset(errex): return (errex.errno in [errno.ECONNRESET,
                                        (hasattr(errex, 'winerror') and
                                         errex.winerror == 10053)) # 10053 == WSAECONNABORTED
 def err_select_retry(err): return err in [errno.EINVAL, errno.EINTR]
+def err_bad_fileno(err): return err == errno.EBADF
 try:
     # Access these to see if the exist
     errno.WSAEINVAL
@@ -307,6 +308,7 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
         self._waitingTransmits = []  # list of intents without sockets
         self._incomingSockets = {}  # key = fd, value = TCP Incoming
         self._incomingEnvelopes = []
+        self._watches = []
         if REUSE_SOCKETS:
             self._openSockets = {}  # key = remote listen address, value=IdleSocket
 
@@ -846,6 +848,10 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
         return sendOrRecv.socket.fileno() if getattr(sendOrRecv, 'socket', None) else None
 
 
+    def set_watch(self, watchlist):
+        self._watches = watchlist
+
+
     def _runWithExpiry(self, incomingHandler):
         xmitOnly = incomingHandler == TransmitOnly or \
                    isinstance(incomingHandler, TransmitOnly)
@@ -905,6 +911,9 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
                 if not wrecv and not wsend:
                     wrecv.extend([self.socket.fileno()])
 
+            if self._watches:
+                wrecv.extend(self._watches)
+
             try:
                 rrecv, rsend, rerr = select.select(wrecv, wsend, set(wsend+wrecv), delay)
             except ValueError as ex:
@@ -917,6 +926,25 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
                 if err_select_retry(ex.args[0]): # errno.EINVAL is probably a change in descriptors
                     thesplog('select retry on %s', ex, level=logging.ERROR)
                     continue
+                if err_bad_fileno(ex.args[0]):
+                    # One of the selected file descriptors was bad,
+                    # but no indication which one.  It should not be
+                    # one of the ones locally managed by this
+                    # transport, so it's likely one of the
+                    # user-supplied "watched" file descriptors.  Find
+                    # and remove it, then carry on.
+                    if ex.errno == errno.EBADF:
+                        bad = []
+                        for each in self._watches:
+                            try:
+                                _ = select.select([each], [], [], 0)
+                            except:
+                                bad.append(each)
+                        if not bad:
+                            thesplog('bad internal file descriptor!')
+                        else:
+                            self._watches = [W for W in self._watches if W not in bad]
+                            continue
                 raise
 
 
@@ -987,6 +1015,11 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
                     rmvIncoming.append(I)
             for I in rmvIncoming:
                 del self._incomingSockets[I]
+
+            watchready = [W for W in self._watches if W in rrecv]
+            if watchready:
+                self._incomingEnvelopes.append(
+                    ReceiveEnvelope(self.myAddress, WatchMessage(watchready)))
 
             # Check if it's time to quit
             if [] == rrecv and [] == rsend:

@@ -1,10 +1,16 @@
 """Initial http server.
 
-  Wakes up each check period and accepts new incoming sockets and
-  services existing sockets.  All sockets are managed by the main
-  server actor.  When a complete HTTP request has been received, it is
-  sent to the Handler actor (provided at startup); the Handler actor
-  sends back a response which is then sent to the client.
+  Uses the ThespianWatch functionality to manage a set of sockets: one
+  listening socket and a number of connected, receiving sockets.  This
+  implementation is better than the http_server1 example in that this
+  version provides reasonable responsiveness due to "event-loop" style
+  functionality of the Server Actor.  However, ThespianWatch
+  functionality is not available with all Actor System bases.
+
+  All sockets are managed by the main server actor.  When a complete
+  HTTP request has been received, it is sent to the Handler actor
+  (provided at startup); the Handler actor sends back a response which
+  is then sent to the client.
 
                  +---------+     +---------+
    Clients------>| Server  |---->| Handler |
@@ -16,22 +22,18 @@
     handler cannot easily read incoming post data or stream large
     output data.
 
-  * Only checks the listening socket once each check period, which
-    limit the number of client requests that can be handled.
-
   * Only HTTP GET is supported, and the response is sent in a single
     buffer (no streaming).
-
-  * Very basic
 
   * Completely ignores all input, simply responds to all queries with
     a Hello World response.
 
   Run this example via:
-    $ python examples/httpserver/http_server1.py 8000
+    $ python examples/httpserver/http_server2.py 8000
 
   View sample output in another window via:
     $ curl http://localhost:8000/
+
 """
 
 import sys
@@ -44,10 +46,6 @@ import errno
 from datetime import timedelta
 from functools import partial
 from common import *
-
-# n.b. this is a rather large value for demonstration purposes.  Lower
-# values give better responsiveness at the cost of idle overhead.
-CHECK_PERIOD = timedelta(seconds=3)
 
 
 class Handler(ActorTypeDispatcher):
@@ -87,6 +85,13 @@ class ServerActor(ActorTypeDispatcher):
         return True
 
 
+    def _watchlist(self):
+        if hasattr(self, 'servesocket'):
+            return ThespianWatch([self.servesocket.fileno()] +
+                                 [S.socket.fileno() for S in self.activesockets])
+        return None
+
+
     def receiveMsg_HTTPResponse(self, msg, sender):
         """Got an HTTP response from the handler; find the socket
            corresponding to the request and send the response"""
@@ -96,6 +101,7 @@ class ServerActor(ActorTypeDispatcher):
                 break
         else:
             logging.warning('Got HTTP response for %s but no socket to send', each.rmtaddr)
+        return self._watchlist()
 
 
     def check_incoming(self):
@@ -128,20 +134,19 @@ class ServerActor(ActorTypeDispatcher):
             except Exception:
                 delattr(self, 'servesocket')
             self.activesockets = []
-        self.wakeupAfter(CHECK_PERIOD)
+        return self._watchlist()
 
 
-    def receiveMsg_WakeupMessage(self, m, sender):
+    def receiveMsg_WatchMessage(self, m, sender):
         "Checks for more stuff to handle on the sockets"
-        if hasattr(self, 'servesocket'):
-            try:
-                self.check_incoming()
-                self.activesockets = list(filter(self.check_socket, self.activesockets))
-            except Exception as e:
-                logging.critical("Got exception: %r", e)
-                self.send(self.myAddress, ActorExitRequest())
-                raise
-            self.wakeupAfter(CHECK_PERIOD)
+        if not hasattr(self, 'servesocket'):
+            return  # shutdown
+        if self.servesocket.fileno() in m.ready:
+            self.check_incoming()
+        self.activesockets = [A
+                              for A in self.activesockets
+                              if A.socket.fileno() not in m.ready or self.check_socket(A)]
+        return self._watchlist()
 
 
     def receiveMsg_ActorExitRequest(self, m, sender):

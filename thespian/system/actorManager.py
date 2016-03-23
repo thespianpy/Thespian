@@ -136,6 +136,7 @@ class ActorManager(systemCommonBase):
         if isinstance(msg, SetLogging):
             return self.setLoggingControls(envelope)
 
+        actor_result = None
         if not getattr(self, '_exiting', False) or \
            isinstance(msg, (ActorExitRequest, ChildActorExited)):
             try:
@@ -148,7 +149,7 @@ class ActorManager(systemCommonBase):
                 # address) since both copy and pickle call the
                 # __getstate__ of the ActorAddress.
                 self._sCBStats.inc('Actor.Message Received.To Actor')
-                self.actorInst.receiveMessage(msg, envelope.sender)
+                actor_result = self.actorInst.receiveMessage(msg, envelope.sender)
             except Exception as ex:
                 thesplog('Handling exception on msg "%s": %s', msg, ex, exc_info=True)
                 self._sCBStats.inc('Actor.Message Received.Caused Primary Exception')
@@ -163,7 +164,7 @@ class ActorManager(systemCommonBase):
                                     self._actorClass, self.transport.myAddress, msg,
                                     exc_info = True)
                     try:
-                        self.actorInst.receiveMessage(copy.deepcopy(msg), envelope.sender)
+                        actor_result = self.actorInst.receiveMessage(copy.deepcopy(msg), envelope.sender)
                     except Exception:
                         self._sCBStats.inc('Actor.Message Received.Caused Secondary Exception')
                         thesplog('Actor %s @ %s second exception on message %s: %s',
@@ -184,6 +185,14 @@ class ActorManager(systemCommonBase):
                 return True  # multiple shutdown requests ignored
             # Initiate exit; may be a delay while children are shutdown
             return self._actorExit(msg)
+
+        if hasattr(self.transport, 'set_watch'):
+            self.transport.set_watch(actor_result.filenos if isinstance(actor_result, ThespianWatch) else [])
+        else:
+            logging.getLogger(str(self._actorClass))\
+                   .error('Actor %s @ %s does not support ThespianWatch',
+                          self._actorClass,
+                          self.transport.myAddress)
 
         if isinstance(msg, ChildActorExited):
             return self._handleChildExited(msg.childAddress)
