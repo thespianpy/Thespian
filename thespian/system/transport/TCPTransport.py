@@ -344,9 +344,9 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
         else:
             addrparts = addrspec.split(':')
         addrtype = RoutedTCPv4ActorAddress if adminRouting else TCPv4ActorAddress
-        if 1 == len(addrparts):
-            return ActorAddress(addrtype(addrparts[0], DEFAULT_ADMIN_PORT, external=True))
-        return ActorAddress(addrtype(addrparts[0], addrparts[1], external=True))
+        return ActorAddress(addrtype(addrparts[0],
+                                     addrparts[1] if addrparts[1:] else DEFAULT_ADMIN_PORT,
+                                     external=True))
 
     @staticmethod
     def getConventionAddress(capabilities):
@@ -427,11 +427,11 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
         canceli, continuei = partition(lambda i: i[1].targetAddr == childAddr,
                                        self._transmitIntents.items())
         self._transmitIntents = dict(continuei)
-        for each in canceli:
-            each[1].socket.close()
-            delattr(each[1], 'socket')
-            each[1].result = SendStatus.DeadTarget
-            each[1].completionCallback()
+        for _, each in canceli:
+            each.socket.close()
+            delattr(each, 'socket')
+            each.result = SendStatus.DeadTarget
+            each.completionCallback()
 
         canceli, continuei = partition(lambda i: i.targetAddr == childAddr,
                                        self._waitingTransmits)
@@ -491,13 +491,13 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
             return
         if self._processIntents(errfileno, closed=True):
             return
-        for I,W in enumerate(self._waitingTransmits):
-            del self._waitingTransmits[I]
+        if self._waitingTransmits:
+            W = self._waitingTransmits.pop(0)
             if self._nextTransmitStepCheck(W, errfileno, closed=True):
                 self._waitingTransmits.append(W)
             return
         closed_openSocks = []
-        for I in getattr(self, '_openSockets', []):
+        for I in getattr(self, '_openSockets', {}):
             if self._socketFile(self._openSockets[I]) == errfileno:
                 closed_openSocks.append(I)
         for each in closed_openSocks:
@@ -639,8 +639,8 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
                 return self._nextTransmitStep(intent)
             # If there is an active or pending Intent for this target,
             # just queue this one (by returning True)
-            if [T for T in self._transmitIntents.values()
-                if T.targetAddr == intent.targetAddr and hasattr(T, 'socket')]:
+            if any(T for T in self._transmitIntents.values()
+                if T.targetAddr == intent.targetAddr and hasattr(T, 'socket')):
                 intent.awaitingTXSlot()
                 return True
             # Fall through to get a new Socket for this intent
@@ -880,12 +880,10 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
                                           filter(lambda T: not T.backoffPause(),
                                                  self._transmitIntents.values())))
 
-            wrecv = list(filter(None, wrecv))
-            wsend = list(filter(None, wsend))
-            wrecv.extend(list(filter(None,
-                                     [I
-                                      for I in self._incomingSockets
-                                      if not self._incomingSockets[I].backoffPause()])))
+            wrecv = [ s for s in wrecv if s ]
+            wsend = [ s for s in wsend if s ]
+            wrecv.extend([ I for I in self._incomingSockets if I and
+                                   not self._incomingSockets[I].backoffPause()])
             if hasattr(self, '_openSockets'):
                 wrecv.extend(list(map(lambda s: s.socket.fileno(),
                                       self._openSockets.values())))
