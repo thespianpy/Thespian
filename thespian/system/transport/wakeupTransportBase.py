@@ -49,7 +49,6 @@ class wakeupTransportBase(object):
 
 
     def run(self, incomingHandler, maximumDuration=None):
-
         """Core scheduling method; called by the current Actor process when
            idle to await new messages (or to do background
            processing).
@@ -71,7 +70,7 @@ class wakeupTransportBase(object):
 
             while self._activeWakeups:
                 w = self._activeWakeups.pop()
-                if incomingHandler is None:
+                if incomingHandler in (None, TransmitOnly):
                     return w
                 if not incomingHandler(w):
                     return None
