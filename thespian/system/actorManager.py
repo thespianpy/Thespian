@@ -189,10 +189,11 @@ class ActorManager(systemCommonBase):
         if hasattr(self.transport, 'set_watch'):
             self.transport.set_watch(actor_result.filenos if isinstance(actor_result, ThespianWatch) else [])
         else:
-            logging.getLogger(str(self._actorClass))\
-                   .error('Actor %s @ %s does not support ThespianWatch',
-                          self._actorClass,
-                          self.transport.myAddress)
+            if isinstance(actor_result, ThespianWatch):
+                logging.getLogger(str(self._actorClass))\
+                       .error('Actor %s @ %s does not support ThespianWatch',
+                              self._actorClass,
+                              self.transport.myAddress)
 
         if isinstance(msg, ChildActorExited):
             return self._handleChildExited(msg.childAddress)
