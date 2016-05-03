@@ -729,6 +729,25 @@ class ActorB(Actor):
   Writing Actors which utilize the Watch extension may siginificantly
   limit the portability of these Actors.
 
+*** Blocking Actors
+
+  There are some cases where the desired functionality of the Actor is
+  to actually block on external operations.  For example, an Actor
+  that acts as a client making calls to an external service might be
+  best written to block on those external calls.  When the Actor
+  blocks, other Actors cannot deliver messages to that Actor and
+  backpressure builds (see [[*Message Delivery][Message Delivery]] for more details).
+
+  The effect of this blocking functionality is to regulate the number
+  of requests to the external service.  If the Actor performed
+  non-blocking requests to the external service, it could flood the
+  service with large numbers of requests.
+
+  The disadvantage of the blocking approach is that the Actor is
+  unresponsive while blocked on the external service call.  More
+  sophisticated methods involving internal queueing and timeouts could
+  be used as well.
+
 ** Actor Troupes
 
    If specified appropriately, multiple instances of an Actor can be
