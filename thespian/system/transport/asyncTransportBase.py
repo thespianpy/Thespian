@@ -15,6 +15,16 @@ except ImportError:
     from Queue import Queue, Empty
 import threading
 
+if hasattr(threading, 'main_thread'):
+    # python 3.4 or later
+    is_main_thread = lambda: threading.main_thread() == threading.current_thread()
+else:
+    if hasattr(threading, 'name'):
+        is_main_thread = lambda: 'MainThread' in threading.current_thread().name
+    else:
+        is_main_thread = lambda: 'MainThread' in threading.current_thread().getName()
+
+
 MAX_PENDING_TRANSMITS = 20
 MAX_QUEUED_TRANSMITS  = 950
 QUEUE_TRANSMIT_UNBLOCK_THRESHOLD = 780
@@ -63,7 +73,7 @@ class asyncTransportBase(object):
     def _canSendNow(self, intent):
         return getattr(intent, "can_send_now", False) or \
             (MAX_PENDING_TRANSMITS > self._aTB_numPendingTransmits and
-             threading.main_thread() == threading.current_thread() and
+             is_main_thread() and
              self._aTB_queuedPendingTransmits.empty())
 
     def _runQueued(self, _TXresult, _TXIntent):
