@@ -3,6 +3,7 @@ from thespian.actors import *
 from thespian.system.utilis import (thesplog, ExpiryTime, checkActorCapabilities,
                                     partition, foldl,
                                     actualActorClass)
+from thespian.system.logdirector import LogAggregator
 from thespian.system.admin.globalNames import GlobalNamesAdmin
 from thespian.system.transport import TransmitIntent, SendStatus
 from thespian.system.messages.admin import PendingActorResponse
@@ -246,6 +247,10 @@ class ConventioneerAdmin(GlobalNamesAdmin):
         self._conventionLeaderIsGone = False
         if hasattr(self, '_conventionLeaderMissCount'):
             delattr(self, '_conventionLeaderMissCount')
+        if getattr(self, 'asLogger', None):
+            thesplog('Setting log aggregator of %s to %s', self.asLogger, self.conventionAddress)
+            self.transport.scheduleTransmit(None, TransmitIntent(self.asLogger,
+                                                                 LogAggregator(self.conventionAddress)))
 
     def _setupConventionCBError(self, result, finishedIntent):
         self._sCBStats.inc('Admin Convention Registration Failed')

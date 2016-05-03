@@ -35,6 +35,9 @@ MAX_LOGGING_EXCEPTIONS_PER_SECOND = 20
 
 class LoggerExitRequest(ActorSystemMessage): pass
 class LoggerFileDup(ActorSystemMessage): pass
+class LogAggregator(ActorSystemMessage):
+    def __init__(self, newAggregator = None):
+        self.aggregatorAddress = newAggregator
 
 
 def startupASLogger(addrOfStarter, logEndpoint, logDefs,
@@ -74,6 +77,8 @@ def startupASLogger(addrOfStarter, logEndpoint, logDefs,
                 return
             elif isinstance(logrecord, LoggerFileDup):
                 fdup = getattr(logrecord, 'fname', None)
+            elif isinstance(logrecord, LogAggregator):
+                aggregatorAddress = LogAggregator.aggregatorAddress
             elif isinstance(logrecord, logging.LogRecord):
                 logging.getLogger(logrecord.name).handle(logrecord)
                 if fdup:
