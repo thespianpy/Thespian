@@ -101,6 +101,9 @@ def startupASLogger(addrOfStarter, logEndpoint, logDefs,
                                   exception_count, datetime.now() - last_exception_time)
                     return
 
+
+logTransport = None
+
 class ThespianLogForwardHandler(logging.Handler):
     def __init__(self, toAddr, transport):
         logging.Handler.__init__(self, 1)  # forward EVERYTHING
@@ -108,10 +111,12 @@ class ThespianLogForwardHandler(logging.Handler):
         self._fwdAddr = toAddr
         if not self._fwdAddr:
             raise NotImplemented('Cannot forward logs to a NULL target address')
-        self._transport = transport
+        global logTransport
+        logTransport = transport
     def handle(self, record):
         # Can't pickle traceback objects, so pre-format them.  Sorry,
         # more logging internals here.
+        global logTransport
         if record.exc_info:
             if not record.exc_text:
                 excinfo = traceback.format_exception(record.exc_info[0],
@@ -119,11 +124,11 @@ class ThespianLogForwardHandler(logging.Handler):
                                                      record.exc_info[2])
                 record.exc_text = '\n'.join(excinfo)
             record.exc_info = None
-        record.__dict__['actorAddress'] = str(self._transport.myAddress)
+        record.__dict__['actorAddress'] = str(logTransport.myAddress)
         msg = record.getMessage()
         record.msg = msg
         record.args = None
-        self._transport.scheduleTransmit(None, TransmitIntent(self._fwdAddr, record))
+        logTransport.scheduleTransmit(None, TransmitIntent(self._fwdAddr, record))
 
 
 class ThespianLogForwarder(logging.Logger):
