@@ -99,6 +99,7 @@ from datetime import datetime, timedelta
 #import json
 import pickle
 import errno
+from contextlib import closing
 
 
 def err_bind_inuse(err): return err == errno.EADDRINUSE
@@ -508,6 +509,16 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
         if intent.targetAddr == self.myAddress:
             self._processReceivedEnvelope(ReceiveEnvelope(intent.targetAddr,
                                                           intent.message))
+            # Now generate a spurious connection to break out of the select.select loop
+            if not isinstance(intent.message, ForwardMessage):
+                # This is especially useful if a signal handler caused
+                # a message to be sent to myself: get the select loop
+                # to wakeup and process the message.
+                with closing(socket.socket(*self.myAddress.addressDetails.socketArgs)) as ts:
+                    try:
+                        ts.connect(*self.myAddress.addressDetails.connectArgs)
+                    except Exception:
+                        pass
             return self._finishIntent(intent)
         if isinstance(intent.targetAddr.addressDetails, RoutedTCPv4ActorAddress):
             if not isinstance(intent.message, ForwardMessage):
