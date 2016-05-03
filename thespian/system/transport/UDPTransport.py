@@ -212,7 +212,7 @@ class UDPTransport(asyncTransportBase, wakeupTransportBase):
                                                         self.run_time.remainingSeconds())
                 except select.error as se:
                     import errno
-                    if se[0] != errno.EINTR:
+                    if se.args[0] != errno.EINTR:
                         thesplog('Error during select: %s', se)
                         return None
                     continue
