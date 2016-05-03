@@ -286,7 +286,13 @@ class MultiProcReplicator(object):
         return True
 
     def _childExited(self, childAddr):
-        self._child_procs = list(filter(self._checkChildLiveness, getattr(self, '_child_procs', [])))
+        children = getattr(self, '_child_procs', [])
+        self._child_procs = list(filter(self._checkChildLiveness, children))
+        if len(children) == len(self._child_procs):
+            # Sometimes the child doesn't indicate as not alive immediately.
+            import time
+            time.sleep(0.1)
+            self._child_procs = list(filter(self._checkChildLiveness, children))
 
     def childDied(self, signum, frame):
         # Signal handler for SIGCHLD; figure out which child and synthesize a ChildActorExited to handle it
