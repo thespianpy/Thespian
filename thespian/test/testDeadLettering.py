@@ -399,6 +399,7 @@ class TestASimpleSystem(ActorSystemTestCase):
         asys.tell(handler, 'Start')
         handler2 = asys.createActor(DLParent)
         asys.tell(handler2, 'Start')
+        time.sleep(0.15)
         self.assertEqual(0, asys.ask(handler, 'Count', 0.5))
         self.assertEqual(0, asys.ask(handler2, 'Count', 0.5))
 
@@ -436,6 +437,7 @@ class TestASimpleSystem(ActorSystemTestCase):
         # Tell first dead letter handler to re-register
 
         asys.tell(handler, 'Start')
+        time.sleep(0.15)
         # n.b. tell or ask might create temporary actor, so can't assume startnum == 0
         cnt = asys.ask(handler, 'Count', 0.5)
 
