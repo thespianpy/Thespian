@@ -78,7 +78,7 @@ def startupASLogger(addrOfStarter, logEndpoint, logDefs,
             elif isinstance(logrecord, LoggerFileDup):
                 fdup = getattr(logrecord, 'fname', None)
             elif isinstance(logrecord, LogAggregator):
-                aggregatorAddress = LogAggregator.aggregatorAddress
+                aggregatorAddress = logrecord.aggregatorAddress
             elif isinstance(logrecord, logging.LogRecord):
                 logging.getLogger(logrecord.name).handle(logrecord)
                 if fdup:

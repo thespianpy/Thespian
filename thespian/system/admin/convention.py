@@ -248,9 +248,10 @@ class ConventioneerAdmin(GlobalNamesAdmin):
         if hasattr(self, '_conventionLeaderMissCount'):
             delattr(self, '_conventionLeaderMissCount')
         if getattr(self, 'asLogger', None):
-            thesplog('Setting log aggregator of %s to %s', self.asLogger, self.conventionAddress)
-            self.transport.scheduleTransmit(None, TransmitIntent(self.asLogger,
-                                                                 LogAggregator(self.conventionAddress)))
+            thesplog('Setting log aggregator of %s to %s', self.asLogger, self._conventionAddress)
+            self.transport.scheduleTransmit(None,
+                                            TransmitIntent(self.asLogger,
+                                                           LogAggregator(self._conventionAddress)))
 
     def _setupConventionCBError(self, result, finishedIntent):
         self._sCBStats.inc('Admin Convention Registration Failed')
