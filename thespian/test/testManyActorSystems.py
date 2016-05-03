@@ -257,6 +257,7 @@ class TestManyActorSystem(unittest.TestCase):
                     break
                 sleep(1)
         ActorSystem().shutdown()
+        sleep(1)
 
 
     def test00_primeLogging(self):
