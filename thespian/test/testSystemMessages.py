@@ -3,7 +3,7 @@ import logging
 import time, datetime
 import thespian.test.helpers
 from thespian.actors import *
-from thespian.test import ActorSystemTestCase
+from thespian.test import TestSystem
 
 
 class EchoActor(Actor):
@@ -24,74 +24,84 @@ class FakeSystemMessage(ActorSystemMessage):
 smallwait = datetime.timedelta(milliseconds=50)
 
 
-class TestASimpleSystem(ActorSystemTestCase):
+class TestASimpleSystem(unittest.TestCase):
     testbase='Simple'
     scope='func'
 
+    sysbase = 'simpleSystemBase'
+    portbase = 17100
+
     def testCreateActorSystem(self):
-        pass
+        with TestSystem(self.sysbase, {'Admin Port': self.portbase+1}) as asys:
+            pass
 
     def testSimpleActor(self):
-        echo = ActorSystem().createActor(EchoActor)
+        with TestSystem(self.sysbase, {'Admin Port': self.portbase+2}) as asys:
+            echo = asys.createActor(EchoActor)
 
     def testSimpleMessageTell(self):
-        echo = ActorSystem().createActor(EchoActor)
-        ActorSystem().tell(echo, 'hello')
-        time.sleep(0.02)  # allow tell to work before ActorSystem shutdown
+        with TestSystem(self.sysbase, {'Admin Port': self.portbase+3}) as asys:
+            echo = asys.createActor(EchoActor)
+            asys.tell(echo, 'hello')
+            time.sleep(0.02)  # allow tell to work before ActorSystem shutdown
 
     def testSystemMessageTell(self):
-        echo = ActorSystem().createActor(EchoActor)
-        ActorSystem().tell(echo, FakeSystemMessage())
-        time.sleep(0.02)  # allow tell to work before ActorSystem shutdown
+        with TestSystem(self.sysbase, {'Admin Port': self.portbase+4}) as asys:
+            echo = asys.createActor(EchoActor)
+            asys.tell(echo, FakeSystemMessage())
+            time.sleep(0.02)  # allow tell to work before ActorSystem shutdown
 
     def testKillMessageTell(self):
-        echo = ActorSystem().createActor(EchoActor)
-        ActorSystem().tell(echo, ActorExitRequest())
-        time.sleep(0.02)  # allow tell to work before ActorSystem shutdown
+        with TestSystem(self.sysbase, {'Admin Port': self.portbase+5}) as asys:
+            echo = asys.createActor(EchoActor)
+            asys.tell(echo, ActorExitRequest())
+            time.sleep(0.02)  # allow tell to work before ActorSystem shutdown
 
     def testKillMessageTellKiller(self):
-        ktm = ActorSystem().createActor(Kill_The_Messenger)
-        ActorSystem().tell(ktm, 'hello')
-        ActorSystem().tell(ktm, ActorExitRequest())
-        time.sleep(0.02)  # allow tell to work before ActorSystem shutdown
+        with TestSystem(self.sysbase, {'Admin Port': self.portbase+6}) as asys:
+            ktm = asys.createActor(Kill_The_Messenger)
+            asys.tell(ktm, 'hello')
+            asys.tell(ktm, ActorExitRequest())
+            time.sleep(0.02)  # allow tell to work before ActorSystem shutdown
 
     def testSimpleMessageAsk(self):
-        echo = ActorSystem().createActor(EchoActor)
-        self.assertEqual(ActorSystem().ask(echo, 'hello', smallwait), 'hello')
+        with TestSystem(self.sysbase, {'Admin Port': self.portbase+7}) as asys:
+            echo = asys.createActor(EchoActor)
+            self.assertEqual(asys.ask(echo, 'hello', smallwait), 'hello')
 
     def testSystemMessageAsk(self):
-        echo = ActorSystem().createActor(EchoActor)
-        # SystemMessages are explicitly filtered from being returned
-        # via Ask() or Tell(), with the exception of PoisonMessage.
-        self.assertIsNone(ActorSystem().ask(echo, FakeSystemMessage(), smallwait))
+        with TestSystem(self.sysbase, {'Admin Port': self.portbase+8}) as asys:
+            echo = asys.createActor(EchoActor)
+            # SystemMessages are explicitly filtered from being returned
+            # via Ask() or Tell(), with the exception of PoisonMessage.
+            self.assertIsNone(asys.ask(echo, FakeSystemMessage(), smallwait))
 
     def testKillMessageAsk(self):
-        echo = ActorSystem().createActor(EchoActor)
-        # SystemMessages are explicitly filtered from being returned
-        # via Ask() or Tell(), with the exception of PoisonMessage.
-        self.assertIsNone(ActorSystem().ask(echo, ActorExitRequest(), smallwait))
+        with TestSystem(self.sysbase, {'Admin Port': self.portbase+9}) as asys:
+            echo = asys.createActor(EchoActor)
+            # SystemMessages are explicitly filtered from being returned
+            # via Ask() or Tell(), with the exception of PoisonMessage.
+            self.assertIsNone(asys.ask(echo, ActorExitRequest(), smallwait))
 
     def testKillMessageAskKiller(self):
-        ktm = ActorSystem().createActor(Kill_The_Messenger)
-        self.assertIsNone(ActorSystem().ask(ktm, 'hello', smallwait))
-        self.assertIsNone(ActorSystem().ask(ktm, ActorExitRequest(), smallwait))
+        with TestSystem(self.sysbase, {'Admin Port': self.portbase+10}) as asys:
+            ktm = asys.createActor(Kill_The_Messenger)
+            self.assertIsNone(asys.ask(ktm, 'hello', smallwait))
+            self.assertIsNone(asys.ask(ktm, ActorExitRequest(), smallwait))
 
 
 class TestMultiprocUDPSystem(TestASimpleSystem):
     testbase='MultiprocUDP'
-    def setUp(self):
-        self.setSystemBase('multiprocUDPBase')
-        super(TestMultiprocUDPSystem, self).setUp()
+    sysbase = 'multiprocUDPBase'
+    portbase = 17120
 
 class TestMultiprocTCPSystem(TestASimpleSystem):
     testbase='MultiprocTCP'
-    def setUp(self):
-        self.setSystemBase('multiprocTCPBase')
-        super(TestMultiprocTCPSystem, self).setUp()
+    sysbase = 'multiprocTCPBase'
+    portbase = 17140
 
 class TestMultiprocQueueSystem(TestASimpleSystem):
     testbase='MultiprocQueue'
-    def setUp(self):
-        self.setSystemBase('multiprocQueueBase')
-        super(TestMultiprocQueueSystem, self).setUp()
+    sysbase = 'multiprocQueueBase'
+    portbase = 17160
 
