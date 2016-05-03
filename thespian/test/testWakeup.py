@@ -11,7 +11,7 @@ from datetime import datetime, timedelta
 import time
 import thespian.test.helpers
 from thespian.actors import *
-from thespian.test import ActorSystemTestCase
+from thespian.test import TestSystem
 
 wakeupAfterPeriod = timedelta(seconds=0.65)
 sleepLongerThanWakeup = lambda: time.sleep(0.7)
@@ -30,100 +30,99 @@ class RetryActor(Actor):
             self.send(sender, self._numWakeups)
 
 
-class TestASimpleSystem(ActorSystemTestCase):
+class TestASimpleSystem(unittest.TestCase):
     testbase='Simple'
     scope='func'
 
+    sysbase = 'simpleSystemBase'
+    portbase = 17600
+
     def test_oneWakeup(self):
-        aS = ActorSystem()
-        waiter = aS.createActor(RetryActor)
-        self.assertEqual(aS.ask(waiter, 'awoken?', 1), 0)
-        self.assertEqual(aS.ask(waiter, 'awoken?', 1), 0)
+        with TestSystem(self.sysbase, {'Admin Port': self.portbase+1}) as aS:
+            waiter = aS.createActor(RetryActor)
+            self.assertEqual(aS.ask(waiter, 'awoken?', 1), 0)
+            self.assertEqual(aS.ask(waiter, 'awoken?', 1), 0)
 
-        aS.tell(waiter, 'check')
-        # Next assert will fail if it takes more than the wakeupPeriod
-        # to run after the previous statement.
-        self.assertEqual(aS.ask(waiter, 'awoken?', 1), 0)
+            aS.tell(waiter, 'check')
+            # Next assert will fail if it takes more than the wakeupPeriod
+            # to run after the previous statement.
+            self.assertEqual(aS.ask(waiter, 'awoken?', 1), 0)
 
-        sleepLongerThanWakeup()
+            sleepLongerThanWakeup()
 
-        self.assertEqual(aS.ask(waiter, 'awoken?', 1), 1)
+            self.assertEqual(aS.ask(waiter, 'awoken?', 1), 1)
 
 
     def test_threeWakeupsInSequence(self):
-        aS = ActorSystem()
-        waiter = aS.createActor(RetryActor)
-        self.assertEqual(aS.ask(waiter, 'awoken?', 1), 0)
+        with TestSystem(self.sysbase, {'Admin Port': self.portbase+2}) as aS:
+            waiter = aS.createActor(RetryActor)
+            self.assertEqual(aS.ask(waiter, 'awoken?', 1), 0)
 
-        aS.tell(waiter, 'check')
-        # Next assert will fail if it takes more than the wakeupPeriod
-        # to run after the previous statement.
-        self.assertEqual(aS.ask(waiter, 'awoken?', 1), 0)
+            aS.tell(waiter, 'check')
+            # Next assert will fail if it takes more than the wakeupPeriod
+            # to run after the previous statement.
+            self.assertEqual(aS.ask(waiter, 'awoken?', 1), 0)
 
-        sleepLongerThanWakeup()
-        self.assertEqual(aS.ask(waiter, 'awoken?', 1), 1)
+            sleepLongerThanWakeup()
+            self.assertEqual(aS.ask(waiter, 'awoken?', 1), 1)
 
-        aS.tell(waiter, 'check')
-        # ditto above
-        self.assertEqual(aS.ask(waiter, 'awoken?', 1), 1)
+            aS.tell(waiter, 'check')
+            # ditto above
+            self.assertEqual(aS.ask(waiter, 'awoken?', 1), 1)
 
-        sleepLongerThanWakeup()
-        aS.tell(waiter, 'check')
-        self.assertEqual(aS.ask(waiter, 'awoken?', 1), 2)
+            sleepLongerThanWakeup()
+            aS.tell(waiter, 'check')
+            self.assertEqual(aS.ask(waiter, 'awoken?', 1), 2)
 
-        sleepLongerThanWakeup()
-        self.assertEqual(aS.ask(waiter, 'awoken?', 1), 3)
+            sleepLongerThanWakeup()
+            self.assertEqual(aS.ask(waiter, 'awoken?', 1), 3)
 
 
     def test_multipleWakeupsPending(self):
-        aS = ActorSystem()
-        waiter = aS.createActor(RetryActor)
-        self.assertEqual(aS.ask(waiter, 'awoken?', 1), 0)
+        with TestSystem(self.sysbase, {'Admin Port': self.portbase+3}) as aS:
+            waiter = aS.createActor(RetryActor)
+            self.assertEqual(aS.ask(waiter, 'awoken?', 1), 0)
 
-        aS.tell(waiter, 'check')
-        aS.tell(waiter, 'check')
-        # Next assert will fail if it takes more than the wakeupPeriod
-        # to run after the previous statement.
-        self.assertEqual(aS.ask(waiter, 'awoken?', 1), 0)
+            aS.tell(waiter, 'check')
+            aS.tell(waiter, 'check')
+            # Next assert will fail if it takes more than the wakeupPeriod
+            # to run after the previous statement.
+            self.assertEqual(aS.ask(waiter, 'awoken?', 1), 0)
 
-        sleepLongerThanWakeup()
-        self.assertEqual(aS.ask(waiter, 'awoken?', 1), 2)
+            sleepLongerThanWakeup()
+            self.assertEqual(aS.ask(waiter, 'awoken?', 1), 2)
 
-        aS.tell(waiter, 'check')
-        sleepPartOfWakeupPeriod()
-        aS.tell(waiter, 'check')
-        sleepPartOfWakeupPeriod()
-        aS.tell(waiter, 'check')
+            aS.tell(waiter, 'check')
+            sleepPartOfWakeupPeriod()
+            aS.tell(waiter, 'check')
+            sleepPartOfWakeupPeriod()
+            aS.tell(waiter, 'check')
 
-        sleepLongerThanWakeup()
-        self.assertEqual(aS.ask(waiter, 'awoken?', 1), 5)
+            sleepLongerThanWakeup()
+            self.assertEqual(aS.ask(waiter, 'awoken?', 1), 5)
 
 
     def test_exitWithWakeupsPending(self):
-        aS = ActorSystem()
-        waiter = aS.createActor(RetryActor)
-        self.assertEqual(aS.ask(waiter, 'awoken?', 1), 0)
-        aS.tell(waiter, 'check')
-        sleepPartOfWakeupPeriod()
-        aS.tell(waiter, ActorExitRequest())
-        self.assertTrue(True)  # ensure above doesn't throw exception
+        with TestSystem(self.sysbase, {'Admin Port': self.portbase+4}) as aS:
+            waiter = aS.createActor(RetryActor)
+            self.assertEqual(aS.ask(waiter, 'awoken?', 1), 0)
+            aS.tell(waiter, 'check')
+            sleepPartOfWakeupPeriod()
+            aS.tell(waiter, ActorExitRequest())
+            self.assertTrue(True)  # ensure above doesn't throw exception
 
 
 class TestMultiprocUDPSystem(TestASimpleSystem):
     testbase='MultiprocUDP'
-    def setUp(self):
-        self.setSystemBase('multiprocUDPBase')
-        super(TestMultiprocUDPSystem, self).setUp()
+    sysbase = 'multiprocUDPBase'
+    portbase = 17610
 
 class TestMultiprocTCPSystem(TestASimpleSystem):
     testbase='MultiprocTCP'
-    def setUp(self):
-        self.setSystemBase('multiprocTCPBase')
-        super(TestMultiprocTCPSystem, self).setUp()
+    sysbase = 'multiprocTCPBase'
+    portbase = 17620
 
 class TestMultiprocQueueSystem(TestASimpleSystem):
     testbase='MultiprocQueue'
-    def setUp(self):
-        self.setSystemBase('multiprocQueueBase')
-        super(TestMultiprocQueueSystem, self).setUp()
-
+    sysbase = 'multiprocQueueBase'
+    portbase = 17630
