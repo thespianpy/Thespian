@@ -38,15 +38,18 @@ Table of Contents
 .. 4.5 Top-Level Actors
 .. 4.6 Named Actors
 .. 4.7 Timer Messages
-.. 4.8 Actor Troupes
-.. 4.9 ActorSystem Capabilities
-.. 4.10 Other Actor Systems
-.. 4.11 Logging
-..... 4.11.1 Thespian Internals Logging
-.. 4.12 Actor Code Distribution
+.. 4.8 Watching File Descriptors
+..... 4.8.1 Blocking Actors
+.. 4.9 Actor Troupes
+.. 4.10 ActorSystem Capabilities
+.. 4.11 Other Actor Systems
+.. 4.12 Logging
+..... 4.12.1 Thespian Internals Logging
+.. 4.13 Actor Code Distribution
 5 Actor API
 .. 5.1 myAddress
 .. 5.2 receiveMessage
+..... 5.2.1 Return Value
 .. 5.3 createActor
 ..... 5.3.1 globalName
 ..... 5.3.2 Actor Creation Gotchas
@@ -83,22 +86,24 @@ Table of Contents
 ..... 7.1.1 Attributes
 .. 7.2 WakeupMessage
 ..... 7.2.1 Attributes
-.. 7.3 ActorExitRequest
+.. 7.3 WatchMessage
 ..... 7.3.1 Attributes
-.. 7.4 ChildActorExited
+.. 7.4 ActorExitRequest
 ..... 7.4.1 Attributes
-.. 7.5 DeadEnvelope
+.. 7.5 ChildActorExited
 ..... 7.5.1 Attributes
-.. 7.6 ActorSystemConventionUpdate
+.. 7.6 DeadEnvelope
 ..... 7.6.1 Attributes
-.. 7.7 ValidateSource
+.. 7.7 ActorSystemConventionUpdate
 ..... 7.7.1 Attributes
-.. 7.8 ValidatedSource
+.. 7.8 ValidateSource
 ..... 7.8.1 Attributes
-.. 7.9 Thespian_StatusReq
+.. 7.9 ValidatedSource
 ..... 7.9.1 Attributes
-.. 7.10 Thespian_SystemStatus
-.. 7.11 Thespian_ActorStatus
+.. 7.10 Thespian_StatusReq
+..... 7.10.1 Attributes
+.. 7.11 Thespian_SystemStatus
+.. 7.12 Thespian_ActorStatus
 8 ActorSystem Implementations
 .. 8.1 Common Capabilities
 .. 8.2 simpleSystemBase
@@ -735,7 +740,97 @@ Table of Contents
   should simply ignore the `WakeupMessage' when it is received.
 
 
-4.8 Actor Troupes
+4.8 Watching File Descriptors
+─────────────────────────────
+
+  The Actor model itself is a pure specification that is good for
+  concurrent computational tasks, but real-world Actors must often
+  interact with or control the external world via sockets, files, or
+  other interface elements.
+
+  One way to accomplish this is to use the `.wakeupAfter()'
+  functionality described in the previous section to periodically run
+  the Actor, whereupon it may check to see if there is any pending I/O
+  for these interface elements.  Each interface element should be
+  accessed in "non-blocking" mode so that the Actor itself can exit
+  immediately if there is no work to be done (thereby allowing the Actor
+  to process new messages as soon as they are received).  The
+  [http_server1.py] file is an example of a simple HTTP server based on
+  this model.
+
+  The above model is fairly limited however: it is essentially a
+  busy-wait loop that consumes resources even when there is no work to
+  do, and its responsiveness is limited by the period of the wakeup
+  calls.  An alternative approach provided by /some/ Thespian SytemBases
+  is the "Watch" extension (as indicated by a System Capability of
+  "Thespian Watch Supported" with a value of True).
+
+  When using the Watch extension, the Actor should return a
+  `ThespianWatch' object each time its `.receiveMessage()' method is
+  called.  The `ThespianWatch' object is initialized with a list of file
+  descriptors (from sockets or files) that should be watched, and if any
+  of these have readable data, the Actor will be called with a
+  `WatchMessage' message.  The `WatchMessage.ready' member is a list of
+  the supplied file descriptors that can be read from.  The
+  `ThespianWatch' is *only* valid for that single return from the
+  Actor's `.receiveMessage()' call, and it must be supplied each time
+  the `.receiveMessage()' returns to specify any file descriptors that
+  should be watched during the wait for the next `.receiveMessage()'
+  invocation.
+
+  The [http_server2.py] file is an example of a simple HTTP server that
+  is similar to the http_server1.py but this example is modified to use
+  the Watch extension.
+
+  The Watch extension has a number of limitations:
+
+  1. It is not available for all ActorSystem bases (only those with a
+     system capability of "Thespian Watch Supported" where the value is
+     True).
+
+  2. It is OS-dependent: on Linux, any file object may be watched, but
+     on Windows only sockets may be watched.
+
+  3. It only watches for "readable" events, not writable or exception
+     events.
+
+  4. It implies the use of `select.select()'.
+
+  5. There is no timeout (use `.wakeupAfter()' for this).
+
+  Writing Actors which utilize the Watch extension may siginificantly
+  limit the portability of these Actors.
+
+
+  [http_server1.py]
+  https://github.com/godaddy/Thespian/blobl/master/examples/httpserver/http_server1.py
+
+  [http_server2.py]
+  https://github.com/godaddy/Thespian/blobl/master/examples/httpserver/http_server2.py
+
+
+4.8.1 Blocking Actors
+╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+
+  There are some cases where the desired functionality of the Actor is
+  to actually block on external operations.  For example, an Actor that
+  acts as a client making calls to an external service might be best
+  written to block on those external calls.  When the Actor blocks,
+  other Actors cannot deliver messages to that Actor and backpressure
+  builds (see Message Delivery for more details).
+
+  The effect of this blocking functionality is to regulate the number of
+  requests to the external service.  If the Actor performed non-blocking
+  requests to the external service, it could flood the service with
+  large numbers of requests.
+
+  The disadvantage of the blocking approach is that the Actor is
+  unresponsive while blocked on the external service call.  More
+  sophisticated methods involving internal queueing and timeouts could
+  be used as well.
+
+
+4.9 Actor Troupes
 ─────────────────
 
   If specified appropriately, multiple instances of an Actor can be
@@ -759,8 +854,8 @@ Table of Contents
   messages for that Actor.
 
 
-4.9 ActorSystem Capabilities
-────────────────────────────
+4.10 ActorSystem Capabilities
+─────────────────────────────
 
   Actors can stipulate the requirements of the ActorSystem that they
   will run in by matching "Capabilities" of the ActorSystem.  Each
@@ -782,7 +877,7 @@ Table of Contents
   common capabilities described in the Common Capabilities section.
 
 
-4.10 Other Actor Systems
+4.11 Other Actor Systems
 ────────────────────────
 
   The current ActorSystem can communicate with other ActorSystems to
@@ -808,7 +903,7 @@ Table of Contents
   that do are normally of the multi-process variety.
 
 
-4.11 Logging
+4.12 Logging
 ────────────
 
   The standard Python logging can be used with the Thespian Actor
@@ -881,7 +976,7 @@ Table of Contents
   `ActorSystem()' instantiation.
 
 
-4.11.1 Thespian Internals Logging
+4.12.1 Thespian Internals Logging
 ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 
   Because Thespian instruments the standard logging functionality to
@@ -908,7 +1003,7 @@ Table of Contents
                          developers modifying Thespian internals.
 
 
-4.12 Actor Code Distribution
+4.13 Actor Code Distribution
 ────────────────────────────
 
   The Thespian ActorSystem provides an feature to specify the code used
@@ -1039,6 +1134,39 @@ Table of Contents
   with each attempt; if the Actor modifies the message before failing
   with an exception, the retried or Poison-returned version will contain
   the modifications made by the original attempt.
+
+
+5.2.1 Return Value
+╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+
+  Ordinarily the return value from an Actor's `receiveMessage()' method
+  is ignored, but if the underlying ActorSystem implementation supports
+  the Thespian Watch extension (see Watching File Descriptors) then the
+  Actor may return a ThespianWatch object which specifies a list of the
+  file numbers to watch for incoming data; the Actor's
+  `receiveMessage()' will subsequently be passed a WatchMessage with the
+  file number(s) for which data is available.
+
+  Any other value or object returned from `.receiveMessage()' will be
+  ignored.
+
+  The object is initialized with the list of file numbers to watch for
+  incoming data from.
+
+  ┌────
+  │ from thespian.actors import Actor, ThespianWatch
+  │ 
+  │ class MyActor(Actor):
+  │     def receiveMessage(self, message, sender):
+  │        ...process message...
+  │        return ThespianWatch([self.socket1.fileno(),
+  │                              self.socket2.fileno()])
+  └────
+
+  Any invalid or closed file descriptors will be ignored.  The file
+  descriptors are watched only until the next call to the Actor's
+  `.receiveMessage()' method, so each call to this method must return
+  the set of file descriptors that should be watched when it exits.
 
 
 5.3 createActor
@@ -2231,7 +2359,27 @@ Table of Contents
     delay period that has expired.
 
 
-7.3 ActorExitRequest
+7.3 WatchMessage
+────────────────
+
+  The `WatchMessage' is delivered to the Actor by the ActorSystem when
+  one or more file descriptors has available data.  The WatchMessage
+  specifies which file numbers have data vailable.
+
+  This functionality is not available from all ActorSystem
+  implementations.  See Watching File Descriptors for more information.
+
+
+7.3.1 Attributes
+╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+
+  ‣ `.ready' specifies a list of file numbers for which data is
+    available.  This will be a subset of the original set of file
+    numbers returned from the Actor's `receiveMessage()' method in the
+    5.2.1 return value.
+
+
+7.4 ActorExitRequest
 ────────────────────
 
   The `ActorExitRequest' object is sent to any Actor to request that
@@ -2246,7 +2394,7 @@ Table of Contents
   Actor within the system.
 
 
-7.3.1 Attributes
+7.4.1 Attributes
 ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 
   ‣ `.isRecursive' indicates that this ActorExitRequest will
@@ -2257,7 +2405,7 @@ Table of Contents
     propagation to all child Actors.
 
 
-7.4 ChildActorExited
+7.5 ChildActorExited
 ────────────────────
 
   The `ChildActorExited' object is delivered to the Parent Actor of an
@@ -2272,7 +2420,7 @@ Table of Contents
   interface will have no Parent; their exit is unremarked.
 
 
-7.4.1 Attributes
+7.5.1 Attributes
 ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 
   ‣ `.childAddress' is the address of the child Actor that exited.  Note
@@ -2280,7 +2428,7 @@ Table of Contents
     argument passed to the current Actor's `.receiveMessage()' method.
 
 
-7.5 DeadEnvelope
+7.6 DeadEnvelope
 ────────────────
 
   The `DeadEnvelope' object is delivered to the Dead Letter handler as
@@ -2289,7 +2437,7 @@ Table of Contents
   Actor because the target is no longer running.
 
 
-7.5.1 Attributes
+7.6.1 Attributes
 ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 
   ‣ `.deadMessage' – the original, undeliverable message
@@ -2297,7 +2445,7 @@ Table of Contents
     delivered
 
 
-7.6 ActorSystemConventionUpdate
+7.7 ActorSystemConventionUpdate
 ───────────────────────────────
 
   The `ActorSystemConventionUpdate' object is delivered to an Actor that
@@ -2306,7 +2454,7 @@ Table of Contents
   generated by the ActorSystem itself.
 
 
-7.6.1 Attributes
+7.7.1 Attributes
 ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 
   ‣ `.remoteAdminAddress' – Address of the Admin for the remote
@@ -2320,7 +2468,7 @@ Table of Contents
     for failing to checkin.
 
 
-7.7 ValidateSource
+7.8 ValidateSource
 ──────────────────
 
   The `ValidateSource' object is delivered to the registered Source
@@ -2348,7 +2496,7 @@ Table of Contents
   Thespian_StatusReq operation.
 
 
-7.7.1 Attributes
+7.8.1 Attributes
 ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 
   ‣ `.sourceHash' – the hash associated with this loaded source.
@@ -2356,7 +2504,7 @@ Table of Contents
     loadActorSource call to the ActorSystem.
 
 
-7.8 ValidatedSource
+7.9 ValidatedSource
 ───────────────────
 
   This message is not sent by the ActorSystem to an Actor, but is
@@ -2376,7 +2524,7 @@ Table of Contents
   granted access directly to the decrypted original sources.
 
 
-7.8.1 Attributes
+7.9.1 Attributes
 ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 
   ‣ `.sourceHash' – the hash associated with the loaded source as
@@ -2385,8 +2533,8 @@ Table of Contents
     form of the originally provided source.
 
 
-7.9 Thespian_StatusReq
-──────────────────────
+7.10 Thespian_StatusReq
+───────────────────────
 
   The `Thespian_StatusReq' object can be sent to any Actor (or to the
   ActorSystem…e.g. the Admin if the ActorSystem has one) to request
@@ -2400,13 +2548,13 @@ Table of Contents
   ActorSystem.
 
 
-7.9.1 Attributes
-╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+7.10.1 Attributes
+╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 
   The `Thespian_StatusReq' object has no attributes.
 
 
-7.10 Thespian_SystemStatus
+7.11 Thespian_SystemStatus
 ──────────────────────────
 
   The `Thespian_SystemStatus' object is returned by the ActorSystem with
@@ -2415,7 +2563,7 @@ Table of Contents
   specific fields or values in this message is not recommended.
 
 
-7.11 Thespian_ActorStatus
+7.12 Thespian_ActorStatus
 ─────────────────────────
 
   The `Thespian_ActorStatus' object is returned by the ActorSystem with
@@ -2746,6 +2894,13 @@ Table of Contents
                    Registration time period has elapsed).  (This mode also
                    requires socket re-use by the TCP transport, which is
                    the normal operational mode).
+
+  *Thespian Watch Supported*: /read-only/ If True, then an Actor may
+                              return the `ThespianWatch' object from its
+                              `receiveMessage()' method and be called back
+                              later when input is available on any of the
+                              numbered file descriptors passed in the
+                              `ThespianWatch' object.
 
 
 8.5 multiprocUDPBase
