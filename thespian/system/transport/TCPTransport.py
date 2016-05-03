@@ -543,6 +543,13 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
                         # addition).
                         intent.addCallback(lambda r,i,ta=intent.targetAddr: i.changeTargetAddr(ta))
                         intent.changeTargetAddr(intent.message.fwdTargets[0])
+                        # Send back through main entry point for
+                        # general consieration of this new target
+                        # address (e.g. dead-letter handling).
+                        # However, thresholding already allowed for
+                        # this transmit, so mark it so that it can
+                        # bypass regulatory gates.
+                        intent.can_send_now = True
                         self.scheduleTransmit(getattr(self, '_addressMgr', None), intent)
                         return
 

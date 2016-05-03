@@ -51,11 +51,10 @@ class asyncTransportBase(object):
         for each in self._aTB_queuedPendingTransmits:
             resp.addPendingMessage(self.myAddress, each.targetAddr, str(each.message))
 
-
-    def _canSendNow(self):
-        return \
-            MAX_PENDING_TRANSMITS > self._aTB_numPendingTransmits and \
-            not self._aTB_queuedPendingTransmits
+    def _canSendNow(self, intent):
+        return getattr(intent, "can_send_now", False) or \
+            (MAX_PENDING_TRANSMITS > self._aTB_numPendingTransmits and
+             not self._aTB_queuedPendingTransmits)
 
     def _runQueued(self, _TXresult, _TXIntent):
         self._aTB_numPendingTransmits -= 1
@@ -130,7 +129,7 @@ class asyncTransportBase(object):
             return
 
         # OK, this can be sent now, so go ahead and get it sent out
-        if not self._canSendNow():
+        if not self._canSendNow(transmitIntent):
             self._aTB_queuedPendingTransmits.insert(0, transmitIntent)
             if len(self._aTB_queuedPendingTransmits) >= MAX_QUEUED_TRANSMITS:
                 # Try to drain out local work before accepting more
