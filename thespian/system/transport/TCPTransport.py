@@ -923,6 +923,7 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
             if self._watches:
                 wrecv.extend(self._watches)
 
+            rrecv, rsend, rerr = [], [], []
             try:
                 rrecv, rsend, rerr = select.select(wrecv, wsend, set(wsend+wrecv), delay)
             except ValueError as ex:
@@ -931,11 +932,12 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
                          len(set(wsend + wrecv)), set(wsend + wrecv),
                          delay, level=logging.ERROR)
                 raise
-            except select.error as ex:
-                if err_select_retry(ex.args[0]): # errno.EINVAL is probably a change in descriptors
+            except (OSError, select.error) as ex:
+                errnum = getattr(ex, 'errno', ex.args[0])
+                if err_select_retry(errnum): # errno.EINVAL is probably a change in descriptors
                     thesplog('select retry on %s', ex, level=logging.ERROR)
                     continue
-                if err_bad_fileno(ex.args[0]):
+                if err_bad_fileno(errnum):
                     # One of the selected file descriptors was bad,
                     # but no indication which one.  It should not be
                     # one of the ones locally managed by this
@@ -951,10 +953,29 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
                                 bad.append(each)
                         if not bad:
                             thesplog('bad internal file descriptor!')
+                            try:
+                                _ = select.select([self.socket.fileno()], [], [], 0)
+                            except:
+                                thesplog('listen %s is bad', self.socket.fileno)
+                                rerr.append(self.socket.fileno)
+                            for each in wrecv:
+                                try:
+                                    _ = select.select([each], [], [], 0)
+                                except:
+                                    thesplog('wrecv %s is bad', each)
+                                    rerr.append(each)
+                            for each in wsend:
+                                try:
+                                    _ = select.select([each], [], [], 0)
+                                except:
+                                    thesplog('wsend %s is bad', each)
+                                    rerr.append(each)
                         else:
                             self._watches = [W for W in self._watches if W not in bad]
                             continue
-                raise
+                    # If it was a regular file descriptor, fall through to clean it up.
+                else:
+                    raise
 
 
             if rerr:
