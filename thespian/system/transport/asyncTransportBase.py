@@ -7,7 +7,12 @@ from thespian.system.transport import TransmitOnly, SendStatus
 from thespian.system.utilis import thesplog
 import logging
 from thespian.system.addressManager import ActorLocalAddress, CannotPickleAddress
-from queue import Queue, Empty
+try:
+    # python 3 module name
+    from queue import Queue, Empty
+except ImportError:
+    # python 2 module name
+    from Queue import Queue, Empty
 import threading
 
 MAX_PENDING_TRANSMITS = 20
