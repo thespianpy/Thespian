@@ -7,6 +7,8 @@ from thespian.system.transport import TransmitOnly, SendStatus
 from thespian.system.utilis import thesplog
 import logging
 from thespian.system.addressManager import ActorLocalAddress, CannotPickleAddress
+from queue import Queue, Empty
+import threading
 
 MAX_PENDING_TRANSMITS = 20
 MAX_QUEUED_TRANSMITS  = 950
@@ -39,7 +41,7 @@ class asyncTransportBase(object):
     def __init__(self, *args, **kw):
         super(asyncTransportBase, self).__init__(*args, **kw)
         self._aTB_numPendingTransmits = 0
-        self._aTB_queuedPendingTransmits = []
+        self._aTB_queuedPendingTransmits = Queue()
         self._aTB_submitting = []
 
     def setAddressManager(self, addrManager):
@@ -48,20 +50,23 @@ class asyncTransportBase(object):
 
     def _updateStatusResponse(self, resp):
         "Called to update a Thespian_SystemStatus or Thespian_ActorStatus with common information"
-        for each in self._aTB_queuedPendingTransmits:
-            resp.addPendingMessage(self.myAddress, each.targetAddr, str(each.message))
+        for each in range(self._aTB_queuedPendingTransmits.qsize()):
+            #n.b. cannot safely walk queue to get info on each entry, so return placeholders
+            resp.addPendingMessage(self.myAddress, '<targetAddr>', '<message>')
+
 
     def _canSendNow(self, intent):
         return getattr(intent, "can_send_now", False) or \
             (MAX_PENDING_TRANSMITS > self._aTB_numPendingTransmits and
-             not self._aTB_queuedPendingTransmits)
+             threading.main_thread() == threading.current_thread() and
+             self._aTB_queuedPendingTransmits.empty())
 
     def _runQueued(self, _TXresult, _TXIntent):
         self._aTB_numPendingTransmits -= 1
         try:
-            nextTransmit = self._aTB_queuedPendingTransmits.pop()
-        except IndexError:
-            return
+            nextTransmit = self._aTB_queuedPendingTransmits.get_nowait()
+        except (Empty, IndexError):
+            return  # no more pending
         self._submitTransmit(nextTransmit)
 
 
@@ -130,22 +135,22 @@ class asyncTransportBase(object):
 
         # OK, this can be sent now, so go ahead and get it sent out
         if not self._canSendNow(transmitIntent):
-            self._aTB_queuedPendingTransmits.insert(0, transmitIntent)
-            if len(self._aTB_queuedPendingTransmits) >= MAX_QUEUED_TRANSMITS:
+            self._aTB_queuedPendingTransmits.put(transmitIntent)
+            if self._aTB_queuedPendingTransmits.qsize() >= MAX_QUEUED_TRANSMITS:
                 # Try to drain out local work before accepting more
                 # because it looks like we're getting really behind.
                 # This is dangerous though, because if other Actors
                 # are having the same issue this can create a
                 # deadlock.
                 thesplog('Entering tx-only mode to drain excessive queue (%s > %s, drain-to %s)',
-                         len(self._aTB_queuedPendingTransmits),
+                         self._aTB_queuedPendingTransmits.qsize(),
                          MAX_QUEUED_TRANSMITS,
                          QUEUE_TRANSMIT_UNBLOCK_THRESHOLD,
                          level = logging.WARNING)
-                while len(self._aTB_queuedPendingTransmits) > QUEUE_TRANSMIT_UNBLOCK_THRESHOLD:
+                while self._aTB_queuedPendingTransmits.qsize() > QUEUE_TRANSMIT_UNBLOCK_THRESHOLD:
                     self.run(TransmitOnly, transmitIntent.delay())
                 thesplog('Exited tx-only mode after draining excessive queue (%s)',
-                         len(self._aTB_queuedPendingTransmits),
+                         self._aTB_queuedPendingTransmits.qsize(),
                          level = logging.WARNING)
             return
 
@@ -173,7 +178,17 @@ class asyncTransportBase(object):
 
     def deadAddress(self, addressManager, childAddr):
         # Go through pending transmits and update any to this child to a dead letter delivery
-        for each in self._aTB_queuedPendingTransmits:
+        oldQ = self._aTB_queuedPendingTransmits
+        # n.b. This rebuilds the Queue; the entries from the original
+        # queue are preserved in the same order, but it is possible
+        # that concurrent transmit attempts from other threads will be
+        # interspersed in the new Queue.
+        self._aTB_queuedPendingTransmits = Queue()
+        while True:
+            try:
+                each = oldQ.get_nowait()
+            except Empty:
+                break
             if each.targetAddr == childAddr:
                 newtgt, newmsg = addressManager.prepMessageSend(each.targetAddr, each.message)
                 each.changeTargetAddr(newtgt)
@@ -182,5 +197,6 @@ class asyncTransportBase(object):
                 # attempted, that will be handled normally and the
                 # transmit will be completed as "Sent"
                 each.changeMessage(newmsg)
+            self._aTB_queuedPendingTransmits.put(each)
 
 
