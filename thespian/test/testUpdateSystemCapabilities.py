@@ -623,6 +623,36 @@ class BaseCapabilityUpdates(object):
         self.assertEqual(4, self._actorCount(red))
 
 
+    def test11_1_capabilityRemovalOnlyAffectsOneSystem(self):
+        # Creates sub-actors in another system.  Removal of a
+        # capability on the current environment should not cause
+        # impact to sub-actors in another environment
+        self.startSystems(170)
+        reasonableActorResponseTime = 0.5
+        # Setup systems
+        self.systems['Two'].updateCapability('Green', True)
+        self.systems['Two'].updateCapability('Red', True)
+        self.systems['Two'].updateCapability('Blue', True)
+        time.sleep(1)  # wait for hysteresis delay of multiple updates
+        # Create parent in system one with child in system two
+        parent = self.systems['One'].createActor(OrangeActor)
+        self.assertEqual("red", self.systems['One'].ask(parent, (RedActor, "red"), 1))
+        self.assertEqual(2, self._actorCount(parent))
+        # Add capability associated with child in primary system
+        self.systems['One'].updateCapability('Red', True)
+        time.sleep(reasonableActorResponseTime)  # allow capabilities to update
+        # Remove capability associated with child from primary system;
+        # this should not cause the child to exit because it is still
+        # in a valid system.
+        self.systems['One'].updateCapability('Red', None)
+        time.sleep(reasonableActorResponseTime)  # allow capabilities to update
+        self.assertEqual(2, self._actorCount(parent))
+        # Removal of the capability in the system hosting the child does cause the child to exit
+        self.systems['Two'].updateCapability('Red', None)
+        time.sleep(reasonableActorResponseTime)  # allow capabilities to update
+        self.assertEqual(1, self._actorCount(parent))
+
+
     def test12_updateCapabilitiesAffectsActorDrivenCreateRequests(self):
         self.startSystems(150)
         reasonableActorResponseTime = 0.65

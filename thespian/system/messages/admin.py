@@ -131,8 +131,9 @@ class NewCapabilities(ActorSystemMessage):
        returns false, the Actor should suicide via an ActorExitRequest
        message.
     """
-    def __init__(self, newCapabilities):
+    def __init__(self, newCapabilities, adminAddress):
         self.newCapabilities = newCapabilities
+        self.adminAddress    = adminAddress
 
 
 class RegisterSourceAuthority(ActorSystemMessage):

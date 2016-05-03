@@ -241,11 +241,12 @@ class ActorManager(systemCommonBase):
 
     def checkNewCapabilities(self, envelope):
         newCaps = envelope.message.newCapabilities
-        if hasattr(self.actorInst, 'actorSystemCapabilityCheck') and \
-           not self.actorInst.actorSystemCapabilityCheck(newCaps, self._childReqs):
-            self._send_intent(TransmitIntent(self.myAddress,
-                                             ActorExitRequest()))
-        self.capabilities = envelope.message.newCapabilities
+        if envelope.message.adminAddress == self._adminAddr:
+            if hasattr(self.actorInst, 'actorSystemCapabilityCheck') and \
+               not self.actorInst.actorSystemCapabilityCheck(newCaps, self._childReqs):
+                self._send_intent(TransmitIntent(self.myAddress,
+                                                 ActorExitRequest()))
+            self.capabilities = envelope.message.newCapabilities
         for child in self.childAddresses:
             self._send_intent(TransmitIntent(child, envelope.message))
         return True

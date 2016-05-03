@@ -351,7 +351,7 @@ class AdminCore(systemCommonBase):
         return updateLocals
 
     def _capUpdateLocalActors(self):
-        newCaps = NewCapabilities(self.capabilities)
+        newCaps = NewCapabilities(self.capabilities, self.myAddress)
         for each in self.childAddresses:
             self._send_intent(TransmitIntent(each, newCaps))
 
