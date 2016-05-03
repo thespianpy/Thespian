@@ -147,6 +147,16 @@ def startAdmin(adminClass, addrOfStarter, endpointPrep, transportClass,
     admin.addrOfStarter = addrOfStarter
     setProcName(adminClass.__name__, admin.transport.myAddress)
 
+    # Admin does not do normal signal handling, but does want to know if children exit
+    for each in range(1, signal.NSIG):
+        # n.b. normally Python intercepts SIGINT to turn it into a
+        # KeyboardInterrupt exception.  However, these Actors should
+        # be detached from the keyboard, so revert to normal SIGINT
+        # behavior.
+        if each not in uncatchable_signals:
+            if each in child_exit_signals:
+                signal.signal(each, admin.childDied)
+
     _startLogger(transportClass, transport, admin, capabilities, logDefs)
     #closeUnusedFiles(transport)
     admin.run()
