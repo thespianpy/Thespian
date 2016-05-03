@@ -147,6 +147,12 @@ def startAdmin(adminClass, addrOfStarter, endpointPrep, transportClass,
     admin.addrOfStarter = addrOfStarter
     setProcName(adminClass.__name__, admin.transport.myAddress)
 
+    _startLogger(transportClass, transport, admin, capabilities, logDefs)
+    #closeUnusedFiles(transport)
+    admin.run()
+
+
+def _startLogger(transportClass, transport, admin, capabilities, logDefs):
     # Generate the "placeholder" loggerAddr directly instead of going
     # through the AddressManager because the logger is not managed as
     # a normal child.
@@ -163,8 +169,6 @@ def startAdmin(adminClass, addrOfStarter, endpointPrep, transportClass,
                                     logAggregator
                                     if logAggregator != admin.transport.myAddress
                                     else None)
-    #closeUnusedFiles(transport)
-    admin.run()
 
 
 class ChildInfo(object):
@@ -295,6 +299,10 @@ class MultiProcReplicator(object):
             self._child_procs = list(filter(self._checkChildLiveness, children))
 
     def childDied(self, signum, frame):
+        logproc = getattr(self, 'asLogProc', None)
+        if logproc and not self._checkChildLiveness(logproc):
+            # Logger has died; need to start another
+            _startLogger(self.transport.__class__, self.transport, self, self.capabilities, self.logdefs)
         # Signal handler for SIGCHLD; figure out which child and synthesize a ChildActorExited to handle it
         self._child_procs, dead = partition(self._checkChildLiveness,  getattr(self, '_child_procs', []))
         for each in dead:
