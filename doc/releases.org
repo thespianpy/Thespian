@@ -7,7 +7,7 @@
 #+LATEX_HEADER: \product{Thespian}
 #+LATEX_HEADER: \component{Python Actor System}
 #+LATEX_HEADER: \doctype{Release Notes}
-#+LATEX_HEADER: \docrev{2.5.10}{2016 Mar 21}
+#+LATEX_HEADER: \docrev{2.6.0}{2016 May 18}
 #+LATEX_HEADER: \docid{TheDoc-06}
 #+OPTIONS: ^:nil num:nil
 
@@ -18,6 +18,33 @@ do not change the API.
 
 
 * 2.x
+
+** 2.6
+
+*** 2.6.0 <2016-05-18 Wed>
+
+  * Functional Changes
+
+    * Added status output to thesplog on SIGUSR1 to an Actor.  This is
+      useful for scenarios where the Actor is not responding to
+      regular queries (e.g. network queue blockages, etc.).
+
+  * Behavioral Fixes
+
+    * The simpleSystemBase now properly supports system capability
+      updates and validates the actorSystemCapabilityCheck results
+      when creating Actors.
+
+    * The httpserver example is fixed for handling requests with no
+      QUERY_STRING portion.
+
+    * Do not try to restart the logger if the system is being
+      shutdown.
+
+  * Internal Bugfixes
+
+    * Many tests update to use independent admin ports to avoid
+      inter-test influences.
 
 ** 2.5
 

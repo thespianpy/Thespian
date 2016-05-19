@@ -2,10 +2,10 @@
 
 For more details, see http://thespianpy.com
 
-Thespian Generation 2.5
+Thespian Generation 2.6
 """
 
-ThespianGeneration = (2, 5)
+ThespianGeneration = (2, 6)
 
 
 class ActorSystemException(Exception): pass
