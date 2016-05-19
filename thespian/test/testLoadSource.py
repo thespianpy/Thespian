@@ -1234,6 +1234,7 @@ class TestMultipleMultiProcTCPSystem(ActorSystemTestCase):
         self.systems['One'].tell(foo, ActorExitRequest())
         self.systems['One'].tell(foo2, ActorExitRequest())
         self.systems['One'].unloadActorSource(srchash)
+        time.sleep(0.1) # Allow updates to propagate
 
         self.assertRaises(InvalidActorSourceHash,
                           self.systems['One'].createActor, 'foo.FooActor', sourceHash=srchash)
