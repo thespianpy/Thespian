@@ -18,7 +18,7 @@ class HTTPRequest(object):
                       ('REQUEST_METHOD', reqwords[0]),
                       ('SERVER_PROTOCOL', reqwords[2]),
                       ('PATH_INFO', urlparts[0]),
-                      ('QUERY_STRING', urlparts[1]),
+                      ('QUERY_STRING', 'none' if len(urlparts) < 2 else urlparts[1]),
                       ('wsgi.version', (1, 0)),
                       ('wsgi.url_scheme', 'http'),
                       ('wsgi.input', ''),
