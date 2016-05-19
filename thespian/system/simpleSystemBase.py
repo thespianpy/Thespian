@@ -375,20 +375,28 @@ class ActorSystemBase:
         self._pendingSends.append(PendingSend(tgt.address, stsresp, sndr))
 
     def _newRefAndActor(self, actorSystem, parentAddr, actorAddr, actorClass,
-                        sourceHash = None, isTopLevel = False):
+                        sourceHash = None,
+                        targetActorRequirements = None,
+                        isTopLevel = False):
         try:
             actorClass = actualActorClass(actorClass,
                                           functools.partial(
                                               loadModuleFromHashSource,
                                               sourceHash, self._sources)
                                           if sourceHash else None)
-            try:
-                actor = actorClass(childActors=None)
-            except TypeError as te:
-                if "unexpected keyword argument 'childActors'" in str(te):
-                    actor = actorClass()
-                else:
-                    actor = None
+            if hasattr(actorClass, 'actorSystemCapabilityCheck') and \
+               not actorClass.actorSystemCapabilityCheck(
+                   self.system.capabilities,
+                   targetActorRequirements or {}):
+                actor = None
+            else:
+                try:
+                    actor = actorClass(childActors=None)
+                except TypeError as te:
+                    if "unexpected keyword argument 'childActors'" in str(te):
+                        actor = actorClass()
+                    else:
+                        actor = None
         except ActorSystemException:
             logging.getLogger('Thespian').warning('Actor total creation failure', exc_info=True)
             actor = None
@@ -414,6 +422,7 @@ class ActorSystemBase:
         self._primaryCount = self._primaryCount + 1
         nar = self._newRefAndActor(self.system, self.system.systemAddress, naa,
                                    actorClass, sourceHash,
+                                   targetActorRequirements = targetActorRequirements,
                                    isTopLevel = True)
         if nar.instance:
             if globalName:
@@ -443,6 +452,7 @@ class ActorSystemBase:
         # Now create child and add it to the ActorSystem's registry
         self.actorRegistry[naa.actorAddressString] = nar = \
                 self._newRefAndActor(actorSystem, parentAddr, naa, actorClass,
+                                     targetActorRequirements = targetActorRequirements,
                                      sourceHash = sourceHash)
         if nar and nar.instance:
             if globalName:
