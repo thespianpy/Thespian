@@ -84,8 +84,7 @@ class AdminCore(systemCommonBase):
         return True
 
 
-    def h_Thespian_StatusReq(self, envelope):
-        self._sCBStats.inc('Admin Message Received.Type.StatusReq')
+    def getStatus(self):
         resp = Thespian_SystemStatus(self.myAddress,
                                      capabilities = self.capabilities,
                                      inShutdown = self.isShuttingDown())
@@ -93,8 +92,28 @@ class AdminCore(systemCommonBase):
         self._updateStatusResponse(resp)
         resp.setLoadedSources(list(self._sources.keys()))
         resp.sourceAuthority = self._sourceAuthority
-        self._send_intent(TransmitIntent(envelope.sender, resp))
+        return resp
+
+    def h_Thespian_StatusReq(self, envelope):
+        self._sCBStats.inc('Admin Message Received.Type.StatusReq')
+        self._send_intent(TransmitIntent(envelope.sender, self.getStatus()))
         return True
+
+
+    def thesplogStatus(self):
+        "Write status to thesplog"
+        from io import StringIO
+        sd = StringIO()
+        from thespian.system.messages.status import formatStatus
+        try:
+            sd.write('')
+            SSD = lambda v: v
+        except TypeError:
+            class SSD(object):
+                def __init__(self, sd): self.sd = sd
+                def write(self, str_arg): self.sd.write(str_arg.decode('utf-8'))
+        formatStatus(self.getStatus(), tofd=SSD(sd))
+        thesplog('STATUS: %s', sd.getvalue())
 
 
     def h_SetLogging(self, envelope):

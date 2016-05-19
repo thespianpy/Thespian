@@ -128,7 +128,7 @@ class ActorManager(systemCommonBase):
             return self._pendingActorResponse(envelope)
 
         if isinstance(msg, Thespian_StatusReq):
-            return self.getActorStatus(envelope)
+            return self.replyWithActorStatus(envelope)
 
         if isinstance(msg, NewCapabilities):
             return self.checkNewCapabilities(envelope)
@@ -333,16 +333,35 @@ class ActorManager(systemCommonBase):
         return True
 
 
-    def getActorStatus(self, envelope):
-        self._sCBStats.inc('Actor.Message Received.Status Request')
+    def getActorStatus(self):
         resp = Thespian_ActorStatus(self.myAddress,
                                     self._actorClass,
                                     self._adminAddr,
                                     self._parentAddr,
                                     self._sourceHash)
         self._updateStatusResponse(resp)
-        self._send_intent(TransmitIntent(envelope.sender, resp))
+        return resp
+
+    def replyWithActorStatus(self, envelope):
+        self._sCBStats.inc('Actor.Message Received.Status Request')
+        self._send_intent(TransmitIntent(envelope.sender,
+                                         self.getActorStatus()))
         return True
+
+    def thesplogStatus(self):
+        "Write status to thesplog"
+        from io import StringIO
+        sd = StringIO()
+        try:
+            sd.write('')
+            SSD = lambda v: v
+        except TypeError:
+            class SSD(object):
+                def __init__(self, sd): self.sd = sd
+                def write(self, str_arg): self.sd.write(str_arg.decode('utf-8'))
+        from thespian.system.messages.status import formatStatus
+        formatStatus(self.getActorStatus(), tofd=SSD(sd))
+        thesplog('STATUS: %s', sd.getvalue())
 
 
     # ----------------------------------------------------------------------

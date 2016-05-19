@@ -114,6 +114,12 @@ def closeFileNums(list):
 
 from thespian.system.systemAdmin import ThespianAdmin
 
+def signal_admin_sts(admin):
+    def signal_detected(signum, frame):
+        admin.thesplogStatus()
+    return signal_detected
+
+
 def startAdmin(adminClass, addrOfStarter, endpointPrep, transportClass,
                adminAddr, capabilities, logDefs):
     # Unix Daemonization; skipped if not available
@@ -156,6 +162,7 @@ def startAdmin(adminClass, addrOfStarter, endpointPrep, transportClass,
         if each not in uncatchable_signals:
             if each in child_exit_signals:
                 signal.signal(each, admin.childDied)
+    signal.signal(signal.SIGUSR1, signal_admin_sts(admin))
 
     _startLogger(transportClass, transport, admin, capabilities, logDefs)
     #closeUnusedFiles(transport)
@@ -386,10 +393,13 @@ class MultiProcReplicator(object):
 
 from thespian.system.actorManager import ActorManager
 
-def signal_detector(name, addr):
+def signal_detector(name, addr, am):
     def signal_detected(signum, frame):
-        thesplog('Actor %s @ %s got signal: %s', name, addr, signum,
-                 level = logging.WARNING)
+        if signum == signal.SIGUSR1:
+            am.thesplogStatus()
+        else:
+            thesplog('Actor %s @ %s got signal: %s', name, addr, signum,
+                     level = logging.WARNING)
         # Simply exit; just by catching the signal the atexit handlers are enabled
         # if this signal is going to cause a process exit.
     return signal_detected
@@ -453,7 +463,7 @@ def startChild(childClass, endpoint, transportClass,
     setProcName(getattr(childClass, '__name__', str(childClass)), am.transport.myAddress)
 
     sighandler = signal_detector(getattr(childClass, '__name__', str(childClass)),
-                                 am.transport.myAddress)
+                                 am.transport.myAddress, am)
     sigexithandler = shutdown_signal_detector(getattr(childClass, '__name__', str(childClass)),
                                               am.transport.myAddress,
                                               am)
@@ -469,7 +479,8 @@ def startChild(childClass, endpoint, transportClass,
                 continue
             try:
                 signal.signal(each,
-                              sigexithandler if each in exit_signals else sighandler)
+                              sigexithandler if each in exit_signals
+                              else sighandler)
             except (RuntimeError,ValueError,EnvironmentError) as ex:
                 # OK, this signal can't be caught for this
                 # environment.  We did our best.
