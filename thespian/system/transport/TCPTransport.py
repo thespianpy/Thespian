@@ -951,7 +951,7 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
                     # transport, so it's likely one of the
                     # user-supplied "watched" file descriptors.  Find
                     # and remove it, then carry on.
-                    if ex.errno == errno.EBADF:
+                    if errnum == errno.EBADF:
                         bad = []
                         for each in self._watches:
                             try:
