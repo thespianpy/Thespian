@@ -6,7 +6,7 @@ systems (which should not be an issue under normal operations).
 """
 
 import unittest
-from thespian.test import ActorSystemTestCase, simpleActorTestLogging
+from thespian.test import ActorSystemTestCase, simpleActorTestLogging, TestSystem
 import time
 import thespian.test.helpers
 from thespian.actors import *
@@ -43,6 +43,7 @@ class ColorActorBase(Actor):
             self.send(sender, "Got: " + msg)
         elif isinstance(msg, SetCap):
             self.updateCapability(msg.capName, msg.capValue)
+            self.send(sender, 'ok')
         elif type(msg) == type((1,2)):
             if type(msg[-1]) == type(""):
                 msg = tuple(list(msg) + [sender])
@@ -79,6 +80,45 @@ class BlueActor(ColorActorBase):
 class OrangeActor(ColorActorBase):
     # This actor has no actorSystemCapabilityCheck
     pass
+
+
+class SingleSystemCapabilityUpdates(object):
+    def test00_systemUpdatable(self):
+        with TestSystem(newBase=self.actorSystemBase,
+                        systemCapabilities={'Admin Port': self.basePortOffset}) as asys:
+            asys.updateCapability('Colors', {'Red', 'Blue', 'Green'})
+            asys.updateCapability('Here', True)
+            asys.updateCapability('Here')
+    def test01_actorUpdatable(self):
+        with TestSystem(newBase=self.actorSystemBase,
+                        systemCapabilities={'Admin Port': self.basePortOffset}) as asys:
+            orange = asys.createActor(OrangeActor)
+            self.assertEqual('ok', asys.ask(orange, SetCap('Blue', True), 1))
+
+
+class TestASimpleBaseSingleUpdates(SingleSystemCapabilityUpdates, unittest.TestCase):
+    testbase='Simple'
+    scope='func'
+    actorSystemBase = 'simpleSystemBase'
+    basePortOffset = 9
+
+class TestMultiprocTCPSingleUpdates(SingleSystemCapabilityUpdates, unittest.TestCase):
+    testbase='MultiprocTCP'
+    scope='func'
+    actorSystemBase = 'multiprocTCPBase'
+    basePortOffset = 9000
+
+class TestMultiprocUDPSingleUpdates(SingleSystemCapabilityUpdates, unittest.TestCase):
+    testbase='MultiprocUDP'
+    scope='func'
+    actorSystemBase = 'multiprocUDPBase'
+    basePortOffset = 9020
+
+class TestMultiprocQueueSingleUpdates(SingleSystemCapabilityUpdates, unittest.TestCase):
+    testbase='MultiprocQueue'
+    scope='func'
+    actorSystemBase = 'multiprocQueueBase'
+    basePortOffset = 9
 
 
 class BaseCapabilityUpdates(object):
@@ -250,8 +290,8 @@ class BaseCapabilityUpdates(object):
         self.assertEqual("Got: Hello", self.systems['One'].ask(red, 'Hello', 1))
         self.assertEqual("Got: Aloha", self.systems['One'].ask(orange, 'Aloha', 1))
         # Now have Red add a couple of capabilities
-        self.systems['One'].tell(red, SetCap('Green', True))
-        self.systems['One'].tell(red, SetCap('Blue', True))
+        self.assertEqual('ok', self.systems['One'].ask(red, SetCap('Green', True), 1))
+        self.assertEqual('ok', self.systems['One'].ask(red, SetCap('Blue', True), 1))
         time.sleep(0.1)  # allow actor to process these messages
         # And create some Actors needing those capabilities
         green = self.systems['One'].createActor(GreenActor)
@@ -338,8 +378,8 @@ class BaseCapabilityUpdates(object):
         self.assertEqual("Got: greetings", self.systems['One'].ask(blue, 'greetings', 1))
         self.assertEqual("Got: aloha", self.systems['One'].ask(orange, 'aloha', 1))
         # Remove color capabilities from ActorSystems
-        self.systems['One'].tell(red, SetCap('Red', False))
-        self.systems['One'].tell(blue, SetCap('Blue', False))
+        self.assertEqual('ok', self.systems['One'].ask(red, SetCap('Red', False), 1))
+        self.assertEqual('ok', self.systems['One'].ask(blue, SetCap('Blue', False), 1))
         time.sleep(0.4)  # allow actor to process these messages
         # Verify affected Actors are no longer present.
         self.assertIsNone(self.systems['One'].ask(red, '1', 1))
@@ -410,7 +450,7 @@ class BaseCapabilityUpdates(object):
         self.assertEqual("hey, green", self.systems['One'].ask(blue, (GreenActor, 'hey, green'), reasonableActorResponseTime*10))
         # Remove remaining capabilities
         self.systems['Two'].updateCapability('Green', None)
-        self.systems['One'].tell(blue, SetCap('Blue', None))
+        self.assertEqual('ok', self.systems['One'].ask(blue, SetCap('Blue', None), 1))
         time.sleep(0.1)  # allow actor to process these messages
         # No new actors can be created for any color
         self.assertRaises(NoCompatibleSystemForActor, self.systems['One'].createActor, RedActor)
@@ -448,7 +488,7 @@ class BaseCapabilityUpdates(object):
         self.assertEqual("bluegreen", self.systems['One'].ask(blue, (GreenActor, 'bluegreen'), reasonableActorResponseTime))
         # Remove non-color capabilities from ActorSystems
         self.systems['One'].updateCapability('Frog', None)
-        self.systems['One'].tell(blue, SetCap('Bark', None))
+        self.assertEqual('ok', self.systems['One'].ask(blue, SetCap('Bark', None), 1))
         self.systems['One'].updateCapability('Cow', None)
         time.sleep(0.1)
         # Verify actors are still responsive
@@ -498,7 +538,7 @@ class BaseCapabilityUpdates(object):
         # Remove non-color capabilities from ActorSystems
         self.systems['One'].updateCapability('Red', True)
         self.systems['Two'].updateCapability('Green', True)
-        self.systems['One'].tell(blue, SetCap('Blue', True))
+        self.assertEqual('ok', self.systems['One'].ask(blue, SetCap('Blue', True), 1))
         # Verify actors are still responsive
         self.assertEqual("Got: hello", self.systems['One'].ask(red, 'hello', 1))
         self.assertEqual("Got: howdy", self.systems['One'].ask(green, 'howdy', 1))
@@ -671,13 +711,13 @@ class BaseCapabilityUpdates(object):
         self.assertIsNone(self.systems['One'].ask(blue, (RedActor, GreenActor, RedActor, OrangeActor, BlueActor, GreenActor, 'long path'),
                                                               reasonableActorResponseTime))
         # Now have Red add a couple of capabilities
-        self.systems['One'].tell(red, SetCap('Green', True))
+        self.assertEqual('ok', self.systems['One'].ask(red, SetCap('Green', True), 1))
         time.sleep(reasonableActorResponseTime)  # allow capabilities to settle
         # Verify that added capability enables a sub-actor to creat new Actors
         self.assertEqual('long path', self.systems['One'].ask(blue, (RedActor, GreenActor, RedActor, OrangeActor, BlueActor, GreenActor, 'long path'),
                                                               reasonableActorResponseTime))
         # Remove that capability again
-        self.systems['One'].tell(red, SetCap('Green', None))
+        self.assertEqual('ok', self.systems['One'].ask(red, SetCap('Green', None), 1))
         time.sleep(reasonableActorResponseTime)  # allow capabilities to settle
         # Now verify that sub-actor cannot create Green actors again
         self.assertIsNone(self.systems['One'].ask(blue, (RedActor, GreenActor, RedActor, BlueActor, GreenActor, 'long path'),
@@ -700,7 +740,7 @@ class BaseCapabilityUpdates(object):
         self.assertEqual('long path', self.systems['One'].ask(blue, (GreenActor, RedActor, BlueActor, GreenActor, 'long path'),
                                                               reasonableActorResponseTime))
         # Remove an originally-existing capability
-        self.systems['One'].tell(red, SetCap('Green', None))
+        self.assertEqual('ok', self.systems['One'].ask(red, SetCap('Green', None), 1))
         time.sleep(reasonableActorResponseTime)  # allow capabilities to settle
         # Now verify that sub-actor cannot create Green actors anymore
         self.assertIsNone(self.systems['One'].ask(blue, (GreenActor, RedActor, BlueActor, GreenActor, 'long path'),
