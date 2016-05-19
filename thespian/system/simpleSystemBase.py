@@ -87,6 +87,9 @@ class ActorRef:
     def registerSourceAuthority(self, address):
         self._system._systemBase.registerSourceAuthority(address)
 
+    def updateCapability(self, capabilityName, capabilityValue):
+        self._system.updateCapability(capabilityName, capabilityValue)
+
     def loadActorSource(self, fname):
         return self._system._systemBase.loadActorSource(fname)
 
@@ -499,6 +502,14 @@ class ActorSystemBase:
 
     def setProcessingLimit(self, limit=0):
         self.procLimit = limit
+
+
+    def updateCapability(self, capabilityName, capabilityValue):
+        if capabilityValue is None:
+            if capabilityName in self.system.capabilities:
+                del self.system.capabilities[capabilityName]
+        else:
+            self.system.capabilities[capabilityName] = capabilityValue
 
 
     def registerSourceAuthority(self, address):

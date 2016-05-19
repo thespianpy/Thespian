@@ -558,6 +558,11 @@ class ActorSystem(object):
     def updateCapability(self, capabilityName, capabilityValue=None):
         "Adds/modifies an ActorSystem capability (or removes it if the value is None or not specified)."
         self._systemBase.updateCapability(capabilityName, capabilityValue)
+        if capabilityValue is None:
+            if capabilityName in self.capabilities:
+                del self.capabilities[capabilityName]
+        else:
+            self.capabilities[capabilityName] = capabilityValue
 
 
     def loadActorSource(self, fname):
