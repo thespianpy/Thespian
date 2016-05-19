@@ -697,7 +697,7 @@ class TestASimpleSystem(unittest.TestCase, CreateTestSourceZips):
                           'foo.FooActor', sourceHash = srchash)
 
     def test04_actorsCanLoadAndUnloadSource(self):
-        self.startSystems(270)
+        self.startSystems(670)
         self._registerSA()
         # Load first source
         srchash = self.systems['One'].loadActorSource(self.dogzipFname)
