@@ -10,6 +10,8 @@ Table of Contents
 ─────────────────
 
 2.x
+.. 2.6
+..... 2.6.0 <2016-05-18 Wed>
 .. 2.5
 ..... 2.5.10 <2016-05-03 Mon>
 ..... 2.5.9 <2016-03-21 Mon>
@@ -52,61 +54,90 @@ not change the API.
 2.x
 ═══
 
+2.6
+───
+
+2.6.0 <2016-05-18 Wed>
+╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+
+  ‣ Functional Changes
+
+    ‣ Added status output to thesplog on SIGUSR1 to an Actor.  This is
+      useful for scenarios where the Actor is not responding to regular
+      queries (e.g. network queue blockages, etc.).
+
+  ‣ Behavioral Fixes
+
+    ‣ The simpleSystemBase now properly supports system capability
+      updates and validates the actorSystemCapabilityCheck results when
+      creating Actors.
+
+    ‣ The httpserver example is fixed for handling requests with no
+      QUERY_STRING portion.
+
+    ‣ Do not try to restart the logger if the system is being shutdown.
+
+  ‣ Internal Bugfixes
+
+    ‣ Many tests update to use independent admin ports to avoid
+      inter-test influences.
+
+
 2.5
 ───
 
 2.5.10 <2016-05-03 Mon>
 ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 
-◊ API and Public Changes
+  ‣ API and Public Changes
 
-  ‣ Added a Websocket Actor example and the Actorize decorator
-    contributed code from Paul Jimenez.
+    ‣ Added a Websocket Actor example and the Actorize decorator
+      contributed code from Paul Jimenez.
 
-  ‣ Added ThespianWatch and WatchMessage functionality.
+    ‣ Added ThespianWatch and WatchMessage functionality.
+
+  ‣ Behavioral Fixes
+
+    ‣ Update logging if convention leadership is changed for logging via
+      new leader.
+
+    ‣ Restart the logger if it exits.
+
+    ‣ Update signal handling to better interrupt wait cycles in
+      transports, resulting in handling signals more immediately.
+
+    ‣ Ensure actor checks/restarts caused by updating Actor System
+      capabilities only affect actors on the updated system.
+
+    ‣ Fixed bug on address forwarding that caused transmit lockups when
+      the forwarded message exceeded the pending transmit limit.
 
 
-◊ Behavioral Fixes
+  ‣ Internal Bugfixes
 
-  ‣ Update logging if convention leadership is changed for logging via
-    new leader.
+    ‣ Update the logging to use a global transport instance to ensure
+      that children inheriting threads will use the proper transport
+      instance.
 
-  ‣ Restart the logger if it exits.
+    ‣ Add small wait to allow child exit information to propagate and be
+      handled.
 
-  ‣ Update signal handling to better interrupt wait cycles in
-    transports, resulting in handling signals more immediately.
+    ‣ Update the admin for handling child exit signalling to provide
+      better detection of children that are no longer running.
 
-  ‣ Ensure actor checks/restarts caused by updating Actor System
-    capabilities only affect actors on the updated system.
+    ‣ Miscellaneous test updates to ensure distinct Actor Systems used
+      for different tests to avoid crosstalk failures.
 
-  ‣ Fixed bug on address forwarding that caused transmit lockups when
-    the forwarded message exceeded the pending transmit limit.
+    ‣ Better handling of closed/bad file descriptors in the
+      multiprocTCPBase transport to handle remote closures, etc.
 
+    ‣ Use a thread-safe Queue in the async transports to ensure that
+      transmits queued by alternate threads (e.g. log messages) only
+      enter the core transport work loop via the main thread.
 
-◊ Internal Bugfixes
+    ‣ TCP transport cleanups from Paul Jimenez.
 
-  ‣ Update the logging to use a global transport instance to ensure that
-    children inheriting threads will use the proper transport instance.
-
-  ‣ Add small wait to allow child exit information to propagate and be
-    handled.
-
-  ‣ Update the admin for handling child exit signalling to provide
-    better detection of children that are no longer running.
-
-  ‣ Miscellaneous test updates to ensure distinct Actor Systems used for
-    different tests to avoid crosstalk failures.
-
-  ‣ Better handling of closed/bad file descriptors in the
-    multiprocTCPBase transport to handle remote closures, etc.
-
-  ‣ Use a thread-safe Queue in the async transports to ensure that
-    transmits queued by alternate threads (e.g. log messages) only enter
-    the core transport work loop via the main thread.
-
-  ‣ TCP transport cleanups from Paul Jimenez.
-
-  ‣ Fixed wakeup transport handling for TransmitOnly mode.
+    ‣ Fixed wakeup transport handling for TransmitOnly mode.
 
 
 2.5.9 <2016-03-21 Mon>
