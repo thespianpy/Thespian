@@ -111,6 +111,15 @@ class Actor(object):
            operations (no .send(), .handleDeadLetters(),
            .notifyOnSystemRegistrationChanges(), etc.)
 
+           Also note that there is post-__init__ processing of a
+           created Actor object by the ActorSystem that is necessary
+           for it to become a full Actor.  The Actor's __init__() must
+           not perform Actor-related operations, and the __init__() is
+           not sufficient to *fully* initialize an Actor object.  This
+           ensures that the ActorSystem is involved in the creation of
+           a useable Actor (i.e. the ActorSystem is the Factory for an
+           Actor).
+
         """
         pass
 
