@@ -312,7 +312,8 @@ class MultiProcReplicator(object):
         logproc = getattr(self, 'asLogProc', None)
         if logproc and not self._checkChildLiveness(logproc):
             # Logger has died; need to start another
-            _startLogger(self.transport.__class__, self.transport, self, self.capabilities, self.logdefs)
+            if not hasattr(self, '_exiting'):
+                _startLogger(self.transport.__class__, self.transport, self, self.capabilities, self.logdefs)
         # Signal handler for SIGCHLD; figure out which child and synthesize a ChildActorExited to handle it
         self._child_procs, dead = partition(self._checkChildLiveness,  getattr(self, '_child_procs', []))
         for each in dead:
