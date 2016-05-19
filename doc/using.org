@@ -1123,7 +1123,9 @@ class MyActor(Actor):
        automatically obtain that loadActorSource file from the current
        system and then start the target Actor from that source.  This
        can be used as a code distribution methodology for the
-       ActorSystems' environment.
+       ActorSystems' environment.  The ActorSystem that initiated the
+       ~createActor()~ call with the hash must already have that source
+       loaded.
 
    The return value of this method is the ActorAddress of the
    newly-created Actor.  Note that this address may be provided even
