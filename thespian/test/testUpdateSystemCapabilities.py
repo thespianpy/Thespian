@@ -86,7 +86,7 @@ class SingleSystemCapabilityUpdates(object):
     def test00_systemUpdatable(self):
         with TestSystem(newBase=self.actorSystemBase,
                         systemCapabilities={'Admin Port': self.basePortOffset}) as asys:
-            asys.updateCapability('Colors', {'Red', 'Blue', 'Green'})
+            asys.updateCapability('Colors', ['Red', 'Blue', 'Green'])
             asys.updateCapability('Here', True)
             asys.updateCapability('Here')
     def test01_actorUpdatable(self):
