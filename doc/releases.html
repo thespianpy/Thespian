@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
 <title>Thespian Release Notes</title>
-<!-- 2016-05-18 Wed 21:28 -->
+<!-- 2016-05-20 Fri 12:51 -->
 <meta  http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta  name="generator" content="Org-mode" />
 <meta  name="author" content="Kevin Quick &lt;kquick@godaddy.com&gt;" />
@@ -159,7 +159,8 @@ for the JavaScript code in this tag.
 <ul>
 <li><a href="#sec-1-1">2.6</a>
 <ul>
-<li><a href="#sec-1-1-1">2.6.0 <span class="timestamp-wrapper"><span class="timestamp">&lt;2016-05-18 Wed&gt;</span></span></a></li>
+<li><a href="#sec-1-1-1">2.6.1 <span class="timestamp-wrapper"><span class="timestamp">&lt;2016-05-20 Fri&gt;</span></span></a></li>
+<li><a href="#sec-1-1-2">2.6.0 <span class="timestamp-wrapper"><span class="timestamp">&lt;2016-05-18 Wed&gt;</span></span></a></li>
 </ul>
 </li>
 <li><a href="#sec-1-2">2.5</a>
@@ -225,8 +226,23 @@ do not change the API.
 <h3 id="sec-1-1">2.6</h3>
 <div class="outline-text-3" id="text-1-1">
 </div><div id="outline-container-sec-1-1-1" class="outline-4">
-<h4 id="sec-1-1-1">2.6.0 <span class="timestamp-wrapper"><span class="timestamp">&lt;2016-05-18 Wed&gt;</span></span></h4>
+<h4 id="sec-1-1-1">2.6.1 <span class="timestamp-wrapper"><span class="timestamp">&lt;2016-05-20 Fri&gt;</span></span></h4>
 <div class="outline-text-4" id="text-1-1-1">
+<ul class="org-ul">
+<li>Fix simpleSystemBase wrapping of DeadEnvelope for dead letter
+re-routing.
+</li>
+
+<li>Fix SIGUSR1 status output for Windows, which has no SIGUSR1 (and
+therefore does not support this functionality).
+</li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-sec-1-1-2" class="outline-4">
+<h4 id="sec-1-1-2">2.6.0 <span class="timestamp-wrapper"><span class="timestamp">&lt;2016-05-18 Wed&gt;</span></span></h4>
+<div class="outline-text-4" id="text-1-1-2">
 <ul class="org-ul">
 <li>Functional Changes
 
@@ -984,7 +1000,7 @@ The 1.x Release series was developed and used internally by GoDaddy
 </div>
 <div id="postamble" class="status">
 <p class="author">Author: Kevin Quick &lt;kquick@godaddy.com&gt;</p>
-<p class="date">Created: 2016-05-18 Wed 21:28</p>
+<p class="date">Created: 2016-05-20 Fri 12:51</p>
 <p class="creator"><a href="http://www.gnu.org/software/emacs/">Emacs</a> 24.5.2 (<a href="http://orgmode.org">Org</a> mode 8.2.10)</p>
 <p class="validation"><a href="http://validator.w3.org/check?uri=referer">Validate</a></p>
 </div>
