@@ -7,7 +7,7 @@
 #+LATEX_HEADER: \product{Thespian}
 #+LATEX_HEADER: \component{Python Actor System}
 #+LATEX_HEADER: \doctype{Release Notes}
-#+LATEX_HEADER: \docrev{2.6.0}{2016 May 18}
+#+LATEX_HEADER: \docrev{2.6.1}{2016 May 20}
 #+LATEX_HEADER: \docid{TheDoc-06}
 #+OPTIONS: ^:nil num:nil
 
@@ -20,6 +20,14 @@ do not change the API.
 * 2.x
 
 ** 2.6
+
+*** 2.6.1 <2016-05-20 Fri>
+
+  * Fix simpleSystemBase wrapping of DeadEnvelope for dead letter
+    re-routing.
+
+  * Fix SIGUSR1 status output for Windows, which has no SIGUSR1 (and
+    therefore does not support this functionality).
 
 *** 2.6.0 <2016-05-18 Wed>
 
