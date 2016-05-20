@@ -293,8 +293,10 @@ class ActorSystemBase:
         else:
             rcvr, sndr, msg = ps.toActor, ps.sender, ps.msg
 
-        tgt = self.actorRegistry.get(rcvr.actorAddressString, None) or \
-              self.actorRegistry.get('DeadLetterBox', None)
+        tgt = self.actorRegistry.get(rcvr.actorAddressString, None)
+        if not tgt:
+            tgt = self.actorRegistry.get('DeadLetterBox', None)
+            msg = DeadEnvelope(rcvr.actorAddressString, msg)
         if tgt:
             if rcvr == self.system.systemAddress and isinstance(msg, ValidatedSource):
                 self._loadValidatedActorSource(msg.sourceHash, msg.sourceZip)
