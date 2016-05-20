@@ -162,7 +162,8 @@ def startAdmin(adminClass, addrOfStarter, endpointPrep, transportClass,
         if each not in uncatchable_signals:
             if each in child_exit_signals:
                 signal.signal(each, admin.childDied)
-    signal.signal(signal.SIGUSR1, signal_admin_sts(admin))
+    if hasattr(signal, 'SIGUSR1'):
+        signal.signal(signal.SIGUSR1, signal_admin_sts(admin))
 
     _startLogger(transportClass, transport, admin, capabilities, logDefs)
     #closeUnusedFiles(transport)
@@ -395,7 +396,7 @@ from thespian.system.actorManager import ActorManager
 
 def signal_detector(name, addr, am):
     def signal_detected(signum, frame):
-        if signum == signal.SIGUSR1:
+        if signum == getattr(signal, 'SIGUSR1', 'no-sigusr1-avail'):
             am.thesplogStatus()
         else:
             thesplog('Actor %s @ %s got signal: %s', name, addr, signum,
