@@ -25,9 +25,19 @@ else:
         is_main_thread = lambda: 'MainThread' in threading.current_thread().getName()
 
 
+# Transmits are passed along until there are MAX_PENDING_TRANSMITS, at
+# which point they are queued internally.  If the number of internally
+# queue transmits exceeds MAX_QUEUED_TRANSMITS then the transport is
+# put into transmit-only mode (attempting to drain all current work
+# before new work is accepted) until the transmit queue depth drops
+# back below QUEUE_TRANSMIT_UNBLOCK_THRESHOLD.  If the number of
+# queued transmits exceeds the DROP_TRANSMITS_LEVEL then additional
+# transmits are immediately failed instead of being queued.
+
 MAX_PENDING_TRANSMITS = 20
 MAX_QUEUED_TRANSMITS  = 950
 QUEUE_TRANSMIT_UNBLOCK_THRESHOLD = 780
+DROP_TRANSMITS_LEVEL = MAX_QUEUED_TRANSMITS + 100
 
 
 class asyncTransportBase(object):
@@ -150,6 +160,11 @@ class asyncTransportBase(object):
 
         # OK, this can be sent now, so go ahead and get it sent out
         if not self._canSendNow(transmitIntent):
+            if self._aTB_queuedPendingTransmits.qsize() >= DROP_TRANSMITS_LEVEL:
+                thesplog('Dropping TX: overloaded', level=logging.WARNING)
+                transmitIntent.result = SendStatus.Failed
+                transmitIntent.completionCallback()
+                return
             self._aTB_queuedPendingTransmits.put(transmitIntent)
             if self._aTB_queuedPendingTransmits.qsize() >= MAX_QUEUED_TRANSMITS:
                 # Try to drain out local work before accepting more
