@@ -1,8 +1,7 @@
-import unittest
-import thespian.test.helpers
 from thespian.actors import *
-from thespian.test import ActorSystemTestCase
+from thespian.test import *
 import time
+
 
 class TellChild(object):
     def __init__(self, msg):
@@ -124,101 +123,108 @@ class KillReq(object):
         self.countdown = v
 
 
-class TestASimpleSystem(ActorSystemTestCase):
-    testbase='Simple'
-    scope='func'
+# Note: multiprocQueueBase is marked as unstable because that system
+# base assumes that Queue.put() messages have been successfully sent;
+# this is not true, and especially when the target has already exited.
 
-    def test01_NonStartingSystemLevelActor(self):
-        nonstarter = ActorSystem().createActor(NonStarter)
+class TestFuncActorFailures(object):
+
+    def test01_NonStartingSystemLevelActor(self, asys):
+        nonstarter = asys.createActor(NonStarter)
         # just finish, make sure no exception is thrown.  Primary
         # actors (those owned by the ActorSystem itself) are not
         # restarted on failure, so the actor won't actually be
         # recreated.  The "anything" message will actually be routed
         # to the Dead Letter handler (see testDeadLettering).
-        self.assertIsNone(ActorSystem().ask(nonstarter, "anything", 0.3))
+        assert asys.ask(nonstarter, "anything", 0.3) is None
 
-    def test02_NonStartingSubActorWithRestarts(self):
-        parent = ActorSystem().createActor(RestartParent)
+    def test02_NonStartingSubActorWithRestarts(self, asys):
+        unstable_test(asys, 'multiprocUDPBase', 'multiprocQueueBase')
+        parent = asys.createActor(RestartParent)
 
-        tellParent = lambda m: ActorSystem().tell(parent, m)
+        tellParent = lambda m: asys.tell(parent, m)
 
-        askParent        = lambda m: ActorSystem().ask(parent, m, 2)
+        askParent = lambda m: asys.ask(parent, m, 2)
         askKid    = lambda m: askParent(TellDaughter(m))
 
-        self.assertEqual(askParent('name?'), parent)
+        assert askParent('name?') == parent
         son = askParent('have a son?')
-        self.assertIsNotNone(son)
-        self.assertIsNone(askParent(TellSon('name?')))
+        assert son is not None
+        assert askParent(TellSon('name?')) is None
 
-        self.assertEqual(askParent('name?'), parent)
+        assert askParent('name?') == parent
         tellParent(ActorExitRequest())
-        self.assertIsNone(askParent('name?'))
+        assert askParent('name?') is None
 
 
-    def test03_NonStartingSubActorWithoutRestarts(self):
-        parent = ActorSystem().createActor(NoRestartParent)
+    def test03_NonStartingSubActorWithoutRestarts(self, asys):
+        unstable_test(asys, 'multiprocUDPBase')
+        parent = asys.createActor(NoRestartParent)
 
-        tellParent = lambda m: ActorSystem().tell(parent, m)
+        tellParent = lambda m: asys.tell(parent, m)
 
-        askParent        = lambda m: ActorSystem().ask(parent, m, 0.5)
+        askParent        = lambda m: asys.ask(parent, m, 0.5)
 
-        self.assertEqual(askParent('name?'), parent)
+        assert askParent('name?') == parent
         son = askParent('have a son?')
-        self.assertIsNotNone(son)  # got an Address back, but Son failed to start
-        self.assertIsNone(askParent(TellSon('name?')))  # dead-lettered, so no response
+        assert son is not None  # got an Address back, but Son failed to start
+        assert askParent(TellSon('name?')) is None  # dead-lettered, so no response
 
-        self.assertEqual(askParent('name?'), parent)
+        assert askParent('name?') == parent
         tellParent(ActorExitRequest())
-        self.assertIsNone(askParent('name?'))
+        assert askParent('name?') is None
 
 
-    def test04_RestartedSubActorWithRestarts(self):
-        parent = ActorSystem().createActor(RestartParent)
+    def test04_RestartedSubActorWithRestarts(self, asys):
+        unstable_test(asys, 'multiprocUDPBase', 'multiprocQueueBase')
+        parent = asys.createActor(RestartParent)
 
-        tellParent = lambda m: ActorSystem().tell(parent, m)
+        tellParent = lambda m: asys.tell(parent, m)
 
-        askParent = lambda m: ActorSystem().ask(parent, m, 0.5)
+        askParent = lambda m: asys.ask(parent, m, 0.5)
         askKid    = lambda m: askParent(TellDaughter(m))
 
-        self.assertEqual(askParent('name?'), parent)
+        assert askParent('name?') == parent
 
         kid = askParent('have a daughter?')
-        self.assertIsNotNone(kid)
-        self.assertIsNotNone(askKid('name?'))
+        assert kid is not None
+        assert askKid('name?') is not None
 
-        self.assertEqual(askParent('name?'), parent)
-        self.assertIsNotNone(askKid('name?'))
+        assert askParent('name?') == parent
+        assert askKid('name?') is not None
 
         stableKid = askKid('name?')
-        self.assertEqual(ActorSystem().ask(stableKid, 'name?', 0.4), stableKid)
+        assert asys.ask(stableKid, 'name?', 0.4) == stableKid
 
         # root Actors are not restarted which should cause children to be shutdown.
         tellParent(ActorExitRequest())
         # The following two have a 2 second delay each
-        self.assertIsNone(askParent('name?'))
-        self.assertIsNone(askKid('name?'))
-        self.assertIsNone(ActorSystem().ask(stableKid, 'name?', 0.4))
+        assert askParent('name?') is None
+        assert askKid('name?') is None
+        assert asys.ask(stableKid, 'name?', 0.4) is None
 
 
-    def test05_RestartedSubActorWithoutRestarts(self):
-        parent = ActorSystem().createActor(NoRestartParent)
+    def test05_RestartedSubActorWithoutRestarts(self, asys):
+        unstable_test(asys, 'multiprocUDPBase')
+        parent = asys.createActor(NoRestartParent)
 
-        askParent = lambda m: ActorSystem().ask(parent, m, 0.5)
+        askParent = lambda m: asys.ask(parent, m, 0.5)
         askKid    = lambda m: askParent(TellDaughter(m))
 
-        self.assertEqual(askParent('name?'), parent)
+        assert askParent('name?') == parent
 
         kid = askParent('have a daughter?')
-        self.assertIsNotNone(kid)
-        self.assertIsNone(askKid('name?'))  # dead-lettered, so no response
+        assert kid is not None
+        assert askKid('name?') is None  # dead-lettered, so no response
 
 
-    def test06_ActorStackShutdown(self):
-        parent = ActorSystem().createActor(RestartParent)
+    def test06_ActorStackShutdown(self, asys):
+        unstable_test(asys, 'multiprocUDPBase', 'multiprocQueueBase')
+        parent = asys.createActor(RestartParent)
 
-        tellParent = lambda m: ActorSystem().tell(parent, m)
+        tellParent = lambda m: asys.tell(parent, m)
 
-        askParent        = lambda m: ActorSystem().ask(parent, m, 0.5)
+        askParent        = lambda m: asys.ask(parent, m, 0.5)
         askKid           = lambda m: askParent(TellDaughter(m))
         askGrandKid      = lambda m: askKid(TellDaughter(m))
         askGreatGrandKid = lambda m: askGrandKid(TellDaughter(m))
@@ -231,10 +237,10 @@ class TestASimpleSystem(ActorSystemTestCase):
         # NonStarter and was then restarted and probably received a
         # new ActorAddress.
 
-        self.assertIsNotNone(askParent('name?'))
-        self.assertIsNotNone(askKid('name?'))
-        self.assertIsNotNone(askGrandKid('name?'))
-        self.assertIsNotNone(askGreatGrandKid('name?'))
+        assert askParent('name?') is not None
+        assert askKid('name?') is not None
+        assert askGrandKid('name?') is not None
+        assert askGreatGrandKid('name?') is not None
 
         tellParent(ActorExitRequest())
         #time.sleep(0.2)  # allow actor shutdown requests to propagate
@@ -242,21 +248,22 @@ class TestASimpleSystem(ActorSystemTestCase):
         # False positive (success) if actor system is hung?  Need to
         # check deadletter delivery of these name queries to be sure
         # ActorSystem is fully functional.
-        self.assertIsNone(askParent('name?'))
-        self.assertIsNone(askKid('name?'))
-        self.assertIsNone(askGrandKid('name?'))
-        self.assertIsNone(askGreatGrandKid('name?'))
+        assert askParent('name?') is None
+        assert askKid('name?') is None
+        assert askGrandKid('name?') is None
+        assert askGreatGrandKid('name?') is None
 
 
-    def test07_DeepActorShutdown(self):
-        parent = ActorSystem().createActor(RestartParent)
+    def test07_DeepActorShutdown(self, asys):
+        unstable_test(asys, 'multiprocUDPBase', 'multiprocQueueBase')
+        parent = asys.createActor(RestartParent)
 
-        tellParent        = lambda m: ActorSystem().tell(parent, m)
+        tellParent        = lambda m: asys.tell(parent, m)
         tellKid           = lambda m: tellParent(TellDaughter(m))
         tellGrandKid      = lambda m: tellKid(TellDaughter(m))
         tellGreatGrandKid = lambda m: tellGrandKid(TellDaughter(m))
 
-        askParent        = lambda m: ActorSystem().ask(parent, m, 0.5)
+        askParent        = lambda m: asys.ask(parent, m, 0.5)
         askKid           = lambda m: askParent(TellDaughter(m))
         askGrandKid      = lambda m: askKid(TellDaughter(m))
         askGreatGrandKid = lambda m: askGrandKid(TellDaughter(m))
@@ -266,28 +273,28 @@ class TestASimpleSystem(ActorSystemTestCase):
         greatgrandkid = askGrandKid('have a daughter?')
         # n.b. kid, grandkid, and greatgrandkid are not useable, see test06 above.
 
-        if self.testbase == 'MultiprocUDP':
+        if asys.base_name == 'multiprocUDPBase':
             time.sleep(0.4)  # see test06 note above; doesn't always work
-        self.assertIsNotNone(askParent('name?'))
-        self.assertIsNotNone(askKid('name?'))
-        self.assertIsNotNone(askGrandKid('name?'))
-        self.assertIsNotNone(askGreatGrandKid('name?'))
+        assert askParent('name?') is not None
+        assert askKid('name?') is not None
+        assert askGrandKid('name?') is not None
+        assert askGreatGrandKid('name?') is not None
 
         tellGreatGrandKid(ActorExitRequest())
         #time.sleep(0.2)  # allow actor shutdown requests to propagate
 
-        self.assertIsNotNone(askParent('name?'))
-        self.assertIsNotNone(askKid('name?'))
-        self.assertIsNotNone(askGrandKid('name?'))
-        self.assertIsNotNone(askGreatGrandKid('name?'))
+        assert askParent('name?') is not None
+        assert askKid('name?') is not None
+        assert askGrandKid('name?') is not None
+        assert askGreatGrandKid('name?') is not None
 
         tellGrandKid(ActorExitRequest())
         #time.sleep(0.2)  # allow actor shutdown requests to propagate
 
-        self.assertIsNotNone(askParent('name?'))
-        self.assertIsNotNone(askKid('name?'))
-        self.assertIsNotNone(askGrandKid('name?'))
-        self.assertIsNotNone(askGreatGrandKid('name?'))
+        assert askParent('name?') is not None
+        assert askKid('name?') is not None
+        assert askGrandKid('name?') is not None
+        assert askGreatGrandKid('name?') is not None
 
         # parent is Top Level Actor, so no restarts
         tellParent(ActorExitRequest())
@@ -296,21 +303,22 @@ class TestASimpleSystem(ActorSystemTestCase):
         # False positive (success) if actor system is hung?  Need to
         # check deadletter delivery of these name queries to be sure
         # ActorSystem is fully functional.
-        self.assertIsNone(askParent('name?'))
-        self.assertIsNone(askKid('name?'))
-        self.assertIsNone(askGrandKid('name?'))
-        self.assertIsNone(askGreatGrandKid('name?'))
+        assert askParent('name?') is None
+        assert askKid('name?') is None
+        assert askGrandKid('name?') is None
+        assert askGreatGrandKid('name?') is None
 
 
-    def test08_DeepActorInvoluntaryTermination(self):
-        parent = ActorSystem().createActor(RestartParent)
+    def test08_DeepActorInvoluntaryTermination(self, asys):
+        unstable_test(asys, 'multiprocUDPBase', 'multiprocQueueBase')
+        parent = asys.createActor(RestartParent)
 
-        tellParent        = lambda m: ActorSystem().tell(parent, m)
+        tellParent        = lambda m: asys.tell(parent, m)
         tellKid           = lambda m: tellParent(TellDaughter(m))
         tellGrandKid      = lambda m: tellKid(TellDaughter(m))
         tellGreatGrandKid = lambda m: tellGrandKid(TellDaughter(m))
 
-        askParent        = lambda m: ActorSystem().ask(parent, m, 0.5)
+        askParent        = lambda m: asys.ask(parent, m, 0.5)
         askKid           = lambda m: askParent(TellDaughter(m))
         askGrandKid      = lambda m: askKid(TellDaughter(m))
         askGreatGrandKid = lambda m: askGrandKid(TellDaughter(m))
@@ -320,51 +328,51 @@ class TestASimpleSystem(ActorSystemTestCase):
         greatgrandkid = askGrandKid('have a daughter?')
         # n.b. kid, grandkid, and greatgrandkid are not useable, see test06 above.
 
-        if self.testbase == 'MultiprocUDP':
+        if asys.base_name == 'multiprocUDPBase':
             time.sleep(0.4)  # see test06 note above; doesn't always work
-        self.assertIsNotNone(askParent('name?'))
-        self.assertIsNotNone(askKid('name?'))
-        self.assertIsNotNone(askGrandKid('name?'))
-        if self.testbase == 'MultiprocUDP':
+        assert askParent('name?') is not None
+        assert askKid('name?') is not None
+        assert askGrandKid('name?') is not None
+        if asys.base_name == 'multiprocUDPBase':
             time.sleep(0.4)  # see test06 note above; doesn't always work
-        self.assertIsNotNone(askGreatGrandKid('name?'))
+        assert askGreatGrandKid('name?') is not None
 
         # Wait a little because first kid dies and second kid has to
         # be created at each level.
         time.sleep(0.2)
 
-        self.assertFalse(askParent('poisoned child?'))
-        self.assertFalse(askKid('poisoned child?'))
-        self.assertFalse(askGrandKid('poisoned child?'))
-        self.assertFalse(askGreatGrandKid('poisoned child?'))
+        assert not (askParent('poisoned child?'))
+        assert not (askKid('poisoned child?'))
+        assert not (askGrandKid('poisoned child?'))
+        assert not (askGreatGrandKid('poisoned child?'))
 
         tellParent(Deadly(3))  # kills greatgrandkid
         #time.sleep(0.75)
 
-        self.assertIsNotNone(askParent('name?'))
-        self.assertIsNotNone(askKid('name?'))
-        self.assertIsNotNone(askGrandKid('name?'))
-        self.assertIsNotNone(askGreatGrandKid('name?'))
+        assert askParent('name?') is not None
+        assert askKid('name?') is not None
+        assert askGrandKid('name?') is not None
+        assert askGreatGrandKid('name?') is not None
 
-        self.assertFalse(askParent('poisoned child?'))
-        self.assertFalse(askKid('poisoned child?'))
-        self.assertTrue(askGrandKid('poisoned child?'))
-        self.assertFalse(askGreatGrandKid('poisoned child?'))
+        assert not (askParent('poisoned child?'))
+        assert not (askKid('poisoned child?'))
+        assert askGrandKid('poisoned child?')
+        assert not (askGreatGrandKid('poisoned child?'))
 
         tellParent(Deadly(1))  # kills kid
         # Kid can restart, but loses knowledge of grandkid or greatgrandkid...
         # looking at test09 below, this is as intended??
         #time.sleep(0.28)  # wait for Deadly message effects to propagate
 
-        self.assertIsNotNone(askParent('name?'))
-        self.assertIsNotNone(askKid('name?'))
-        self.assertIsNotNone(askGrandKid('name?'))
-        self.assertIsNotNone(askGreatGrandKid('name?'))
+        assert askParent('name?') is not None
+        assert askKid('name?') is not None
+        assert askGrandKid('name?') is not None
+        assert askGreatGrandKid('name?') is not None
 
-        self.assertTrue(askParent('poisoned child?'))
-        self.assertFalse(askKid('poisoned child?'))
-        self.assertTrue(askGrandKid('poisoned child?'))
-        self.assertFalse(askGreatGrandKid('poisoned child?'))
+        assert askParent('poisoned child?')
+        assert not (askKid('poisoned child?'))
+        assert askGrandKid('poisoned child?')
+        assert not (askGreatGrandKid('poisoned child?'))
 
         tellParent(Deadly(0))  # kills parent
         #time.sleep(0.38)  # wait for Deadly message effects to propagate
@@ -376,34 +384,35 @@ class TestASimpleSystem(ActorSystemTestCase):
         print('init r is: %s'%str(r))
         while r:
             if isinstance(r, PoisonMessage):
-                self.assertIsInstance(r.poisonMessage, Deadly)
+                assert isinstance(r.poisonMessage, Deadly)
                 r = askParent('')
                 print('next r is: %s'%str(r))
             else:
-                self.assertIsInstance(r, ActorAddress)
+                assert isinstance(r, ActorAddress)
                 break
-        self.assertIsNotNone(r)
+        assert r is not None
 
-        self.assertIsNotNone(askKid('name?'))
-        self.assertIsNotNone(askGrandKid('name?'))
-        self.assertIsNotNone(askGreatGrandKid('name?'))
+        assert askKid('name?') is not None
+        assert askGrandKid('name?') is not None
+        assert askGreatGrandKid('name?') is not None
 
         tellParent(ActorExitRequest())
-        self.assertIsNone(askParent('name?'))
-        self.assertIsNone(askKid('name?'))
-        self.assertIsNone(askGrandKid('name?'))
-        self.assertIsNone(askGreatGrandKid('name?'))
+        assert askParent('name?') is None
+        assert askKid('name?') is None
+        assert askGrandKid('name?') is None
+        assert askGreatGrandKid('name?') is None
 
 
-    def test09_DeepActorSuicideIsPermanent(self):
-        parent = ActorSystem().createActor(RestartParent)
+    def test09_DeepActorSuicideIsPermanent(self, asys):
+        unstable_test(asys, 'multiprocUDPBase', 'multiprocQueueBase')
+        parent = asys.createActor(RestartParent)
 
-        tellParent        = lambda m: ActorSystem().tell(parent, m)
+        tellParent        = lambda m: asys.tell(parent, m)
         tellKid           = lambda m: tellParent(TellDaughter(m))
         tellGrandKid      = lambda m: tellKid(TellDaughter(m))
         tellGreatGrandKid = lambda m: tellGrandKid(TellDaughter(m))
 
-        askParent        = lambda m: ActorSystem().ask(parent, m, 0.5)
+        askParent        = lambda m: asys.ask(parent, m, 0.5)
         askKid           = lambda m: askParent(TellDaughter(m))
         askGrandKid      = lambda m: askKid(TellDaughter(m))
         askGreatGrandKid = lambda m: askGrandKid(TellDaughter(m))
@@ -413,15 +422,15 @@ class TestASimpleSystem(ActorSystemTestCase):
         greatgrandkid = askGrandKid('have a daughter?')
         # n.b. kid, grandkid, and greatgrandkid are not useable, see test06 above.
 
-        self.assertIsNotNone(askParent('name?'))
-        self.assertIsNotNone(askKid('name?'))
-        self.assertIsNotNone(askGrandKid('name?'))
-        self.assertIsNotNone(askGreatGrandKid('name?'))
+        assert askParent('name?') is not None
+        assert askKid('name?') is not None
+        assert askGrandKid('name?') is not None
+        assert askGreatGrandKid('name?') is not None
 
-        self.assertFalse(askParent('poisoned child?'))
-        self.assertFalse(askKid('poisoned child?'))
-        self.assertFalse(askGrandKid('poisoned child?'))
-        self.assertFalse(askGreatGrandKid('poisoned child?'))
+        assert not (askParent('poisoned child?'))
+        assert not (askKid('poisoned child?'))
+        assert not (askGrandKid('poisoned child?'))
+        assert not (askGreatGrandKid('poisoned child?'))
 
         kid = askKid('name?')
         grandkid = askGrandKid('name?')
@@ -433,21 +442,21 @@ class TestASimpleSystem(ActorSystemTestCase):
         # replace the greatgrandkid
         time.sleep(0.5)
 
-        self.assertIsNotNone(askParent('name?'))
-        self.assertIsNotNone(askKid('name?'))
-        self.assertIsNotNone(askGrandKid('name?'))
-        self.assertIsNotNone(askGreatGrandKid('name?'))
+        assert askParent('name?') is not None
+        assert askKid('name?') is not None
+        assert askGrandKid('name?') is not None
+        assert askGreatGrandKid('name?') is not None
 
-        self.assertEqual(parent, askParent('name?'))
-        self.assertEqual(kid, askKid('name?'))
-        self.assertEqual(grandkid, askGrandKid('name?'))
-        self.assertNotEqual(greatgrandkid, askGreatGrandKid('name?'))
+        assert parent == askParent('name?')
+        assert kid == askKid('name?')
+        assert grandkid == askGrandKid('name?')
+        assert greatgrandkid != askGreatGrandKid('name?')
         greatgrandkid = askGreatGrandKid('name?')
 
-        self.assertFalse(askParent('poisoned child?'))
-        self.assertFalse(askKid('poisoned child?'))
-        self.assertFalse(askGrandKid('poisoned child?'))
-        self.assertFalse(askGreatGrandKid('poisoned child?'))
+        assert not (askParent('poisoned child?'))
+        assert not (askKid('poisoned child?'))
+        assert not (askGrandKid('poisoned child?'))
+        assert not (askGreatGrandKid('poisoned child?'))
 
         tellParent(KillReq(1))
         # kills kid.  parent will restart kid, but new kid will not
@@ -458,89 +467,69 @@ class TestASimpleSystem(ActorSystemTestCase):
         # replace the kid
         time.sleep(0.5)
 
-        self.assertIsNotNone(askParent('name?'))
-        self.assertIsNotNone(askKid('name?'))
+        assert askParent('name?') is not None
+        assert askKid('name?') is not None
         # Not only does the kid no longer know about grandkids, but
         # asking it to talk to a grandkid will cause an
         # InvalidActorAddress exception, which tells the parent it
         # poisoned the kid.
-        self.assertIsNone(askGrandKid('name?'))
-        self.assertIsNone(askGreatGrandKid('name?'))
+        assert askGrandKid('name?') is None
+        assert askGreatGrandKid('name?') is None
 
-        self.assertEqual(parent, askParent('name?'))
-        self.assertNotEqual(kid, askKid('name?'))
-        #self.assertIsNone(ActorSystem().ask(grandkid, 'name?', 0.4))
-        #self.assertIsNone(ActorSystem().ask(greatgrandkid, 'name?', 0.4))
+        assert parent == askParent('name?')
+        assert kid != askKid('name?')
+        #assert asys.ask(grandkid, 'name?', 0.4) is None
+        #assert asys.ask(greatgrandkid, 'name?', 0.4) is None
 
-        self.assertTrue(askParent('poisoned child?'))
-        self.assertFalse(askKid('poisoned child?'))
+        assert askParent('poisoned child?')
+        assert not (askKid('poisoned child?'))
 
         tellParent(KillReq(0))  # kills parent; no restarts for top level
 
         askParent('name?')  # throw-away to allow KillReq to be processed.
 
-        self.assertIsNone(askParent('name?'))
-        self.assertIsNone(askKid('name?'))
-        self.assertIsNone(askGrandKid('name?'))
-        self.assertIsNone(askGreatGrandKid('name?'))
+        assert askParent('name?') is None
+        assert askKid('name?') is None
+        assert askGrandKid('name?') is None
+        assert askGreatGrandKid('name?') is None
 
 
-    def test_confused_exit(self):
+    def test_confused_exit(self, asys):
+        unstable_test(asys, 'multiprocUDPBase')
         # Verify that even if an actor generates an exception on an
         # ActorExitRequest that it will notify the parent that it
         # exited permanently.
-        ActorSystem().systemUpdate('dupLogToFile', '/tmp/confused.log')
-        confused = ActorSystem().createActor(Confused)
-        self.assertEqual("dunno", ActorSystem().ask(confused, 'name?', 0.31))
-        confused2 = ActorSystem().ask(confused, 'subactor?', 0.31)
-        self.assertEqual("dunno", ActorSystem().ask(confused2, 'name?', 0.31))
-        ActorSystem().tell(confused2, ActorExitRequest())
+        asys.systemUpdate('dupLogToFile', '/tmp/confused.log')
+        confused = asys.createActor(Confused)
+        assert "dunno" == asys.ask(confused, 'name?', 0.31)
+        confused2 = asys.ask(confused, 'subactor?', 0.31)
+        assert "dunno" == asys.ask(confused2, 'name?', 0.31)
+        asys.tell(confused2, ActorExitRequest())
         import time
         time.sleep(0.10)  # Allow time for ActorExitRequest to be processed
-        self.assertEqual("permanent", ActorSystem().ask(confused, 'name?', 0.31))
-        ActorSystem().tell(confused, ActorExitRequest())
-        self.assertEqual(None, ActorSystem().ask(confused, 'name?', 0.1))
+        assert "permanent" == asys.ask(confused, 'name?', 0.31)
+        asys.tell(confused, ActorExitRequest())
+        assert asys.ask(confused, 'name?', 0.1) is None
 
-    def test_confused_msgfail(self):
+    def test_confused_msgfail(self, asys):
+        unstable_test(asys, 'multiprocUDPBase')
         # Verify that if an actor generates an exception on handling
         # an ordinary message that it will notify the parent that the
         # message was Poison but it can continue running.
-        ActorSystem().systemUpdate('dupLogToFile', '/tmp/confused.log')
-        confused = ActorSystem().createActor(Confused)
-        self.assertEqual("dunno", ActorSystem().ask(confused, 'name?', 0.31))
-        confused2 = ActorSystem().ask(confused, 'subactor?', 0.31)
-        self.assertEqual("dunno", ActorSystem().ask(confused2, 'name?', 0.31))
-        ActorSystem().tell(confused2, Deadly(1))
+        asys.systemUpdate('dupLogToFile', '/tmp/confused.log')
+        confused = asys.createActor(Confused)
+        assert "dunno" == asys.ask(confused, 'name?', 0.31)
+        confused2 = asys.ask(confused, 'subactor?', 0.31)
+        assert "dunno" == asys.ask(confused2, 'name?', 0.31)
+        asys.tell(confused2, Deadly(1))
         import time
         time.sleep(0.10)  # Allow time for ActorExitRequest to be processed
 
-        r = ActorSystem().listen(0.20)
-        self.assertIsInstance(r, PoisonMessage)
-        self.assertIsInstance(r.poisonMessage, Deadly)
+        r = asys.listen(0.20)
+        assert isinstance(r, PoisonMessage)
+        assert isinstance(r.poisonMessage, Deadly)
 
-        self.assertEqual("dunno", ActorSystem().ask(confused, 'name?', 0.31))
-        self.assertEqual("dunno", ActorSystem().ask(confused2, 'name?', 0.31))
-        ActorSystem().tell(confused, ActorExitRequest())
-        self.assertIsNone(ActorSystem().ask(confused, 'name?', 0.1))
-
-
-
-class TestMultiprocUDPSystem(TestASimpleSystem):
-    testbase='MultiprocUDP'
-    unstable=True # see note in test06
-    def setUp(self):
-        self.setSystemBase('multiprocUDPBase')
-        super(TestMultiprocUDPSystem, self).setUp()
-
-class TestMultiprocTCPSystem(TestASimpleSystem):
-    testbase='MultiprocTCP'
-    def setUp(self):
-        self.setSystemBase('multiprocTCPBase')
-        super(TestMultiprocTCPSystem, self).setUp()
-
-class TestMultiprocQueueSystem(TestASimpleSystem):
-    testbase='MultiprocQueue'
-    def setUp(self):
-        self.setSystemBase('multiprocQueueBase')
-        super(TestMultiprocQueueSystem, self).setUp()
-
+        assert "dunno" == asys.ask(confused, 'name?', 0.31)
+        assert "dunno" == asys.ask(confused2, 'name?', 0.31)
+        asys.tell(confused, ActorExitRequest())
+        assert asys.ask(confused, 'name?', 0.1) is None
