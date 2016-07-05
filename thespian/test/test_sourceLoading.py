@@ -684,10 +684,10 @@ class TestFuncLoadSource(object):
         thesplog('ttf %s', asys.port_num)
         tmpdir, foozipFname, foozipEncFile, dogzipFname, dogzipEncFile = source_zips
         self._registerSA(asys)
-        srchash = self._loadFooSource(asys, source_zips)
         srchash2 = asys.loadActorSource(dogzipFname)
+        srchash = self._loadFooSource(asys, source_zips)
         assert srchash2 is not None
-        time.sleep(0.1)  # allow time for loaded source to be validated by source authority
+        #time.sleep(0.1)  # allow time for loaded source to be validated by source authority
         foo = asys.createActor('foo.FooActor', sourceHash=srchash)
         dog = asys.createActor('dog.DogActor', sourceHash=srchash2)
         assert 'GOT: good one' == asys.ask(foo, 'good one', 1)
@@ -698,10 +698,10 @@ class TestFuncLoadSource(object):
         thesplog('ttg %s', asys.port_num)
         tmpdir, foozipFname, foozipEncFile, dogzipFname, dogzipEncFile = source_zips
         self._registerSA(asys)
-        srchash = self._loadFooSource(asys, source_zips)
         srchash2 = asys.loadActorSource(dogzipFname)
+        srchash = self._loadFooSource(asys, source_zips)
         assert srchash2 is not None
-        time.sleep(0.1)  # allow time for loaded source to be validated by source authority
+        #time.sleep(0.1)  # allow time for loaded source to be validated by source authority
         foo = asys.createActor('foo.FooActor', sourceHash=srchash)
         raises(ImportError, asys.createActor,
                'dog.DogActor', sourceHash=srchash)  # wrong source hash
@@ -717,6 +717,7 @@ class TestFuncLoadSource(object):
         assert 'And MOO: great' == asys.ask(foo, ('discard', 'great'), 1)
         # Unload fooSource
         asys.unloadActorSource(srchash)
+        time.sleep(0.1) # allow time for unload
         # Test cannot create actors anymore
         raises(InvalidActorSourceHash,
                asys.createActor,
@@ -813,10 +814,11 @@ class TestFuncLoadSource(object):
         thesplog('ttl %s', asys.port_num)
         tmpdir, foozipFname, foozipEncFile, dogzipFname, dogzipEncFile = source_zips
         self._registerSA(asys)
-        srchash = self._loadFooSource(asys, source_zips)
         srchash2 = asys.loadActorSource(dogzipFname)
+        srchash = self._loadFooSource(asys, source_zips)
         assert srchash2 is not None
         asys.unloadActorSource(srchash)
+        time.sleep(0.1) # allow unload to finish
         raises(InvalidActorSourceHash,
                asys.createActor,
                'foo.FooActor', sourceHash=srchash)
