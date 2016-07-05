@@ -1,5 +1,3 @@
-import unittest
-import thespian.test.helpers
 from datetime import datetime, timedelta
 from time import sleep
 
@@ -27,22 +25,22 @@ def send_at_rate(max_rate, actual_rate, total_count):  # return timedelta
     finalT = datetime.now()
     return finalT - startT
 
-class TestRateLimit(unittest.TestCase):
-    scope="unit"
+
+class TestUnitRateLimit(object):
 
     def testModerate__expected_duration_is_20_seconds(self):
         cnt = 100
         tt = send_at_rate(10, 5, cnt)
         print('send_at_rate(10, 5, %s) --> %s'%(cnt, str(tt)))
         actRate = cnt / timePeriodSeconds(tt)
-        self.assertGreater(10, actRate)
+        assert 10 > actRate
 
     def testNearMax__expected_duration_is_11_seconds(self):
         cnt = 100
         tt = send_at_rate(10, 9, cnt)
         print('send_at_rate(10, 9, %s) --> %s'%(cnt, str(tt)))
         actRate = cnt / timePeriodSeconds(tt)
-        self.assertGreater(10, actRate)
+        assert 10 > actRate
 
     def testOverMax__expected_duration_is_21_seconds(self):
         # The rate limiter allows bursts.. the bigger cnt is the
@@ -52,14 +50,14 @@ class TestRateLimit(unittest.TestCase):
         tt = send_at_rate(10, 100, cnt)
         print('send_at_rate(10, 100, %s) --> %s'%(cnt, str(tt)))
         actRate = cnt / timePeriodSeconds(tt)
-        self.assertGreater(15, actRate)  # add a little buffer for overage... just a little
+        assert 15 > actRate  # add a little buffer for overage... just a little
 
     def testSlow__expected_duration_is_20_seconds(self):
         cnt = 10
         tt = send_at_rate(10, 0.5, cnt)
         print('send_at_rate(10, 0.5, %s) --> %s'%(cnt, str(tt)))
         actRate = cnt / timePeriodSeconds(tt)
-        self.assertGreater(10, actRate)
+        assert 10 > actRate
 
 
 if __name__ == "__main__":
