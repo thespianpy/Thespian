@@ -7,15 +7,14 @@ Additionally, this can be run directly from the command line to get load results
 
 """
 
-import unittest
 import logging
 import logging.handlers
 from datetime import datetime, timedelta
-import thespian.test.helpers
 from thespian.actors import *
 import random
-from thespian.test import ActorSystemTestCase, LocallyManagedActorSystem
+from thespian.test import *
 from thespian.system.utilis import timePeriodSeconds
+import pytest
 
 
 class TestMessage(object):
@@ -51,43 +50,43 @@ def report(what, sysBase, elapsed, nMessages, nActors):
         nMessages * nActors / timePeriodSeconds(elapsed)))
 
 
-class LoadTester(LocallyManagedActorSystem):
+# n.b.  multiprocQueueBase tends to deadlock, especially in testSamePathLengthTenAsking
 
-    def prepSys(self, systemBase, logDefs=None, extraCapabilities=None, name=None):
-        self.sysBase = systemBase
-        capabilities = {'Admin Port': int(random.uniform(3000, 64000))}
-        if extraCapabilities: capabilities.update(extraCapabilities)
-        self.setSystemBase(systemBase,
-                           systemCapabilities = capabilities,
-                           logDefs = logDefs)
-        self.name = name or systemBase
 
-    def endSys(self):  ActorSystem().shutdown()
+@pytest.fixture(params=[5,20,50])
+def nMessages(request):
+    return request.param
 
-    def testSamePathLengthTenAndDiscard(self):
+
+@pytest.fixture(params=[2,3,5])
+def actorDepth(request):
+    return request.param
+
+
+class TestFuncLoad(object):
+
+    def testSamePathLengthTenAndDiscard(self, asys, nMessages, actorDepth):
+        unstable_test(asys, 'multiprocQueueBase')
         nodoc = 1
         """This test pushes a large number of messages into the system and
            does not wait for them to be processed.  If nMessages is
            set too high (> 2500), the ActorExitRequests will not be
            sent and Actors may be leftover.
         """
-        nMessages = 2000
-        actorDepth = 10
-
-        aS = ActorSystem()
-        actors = [aS.createActor(TestActor) for X in range(actorDepth)]
+        actors = [asys.createActor(TestActor) for X in range(actorDepth)]
         starttime = datetime.now()
         for X in range(nMessages):  # messages to send
             msg = TestMessage(actors[1:])
             msg.origSender = None
-            aS.tell(actors[0], msg)
+            asys.tell(actors[0], msg)
         endtime = datetime.now()
         elapsed = endtime - starttime
-        report('Discarding', self.name, elapsed, nMessages, actorDepth)
-        [aS.tell(A, ActorExitRequest()) for A in actors]
+        report('Discarding', getattr(asys, 'name', asys.base_name), elapsed, nMessages, actorDepth)
+        [asys.tell(A, ActorExitRequest()) for A in actors]
 
 
-    def testSamePathLengthTenAndDiscardAndFinalAsk(self):
+    def testSamePathLengthTenAndDiscardAndFinalAsk(self, asys, nMessages, actorDepth):
+        unstable_test(asys, 'multiprocQueueBase')
         nodoc = 1
         """This test pushes a large number of messages into the system and
            does not wait for them to be processed.  At the end, it
@@ -96,11 +95,7 @@ class LoadTester(LocallyManagedActorSystem):
            drop some messages under a high message count load and end
            up timing out.
         """
-        nMessages = 2000
-        actorDepth = 10
-
-        aS = ActorSystem()
-        actors = [aS.createActor(TestActor) for X in range(actorDepth)]
+        actors = [asys.createActor(TestActor) for X in range(actorDepth)]
         for ii,actor in enumerate(actors):
             if actor is None or not actor:
                 raise ValueError('Actor address %s is %s!'%(ii, actor))
@@ -108,81 +103,40 @@ class LoadTester(LocallyManagedActorSystem):
         for X in range(nMessages):  # messages to send
             msg = TestMessage(actors[1:])
             msg.origSender = None
-            aS.tell(actors[0], msg)
+            asys.tell(actors[0], msg)
 
         msg = TestMessage(actors[1:])
-        rmsg = aS.ask(actors[0], msg, 30)
+        rmsg = asys.ask(actors[0], msg, 30)
         endtime = datetime.now()
         elapsed = endtime - starttime
         report('Discard, Last Ask (%s)'%(rmsg.sum if rmsg else '<timeout>'),
-               self.name, elapsed,
+               getattr(asys, 'name', asys.base_name), elapsed,
                nMessages, actorDepth)
-        [aS.tell(A, ActorExitRequest()) for A in actors]
+        [asys.tell(A, ActorExitRequest()) for A in actors]
 
 
-    def testSamePathLengthTenAsking(self):
+    def testSamePathLengthTenAsking(self, asys, nMessages, actorDepth):
+        unstable_test(asys, 'multiprocQueueBase')
         nodoc = 1
         """This test pushes a large number of messages into the system and
            does not wait for them to be processed.  If nMessages is
            set too high (> 2500), the ActorExitRequests will not be
            sent and Actors may be leftover.
         """
-        nMessages = 2000
-        actorDepth = 10
-
-        aS = ActorSystem()
-        actors = [aS.createActor(TestActor) for X in range(actorDepth)]
+        actors = [asys.createActor(TestActor) for X in range(actorDepth)]
         starttime = datetime.now()
         for X in range(nMessages):  # messages to send
             msg = TestMessage(actors[1:])
-            aS.ask(actors[0], msg, 30)
+            asys.ask(actors[0], msg, 30)
         endtime = datetime.now()
         elapsed = endtime - starttime
-        report('Asking', self.name, elapsed, nMessages, actorDepth)
-        [aS.tell(A, ActorExitRequest()) for A in actors]
-
-
-class TestASimpleSystem(ActorSystemTestCase, LoadTester):
-    testbase='Simple'
-    scope='func'
-    def setUp(self):    self.prepSys('simpleSystemBase')
-    def tearDown(self): self.endSys()
-
-class TestMultiprocUDPSystem(TestASimpleSystem):
-    testbase='MultiprocUDP'
-    def setUp(self):
-        self.prepSys('multiprocUDPBase')
-
-class TestMultiprocTCPSystem(TestASimpleSystem):
-    testbase='MultiprocTCP'
-    def setUp(self):
-        self.prepSys('multiprocTCPBase')
-
-class TestMultiprocTCPSystemAdminForwarding(TestASimpleSystem):
-    testbase='MultiprocTCP'
-    def setUp(self):
-        self.prepSys('multiprocTCPBase',
-                     extraCapabilities={'Admin Routing': True})
-
-class TestMultiprocQueueSystem(TestASimpleSystem):
-    testbase='MultiprocQueue'
-    unstable=1  # tends to deadlock, especially in testSamePathLengthTenAsking
-    def setUp(self):
-        self.prepSys('multiprocQueueBase')
-    def testSamePathLengthTenAndDiscard(self): pass
-    def testSamePathLengthTenAndDiscardAndFinalAsk(self): pass
-
-class TestMultiprocQueueSystemUnstable(TestASimpleSystem):
-    testbase='MultiprocQueue'
-    unstable=1
-    def setUp(self):
-        self.prepSys('multiprocQueueBase')
-    def testSamePathLengthTenAsking(self): pass
+        report('Asking', getattr(asys, 'name', asys.base_name), elapsed, nMessages, actorDepth)
+        [asys.tell(A, ActorExitRequest()) for A in actors]
 
 
 
 noLogging = { 'version' : 1,
-              # n.b. NullHandler is not available unti Python 2.7
+              # n.b. NullHandler is not available until Python 2.7
               'handlers': { 'discarder': { 'class': 'logging.StreamHandler',
                                            'stream': open('/dev/null','w'),
                                        } },
@@ -190,28 +144,52 @@ noLogging = { 'version' : 1,
               'disable_existing_loggers': True,
               }
 
+
+def start_actor_system(name):
+    caps = {}
+    if name.startswith('multiprocTCP') or \
+       name.startswith('multiprocUDP'):
+        global testAdminPort
+        caps['Admin Port'] = testAdminPort
+        testAdminPort = testAdminPort + 1
+    if name.endswith('-AdminRouting'):
+        caps['Admin Routing'] = True
+    asys = ActorSystem(systemBase=name.partition('-')[0],
+                       capabilities=caps,
+                       logDefs=(simpleActorTestLogging()
+                                if name.startswith('multiproc')
+                                else False),
+                       transientUnique=True)
+    asys.base_name = name
+    return asys
+
+
+def stop_actor_system(asys):
+    asys.shutdown()
+
+
 if __name__ == "__main__":
 
-    for tm in [N for N in dir(LoadTester) if N.startswith('test')]:
-        for tbase,tcap,tname in [
-                ('simpleSystemBase',{}, None),
-                ('multiprocUDPBase',{}, None),
-                ('multiprocTCPBase',{}, None),
-                ('multiprocTCPBase', {'Admin Forwarding': True}, 'mpTCP-AdminFwd'),
+    for tm in [N for N in dir(TestFuncLoad) if N.startswith('test')]:
+        for tbase in [
+                'simpleSystemBase',
+                'multiprocUDPBase',
+                'multiprocTCPBase',
+                'multiprocTCPBase-AdminRouting',
                 # multiprocQueueBase seems to get into a semaphore
                 # deadlock in multiprocessing/queues.py (under
                 # Python 2.6)
                 # 'multiprocQueueBase',
         ]:
-            tci = LoadTester()
-            tci.prepSys(tbase, noLogging, extraCapabilities=tcap, name=tname) # each use diff admin
-
-            getattr(tci,tm)()
-
-            startstop = datetime.now()
-            tci.endSys()
-            endstop = datetime.now()
+            tci = TestFuncLoad()
+            asys = start_actor_system(tbase)
+            try:
+                getattr(tci,tm)(asys, 2000, 10)
+            finally:
+                startstop = datetime.now()
+                stop_actor_system(asys)
+                endstop = datetime.now()
             stoptime = endstop - startstop
             if stoptime > timedelta(seconds=2):
-                print('  [%s stoptime: %s]'%(tname or tbase, str(stoptime)))
+                print('  [%s stoptime: %s]'%(tbase, str(stoptime)))
 
