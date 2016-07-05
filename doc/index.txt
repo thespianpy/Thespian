@@ -19,6 +19,7 @@ Table of Contents
 3 Documentation
 .. 3.1 Thespian Documentation
 .. 3.2 Background and Related Efforts
+.. 3.3 Unrelated Efforts
 4 Download
 5 Contribute
 6 News
@@ -296,6 +297,18 @@ Table of Contents
   [Akka.NET] http://getakka.net/
 
   [Erlang] http://www.erlang.org
+
+
+3.3 Unrelated Efforts
+─────────────────────
+
+  The following projects or sites are completely unrelated to this site,
+  despite apparent similarities in naming or purpose.  These sites are
+  legitimate and appropriate to their domain, however, they have no
+  relation to the Python Thespian project and are listed here to provide
+  clarification on this point and avoid confusion.
+
+  ‣ [http://pythonhackers.com/p/DrewEaster/thespian]
 
 
 4 Download
