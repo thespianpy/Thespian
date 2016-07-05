@@ -1,0 +1,24 @@
+* Thespian Multi-System Configurations
+
+This is a 6-Act "play" that shows the simple development of an
+Actor-based application from the initial concept to a powerful,
+deployable, fault-tolerant and self-healing application.  It
+demonstrates several of the features of Thespian and provides an
+understanding of how those features can be used individually or in
+combination to make effective Actor-based applications.
+
+* [[file:../act1/README.org][Act 1]] -- introduction and cast of characters
+* [[file:../act2/README.org][Act 2]] -- coordinating Actor activities
+* [[file:../act3/README.org][Act 3]] -- re-using the same Actors
+* [[file:../act4/README.org][Act 4]] -- dealing with failure
+* [[file:../act5/README.org][Act 5]] -- multiple systems with different capabilities
+* [[file:../act6/README.org][Act 6]] -- loading multiple sources and on-demand distribution
+
+
+Each Act (except the first) makes a simple set of adjustments to the
+set of sources making up the example, and a ~diff_from_pref.sh~ shell
+script is provided to make it easy to see the changes from the
+previous Act.
+
+The sources provided can be run as part of each Act, and the user is
+encouraged to experiment and modify the Actors involved.

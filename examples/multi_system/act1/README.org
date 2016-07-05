@@ -1,0 +1,94 @@
+* Thespian Multi-System Configurations, Act 1
+
+The examples here will show a progression of multi-system
+implementations using the Thespian library.  Multiple Thespian systems
+can communicate as part of a "convention".  There is a Convention
+Leader that handles all the registration (resulting in a star topology
+for the convention).  The Convention management is handled entirely by
+Thespian with little to no impact on Actor development, although it is
+possible for Actors to involve themselves in Convention-related events
+(as will be demonstrated in some of the later examples).
+
+In order to demonstrate this functionality, a sample Actor-based
+application is needed.  This first Example of the series will create
+the basis of this application, and to keep things simple, the first
+iteration of the application that is defined by this Example will
+*not* be a multi-system application but instead it will function
+entirely in the context of a single Thespian Actor System.
+
+The functionality provided by the test application here is to accept
+an input string, encode that string in various forms, and analyze the
+information density of those encodings relative to the original
+message.  Each of these steps will be encapsulated by an Actor, and
+each encoding form will be handled by a separate Actor that can run in
+parallel.
+
+            +----------+                      +----------+
+            |          |      +---------+     |          |
+  Input --->+ Acceptor +--+-->+ Encoder +---->+ Analyzer +---> Output Reports
+            |          |  |   |   #1    |  ^  |          |
+            +----------+  |   +---------+  |  +----------+
+                          |                |
+                          |   +---------+  |
+                          +-->+ Encoder +--+
+                              |   #2    |
+                              +---------+
+                                  :
+                                  :
+
+* Running the example
+
+To start up the Actor System, run the ~start.py~ file.  The optional
+first argument specifies the system base to use, defaulting to the
+multiprocTCPBase.
+
+#+BEGIN_EXAMPLE
+$ python start.py multiprocUDPBase
+#+END_EXAMPLE
+
+To run the application, run the ~app.py~ file.  The optional first
+argument specifies the system base to use, just as for the ~start.py~
+file.  The message to be encoded is passed on standard input.
+
+#+BEGIN_EXAMPLE
+$ echo "Hello, World!" | python app.py multiprocUDPBase
+#+END_EXAMPLE
+
+The application can be re-run multiple times.  Once you are finished,
+stop the Actor System and all Actors by calling the ~stop.py~ file
+(with the same optional argument as used for the ~start.py~ and
+~app.py~):
+
+#+BEGIN_EXAMPLE
+$ python stop.py multiprocUDPBase
+#+END_EXAMPLE
+
+* Observations
+
+The sources are deliberately simple at this stage, in order to provide
+simple examples that are easy to understand.  However, in large part
+due to this simplicity, there are several issues are observable with
+this initial implementation:
+
+1. Periodic failures (usually "AttributeError: xyzEncoder object hash
+   no attribute analyzer).  This occurs because there is no ordering
+   guarantee of message delivery, so the delivery of the "Analyzer"
+   message tuple may be interchanged with (and follow) the delivery of
+   the EncodeThis message to a particular encoder.
+
+2. Source changes ignored.  If one of the actor sources is modified
+   between runs of the app, the changes seem to be ignored.  The issue
+   here is that the Actors are created by the admin process, which is
+   started (and frozen) when the ~start.py~ is run.  In order for
+   changes to be applied, the entire ActorSystem must be stopped via
+   ~stop.py~ and restarted by running ~start.py~ again.
+
+3. A new set of actors is generated each time the application script
+   is run.  This is because the actors created each run are not
+   destroyed.
+
+These issues will be addressed in some of the following examples,
+along with expanding the example to be a true multi-system
+configuration.
+
+Proceed to [[file:../act2/README.org][Act 2]]...
