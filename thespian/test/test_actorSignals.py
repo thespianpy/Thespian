@@ -29,7 +29,7 @@ class ChildActor(Actor):
             self.send(msg, os.getpid())
 
 
-smallwait = datetime.timedelta(milliseconds=250)
+smallwait = datetime.timedelta(milliseconds=350)
 
 
 @pytest.fixture(params=[
