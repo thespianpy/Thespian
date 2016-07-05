@@ -79,7 +79,7 @@ def top(request, asys):
 class TestFuncTypeDispatching(object):
 
     def verifyExpectedResponses(self, asys, target, requestMsg, expected):
-        resp = asys.ask(target, requestMsg, 0.1)
+        resp = asys.ask(target, requestMsg, 1.1)
         if expected == None:
             assert resp is None
         else:
