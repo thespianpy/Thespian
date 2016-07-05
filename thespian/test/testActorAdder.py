@@ -8,7 +8,7 @@ the system at once and still be handled correctly.'''
 import unittest
 import thespian.test.helpers
 from thespian.actors import *
-from thespian.test import ActorSystemTestCase
+from thespian.test import TestSystem
 
 
 class addEvery(object):
@@ -68,109 +68,114 @@ class AddTen(Actor):
             self.send(sender, self.adders)
 
 
-class TestASimpleSystem(ActorSystemTestCase):
+class TestASimpleSystem(unittest.TestCase):
     testbase='Simple'
     scope='func'
 
+    sysbase = 'simpleSystemBase'
+
     def test01_TenEvery(self):
-        addOnes = [ ActorSystem().createActor(AddOne) for x in range(10) ]
-        for (frmA, toA) in zip(addOnes, addOnes[1:]):
-            ActorSystem().tell(frmA, (1, toA))
-        sum = ActorSystem().ask(addOnes[0], addEvery(actorList = addOnes[1:]))
-        self.assertEqual(sum.value, 10)
-        sum2 = ActorSystem().ask(addOnes[0], addEvery(actorList = addOnes[1:]))
-        self.assertEqual(sum2.value, 10)
+        with TestSystem(self.sysbase, {'Admin Port': 10200+1}) as asys:
+            addOnes = [ asys.createActor(AddOne) for x in range(10) ]
+            for (frmA, toA) in zip(addOnes, addOnes[1:]):
+                asys.tell(frmA, (1, toA))
+            sum = asys.ask(addOnes[0], addEvery(actorList = addOnes[1:]))
+            self.assertEqual(sum.value, 10)
+            sum2 = asys.ask(addOnes[0], addEvery(actorList = addOnes[1:]))
+            self.assertEqual(sum2.value, 10)
 
     def test02_TenEvens(self):
-        addOnes = [ ActorSystem().createActor(AddOne) for x in range(10) ]
-        for (frmA, toA) in zip(addOnes, addOnes[1:]):
-            ActorSystem().tell(frmA, (1, toA))
-        for (frmA, toA) in zip(addOnes[0:], addOnes[2:]):
-            ActorSystem().tell(frmA, (2, toA))
-        sum = ActorSystem().ask(addOnes[0], addEvery(actorList = addOnes[1:]))
-        self.assertEqual(sum.value, 10)
-        sum2 = ActorSystem().ask(addOnes[0], addEvery(actorList = [addOnes[I] for I in range(2, len(addOnes),2)]))
-        self.assertEqual(sum2.value, 5)
-        sum3 = ActorSystem().ask(addOnes[1], addEvery(actorList = [addOnes[I] for I in range(3, len(addOnes),2)]))
-        self.assertEqual(sum3.value, 5)
-        sum4 = ActorSystem().ask(addOnes[4], addEvery(actorList = [addOnes[I] for I in range(6, len(addOnes),2)]))
-        self.assertEqual(sum4.value, 3)
+        with TestSystem(self.sysbase, {'Admin Port': 10200+2}) as asys:
+            addOnes = [ asys.createActor(AddOne) for x in range(10) ]
+            for (frmA, toA) in zip(addOnes, addOnes[1:]):
+                asys.tell(frmA, (1, toA))
+            for (frmA, toA) in zip(addOnes[0:], addOnes[2:]):
+                asys.tell(frmA, (2, toA))
+            sum = asys.ask(addOnes[0], addEvery(actorList = addOnes[1:]))
+            self.assertEqual(sum.value, 10)
+            sum2 = asys.ask(addOnes[0], addEvery(actorList = [addOnes[I] for I in range(2, len(addOnes),2)]))
+            self.assertEqual(sum2.value, 5)
+            sum3 = asys.ask(addOnes[1], addEvery(actorList = [addOnes[I] for I in range(3, len(addOnes),2)]))
+            self.assertEqual(sum3.value, 5)
+            sum4 = asys.ask(addOnes[4], addEvery(actorList = [addOnes[I] for I in range(6, len(addOnes),2)]))
+            self.assertEqual(sum4.value, 3)
 
 
     def test03_LotsOfActorsEvery(self):
-        addOnes = [ ActorSystem().createActor(AddOne) for x in range(50) ]
-        for (frmA, toA) in zip(addOnes, addOnes[1:]):
-            ActorSystem().tell(frmA, (1, toA))
-        sum = ActorSystem().ask(addOnes[0], addEvery(actorList = addOnes[1:]))
-        self.assertEqual(sum.value, 50)
-        sum2 = ActorSystem().ask(addOnes[0], addEvery(actorList = addOnes[1:]))
-        self.assertEqual(sum2.value, 50)
-        for killA in addOnes:
-            ActorSystem().tell(killA, ActorExitRequest())
+        with TestSystem(self.sysbase, {'Admin Port': 10200+3}) as asys:
+            addOnes = [ asys.createActor(AddOne) for x in range(50) ]
+            for (frmA, toA) in zip(addOnes, addOnes[1:]):
+                asys.tell(frmA, (1, toA))
+            sum = asys.ask(addOnes[0], addEvery(actorList = addOnes[1:]))
+            self.assertEqual(sum.value, 50)
+            sum2 = asys.ask(addOnes[0], addEvery(actorList = addOnes[1:]))
+            self.assertEqual(sum2.value, 50)
+            for killA in addOnes:
+                asys.tell(killA, ActorExitRequest())
 
     def test04_LotsOfActorsEveryTen(self):
-        # Create a set of addTens
-        addTens = [ ActorSystem().createActor(AddTen) for x in range(0, 50, 10) ]
-        # Point each addTens to the next one to make a chain.  Each
-        # addTens will automatically make 10 addOnes children.
-        for (frmA, toA) in zip(addTens, addTens[1:]):
-            ActorSystem().tell(frmA, (1, toA))
+        with TestSystem(self.sysbase, {'Admin Port': 10200+4}) as asys:
+            # Create a set of addTens
+            addTens = [ asys.createActor(AddTen) for x in range(0, 50, 10) ]
+            # Point each addTens to the next one to make a chain.  Each
+            # addTens will automatically make 10 addOnes children.
+            for (frmA, toA) in zip(addTens, addTens[1:]):
+                asys.tell(frmA, (1, toA))
 
-        sum = ActorSystem().ask(addTens[0], addEvery())
-        self.assertEqual(sum.value, 50)
-        sum2 = ActorSystem().ask(addTens[0], addEvery())
-        self.assertEqual(sum2.value, 50)
-        for killA in addTens:
-            ActorSystem().tell(killA, ActorExitRequest())
+            sum = asys.ask(addTens[0], addEvery())
+            self.assertEqual(sum.value, 50)
+            sum2 = asys.ask(addTens[0], addEvery())
+            self.assertEqual(sum2.value, 50)
+            for killA in addTens:
+                asys.tell(killA, ActorExitRequest())
 
     def test05_UniqueAddresses(self):
-        sys = ActorSystem()
-        addTen = sys.createActor(AddTen)
-        children = sys.ask(addTen, "Names of Children?")
-        uniqueAddresses = [addTen]
-        for each in children:
-            self.assertNotIn(each, uniqueAddresses)
-            uniqueAddresses.append(each)
-        self.assertEqual(11, len(uniqueAddresses))
-        #Not needed: ActorSystem().tell(addTen, ActorExitRequest())
+        with TestSystem(self.sysbase, {'Admin Port': 10200+5}) as sys:
+            addTen = sys.createActor(AddTen)
+            children = sys.ask(addTen, "Names of Children?")
+            uniqueAddresses = [addTen]
+            for each in children:
+                self.assertNotIn(each, uniqueAddresses)
+                uniqueAddresses.append(each)
+            self.assertEqual(11, len(uniqueAddresses))
+            #Not needed: asys.tell(addTen, ActorExitRequest())
 
 
     def test06_TenEveryTen(self):
-        addTen = ActorSystem().createActor(AddTen)
-        sum = ActorSystem().ask(addTen, addEvery())
-        self.assertEqual(sum.value, 10)
+        with TestSystem(self.sysbase, {'Admin Port': 10200+6}) as asys:
+            addTen = asys.createActor(AddTen)
+            sum = asys.ask(addTen, addEvery())
+            self.assertEqual(sum.value, 10)
 
     def test07_LotsOfActorsEveryTenWithBackground(self):
-        addTens = [ ActorSystem().createActor(AddTen) for x in range(0, 50, 10) ]
-        for (frmA, toA) in zip(addTens, addTens[1:]):
-            ActorSystem().tell(frmA, (1, toA))
-        drop = ActorSystem().createActor(DropResults)
-        ActorSystem().tell(drop, addEvery)  # verify it can be used
-        import random
-        for num in range(random.randint(0, 100)):
-            start = random.choice(addTens)
-            ActorSystem().tell(start, addEvery(asker=drop))  # drop results
-        ActorSystem().tell(addTens[-1], addEvery(asker=drop))  # drop results
-        sum = ActorSystem().ask(addTens[0], addEvery())
-        self.assertEqual(sum.value, 50)
-        for killA in addTens:
-            ActorSystem().tell(killA, ActorExitRequest())
+        with TestSystem(self.sysbase, {'Admin Port': 10200+7}) as asys:
+            addTens = [ asys.createActor(AddTen) for x in range(0, 50, 10) ]
+            for (frmA, toA) in zip(addTens, addTens[1:]):
+                asys.tell(frmA, (1, toA))
+            drop = asys.createActor(DropResults)
+            asys.tell(drop, addEvery)  # verify it can be used
+            import random
+            for num in range(random.randint(0, 100)):
+                start = random.choice(addTens)
+                asys.tell(start, addEvery(asker=drop))  # drop results
+            asys.tell(addTens[-1], addEvery(asker=drop))  # drop results
+            sum = asys.ask(addTens[0], addEvery())
+            self.assertEqual(sum.value, 50)
+            for killA in addTens:
+                asys.tell(killA, ActorExitRequest())
 
 
 class TestMultiprocUDPSystem(TestASimpleSystem):
     testbase='MultiprocUDP'
-    def setUp(self):
-        self.setSystemBase('multiprocUDPBase')
-        super(TestMultiprocUDPSystem, self).setUp()
+    sysbase = 'multiprocUDPBase'
 
 class TestMultiprocTCPSystem(TestASimpleSystem):
     testbase='MultiprocTCP'
-    def setUp(self):
-        self.setSystemBase('multiprocTCPBase')
-        super(TestMultiprocTCPSystem, self).setUp()
+    sysbase = 'multiprocTCPBase'
 
 class TestMultiprocQueueSystem(TestASimpleSystem):
     testbase='MultiprocQueue'
+    sysbase = 'multiprocQueueBase'
 
     unstable = 1  # Under high stress conditions, MultiprocQueue
                   # actors seem to get stuck in the internals of the
@@ -179,17 +184,12 @@ class TestMultiprocQueueSystem(TestASimpleSystem):
                   # externally) that there may be some issues with
                   # Queue.
 
-    def setUp(self):
-        self.setSystemBase('multiprocQueueBase')
-        super(TestMultiprocQueueSystem, self).setUp()
     def test07_LotsOfActorsEveryTenWithBackground(self): pass
 
 class TestMultiprocQueueSystemUnstable(TestASimpleSystem):
     testbase='MultiprocQueue'
     unstable = 1
-    def setUp(self):
-        self.setSystemBase('multiprocQueueBase')
-        super(TestMultiprocQueueSystemUnstable, self).setUp()
+    sysbase = 'multiprocQueueBase'
     def test01_TenEvery(self): pass
     def test02_TenEvens(self): pass
     def test03_LotsOfActorsEvery(self): pass
