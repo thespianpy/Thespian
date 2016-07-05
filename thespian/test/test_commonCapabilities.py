@@ -3,12 +3,10 @@
 Ensure that each ActorSystem provides the set of expected capabilities.
 """
 
-import unittest
 from datetime import datetime, timedelta
 import time
-import thespian.test.helpers
 from thespian.actors import *
-from thespian.test import ActorSystemTestCase
+from thespian.test import *
 from thespian.system.utilis import thesplog
 
 
@@ -32,32 +30,10 @@ class CapabilityCheck(Actor):
         pass
 
 
-class TestASimpleSystem(ActorSystemTestCase):
-    testbase='Simple'
-    scope='func'
+class TestFuncCommonCapabilities(object):
 
-    def test_valid_capabilities(self):
-        aS = ActorSystem()
-        checkActor = aS.createActor(CapabilityCheck)
-        aS.tell(checkActor, 'hello')
-        self.assertTrue(True)
-
-
-class TestMultiprocUDPSystem(TestASimpleSystem):
-    testbase='MultiprocUDP'
-    def setUp(self):
-        self.setSystemBase('multiprocUDPBase')
-        super(TestMultiprocUDPSystem, self).setUp()
-
-class TestMultiprocTCPSystem(TestASimpleSystem):
-    testbase='MultiprocTCP'
-    def setUp(self):
-        self.setSystemBase('multiprocTCPBase')
-        super(TestMultiprocTCPSystem, self).setUp()
-
-class TestMultiprocQueueSystem(TestASimpleSystem):
-    testbase='MultiprocQueue'
-    def setUp(self):
-        self.setSystemBase('multiprocQueueBase')
-        super(TestMultiprocQueueSystem, self).setUp()
+    def test_valid_capabilities(self, asys):
+        checkActor = asys.createActor(CapabilityCheck)
+        asys.tell(checkActor, 'hello')
+        assert True
 
