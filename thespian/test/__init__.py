@@ -127,7 +127,8 @@ class ActorSystemTestCase(unittest.TestCase, LocallyManagedActorSystem):
 ### pytest fixtures and helpers
 ###
 
-testAdminPort = 10000
+testAdminPort = None
+
 
 @pytest.fixture(params=['simpleSystemBase',
                         'multiprocQueueBase',
@@ -144,8 +145,12 @@ def asys(request):
     if request.param.startswith('multiprocTCP') or \
        request.param.startswith('multiprocUDP'):
         global testAdminPort
+        if testAdminPort is None:
+            import random
+            testAdminPort = random.randint(5,60) * 1000
+        else:
+            testAdminPort = testAdminPort + 1
         caps['Admin Port'] = testAdminPort
-        testAdminPort = testAdminPort + 1
     if request.param.endswith('-AdminRouting'):
         caps['Admin Routing'] = True
     if request.param.endswith('-AdminRoutingTXOnly'):
@@ -169,8 +174,8 @@ def similar_asys(asys, in_convention=True, start_wait=True, capabilities=None):
     if asys.base_name.startswith('multiprocTCP') or \
        asys.base_name.startswith('multiprocUDP'):
         global testAdminPort
-        caps['Admin Port'] = testAdminPort
         testAdminPort = testAdminPort + 1
+        caps['Admin Port'] = testAdminPort
         if in_convention:
             caps['Convention Address.IPv4'] = '', asys.port_num
     if asys.base_name.endswith('-AdminRouting'):
