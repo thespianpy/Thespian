@@ -1,6 +1,11 @@
 from thespian.actors import *
 from thespian.test import *
 import time
+from datetime import timedelta, datetime
+
+
+max_replacement_delay = timedelta(seconds=0.50)
+max_response_delay = timedelta(seconds=0.75)
 
 
 class TellChild(object):
@@ -55,6 +60,8 @@ class Parent(Actor):
                 raise ValueError('Deadly value received!')
         elif isinstance(msg, PoisonMessage):
             self.poisonedChild = True
+            if hasattr(msg.poisonMessage, 'origSender'):
+                self.send(msg.poisonMessage.origSender, 'poisoned!')
         elif msg == 'poisoned child?':
             self.send(sender, self.poisonedChild)
         elif isinstance(msg, KillReq):
@@ -70,17 +77,43 @@ class RestartParent(Parent):
     """
     def __init__(self, *args, **kw):
         super(RestartParent, self).__init__(*args, **kw)
-        self._numCreatesLeft = 5
+        self._replaced = False
+        self._numCreates = 0
+        self._numCreatesMax = 5
     def receiveMessage(self, msg, sender):
         if isinstance(msg, ChildActorExited):
-            if self._numCreatesLeft:
-                self._numCreatesLeft = self._numCreatesLeft - 1
+            if self._numCreates < self._numCreatesMax:
+                self._numCreates += 1
+                self._replaced = True
                 if msg.childAddress == self.son:
                     self.son = self.createActor(NonStarter)
                 elif self.daughter == msg.childAddress:
                     self.daughter = self.createActor(RestartParent)
+                self.notifyRestartWaiter()
+        elif isinstance(msg, str) and msg == 'wait for replacement':
+            self.waitForRestart(msg, sender)
+        elif isinstance(msg, PassedMessage) and \
+             isinstance(msg.msg, str) and msg.msg == 'wait for replacement':
+            self.waitForRestart(msg.msg, msg.origSender)
+        elif isinstance(msg, WakeupMessage):
+            self.notifyRestartWaiter()
         else:
+            if isinstance(msg, TellChild):
+                self._replaced = False
             super(RestartParent, self).receiveMessage(msg, sender)
+    def waitForRestart(self, msg, sender):
+        if self._replaced:
+            self._replaced = False
+            self.send(sender, 'replaced')
+        else:
+            self.waiter = sender
+            self.wakeupAfter(max_replacement_delay)
+    def notifyRestartWaiter(self):
+        waiter = getattr(self, 'waiter', None)
+        if waiter:
+            self.send(waiter, 'replaced' if self._replaced else 'not replaced')
+            delattr(self, 'waiter')
+            self._replaced = False
 
 
 class NoRestartParent(Parent):
@@ -148,12 +181,13 @@ class TestFuncActorFailures(object):
 
         tellParent = lambda m: asys.tell(parent, m)
 
-        askParent = lambda m: asys.ask(parent, m, 2)
+        askParent = lambda m: asys.ask(parent, m, max_response_delay)
         askKid    = lambda m: askParent(TellDaughter(m))
 
         assert askParent('name?') == parent
         son = askParent('have a son?')
         assert son is not None
+        askParent('wait for replacement')
         assert askParent(TellSon('name?')) is None
 
         assert askParent('name?') == parent
@@ -167,11 +201,12 @@ class TestFuncActorFailures(object):
 
         tellParent = lambda m: asys.tell(parent, m)
 
-        askParent        = lambda m: asys.ask(parent, m, 0.5)
+        askParent = lambda m: asys.ask(parent, m, max_response_delay)
 
         assert askParent('name?') == parent
         son = askParent('have a son?')
         assert son is not None  # got an Address back, but Son failed to start
+        askParent("wait for replacement")
         assert askParent(TellSon('name?')) is None  # dead-lettered, so no response
 
         assert askParent('name?') == parent
@@ -182,30 +217,28 @@ class TestFuncActorFailures(object):
     def test04_RestartedSubActorWithRestarts(self, asys):
         unstable_test(asys, 'multiprocUDPBase', 'multiprocQueueBase')
         parent = asys.createActor(RestartParent)
-
         tellParent = lambda m: asys.tell(parent, m)
 
-        askParent = lambda m: asys.ask(parent, m, 0.5)
+        askParent = lambda m: asys.ask(parent, m, max_response_delay)
         askKid    = lambda m: askParent(TellDaughter(m))
 
         assert askParent('name?') == parent
 
         kid = askParent('have a daughter?')
         assert kid is not None
+        askParent('wait for replacement')
         assert askKid('name?') is not None
 
         assert askParent('name?') == parent
         assert askKid('name?') is not None
 
         stableKid = askKid('name?')
-        assert asys.ask(stableKid, 'name?', 0.4) == stableKid
+        assert asys.ask(stableKid, 'name?', max_response_delay) == stableKid
 
         # root Actors are not restarted which should cause children to be shutdown.
         tellParent(ActorExitRequest())
-        # The following two have a 2 second delay each
         assert askParent('name?') is None
-        assert askKid('name?') is None
-        assert asys.ask(stableKid, 'name?', 0.4) is None
+        assert asys.ask(stableKid, 'name?', max_response_delay) is None
 
 
     def test05_RestartedSubActorWithoutRestarts(self, asys):
@@ -219,6 +252,7 @@ class TestFuncActorFailures(object):
 
         kid = askParent('have a daughter?')
         assert kid is not None
+        askParent('name?')  # allow first failure and replacement to occur
         assert askKid('name?') is None  # dead-lettered, so no response
 
 
@@ -228,14 +262,23 @@ class TestFuncActorFailures(object):
 
         tellParent = lambda m: asys.tell(parent, m)
 
-        askParent        = lambda m: asys.ask(parent, m, 0.5)
+        askParent        = lambda m: asys.ask(parent, m, max_response_delay)
         askKid           = lambda m: askParent(TellDaughter(m))
         askGrandKid      = lambda m: askKid(TellDaughter(m))
         askGreatGrandKid = lambda m: askGrandKid(TellDaughter(m))
 
         kid = askParent('have a daughter?')
+        print('kid',kid)
+        assert kid
+        askParent('wait for replacement')
+        print('getting grandkid')
         grandkid = askKid('have a daughter?') # KWQ: multiprocUDP fails here (sometimes) because the first kid fails and has to be re-created, but if the parent sends this grandkid message before the parent gets the child exited then the message just gets dropped because UDP doesn't have any confirmation.  Need to add confirmation to UDP (and can add large message handling at the same time?  Or is there a standard failure for "message too large" and that limit is different for different transports?)
+        print('grandkid',grandkid)
+        askKid('wait for replacement')
+        print('getting greatgrandkid')
         greatgrandkid = askGrandKid('have a daughter?')
+        print('greatgrandkid',grandkid)
+        askGrandKid('wait for replacement')
         # n.b. kid, grandkid, and greatgrandkid are not likely
         # useable, because the initial instance of each was a
         # NonStarter and was then restarted and probably received a
@@ -247,15 +290,11 @@ class TestFuncActorFailures(object):
         assert askGreatGrandKid('name?') is not None
 
         tellParent(ActorExitRequest())
-        #time.sleep(0.2)  # allow actor shutdown requests to propagate
 
         # False positive (success) if actor system is hung?  Need to
         # check deadletter delivery of these name queries to be sure
         # ActorSystem is fully functional.
         assert askParent('name?') is None
-        assert askKid('name?') is None
-        assert askGrandKid('name?') is None
-        assert askGreatGrandKid('name?') is None
 
 
     def test07_DeepActorShutdown(self, asys):
@@ -267,14 +306,20 @@ class TestFuncActorFailures(object):
         tellGrandKid      = lambda m: tellKid(TellDaughter(m))
         tellGreatGrandKid = lambda m: tellGrandKid(TellDaughter(m))
 
-        askParent        = lambda m: asys.ask(parent, m, 0.5)
+        askParent        = lambda m: asys.ask(parent, m, max_response_delay)
         askKid           = lambda m: askParent(TellDaughter(m))
         askGrandKid      = lambda m: askKid(TellDaughter(m))
         askGreatGrandKid = lambda m: askGrandKid(TellDaughter(m))
 
         kid = askParent('have a daughter?')
+        askParent('wait for replacement')
+
         grandkid = askKid('have a daughter?')
+        askKid('wait for replacement')
+
         greatgrandkid = askGrandKid('have a daughter?')
+        askGrandKid('wait for replacement')
+
         # n.b. kid, grandkid, and greatgrandkid are not useable, see test06 above.
 
         if asys.base_name == 'multiprocUDPBase':
@@ -285,7 +330,7 @@ class TestFuncActorFailures(object):
         assert askGreatGrandKid('name?') is not None
 
         tellGreatGrandKid(ActorExitRequest())
-        #time.sleep(0.2)  # allow actor shutdown requests to propagate
+        askGrandKid('wait for replacement')
 
         assert askParent('name?') is not None
         assert askKid('name?') is not None
@@ -293,7 +338,7 @@ class TestFuncActorFailures(object):
         assert askGreatGrandKid('name?') is not None
 
         tellGrandKid(ActorExitRequest())
-        #time.sleep(0.2)  # allow actor shutdown requests to propagate
+        askKid('wait for replacement')
 
         assert askParent('name?') is not None
         assert askKid('name?') is not None
@@ -302,15 +347,12 @@ class TestFuncActorFailures(object):
 
         # parent is Top Level Actor, so no restarts
         tellParent(ActorExitRequest())
-        #time.sleep(0.2)  # allow actor shutdown requests to propagate
+        time.sleep(0.2)  # allow propagation and completion
 
         # False positive (success) if actor system is hung?  Need to
         # check deadletter delivery of these name queries to be sure
         # ActorSystem is fully functional.
         assert askParent('name?') is None
-        assert askKid('name?') is None
-        assert askGrandKid('name?') is None
-        assert askGreatGrandKid('name?') is None
 
 
     def test08_DeepActorInvoluntaryTermination(self, asys):
@@ -322,64 +364,87 @@ class TestFuncActorFailures(object):
         tellGrandKid      = lambda m: tellKid(TellDaughter(m))
         tellGreatGrandKid = lambda m: tellGrandKid(TellDaughter(m))
 
-        askParent        = lambda m: asys.ask(parent, m, 0.5)
+        askParent        = lambda m: asys.ask(parent, m, max_response_delay)
         askKid           = lambda m: askParent(TellDaughter(m))
         askGrandKid      = lambda m: askKid(TellDaughter(m))
         askGreatGrandKid = lambda m: askGrandKid(TellDaughter(m))
 
         kid = askParent('have a daughter?')
+        askParent('wait for replacement')
         grandkid = askKid('have a daughter?')
+        askKid('wait for replacement')
         greatgrandkid = askGrandKid('have a daughter?')
+        askGrandKid('wait for replacement')
+
         # n.b. kid, grandkid, and greatgrandkid are not useable, see test06 above.
 
+        if asys.base_name == 'multiprocUDPBase' or 'TXRouting' in asys.base_name:
+            time.sleep(0.4)  # see test06 note above; doesn't always work
+        r = askParent('name?')
+        assert r is not None
+        r = askKid('name?')
+        assert r is not None
+        r = askGrandKid('name?')
+        assert r is not None
         if asys.base_name == 'multiprocUDPBase':
             time.sleep(0.4)  # see test06 note above; doesn't always work
-        assert askParent('name?') is not None
-        assert askKid('name?') is not None
-        assert askGrandKid('name?') is not None
-        if asys.base_name == 'multiprocUDPBase':
-            time.sleep(0.4)  # see test06 note above; doesn't always work
-        assert askGreatGrandKid('name?') is not None
+        r = askGreatGrandKid('name?')
+        assert r is not None
 
-        # Wait a little because first kid dies and second kid has to
-        # be created at each level.
-        time.sleep(0.2)
-
-        assert not (askParent('poisoned child?'))
-        assert not (askKid('poisoned child?'))
-        assert not (askGrandKid('poisoned child?'))
-        assert not (askGreatGrandKid('poisoned child?'))
+        r = askParent('poisoned child?')
+        assert not r
+        r = askKid('poisoned child?')
+        assert not r
+        r = askGrandKid('poisoned child?')
+        assert not r
+        r = askGreatGrandKid('poisoned child?')
+        assert not r
 
         tellParent(Deadly(3))  # kills greatgrandkid
-        #time.sleep(0.75)
+        askGrandKid('wait for replacement')
 
-        assert askParent('name?') is not None
-        assert askKid('name?') is not None
-        assert askGrandKid('name?') is not None
-        assert askGreatGrandKid('name?') is not None
+        r = askParent('name?')
+        assert r is not None
+        r = askKid('name?')
+        assert r is not None
+        r = askGrandKid('name?')
+        assert r is not None
+        r = askGreatGrandKid('name?')
+        assert r is not None
 
-        assert not (askParent('poisoned child?'))
-        assert not (askKid('poisoned child?'))
-        assert askGrandKid('poisoned child?')
-        assert not (askGreatGrandKid('poisoned child?'))
+        r = askParent('poisoned child?')
+        assert not r
+        r =  askKid('poisoned child?')
+        assert not r
+        r = askGrandKid('poisoned child?')
+        assert r
+        r = askGreatGrandKid('poisoned child?')
+        assert not r
 
         tellParent(Deadly(1))  # kills kid
         # Kid can restart, but loses knowledge of grandkid or greatgrandkid...
         # looking at test09 below, this is as intended??
-        #time.sleep(0.28)  # wait for Deadly message effects to propagate
+        askParent('wait for replacement')
 
-        assert askParent('name?') is not None
-        assert askKid('name?') is not None
-        assert askGrandKid('name?') is not None
-        assert askGreatGrandKid('name?') is not None
+        r = askParent('name?')
+        assert r is not None
+        r = askKid('name?')
+        assert r is not None
+        r = askGrandKid('name?')
+        assert r is not None
+        r = askGreatGrandKid('name?')
+        assert r is not None
 
-        assert askParent('poisoned child?')
-        assert not (askKid('poisoned child?'))
-        assert askGrandKid('poisoned child?')
-        assert not (askGreatGrandKid('poisoned child?'))
+        r = askParent('poisoned child?')
+        assert r
+        r = askKid('poisoned child?')
+        assert not r
+        r = askGrandKid('poisoned child?')
+        assert r
+        r = askGreatGrandKid('poisoned child?')
+        assert not r
 
         tellParent(Deadly(0))  # kills parent
-        #time.sleep(0.38)  # wait for Deadly message effects to propagate
 
         # First response from parent should be the
         # PoisonMessage(Deadly), the next should be the response to
@@ -396,15 +461,16 @@ class TestFuncActorFailures(object):
                 break
         assert r is not None
 
-        assert askKid('name?') is not None
-        assert askGrandKid('name?') is not None
-        assert askGreatGrandKid('name?') is not None
+        r = askKid('name?')
+        assert r is not None
+        r = askGrandKid('name?')
+        assert r is not None
+        r = askGreatGrandKid('name?')
+        assert r is not None
 
         tellParent(ActorExitRequest())
-        assert askParent('name?') is None
-        assert askKid('name?') is None
-        assert askGrandKid('name?') is None
-        assert askGreatGrandKid('name?') is None
+        r = askParent('name?')
+        assert r is None
 
 
     def test09_DeepActorSuicideIsPermanent(self, asys):
@@ -416,25 +482,44 @@ class TestFuncActorFailures(object):
         tellGrandKid      = lambda m: tellKid(TellDaughter(m))
         tellGreatGrandKid = lambda m: tellGrandKid(TellDaughter(m))
 
-        askParent        = lambda m: asys.ask(parent, m, 0.5)
+        askParent        = lambda m: asys.ask(parent, m, max_response_delay)
         askKid           = lambda m: askParent(TellDaughter(m))
         askGrandKid      = lambda m: askKid(TellDaughter(m))
         askGreatGrandKid = lambda m: askGrandKid(TellDaughter(m))
 
         kid = askParent('have a daughter?')
+        assert kid
+        askParent('wait for replacement')
+
         grandkid = askKid('have a daughter?')
+        assert grandkid
+        askKid('wait for replacement')
+
         greatgrandkid = askGrandKid('have a daughter?')
+        assert greatgrandkid
+        askGrandKid('wait for replacement')
+
         # n.b. kid, grandkid, and greatgrandkid are not useable, see test06 above.
 
-        assert askParent('name?') is not None
-        assert askKid('name?') is not None
-        assert askGrandKid('name?') is not None
-        assert askGreatGrandKid('name?') is not None
+        r = askParent('name?')
+        assert r is not None
+        #  KWQ: err on socket after receiving 24160's ChildActorExited caused closure of socket to Ext and it is not re-opened, so p24159 cannot send this response?
 
-        assert not (askParent('poisoned child?'))
-        assert not (askKid('poisoned child?'))
-        assert not (askGrandKid('poisoned child?'))
-        assert not (askGreatGrandKid('poisoned child?'))
+        r = askKid('name?')
+        assert r is not None
+        r = askGrandKid('name?')
+        assert r is not None
+        r = askGreatGrandKid('name?')
+        assert r is not None
+
+        r = askParent('poisoned child?')
+        assert not r
+        r = askKid('poisoned child?')
+        assert not r
+        r = askGrandKid('poisoned child?')
+        assert not r
+        r = askGreatGrandKid('poisoned child?')
+        assert not r
 
         kid = askKid('name?')
         grandkid = askGrandKid('name?')
@@ -444,23 +529,35 @@ class TestFuncActorFailures(object):
 
         # Give time for the kill to propagate and the grandkid to
         # replace the greatgrandkid
-        time.sleep(0.5)
+        askGrandKid('wait for replacement')
 
-        assert askParent('name?') is not None
-        assert askKid('name?') is not None
-        assert askGrandKid('name?') is not None
-        assert askGreatGrandKid('name?') is not None
+        r = askParent('name?')
+        assert r is not None
+        r = askKid('name?')
+        assert r is not None
+        r = askGrandKid('name?')
+        assert r is not None
+        r = askGreatGrandKid('name?')
+        assert r is not None
 
-        assert parent == askParent('name?')
-        assert kid == askKid('name?')
-        assert grandkid == askGrandKid('name?')
-        assert greatgrandkid != askGreatGrandKid('name?')
+        r = askParent('name?')
+        assert parent == r
+        r = askKid('name?')
+        assert kid == r
+        r = askGrandKid('name?')
+        assert grandkid == r
+        r = askGreatGrandKid('name?')
+        assert greatgrandkid != r
         greatgrandkid = askGreatGrandKid('name?')
 
-        assert not (askParent('poisoned child?'))
-        assert not (askKid('poisoned child?'))
-        assert not (askGrandKid('poisoned child?'))
-        assert not (askGreatGrandKid('poisoned child?'))
+        r = askParent('poisoned child?')
+        assert not r
+        r = askKid('poisoned child?')
+        assert not r
+        r = askGrandKid('poisoned child?')
+        assert not r
+        r = askGreatGrandKid('poisoned child?')
+        assert not r
 
         tellParent(KillReq(1))
         # kills kid.  parent will restart kid, but new kid will not
@@ -469,33 +566,39 @@ class TestFuncActorFailures(object):
 
         # Give time for the kill to propagate and the parent to
         # replace the kid
-        time.sleep(0.5)
+        askParent('wait for replacement')
 
-        assert askParent('name?') is not None
-        assert askKid('name?') is not None
+        r = askParent('name?')
+        assert r is not None
+        r = askKid('name?')
+        assert r is not None
         # Not only does the kid no longer know about grandkids, but
         # asking it to talk to a grandkid will cause an
         # InvalidActorAddress exception, which tells the parent it
         # poisoned the kid.
-        assert askGrandKid('name?') is None
-        assert askGreatGrandKid('name?') is None
+        r = askGrandKid('name?')
+        assert r == 'poisoned!'
+        r = askGreatGrandKid('name?')
+        assert r == 'poisoned!'
 
-        assert parent == askParent('name?')
-        assert kid != askKid('name?')
+        r = askParent('name?')
+        assert parent == r
+        r = askKid('name?')
+        assert kid != r
         #assert asys.ask(grandkid, 'name?', 0.4) is None
         #assert asys.ask(greatgrandkid, 'name?', 0.4) is None
 
-        assert askParent('poisoned child?')
-        assert not (askKid('poisoned child?'))
+        r = askParent('poisoned child?')
+        assert r
+        r = askKid('poisoned child?')
+        assert not r
 
         tellParent(KillReq(0))  # kills parent; no restarts for top level
 
-        askParent('name?')  # throw-away to allow KillReq to be processed.
+        #askParent('name?')  # throw-away to allow KillReq to be processed.
 
-        assert askParent('name?') is None
-        assert askKid('name?') is None
-        assert askGrandKid('name?') is None
-        assert askGreatGrandKid('name?') is None
+        r = askParent('name?')
+        assert r is None
 
 
     def test_confused_exit(self, asys):
@@ -505,15 +608,14 @@ class TestFuncActorFailures(object):
         # exited permanently.
         asys.systemUpdate('dupLogToFile', '/tmp/confused.log')
         confused = asys.createActor(Confused)
-        assert "dunno" == asys.ask(confused, 'name?', 0.31)
-        confused2 = asys.ask(confused, 'subactor?', 0.31)
-        assert "dunno" == asys.ask(confused2, 'name?', 0.31)
+        assert "dunno" == asys.ask(confused, 'name?', max_response_delay)
+        confused2 = asys.ask(confused, 'subactor?', max_response_delay)
+        assert "dunno" == asys.ask(confused2, 'name?', max_response_delay)
         asys.tell(confused2, ActorExitRequest())
-        import time
-        time.sleep(0.10)  # Allow time for ActorExitRequest to be processed
-        assert "permanent" == asys.ask(confused, 'name?', 0.31)
+        asys.ask(confused, 'subactor?', max_response_delay)  # Allow time for ActorExitRequest to be processed
+        assert "permanent" == asys.ask(confused, 'name?', max_response_delay)
         asys.tell(confused, ActorExitRequest())
-        assert asys.ask(confused, 'name?', 0.1) is None
+        assert asys.ask(confused, 'name?', max_response_delay) is None
 
     def test_confused_msgfail(self, asys):
         unstable_test(asys, 'multiprocUDPBase')
@@ -522,18 +624,21 @@ class TestFuncActorFailures(object):
         # message was Poison but it can continue running.
         asys.systemUpdate('dupLogToFile', '/tmp/confused.log')
         confused = asys.createActor(Confused)
-        assert "dunno" == asys.ask(confused, 'name?', 0.31)
-        confused2 = asys.ask(confused, 'subactor?', 0.31)
-        assert "dunno" == asys.ask(confused2, 'name?', 0.31)
+        assert "dunno" == asys.ask(confused, 'name?', max_response_delay)
+        confused2 = asys.ask(confused, 'subactor?', max_response_delay)
+        assert "dunno" == asys.ask(confused2, 'name?', max_response_delay)
         asys.tell(confused2, Deadly(1))
+        # Need to use actual time.sleep so that the poison message
+        # response is still available.
         import time
-        time.sleep(0.10)  # Allow time for ActorExitRequest to be processed
+        time.sleep(0.05)  # Allow time for ActorExitRequest to be processed
+        #asys.ask(confused, 'subactor?', max_response_delay)
 
-        r = asys.listen(0.20)
+        r = asys.listen(max_response_delay)
         assert isinstance(r, PoisonMessage)
         assert isinstance(r.poisonMessage, Deadly)
 
-        assert "dunno" == asys.ask(confused, 'name?', 0.31)
-        assert "dunno" == asys.ask(confused2, 'name?', 0.31)
+        assert "dunno" == asys.ask(confused, 'name?', max_response_delay)
+        assert "dunno" == asys.ask(confused2, 'name?', max_response_delay)
         asys.tell(confused, ActorExitRequest())
-        assert asys.ask(confused, 'name?', 0.1) is None
+        assert asys.ask(confused, 'name?', max_response_delay) is None
