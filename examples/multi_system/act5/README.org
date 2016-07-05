@@ -1,6 +1,6 @@
 * Thespian Multi-System Configurations, Act 5
 
-This example extends [[file:../act4/README.org][Act 4]] and will finally update the example to
+This example extends [[file:../act4][Act 4]] and will finally update the example to
 be an actual multi-system configuration.  Most of the time, each
 Thespian system will exist on a separate network node, but for
 purposes of this example, the multiple Thespian systems will be
@@ -120,4 +120,4 @@ A complete synchronization of this activity may be necessary to ensure
 that new Actor application code on one system does not attempt to
 converse with older Actor application code on another system.
 
-[[file:../act6/README.org][Act 6]] will describe a solution to the source update limitation.
+[[file:../act6][Act 6]] will describe a solution to the source update limitation.

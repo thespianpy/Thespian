@@ -1,6 +1,6 @@
 * Thespian Multi-System Configurations, Act 2
 
-This example extends [[file:../act1/README.org][Act 1]] and will still be limited to a single
+This example extends [[file:../act1][Act 1]] and will still be limited to a single
 system configuration, but this example will fix one of the observed
 issues with Act 1.  This iteration through the fixes is intended
 to provide further information about how these issues can be dealt
@@ -69,5 +69,5 @@ shutdown the actor system.
 $ PYTHONPATH=../../..:$PYTHONPATH python stop.py
 #+END_EXAMPLE
 
-In [[file:../act3/README.org][Act 3]] the application will be modified to only start a single
+In [[file:../act3][Act 3]] the application will be modified to only start a single
 set of Actors, regardless of the number of times it is run.

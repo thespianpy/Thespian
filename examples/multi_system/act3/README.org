@@ -1,6 +1,6 @@
 * Thespian Multi-System Configurations, Act 3
 
-This example extends [[file:../act2/README.org][Act 2]] to solve the third issue noted in the
+This example extends [[file:../act2][Act 2]] to solve the third issue noted in the
 original implementation: a new set of Actors is created each time the
 application is run.  Again, this is not yet a multi-system configuration.
 
@@ -70,4 +70,4 @@ can be fixed as well in the following Acts:
 5. There is no default notification to an actor when it is going to be
    killed.
 
-Proceed to [[file:../act4/README.org][Act 4]]...
+Proceed to [[file:../act4][Act 4]]...

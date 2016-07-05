@@ -7,12 +7,12 @@ demonstrates several of the features of Thespian and provides an
 understanding of how those features can be used individually or in
 combination to make effective Actor-based applications.
 
-* [[file:../act1/README.org][Act 1]] -- introduction and cast of characters
-* [[file:../act2/README.org][Act 2]] -- coordinating Actor activities
-* [[file:../act3/README.org][Act 3]] -- re-using the same Actors
-* [[file:../act4/README.org][Act 4]] -- dealing with failure
-* [[file:../act5/README.org][Act 5]] -- multiple systems with different capabilities
-* [[file:../act6/README.org][Act 6]] -- loading multiple sources and on-demand distribution
+* [[file:act1][Act 1]] -- introduction and cast of characters
+* [[file:act2][Act 2]] -- coordinating Actor activities
+* [[file:act3][Act 3]] -- re-using the same Actors
+* [[file:act4][Act 4]] -- dealing with failure
+* [[file:act5][Act 5]] -- multiple systems with different capabilities
+* [[file:act6][Act 6]] -- loading multiple sources and on-demand distribution
 
 
 Each Act (except the first) makes a simple set of adjustments to the

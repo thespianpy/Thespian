@@ -1,6 +1,6 @@
 * Thespian Multi-System Configurations, Act 4
 
-In [[file:../act3/README.org][Act 3]] a simple update was made to prevent a proliferation of
+In [[file:../act3][Act 3]] a simple update was made to prevent a proliferation of
 Actors each time the application was run, and some fault tolerance in
 the application was explored, but there were some additional
 observations about the effects of the failures.
@@ -60,4 +60,4 @@ external clients.
 
 ** Next update
 
-Now move to [[file:../act5/README.org][Act 5]] to see the next set of updates to this application.
+Now move to [[file:../act5][Act 5]] to see the next set of updates to this application.

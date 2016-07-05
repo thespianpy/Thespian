@@ -1,6 +1,6 @@
 * Thespian Multi-System Configurations, Act 6
 
-This Act will resolve the code update issue described in [[file:../act5/README.org][Act 5]]:
+This Act will resolve the code update issue described in [[file:../act5][Act 5]]:
 updating running Actor code requires a full restart of the Actor
 System (or *all* Actor Systems).
 

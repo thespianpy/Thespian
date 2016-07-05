@@ -23,6 +23,7 @@ message.  Each of these steps will be encapsulated by an Actor, and
 each encoding form will be handled by a separate Actor that can run in
 parallel.
 
+#+BEGIN_EXAMPLE
             +----------+                      +----------+
             |          |      +---------+     |          |
   Input --->+ Acceptor +--+-->+ Encoder +---->+ Analyzer +---> Output Reports
@@ -35,6 +36,8 @@ parallel.
                               +---------+
                                   :
                                   :
+
+#+END_EXAMPLE
 
 * Running the example
 
@@ -91,4 +94,4 @@ These issues will be addressed in some of the following examples,
 along with expanding the example to be a true multi-system
 configuration.
 
-Proceed to [[file:../act2/README.org][Act 2]]...
+Proceed to [[file:../act2][Act 2]]...
