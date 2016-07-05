@@ -1,32 +1,28 @@
-from unittest import TestCase
-import thespian.test.helpers
-
-
 from thespian.actors import WakeupMessage, ActorSystemMessage
 
-class TestExitRequestMsg(TestCase):
-    scope = 'unit'
+
+class TestUnitExitRequestMsg(object):
 
     def test_equality(self):
         m1 = WakeupMessage(1)
-        self.assertEqual(m1, WakeupMessage(1))
+        assert m1 == WakeupMessage(1)
         m2 = WakeupMessage('hi')
-        self.assertEqual(m2, WakeupMessage('hi'))
+        assert m2 == WakeupMessage('hi')
 
     def test_inequality(self):
         m1 = WakeupMessage(1)
-        self.assertNotEqual(m1, 1)
-        self.assertNotEqual(m1, WakeupMessage('hi'))
-        self.assertNotEqual(m1, WakeupMessage(0))
-        self.assertNotEqual(m1, WakeupMessage(None))
+        assert m1 != 1
+        assert m1 != WakeupMessage('hi')
+        assert m1 != WakeupMessage(0)
+        assert m1 != WakeupMessage(None)
 
     def test_properties(self):
-        self.assertEqual(1, WakeupMessage(1).delayPeriod)
-        self.assertEqual(None, WakeupMessage(None).delayPeriod)
-        self.assertEqual('foo', WakeupMessage('foo').delayPeriod)
+        assert 1 == WakeupMessage(1).delayPeriod
+        assert WakeupMessage(None).delayPeriod is None
+        assert 'foo' == WakeupMessage('foo').delayPeriod
 
     def test_inheritance(self):
-        self.assertIsInstance(WakeupMessage(1), WakeupMessage)
-        self.assertIsInstance(WakeupMessage('one'), WakeupMessage)
-        self.assertIsInstance(WakeupMessage(1), ActorSystemMessage)
-        self.assertIsInstance(WakeupMessage('one'), ActorSystemMessage)
+        assert isinstance(WakeupMessage(1), WakeupMessage)
+        assert isinstance(WakeupMessage('one'), WakeupMessage)
+        assert isinstance(WakeupMessage(1), ActorSystemMessage)
+        assert isinstance(WakeupMessage('one'), ActorSystemMessage)

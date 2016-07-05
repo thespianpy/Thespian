@@ -1,31 +1,29 @@
-from unittest import TestCase
-
 from thespian.actors import PoisonMessage, ActorSystemMessage
 
-class TestPoisonMsg(TestCase):
-    scope = 'unit'
+
+class TestUnitPoisonMsg(object):
 
     def test_equality(self):
         m1 = PoisonMessage(1)
-        self.assertEqual(m1, PoisonMessage(1))
+        assert m1 == PoisonMessage(1)
         m2 = PoisonMessage('hi')
-        self.assertEqual(m2, PoisonMessage('hi'))
+        assert m2 == PoisonMessage('hi')
 
     def test_inequality(self):
         m1 = PoisonMessage(1)
-        self.assertNotEqual(m1, 1)
-        self.assertNotEqual(m1, PoisonMessage('hi'))
-        self.assertNotEqual(m1, PoisonMessage(0))
-        self.assertNotEqual(m1, PoisonMessage(None))
+        assert m1 != 1
+        assert m1 != PoisonMessage('hi')
+        assert m1 != PoisonMessage(0)
+        assert m1 != PoisonMessage(None)
 
     def test_properties(self):
-        self.assertEqual(1, PoisonMessage(1).poisonMessage)
-        self.assertEqual(None, PoisonMessage(None).poisonMessage)
-        self.assertEqual('foo', PoisonMessage('foo').poisonMessage)
+        assert 1 == PoisonMessage(1).poisonMessage
+        assert PoisonMessage(None).poisonMessage is None
+        assert 'foo' == PoisonMessage('foo').poisonMessage
 
     def test_inheritance(self):
-        self.assertTrue(isinstance(PoisonMessage(1), PoisonMessage))
-        self.assertTrue(isinstance(PoisonMessage('hi'), PoisonMessage))
-        self.assertTrue(isinstance(PoisonMessage(1), ActorSystemMessage))
-        self.assertTrue(isinstance(PoisonMessage('hi'), ActorSystemMessage))
+        assert isinstance(PoisonMessage(1), PoisonMessage)
+        assert isinstance(PoisonMessage('hi'), PoisonMessage)
+        assert isinstance(PoisonMessage(1), ActorSystemMessage)
+        assert isinstance(PoisonMessage('hi'), ActorSystemMessage)
 
