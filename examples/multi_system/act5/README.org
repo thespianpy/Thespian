@@ -1,0 +1,123 @@
+* Thespian Multi-System Configurations, Act 5
+
+This example extends [[file:../act4/README.org][Act 4]] and will finally update the example to
+be an actual multi-system configuration.  Most of the time, each
+Thespian system will exist on a separate network node, but for
+purposes of this example, the multiple Thespian systems will be
+started in the current environment and each one will simply use a
+different TCP port for its administrator.
+
+Each system will initialize with different capabilities that describe
+that system.  The Actors have been updated with a unique
+~@requireCapability~ specification that will require them to run in a
+system with a matching capability set.  For the purposes of this
+example, the capabilities will simply be boolean entries.
+
+  | Encoder | Required Capability  |
+  |---------+----------------------|
+  | Morse   | morse = True         |
+  | Base64  | 64bit encoder = True |
+  | Rot13   | Caesar cipher= True  |
+
+
+One additional change that is made in this version is to track and
+start each encoder separately.  This allows individual encoders to be
+started as before, but each is started only on-demand.
+
+The ~start.py~ is updated to take two additional arguments.  The first
+argument is the port number for the system's administrator, and the
+second argument is a comma-separated list (no whitespace) of the
+capabilities that should be assigned to the system being started.  All
+of the actor systems will attempt to communicate with the convention
+leader running at port 1900; starting a system on port 1900 will make
+that system the de-facto convention leader.
+
+Additionally, the ~stop.py~ can take an optional set of arguments,
+each one being the port number for the system it should shutdown (the
+default is port 1900, which is the default convention leader port).
+
+#+BEGIN_EXAMPLE
+$ export PYTHONPATH=../../..:$PYTHONPATH
+$ python start.py 1900
+$ python start.py 10000 "morse,Caesar cipher"
+$ python start.py 10101 "64bit encoder"
+$ echo "This is a multi-system test" | python app.py
+$ python stop.py 1900 10000 10101
+#+END_EXAMPLE
+
+Running this example produces essentially identical results to the
+previous example.  It is also possible to kill Actors (just as in the
+previous example) and they will automatically be restarted, regardless
+of which Actor System the actor is running within.
+
+** Actor System Lifecycle
+
+It is possible to selectively stop entire Actor Systems (e.g. ~$
+python stop.py 10000~) which will cause the corresponding Actors to be
+shutdown as well.  Restarting the Actor System will allow the
+recreation of Actors with matching capabilities requirements.
+
+It is also possible to create multiple Actor Systems with overlapping
+capabilities:
+
+#+BEGIN_EXAMPLE
+$ python start.py 1900
+$ python start.py 10000 "morse,Caesar cipher"
+$ python start.py 10101 "64bit encoder,morse,Caesar cipher"
+#+END_EXAMPLE
+
+In this configuration, one of the acceptable Actor Systems will be
+chosen for hosting an actor with matching capabilities requirements,
+but if that Actor System exits, subsequent Actor creation can occur in
+another system matching the capabilities requirements.
+
+This overlap of capabilities provides fault tolerance and failover
+capabilities for Actor-based applications.
+
+** Dynamic Capability Updates
+
+It's also possible for the capabilities of an Actor System to be
+updated dynamically.  Typically this is performed by some monitoring
+software that checks for connectivity to external services or some
+other type of functionality.
+
+To simulate this, this example includes the ~chgcap.py~ utility.  This
+utility takes the port number for an Actor System a "+" or "-"
+character, indicating that the capability is to be added or removed,
+and the name of the capability (only one, and quoted if it contains
+whitespace).  
+
+When a capability is removed, the Actors running in that Actor System
+are re-checked for compatibility with the new set of capabilities, and
+shutdown if they are no longer compatible.
+
+#+BEGIN_EXAMPLE
+$ python chgcap.py 10101 + morse
+$ echo test | python app.py
+$ python chgcap.py 10101 - morse
+$ python chgcap.py 10101 - "64bit encoder"
+$ python chgcap.py 1900 + "64bit encoder"
+$ echo test | python app.py
+#+END_EXAMPLE
+
+Running various capability updates demonstrates how the Actor-based
+application can be dynamically reconfigured and re-distributed without
+requiring a restart or interrupting the application's functionality.
+
+** Change Limitation
+
+One limitation that still exists in this version of the example is the
+code change limitation described in the very first example.  This
+limitation indicates that any local changes to the code do not take
+effect until the Actor System is restarted.  This limitation is fairly
+trivial to work around for this simple example, but in a production
+environment it may not be easy or desireable to restart the entire
+Actor System when deploying new code.
+
+In addition, it can be even more problematic to effect an Actor System
+restart for multiple Actor Systems running on separate network nodes.
+A complete synchronization of this activity may be necessary to ensure
+that new Actor application code on one system does not attempt to
+converse with older Actor application code on another system.
+
+[[file:../act6/README.org][Act 6]] will describe a solution to the source update limitation.
