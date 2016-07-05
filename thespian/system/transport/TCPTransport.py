@@ -1082,7 +1082,11 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
 
 
     def _acceptNewIncoming(self):
-        lsock, rmtTxAddr = self.socket.accept()
+        try:
+            lsock, rmtTxAddr = self.socket.accept()
+        except (OSError, socket.error) as ex:
+            thesplog('Error accepting incoming: %s', ex)
+            return
         lsock.setblocking(0)
         # Disable Nagle to transmit headers and acks asap
         lsock.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
