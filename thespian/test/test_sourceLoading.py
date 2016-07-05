@@ -348,7 +348,15 @@ def sys_path(request):
     return True
 
 
-class TestUnitDirectZipfile(object):
+# NOTE: this is not a "class Test..." because it should not run as
+# part of the normal Thespian testing.  Running this test pollutes the
+# local module namespace and causes other tests to fail.  This test is
+# primarily used to establish that the ZipFile created is useable via
+# normal import techniques; any change to zipfile contents should be
+# first validated explicitly with the tests in this class before
+# attempting to have Thespian importing conform to the use of that
+# zipfile.
+class BaselineDirectZipfile(object):
     # Note that these tests try to import from the zipfile directly,
     # which can pollute the local namespace.  However, these tests are
     # useful to ensure that the contents of the zipfile are compatible
