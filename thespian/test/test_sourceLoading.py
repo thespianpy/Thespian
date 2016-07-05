@@ -1279,18 +1279,6 @@ class TestFuncMultipleSystemsLoadSource(object):
         foo = asys.createActor('foo.FooActor', sourceHash=srchash)
         assert 'GOT: good one' == asys.ask(foo, 'good one', 1)
         assert 'And MOO: great' == asys.ask(foo, ('discard', 'great'), 1)
-        print()
-        print('sts asys:')
-        from thespian.system.messages.status import Thespian_StatusReq, formatStatus
-        formatStatus(
-            asys.status(),
-            #asys.ask(foo, Thespian_StatusReq(), 1),
-            tofd=sys.stdout)
-        print()
-        print('sts asys2:')
-        formatStatus(asys2.status(), tofd=sys.stdout)
-        #formatStatus(asys2.getActorStatus(), tofd=sys.stdout)
-        print()
         foo2 = asys2.createActor('foo.FooActor', sourceHash=srchash)
         assert 'GOT: another good one' == asys.ask(foo2, 'another good one', 1)
 
