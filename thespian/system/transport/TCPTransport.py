@@ -1181,12 +1181,12 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
             thesplog('OUCH!  Error deserializing received data: %s  (rdata="%s", extra="%s")',
                      traceback.format_exc(), rdata, extra)
             try:
-                inc.socket.sendall(ackDataErrMsg)
+                inc.socket.send(ackDataErrMsg)
             except Exception:
                 pass  # socket will be closed anyhow; AckErr was a courtesy
             inc.close()
             return None
-        inc.socket.sendall(ackMsg)
+        inc.socket.send(ackMsg)
         inc.fromAddress = rdata[0]
         self._processReceivedEnvelope(rEnv)
         if extra and isinstance(inc, TCPIncomingPersistent):
