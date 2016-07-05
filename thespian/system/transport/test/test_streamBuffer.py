@@ -1,4 +1,3 @@
-import unittest
 from thespian.system.transport.streamBuffer import ReceiveBuffer, toSendBuffer
 
 
@@ -10,51 +9,55 @@ def fibonacci(limit=10):
         (f, p) = (f + p, f)
 
 
-class TestReceiveBufferReconstruct(unittest.TestCase):
-    scope='unit'
+class TestUnitReceiveBufferReconstruct(object):
 
     sampleBuffer = 'The struggle of today, is not altogether for today -- it is for a vast future also. -- Abraham Lincoln'
 
     def finalTests(self, rcv, expectedBuf, descr, expectedExtra=None):
-        self.assertTrue(rcv.isDone(), 'ReceiveBuffer isDone %s completed but isDone is False')
-        self.assertEqual(rcv.remainingAmount(), 0,
-                         'Checking if no remaining amount (%s) for %s'%(
-                             str(rcv.remainingAmount()),
-                             descr))
+        assert rcv.isDone(), 'ReceiveBuffer isDone %s completed but isDone is False'
+        assert rcv.remainingAmount() == 0, (
+            'Checking if no remaining amount (%s) for %s'%(
+                str(rcv.remainingAmount()),
+                descr))
         completed,extra = rcv.completed()
-        self.assertEqual(completed, expectedBuf,
-                         'Checking if completed %s == %s for %s'%(str(completed),
-                                                                  str(expectedBuf),
-                                                                  descr))
+        assert completed == expectedBuf, (
+            'Checking if completed %s == %s for %s'%(str(completed),
+                                                     str(expectedBuf),
+                                                     descr))
         if expectedExtra:
-            self.assertEqual(extra, expectedExtra,
-                             'Checking if extra %s == %s for %s'%(str(extra),
-                                                                  str(expectedExtra),
-                                                                  descr))
+            assert extra == expectedExtra, (
+                'Checking if extra %s == %s for %s'%(str(extra),
+                                                     str(expectedExtra),
+                                                     descr))
         else:
-            self.assertFalse(extra, 'Verifying no extra in %s for %s'%(str(extra), descr))
+            assert not extra, 'Verifying no extra in %s for %s'%(str(extra),
+                                                                 descr)
 
     def partialTests(self, rcv, amount, totalAmount, descr):
-        self.assertFalse(rcv.isDone(),
-                         'ReceiveBuffer isDone %s add %d of %d test is not False' % (descr, amount, totalAmount))
+        assert not rcv.isDone(), (
+            'ReceiveBuffer isDone %s add %d of %d test is not False'
+            % (descr, amount, totalAmount))
         # Before the size specification is received, remaining
         # amount may be arbitrary to cause receipt of the size
         # amount.
         remAmount = rcv.remainingAmount()
         if remAmount != 20:
-            self.assertEqual(remAmount, totalAmount - amount,
-                          'ReceiveBuffer remaining %s after %d of %d should be %d but is %d' % (
-                              descr, amount, totalAmount, totalAmount - amount, rcv.remainingAmount()))
-        self.assertEqual(None, rcv.completed(),
-                         'ReceiveBuffer completed %s after initial %d of %d should be None but is %s' % (
-                             descr, amount, totalAmount, rcv.completed()))
+            assert remAmount == totalAmount - amount, (
+                'ReceiveBuffer remaining %s after %d of %d should be %d'
+                ' but is %d'
+                % (descr, amount, totalAmount,
+                   totalAmount - amount, rcv.remainingAmount()))
+        assert rcv.completed() is None, (
+            'ReceiveBuffer completed %s after initial %d of %d should be None'
+            'but is %s'
+            % (descr, amount, totalAmount, rcv.completed()))
 
     def test_fullReceive(self):
         msg = toSendBuffer(self.sampleBuffer)
         msglen = len(msg)
 
         rcv = ReceiveBuffer()
-        self.assertFalse(rcv.isDone(), 'initial ReceiveBuffer isDone test')
+        assert not rcv.isDone(), 'initial ReceiveBuffer isDone test'
 
         rcv.addMore(msg)
 
@@ -65,7 +68,7 @@ class TestReceiveBufferReconstruct(unittest.TestCase):
         msglen = len(msg)
 
         rcv = ReceiveBuffer()
-        self.assertFalse(rcv.isDone(), 'initial ReceiveBuffer isDone test')
+        assert not rcv.isDone(), 'initial ReceiveBuffer isDone test'
 
         rcv.addMore(msg)
 
@@ -77,7 +80,7 @@ class TestReceiveBufferReconstruct(unittest.TestCase):
         msglen = len(msg)
 
         rcv = ReceiveBuffer()
-        self.assertFalse(rcv.isDone(), 'initial ReceiveBuffer isDone test')
+        assert not rcv.isDone(), 'initial ReceiveBuffer isDone test'
 
         rcv.addMore(msg)
 
@@ -88,7 +91,7 @@ class TestReceiveBufferReconstruct(unittest.TestCase):
         msglen = len(msg)
         for point in range(msglen):
             rcv = ReceiveBuffer()
-            self.assertFalse(rcv.isDone(), 'initial ReceiveBuffer isDone test')
+            assert not rcv.isDone(), 'initial ReceiveBuffer isDone test'
 
             rcv.addMore(msg[:point])
             self.partialTests(rcv, point, msglen, 'sample message first add @ %s'%point)
@@ -102,7 +105,7 @@ class TestReceiveBufferReconstruct(unittest.TestCase):
         msglen = len(msg)
         for point in fibonacci(msglen):
             rcv = ReceiveBuffer()
-            self.assertFalse(rcv.isDone(), 'initial ReceiveBuffer isDone test')
+            assert not rcv.isDone(), 'initial ReceiveBuffer isDone test'
 
             rcv.addMore(msg[:point])
             self.partialTests(rcv, point, msglen, 'big message first add @ %s'%point)
@@ -119,7 +122,7 @@ class TestReceiveBufferReconstruct(unittest.TestCase):
         msglen = len(msg)
         for partLen in range(1, msglen):
             rcv = ReceiveBuffer()
-            self.assertFalse(rcv.isDone(), 'initial ReceiveBuffer isDone test')
+            assert not rcv.isDone(), 'initial ReceiveBuffer isDone test'
 
             for partnum, point in enumerate(range(0, msglen, partLen)):
                 rcv.addMore(msg[point:point+partLen])
@@ -141,7 +144,7 @@ class TestReceiveBufferReconstruct(unittest.TestCase):
         for partLen in [F for F in fibonacci(msglen)][-1:-3:-1]:
             if partLen < 5000: continue  # those sizes should already have been verified
             rcv = ReceiveBuffer()
-            self.assertFalse(rcv.isDone(), 'initial ReceiveBuffer isDone test')
+            assert not rcv.isDone(), 'initial ReceiveBuffer isDone test'
 
             for partnum, point in enumerate(range(0, msglen, partLen)):
                 rcv.addMore(msg[point:point+partLen])
