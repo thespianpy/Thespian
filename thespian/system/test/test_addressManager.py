@@ -198,6 +198,21 @@ class TestAddressManagerLocalAddressAssociations(unittest.TestCase):
         self.assertEqual(lclAddr, mainAddr)
         self.assertEqual(mainAddr, lclAddr)
 
+    def testAssociationHashEquality(self):
+        lclAddr = self.am.createLocalAddress()
+        mainAddr = ActorAddress(id(self))
+
+        addrdict = { lclAddr: True, 99: False }
+        self.assertIn(lclAddr, addrdict)
+        self.assertNotIn(lclAddr, addrdict)
+
+        self.am.associateUseableAddress(self.myAddress,
+                                        lclAddr.addressDetails.addressInstanceNum,
+                                        mainAddr)
+
+        self.assertIn(lclAddr, addrdict)
+        self.assertIn(lclAddr, addrdict)
+
     def testAssociationEqualityWithReconstitutedNonLocalAddress(self):
         lclAddr = self.am.createLocalAddress()
         mainAddr1 = ActorAddress(None)
@@ -225,6 +240,41 @@ class TestAddressManagerLocalAddressAssociations(unittest.TestCase):
         self.assertEqual(mainAddr1_dup, lclAddr)
         self.assertEqual(lclAddr, mainAddr1_dup)
         self.assertEqual(mainAddr1_dup, mainAddr1)
+
+    def testAssociationHashEqualityWithReconstitutedNonLocalAddress(self):
+        lclAddr = self.am.createLocalAddress()
+        mainAddr1 = ActorAddress(None)
+        mainAddr2 = ActorAddress(9)
+        self.assertNotEqual(mainAddr1, mainAddr2)
+
+        addrdict = { lclAddr: True, 99: False }
+        self.assertIn(lclAddr, addrdict)
+        self.assertNotIn(mainAddr1, addrdict)
+        self.assertNotIn(mainAddr2, addrdict)
+
+        self.am.associateUseableAddress(self.myAddress,
+                                        lclAddr.addressDetails.addressInstanceNum,
+                                        mainAddr1)
+
+        self.assertIn(lclAddr, addrdict)
+        self.assertIn(mainAddr1, addrdict)
+        self.assertNotIn(mainAddr2, addrdict)
+
+        mainAddr1_dup = ActorAddress(None)
+        self.assertEqual(mainAddr1, mainAddr1_dup)
+
+        self.assertIn(lclAddr, addrdict)
+        self.assertIn(mainAddr1, addrdict)
+        self.assertIn(mainAddr1_dup, addrdict)
+        self.assertNotIn(mainAddr2, addrdict)
+
+        self.am.importAddr(mainAddr1_dup)
+
+        self.assertIn(lclAddr, addrdict)
+        self.assertIn(mainAddr1, addrdict)
+        self.assertIn(mainAddr1_dup, addrdict)
+        self.assertNotIn(mainAddr2, addrdict)
+
 
     def testAssociatedAddressesDoNotMatchArbitraryStuff(self):
         lclAddr1, mainAddr1 = self._makeLocalAndAssociated()
