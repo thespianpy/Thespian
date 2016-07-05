@@ -28,6 +28,7 @@ except ImportError:
 from thespian.system import isInternalActorSystemMessage
 from thespian.system.messages.status import *
 from thespian.system.sourceLoader import loadModuleFromHashSource, SourceHashFinder
+import time
 
 
 class ActorRef:
@@ -242,6 +243,14 @@ class ActorSystemBase:
             'System:BadActor': badActor,
         }
         self._internalAddresses = list(self.actorRegistry.keys())
+
+        system.capabilities['Python Version'] = tuple(sys.version_info)
+        system.capabilities['Thespian Generation'] = ThespianGeneration
+        system.capabilities['Thespian Version'] = str(int(time.time()*1000))
+        system.capabilities['Thespian ActorSystem Name'] = 'simpleSystem'
+        system.capabilities['Thespian ActorSystem Version'] = 2
+        system.capabilities['Thespian Watch Supported'] = False
+        system.capabilities['AllowRemoteActorSources'] = 'No'
 
     def shutdown(self):
         while self._sources:
