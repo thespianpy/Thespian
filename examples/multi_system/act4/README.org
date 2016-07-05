@@ -1,0 +1,63 @@
+* Thespian Multi-System Configurations, Act 4
+
+In [[file:../act3/README.org][Act 3]] a simple update was made to prevent a proliferation of
+Actors each time the application was run, and some fault tolerance in
+the application was explored, but there were some additional
+observations about the effects of the failures.
+
+In this Act (still a single system configuration...) some
+additional changes will be made to allow a more pro-active stance to
+be taken with regards to errors.
+
+** Child failure messages
+
+In this version, the list of running encoders is changed to a
+dictionary and a new message handler is added to the Acceptor to
+handle ~ChildActorExited~ messages.  Whenever an Actor exits, its
+parent receives one of these messages.  The Acceptor will use this
+information to clear the address of the exited child, which will then
+be restarted when the next message is received for encoding.
+
+It is also notable that an Actor will receive an ActorExitRequest when
+it is being killed; while normally ignorable, this message allows an
+Actor to perform shutdown or cleanup operations prior to its
+termination.
+
+** Atomic messaging
+
+If the Analyzer is killed, a new Analyzer is restarted.  Because the
+address of the Analyzer is passed to the encoder's each time a decode
+request is made, the switch to sending information to the new Analyzer
+is automatic.  This demonstrates one of the principles of developing
+an Actor-based application that has proven useful a number of times:
+
+   Favor using atomic messages and passing all of the information
+   needed to process a request over using an Actor's state as memory
+   for part of the request handling.
+
+** Specifying Actors via strings
+
+Another interesting technique shown in this example is the argument to
+the ~createActor~ calls when starting an Encoder: it is a string
+specifying the Actor class to run rather than the class itself as used
+in previous examples.  The ~createActor~ accepts both; the string form
+should be specified in the standard dotted notation that would be used
+if importing that class.  In this example, using the dictionary key as
+the string form made it easy to specify the correct type of Encoder
+Actor to restart.  The direct class specification method may be more
+conventional, but using the string form has other advantages as well,
+as will be seen in subsequent Examples.
+
+
+** Self Healing applications.
+
+In the previous example, Actors could be killed without completely
+disabling the overall application, thereby demonstrating a level of
+fault tolerance.  The current example demonstrates how to re-create
+those failed Actors, thereby making the application "Self Healing".  A
+self healing application is very powerful for providing services to
+external clients.
+
+** Next update
+
+Now move to [[file:../act5/README.org][Act 5]] to see the next set of updates to this application.
