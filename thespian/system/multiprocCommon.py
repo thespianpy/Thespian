@@ -10,7 +10,7 @@ from thespian.system.utilis import thesplog, checkActorCapabilities, partition
 from thespian.system.transport import *
 from thespian.system.logdirector import *
 from thespian.system.utilis import setProcName, StatsManager
-from thespian.system.addressManager import ActorLocalAddress
+from thespian.system.addressManager import ActorLocalAddress, CannotPickleAddress
 from thespian.system.messages.multiproc import *
 from thespian.system.sourceLoader import loadModuleFromHashSource
 from functools import partial
@@ -326,8 +326,12 @@ class MultiProcReplicator(object):
         self._child_procs, dead = partition(self._checkChildLiveness,  getattr(self, '_child_procs', []))
         for each in dead:
             addr = getattr(each, 'childRealAddr', each.childAddr)
-            self.transport.scheduleTransmit(None, TransmitIntent(self.transport.myAddress,
-                                                                 ChildActorExited(addr)))
+            try:
+                self.transport.scheduleTransmit(None, TransmitIntent(self.transport.myAddress,
+                                                                     ChildActorExited(addr)))
+            except CannotPickleAddress:
+                thesplog('child %s is dead but cannot translate address to properly handle it',
+                         addr, level=logging.ERROR)
 
     def h_EndpointConnected(self, envelope):
         for C in getattr(self, '_child_procs', []):
