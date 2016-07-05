@@ -5,8 +5,13 @@ The intent is to ensure that various paths using different passed
 ActorAddresses work, and that multiple request can be injected into
 the system at once and still be handled correctly.'''
 
+import sys
 from thespian.actors import *
 from thespian.test import *
+from datetime import timedelta
+
+
+max_wait=timedelta(seconds=20)
 
 
 class addEvery(object):
@@ -76,42 +81,60 @@ class TestFuncActorAdder(object):
         addOnes = [ asys.createActor(AddOne) for x in range(10) ]
         for (frmA, toA) in zip(addOnes, addOnes[1:]):
             asys.tell(frmA, (1, toA))
-        sum = asys.ask(addOnes[0], addEvery(actorList = addOnes[1:]))
+        sum = asys.ask(addOnes[0], addEvery(actorList = addOnes[1:]), max_wait)
         assert sum.value == 10
-        sum2 = asys.ask(addOnes[0], addEvery(actorList = addOnes[1:]))
+        sum2 = asys.ask(addOnes[0], addEvery(actorList = addOnes[1:]), max_wait)
         assert sum2.value == 10
 
     def test02_TenEvens(self, asys):
         unstable_test(asys, 'multiprocQueueBase')
+        if 'pypy' in sys.executable:
+            pytest.skip("Pypy adder processes will consume all available system"
+                        " memory for no good reason")
         addOnes = [ asys.createActor(AddOne) for x in range(10) ]
         for (frmA, toA) in zip(addOnes, addOnes[1:]):
             asys.tell(frmA, (1, toA))
         for (frmA, toA) in zip(addOnes[0:], addOnes[2:]):
             asys.tell(frmA, (2, toA))
-        sum = asys.ask(addOnes[0], addEvery(actorList = addOnes[1:]))
+        sum = asys.ask(addOnes[0], addEvery(actorList = addOnes[1:]), max_wait)
         assert sum.value == 10
-        sum2 = asys.ask(addOnes[0], addEvery(actorList = [addOnes[I] for I in range(2, len(addOnes),2)]))
+        sum2 = asys.ask(addOnes[0],
+                        addEvery(actorList = [addOnes[I]
+                                              for I in range(2, len(addOnes),2)]),
+                        max_wait)
         assert sum2.value == 5
-        sum3 = asys.ask(addOnes[1], addEvery(actorList = [addOnes[I] for I in range(3, len(addOnes),2)]))
+        sum3 = asys.ask(addOnes[1],
+                        addEvery(actorList = [addOnes[I]
+                                              for I in range(3, len(addOnes),2)]),
+                        max_wait)
         assert sum3.value == 5
-        sum4 = asys.ask(addOnes[4], addEvery(actorList = [addOnes[I] for I in range(6, len(addOnes),2)]))
+        sum4 = asys.ask(addOnes[4],
+                        addEvery(actorList = [addOnes[I]
+                                              for I in range(6, len(addOnes),2)]),
+                        max_wait)
         assert sum4.value == 3
 
 
     def test03_LotsOfActorsEvery(self, asys):
         unstable_test(asys, 'multiprocQueueBase')
+        if 'pypy' in sys.executable:
+            pytest.skip("Pypy adder processes will consume all available system"
+                        " memory for no good reason")
         addOnes = [ asys.createActor(AddOne) for x in range(50) ]
         for (frmA, toA) in zip(addOnes, addOnes[1:]):
             asys.tell(frmA, (1, toA))
-        sum = asys.ask(addOnes[0], addEvery(actorList = addOnes[1:]))
+        sum = asys.ask(addOnes[0], addEvery(actorList = addOnes[1:]), max_wait)
         assert sum.value == 50
-        sum2 = asys.ask(addOnes[0], addEvery(actorList = addOnes[1:]))
+        sum2 = asys.ask(addOnes[0], addEvery(actorList = addOnes[1:]), max_wait)
         assert sum2.value == 50
         for killA in addOnes:
             asys.tell(killA, ActorExitRequest())
 
     def test04_LotsOfActorsEveryTen(self, asys):
         unstable_test(asys, 'multiprocQueueBase')
+        if 'pypy' in sys.executable:
+            pytest.skip("Pypy adder processes will consume all available system"
+                        " memory for no good reason")
         # Create a set of addTens
         addTens = [ asys.createActor(AddTen) for x in range(0, 50, 10) ]
         # Point each addTens to the next one to make a chain.  Each
@@ -119,17 +142,20 @@ class TestFuncActorAdder(object):
         for (frmA, toA) in zip(addTens, addTens[1:]):
             asys.tell(frmA, (1, toA))
 
-        sum = asys.ask(addTens[0], addEvery())
+        sum = asys.ask(addTens[0], addEvery(), max_wait)
         assert sum.value == 50
-        sum2 = asys.ask(addTens[0], addEvery())
+        sum2 = asys.ask(addTens[0], addEvery(), max_wait)
         assert sum2.value == 50
         for killA in addTens:
             asys.tell(killA, ActorExitRequest())
 
     def test05_UniqueAddresses(self, asys):
         unstable_test(asys, 'multiprocQueueBase')
+        if 'pypy' in sys.executable:
+            pytest.skip("Pypy adder processes will consume all available system"
+                        " memory for no good reason")
         addTen = asys.createActor(AddTen)
-        children = asys.ask(addTen, "Names of Children?")
+        children = asys.ask(addTen, "Names of Children?", max_wait)
         uniqueAddresses = [addTen]
         for each in children:
             assert each not in uniqueAddresses
@@ -140,13 +166,19 @@ class TestFuncActorAdder(object):
 
     def test06_TenEveryTen(self, asys):
         unstable_test(asys, 'multiprocQueueBase')
+        if 'pypy' in sys.executable:
+            pytest.skip("Pypy adder processes will consume all available system"
+                        " memory for no good reason")
         addTen = asys.createActor(AddTen)
-        sum = asys.ask(addTen, addEvery())
+        sum = asys.ask(addTen, addEvery(), max_wait)
         assert sum.value == 10
 
 
     def test07_LotsOfActorsEveryTenWithBackground(self, asys):
         unstable_test(asys, 'multiprocQueueBase')
+        if 'pypy' in sys.executable:
+            pytest.skip("Pypy adder processes will consume all available system"
+                        " memory for no good reason")
         addTens = [ asys.createActor(AddTen) for x in range(0, 50, 10) ]
         for (frmA, toA) in zip(addTens, addTens[1:]):
             asys.tell(frmA, (1, toA))
@@ -157,7 +189,7 @@ class TestFuncActorAdder(object):
             start = random.choice(addTens)
             asys.tell(start, addEvery(asker=drop))  # drop results
         asys.tell(addTens[-1], addEvery(asker=drop))  # drop results
-        sum = asys.ask(addTens[0], addEvery())
+        sum = asys.ask(addTens[0], addEvery(), max_wait)
         assert sum.value == 50
         for killA in addTens:
             asys.tell(killA, ActorExitRequest())
