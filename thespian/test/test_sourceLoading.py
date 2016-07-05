@@ -250,6 +250,32 @@ print('j4')
 def jormungandr(): return 'dragon'
 '''
 
+
+lizardSource = '''
+# Direct attempts to access the import machinery, a la sqlalchemy
+import sys
+py3k = sys.version_info >= (3,0)
+if py3k:
+    import builtins
+    builtins.__dict__['__import__'] = __builtins__['__import__']
+    import_ = getattr(builtins, '__import__')
+else:
+    def import_(*args):
+        if len(args) == 4:
+            args = args[0:3] + ([str(arg) for arg in args[3]],)
+        return __import__(*args)
+
+#from rock.worm import wormy
+
+earth = import_('rock.worm', globals(), locals(), ['wormy'])
+
+from thespian.actors import *
+
+class Lizard(Actor):
+    def receiveMessage(self, message, sender):
+        self.send(sender, earth.wormy(message))
+'''
+
 class BarActor(Actor):
     def receiveMessage(self, msg, sender):
         if type(msg) == type(""):
@@ -267,12 +293,19 @@ class SimpleSourceAuthority(ActorTypeDispatcher):
 def source_zips(request):
     tmpdir = tempfile.mkdtemp()
 
+    # n.b. if this gets too long, the UDPTransport will be unable to
+    # transfer the source zip files to other Actor Systems (UDP packet
+    # size is limited and it does not have the ability to split and
+    # reconstruct packages natively.
     foozipFname = os.path.join(tmpdir, 'foosrc.zip')
     foozip = zipfile.ZipFile(foozipFname, 'w')
     foozip.writestr('__init__.py', '')
     foozip.writestr('foo.py', fooSource)
     foozip.writestr('frog.py', frogSource)
     foozip.writestr('toad.py', toadSource)
+    foozip.writestr('lizard.py', lizardSource)
+    foozip.writestr('rock/__init__.py', '')
+    foozip.writestr('rock/worm.py', 'def wormy(v): return "Slimy " + v')
     foozip.writestr('barn/__init__.py', barnInitSource)
     foozip.writestr('barn/pig.py', pigSource)
     foozip.writestr('barn/chicken.py', chickenSource)
@@ -337,7 +370,7 @@ class TestUnitRoundTripROT13(object):
         assert names[0] == '__init__.py'
         assert names[-2] == 'barn/cow/moo.py'
         assert names[-1] == 'roo.py'
-        assert len(names) == 24
+        assert len(names) == 27
 
 
 @pytest.fixture(scope='class')
@@ -518,6 +551,16 @@ class TestFuncLoadSource(object):
         srchash = self._loadFooSource(asys, source_zips)
         pig = asys.createActor('barn.pig.PigActor', sourceHash=srchash)
         assert 'Oink Cluck Honk ready? Moooo' == asys.ask(pig, 'ready?', 1)
+
+    def test02_verifyBuiltinImport(self, asys, source_zips):
+        actor_system_unsupported(asys, 'simpleSystemBase')
+        thesplog('tt6 %s', asys.port_num)
+        tmpdir, foozipFname, foozipEncFile, dogzipFname, dogzipEncFile = source_zips
+        self._registerSA(asys)
+        srchash = self._loadFooSource(asys, source_zips)
+        time.sleep(0.5)  # allow load to complete  # Seen 0.20 needed
+        lizard = asys.createActor('lizard.Lizard', sourceHash=srchash)
+        assert 'Slimy goo' == asys.ask(lizard, 'goo', 1)
 
     def test02_verifyAllRelativeImportPossibilities(self, asys, source_zips):
         thesplog('tt6 %s', asys.port_num)
@@ -920,8 +963,11 @@ class TestFuncLoadSource(object):
         time.sleep(0.25)  # allow time for load to consult Source Authority
         try:
             badfoo = asys.createActor('foo.FooActor', sourceHash = srchash)
-            assert not 'Should not get here!'
-        except (InvalidActorSourceHash, ImportError):
+            assert not ('Should not get here with (%s)!' % str(badfoo))
+        except (InvalidActorSourceHash,
+                ImportError,
+                InvalidActorSpecification,
+                EOFError):
             assert True  # Valid exceptions for a corrupt source
         except Exception as ex:
             assert '' == 'Invalid exception thrown: %s (%s)'%(str(ex), type(ex))
