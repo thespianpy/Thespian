@@ -1194,7 +1194,7 @@ class TestFuncMultipleSystemsLoadSource(object):
         asys.tell(foo, ActorExitRequest())
         asys.tell(foo2, ActorExitRequest())
         asys.unloadActorSource(srchash)
-        time.sleep(0.1) # Allow updates to propagate
+        time.sleep(0.25) # Allow updates to propagate
 
         raises(InvalidActorSourceHash,
                           asys.createActor, 'foo.FooActor', sourceHash=srchash)
