@@ -1,13 +1,10 @@
-import unittest
-import thespian.test.helpers
 from thespian.system.admin.convention import HysteresisDelaySender
 from thespian.system.transport import TransmitIntent, SendStatus
 from datetime import datetime, timedelta
 from time import sleep
 
 
-class TestHysteresis(unittest.TestCase):
-    scope="unit"
+class TestUnitHysteresis(object):
 
     def send(self, intent):
         if not hasattr(self, 'sends'): self.sends = []
@@ -31,7 +28,7 @@ class TestHysteresis(unittest.TestCase):
         intent = TransmitIntent(targetAddr, msg)
         hs.sendWithHysteresis(intent)
         # Should have been sent immediately
-        self.assertEqual(1, len(getattr(self, 'sends', [])))
+        assert 1 == len(getattr(self, 'sends', []))
 
     def testTwoSends(self):
         self.sends = []
@@ -44,22 +41,22 @@ class TestHysteresis(unittest.TestCase):
         hs.sendWithHysteresis(intent1)
         hs.sendWithHysteresis(intent2)
         # First was sent immediately, second is delayed
-        self.assertEqual(1, len(getattr(self, 'sends', [])))
-        self.assertEqual(intent1, self.sends[0])
-        self.assertNotEqual(timedelta(seconds=0), hs.delay.remaining())
-        self.assertGreaterEqual(timedelta(milliseconds=10), hs.delay.remaining())
+        assert 1 == len(getattr(self, 'sends', []))
+        assert intent1 == self.sends[0]
+        assert timedelta(seconds=0) != hs.delay.remaining()
+        assert timedelta(milliseconds=10) >= hs.delay.remaining()
         delayTime = hs.delay.remainingSeconds()
         print('Remaining seconds: %s (%s)'%(delayTime, type(delayTime)))
         sleep(delayTime)
         hs.checkSends()
-        self.assertEqual(2, len(getattr(self, 'sends', [])))
-        self.assertEqual(intent1, self.sends[0])
-        self.assertEqual(intent2, self.sends[1])
+        assert 2 == len(getattr(self, 'sends', []))
+        assert intent1 == self.sends[0]
+        assert intent2 == self.sends[1]
         # Ensure that there are no more send attempts
         sleep(hs.delay.remainingSeconds())
-        self.assertEqual(2, len(getattr(self, 'sends', [])))
+        assert 2 == len(getattr(self, 'sends', []))
         sleep(delayTime)
-        self.assertEqual(2, len(getattr(self, 'sends', [])))
+        assert 2 == len(getattr(self, 'sends', []))
 
     def testTwoSendsIntentTimeoutIgnored(self):
         self.sends = []
@@ -72,18 +69,18 @@ class TestHysteresis(unittest.TestCase):
         hs.sendWithHysteresis(intent1)
         hs.sendWithHysteresis(intent2)
         # First was sent immediately, second is delayed
-        self.assertEqual(1, len(getattr(self, 'sends', [])))
-        self.assertEqual(intent1, self.sends[0])
-        self.assertNotEqual(timedelta(seconds=0), hs.delay.remaining())
-        self.assertGreaterEqual(timedelta(milliseconds=110), hs.delay.remaining())
-        self.assertLess(timedelta(milliseconds=95), hs.delay.remaining())
+        assert 1 == len(getattr(self, 'sends', []))
+        assert intent1 == self.sends[0]
+        assert timedelta(seconds=0) != hs.delay.remaining()
+        assert timedelta(milliseconds=110) >= hs.delay.remaining()
+        assert timedelta(milliseconds=95) < hs.delay.remaining()
         print('Remaining seconds: %s (%s)'%(hs.delay.remainingSeconds(),
                                             type(hs.delay.remainingSeconds())))
         sleep(hs.delay.remainingSeconds())
         hs.checkSends()
-        self.assertEqual(2, len(getattr(self, 'sends', [])))
-        self.assertEqual(intent1, self.sends[0])
-        self.assertEqual(intent2, self.sends[1])
+        assert 2 == len(getattr(self, 'sends', []))
+        assert intent1 == self.sends[0]
+        assert intent2 == self.sends[1]
 
     def testTwentySendsDifferentAddresses(self):
         self.sends = []
@@ -97,23 +94,23 @@ class TestHysteresis(unittest.TestCase):
         for each in intents:
             hs.sendWithHysteresis(each)
         # First was sent immediately, all others are delayed
-        self.assertEqual(1, len(getattr(self, 'sends', [])))
-        self.assertEqual(intents[0], self.sends[0])
-        self.assertNotEqual(timedelta(seconds=0), hs.delay.remaining())
-        self.assertGreaterEqual(timedelta(milliseconds=10), hs.delay.remaining())
-        self.assertLess(timedelta(milliseconds=9), hs.delay.remaining())
+        assert 1 == len(getattr(self, 'sends', []))
+        assert intents[0] == self.sends[0]
+        assert timedelta(seconds=0) != hs.delay.remaining()
+        assert timedelta(milliseconds=10) >= hs.delay.remaining()
+        assert timedelta(milliseconds=9) < hs.delay.remaining()
         delayTime = hs.delay.remainingSeconds()
         print('Remaining seconds: %s (%s)'%(delayTime, type(delayTime)))
         sleep(delayTime)
         hs.checkSends()
-        self.assertEqual(len(intents), len(getattr(self, 'sends', [])))
+        assert len(intents) == len(getattr(self, 'sends', []))
         for num in range(len(intents)):
-            self.assertEqual(intents[num], self.sends[num])
+            assert intents[num] == self.sends[num]
         # Ensure that there are no more send attempts
         sleep(hs.delay.remainingSeconds())
-        self.assertEqual(len(intents), len(getattr(self, 'sends', [])))
+        assert len(intents) == len(getattr(self, 'sends', []))
         sleep(delayTime)
-        self.assertEqual(len(intents), len(getattr(self, 'sends', [])))
+        assert len(intents) == len(getattr(self, 'sends', []))
 
     def testTwentySendsDifferentAddressesCancelOne(self):
         self.sends = []
@@ -127,28 +124,28 @@ class TestHysteresis(unittest.TestCase):
         for each in intents:
             hs.sendWithHysteresis(each)
         # First was sent immediately, all others are delayed
-        self.assertEqual(1, len(getattr(self, 'sends', [])))
-        self.assertEqual(intents[0], self.sends[0])
-        self.assertNotEqual(timedelta(seconds=0), hs.delay.remaining())
-        self.assertGreaterEqual(timedelta(milliseconds=10), hs.delay.remaining())
-        self.assertLess(timedelta(milliseconds=9), hs.delay.remaining())
+        assert 1 == len(getattr(self, 'sends', []))
+        assert intents[0] == self.sends[0]
+        assert timedelta(seconds=0) != hs.delay.remaining()
+        assert timedelta(milliseconds=10) >= hs.delay.remaining()
+        assert timedelta(milliseconds=9) < hs.delay.remaining()
         hs.cancelSends('addr10')
         delayTime = hs.delay.remainingSeconds()
         print('Remaining seconds: %s (%s)'%(delayTime, type(delayTime)))
         sleep(delayTime)
         hs.checkSends()
-        self.assertEqual(len(intents)-1, len(getattr(self, 'sends', [])))
+        assert len(intents)-1 == len(getattr(self, 'sends', []))
         adj = 0
         for num in range(len(intents)):
             if num == 11:
                 adj = 1
                 continue
-            self.assertEqual(intents[num], self.sends[num - adj])
+            assert intents[num] == self.sends[num - adj]
         # Ensure that there are no more send attempts
         sleep(hs.delay.remainingSeconds())
-        self.assertEqual(len(intents)-1, len(getattr(self, 'sends', [])))
+        assert len(intents)-1 == len(getattr(self, 'sends', []))
         sleep(delayTime)
-        self.assertEqual(len(intents)-1, len(getattr(self, 'sends', [])))
+        assert len(intents)-1 == len(getattr(self, 'sends', []))
 
     def testTwentySendsSameAddressSameMessageTypeSuccess(self):
         self.sends = []
@@ -165,20 +162,20 @@ class TestHysteresis(unittest.TestCase):
         for each in intents:
             hs.sendWithHysteresis(each)
         # First was sent immediately, all others are delayed
-        self.assertEqual(1, len(getattr(self, 'sends', [])))
-        self.assertEqual(intents[0], self.sends[0])
-        self.assertNotEqual(timedelta(seconds=0), hs.delay.remaining())
-        self.assertGreaterEqual(timedelta(milliseconds=10), hs.delay.remaining())
-        self.assertLess(timedelta(milliseconds=9), hs.delay.remaining())
+        assert 1 == len(getattr(self, 'sends', []))
+        assert intents[0] == self.sends[0]
+        assert timedelta(seconds=0) != hs.delay.remaining()
+        assert timedelta(milliseconds=10) >= hs.delay.remaining()
+        assert timedelta(milliseconds=9) < hs.delay.remaining()
         print('Remaining seconds: %s (%s)'%(hs.delay.remainingSeconds(),
                                             type(hs.delay.remainingSeconds())))
         sleep(hs.delay.remainingSeconds())
         hs.checkSends()
-        self.assertEqual(2, len(getattr(self, 'sends', [])))
-        self.assertEqual(intents[0], self.sends[0])
-        self.assertEqual(intents[-1], self.sends[1])
-        self.assertEqual(20, len(getattr(self, 'successes', [])))
-        self.assertEqual(0, len(getattr(self, 'fails', [])))
+        assert 2 == len(getattr(self, 'sends', []))
+        assert intents[0] == self.sends[0]
+        assert intents[-1] == self.sends[1]
+        assert 20 == len(getattr(self, 'successes', []))
+        assert 0 == len(getattr(self, 'fails', []))
 
     def testTwentySendsSameAddressSameMessageTypeCancelCallbacks(self):
         self.sends = []
@@ -195,21 +192,21 @@ class TestHysteresis(unittest.TestCase):
         for each in intents:
             hs.sendWithHysteresis(each)
         # First was sent immediately, all others are delayed
-        self.assertEqual(1, len(getattr(self, 'sends', [])))
-        self.assertEqual(intents[0], self.sends[0])
-        self.assertNotEqual(timedelta(seconds=0), hs.delay.remaining())
-        self.assertGreaterEqual(timedelta(milliseconds=10), hs.delay.remaining())
-        self.assertLess(timedelta(milliseconds=9), hs.delay.remaining())
+        assert 1 == len(getattr(self, 'sends', []))
+        assert intents[0] == self.sends[0]
+        assert timedelta(seconds=0) != hs.delay.remaining()
+        assert timedelta(milliseconds=10) >= hs.delay.remaining()
+        assert timedelta(milliseconds=9) < hs.delay.remaining()
         hs.cancelSends('addr1')
-        self.assertEqual(1, len(getattr(self, 'sends', [])))
-        self.assertEqual(intents[0], self.sends[0])
-        self.assertEqual(0, len(getattr(self, 'successes', [])))
-        self.assertEqual(20, len(getattr(self, 'fails', [])))
+        assert 1 == len(getattr(self, 'sends', []))
+        assert intents[0] == self.sends[0]
+        assert 0 == len(getattr(self, 'successes', []))
+        assert 20 == len(getattr(self, 'fails', []))
         hs.checkSends()
-        self.assertEqual(1, len(getattr(self, 'sends', [])))
-        self.assertEqual(intents[0], self.sends[0])
-        self.assertEqual(0, len(getattr(self, 'successes', [])))
-        self.assertEqual(20, len(getattr(self, 'fails', [])))
+        assert 1 == len(getattr(self, 'sends', []))
+        assert intents[0] == self.sends[0]
+        assert 0 == len(getattr(self, 'successes', []))
+        assert 20 == len(getattr(self, 'fails', []))
 
     def testEighteenSendsSameAddressThreeDifferentMessageTypes(self):
         self.sends = []
@@ -226,21 +223,21 @@ class TestHysteresis(unittest.TestCase):
         for each in intents:
             hs.sendWithHysteresis(each)
         # First was sent immediately, all others are delayed
-        self.assertEqual(1, len(getattr(self, 'sends', [])))
-        self.assertEqual(intents[0], self.sends[0])
-        self.assertNotEqual(timedelta(seconds=0), hs.delay.remaining())
-        self.assertGreaterEqual(timedelta(milliseconds=10), hs.delay.remaining())
-        self.assertLess(timedelta(milliseconds=9), hs.delay.remaining())
+        assert 1 == len(getattr(self, 'sends', []))
+        assert intents[0] == self.sends[0]
+        assert timedelta(seconds=0) != hs.delay.remaining()
+        assert timedelta(milliseconds=10) >= hs.delay.remaining()
+        assert timedelta(milliseconds=9) < hs.delay.remaining()
         print('Remaining seconds: %s (%s)'%(hs.delay.remainingSeconds(),
                                             type(hs.delay.remainingSeconds())))
         sleep(hs.delay.remainingSeconds())
         hs.checkSends()
         # Only should have first message and last of each type
-        self.assertEqual(4, len(getattr(self, 'sends', [])))
-        self.assertEqual(intents[0], self.sends[0])
-        self.assertEqual(intents[-3], self.sends[1])
-        self.assertEqual(intents[-2], self.sends[2])
-        self.assertEqual(intents[-1], self.sends[3])
+        assert 4 == len(getattr(self, 'sends', []))
+        assert intents[0] == self.sends[0]
+        assert intents[-3] == self.sends[1]
+        assert intents[-2] == self.sends[2]
+        assert intents[-1] == self.sends[3]
 
     def testTwentySendsSameAddressSameMessageTypeSendAfterDelay(self):
         self.sends = []
@@ -254,24 +251,24 @@ class TestHysteresis(unittest.TestCase):
         for each in intents:
             hs.sendWithHysteresis(each)
         # First was sent immediately, all others are delayed
-        self.assertEqual(1, len(getattr(self, 'sends', [])))
-        self.assertEqual(intents[0], self.sends[0])
+        assert 1 == len(getattr(self, 'sends', []))
+        assert intents[0] == self.sends[0]
         # The hysteresis delay should be maxed out
         t1 = hs.delay.remaining()
-        self.assertNotEqual(timedelta(seconds=0), t1)
-        self.assertGreaterEqual(timedelta(milliseconds=20), t1)
-        self.assertLess(timedelta(milliseconds=9), t1)
+        assert timedelta(seconds=0) != t1
+        assert timedelta(milliseconds=20) >= t1
+        assert timedelta(milliseconds=9) < t1
         # Wait the delay period and then check, which should send the
         # (latest) queued messages
         sleep(hs.delay.remainingSeconds())
         hs.checkSends()
         # Verify that hysteresis delay is not yet back to zero and
         # additional sends are still blocked.
-        self.assertFalse(hs.delay.expired())  # got refreshed and reduced in checkSends
+        assert not hs.delay.expired()  # got refreshed and reduced in checkSends
         hs.sendWithHysteresis(intents[0])
-        self.assertEqual(2, len(getattr(self, 'sends', [])))
-        self.assertEqual(intents[0], self.sends[0])
-        self.assertEqual(intents[-1], self.sends[1])
+        assert 2 == len(getattr(self, 'sends', []))
+        assert intents[0] == self.sends[0]
+        assert intents[-1] == self.sends[1]
         # Verify that the hysteresis delay keeps dropping and
         # eventually gets back to zero.  After a drop, any pending
         # sends that were blocked should be sent.
@@ -279,18 +276,18 @@ class TestHysteresis(unittest.TestCase):
         for x in range(100):  # don't loop forever
             if hs.delay.expired(): break
             t2 = hs.delay.remaining()
-            self.assertNotEqual(timedelta(seconds=0), t2)
-            self.assertLess(t2, t1)
-            self.assertEqual(nsent, len(getattr(self, 'sends', [])))
+            assert timedelta(seconds=0) != t2
+            assert t2 < t1
+            assert nsent == len(getattr(self, 'sends', []))
             sleep(hs.delay.remainingSeconds())
             t1 = t2
             hs.checkSends()
             if nsent == 2: nsent = 3
         # Now verify hysteresis sender is back to the original state
-        self.assertEqual(3, len(getattr(self, 'sends', [])))
+        assert 3 == len(getattr(self, 'sends', []))
         hs.sendWithHysteresis(intents[1])
-        self.assertEqual(4, len(getattr(self, 'sends', [])))
-        self.assertEqual(intents[0], self.sends[0])
-        self.assertEqual(intents[-1], self.sends[1])
-        self.assertEqual(intents[0], self.sends[2])
-        self.assertEqual(intents[1], self.sends[3])
+        assert 4 == len(getattr(self, 'sends', []))
+        assert intents[0] == self.sends[0]
+        assert intents[-1] == self.sends[1]
+        assert intents[0] == self.sends[2]
+        assert intents[1] == self.sends[3]
