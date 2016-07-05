@@ -1,0 +1,73 @@
+* Thespian Multi-System Configurations, Act 3
+
+This example extends [[file:../act2/README.org][Act 2]] to solve the third issue noted in the
+original implementation: a new set of Actors is created each time the
+application is run.  Again, this is not yet a multi-system configuration.
+
+The primary way to avoid creating an entirely new set of actors each
+time is to use the globalName when creating the primary entry point
+Actor (in this case, the Acceptor).  This simple change allows the
+existing set of Actors to be re-used.
+
+Now that the number of Actors running is manageable, another
+interesting experiment is to kill one of the Actors.
+
+#+BEGIN_EXAMPLE
+$ export PYTHONPATH=../../../:$PYTHONPATH
+$ python start.py
+$ echo Hello | python app.py
+Base64Encoder ...
+MorseEncoder ...
+Encoder ...
+Rot13Encoder ...
+$ ps -eafw | grep -i [a]ctorad
+kquick   4819     1  0 22:18 ?  00:00:00 MultiProcAdmin ActorAddr-(TCP|192.168.65.19:1900)
+kquick   4820  4819  0 22:18 ?  00:00:00 logger ActorAddr-(TCP|192.168.65.19:37033)
+kquick   4823  4819  0 22:18 ?  00:00:00 app.Acceptor ActorAddr-(TCP|192.168.65.19:33463)
+kquick   4824  4823  0 22:18 ?  00:00:00 Analyzer ActorAddr-(TCP|192.168.65.19:39098)
+kquick   4825  4823  0 22:18 ?  00:00:00 Encoder ActorAddr-(TCP|192.168.65.19:46293)
+kquick   4826  4823  0 22:18 ?  00:00:00 Base64Encoder ActorAddr-(TCP|192.168.65.19:46772)
+kquick   4827  4823  0 22:18 ?  00:00:00 MorseEncoder ActorAddr-(TCP|192.168.65.19:40471)
+kquick   4828  4823  0 22:18 ?  00:00:00 Rot13Encoder ActorAddr-(TCP|192.168.65.19:38098)
+$ kill 4825
+$ echo Hello | python app.py
+Base64Encoder ...
+MorseEncoder ...
+Rot13Encoder ...
+$ kill 4828
+$ echo Hello | python app.py
+Base64Encoder ...
+MorseEncoder ...
+$
+#+END_EXAMPLE
+
+As can be seen from the above, once an Actor is killed, that encoding
+is no longer available, but the rest of the application still operates
+just fine.  This is a demonstration of how an Actor-based application
+is fault tolerant; the functionality may be degraded but the overall
+application continues to run.
+
+Naturally, if the Analyzer is killed, no more output is generated, but
+no errors are generated either.
+
+If the Acceptor is killed, an interesting effect is observed: the next
+run is completely successfull and generates output from all of the
+encoders again.  A ~ps~ listing shows a full set of encoders along
+with the Analyzer and the Acceptor, but careful inspection will show
+that they are all newly created processes and that none of the
+previous Actor processes remains.  This is because killing an Actor
+causes all of its children to be killed as well, so killing the
+original Acceptor caused all remaining encoders and the analyzer to be
+killed.  Then when the application was run again, there was no
+application running that was associated with the Acceptor's global
+name, so Thespian created a new instance of the Acceptor at that
+address.
+
+Another couple of observations can be added to our list, and these
+can be fixed as well in the following Acts:
+
+4. Killed actors are not replaced by default
+5. There is no default notification to an actor when it is going to be
+   killed.
+
+Proceed to [[file:../act4/README.org][Act 4]]...
