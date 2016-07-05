@@ -86,7 +86,7 @@ class TestFuncMultiProcActorSignals(object):
         killme_pid  = asys.ask(killme, 'pid?', smallwait)
         assert killme_pid  # not 0 or None
         os.kill(killme_pid, eval(signame))
-        time.sleep(0.02) # allow signal to be delivered
+        time.sleep(0.2) # allow signal to be delivered
         r = asys.ask(killme, 'pid again?', smallwait)
         assert (killme_pid if response == 'world' else None) == r
 
