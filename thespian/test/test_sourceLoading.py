@@ -967,7 +967,8 @@ class TestFuncLoadSource(object):
         except (InvalidActorSourceHash,
                 ImportError,
                 InvalidActorSpecification,
-                EOFError):
+                EOFError,
+                TypeError):
             assert True  # Valid exceptions for a corrupt source
         except Exception as ex:
             assert '' == 'Invalid exception thrown: %s (%s)'%(str(ex), type(ex))
