@@ -133,9 +133,14 @@ testAdminPort = 10000
                         'multiprocQueueBase',
                         'multiprocUDPBase',
                         'multiprocTCPBase',
-                        'multiprocTCPBase-AdminRouting'])
+                        'multiprocTCPBase-AdminRouting',
+                        'multiprocTCPBase-AdminRoutingTXOnly',
+])
 def asys(request):
-    caps = {'Foo Allowed': True, 'Cows Allowed': True, 'Dogs Allowed': True}
+    caps = {'Foo Allowed': True,
+            'Cows Allowed': True,
+            'Dogs Allowed': True,
+            'dog': 'food'}
     if request.param.startswith('multiprocTCP') or \
        request.param.startswith('multiprocUDP'):
         global testAdminPort
@@ -143,6 +148,9 @@ def asys(request):
         testAdminPort = testAdminPort + 1
     if request.param.endswith('-AdminRouting'):
         caps['Admin Routing'] = True
+    if request.param.endswith('-AdminRoutingTXOnly'):
+        caps['Admin Routing'] = True
+        caps['Outbound Only'] = True
     asys = ActorSystem(systemBase=request.param.partition('-')[0],
                        capabilities=caps,
                        logDefs=(simpleActorTestLogging()
@@ -151,12 +159,13 @@ def asys(request):
                        transientUnique=True)
     asys.base_name = request.param
     asys.port_num  = caps.get('Admin Port', None)
+    asys.txonly = request.param.endswith('-AdminRoutingTXOnly')
     request.addfinalizer(lambda asys=asys: asys.shutdown())
     return asys
 
 
-def similar_asys(asys, in_convention=True):
-    caps = {}
+def similar_asys(asys, in_convention=True, start_wait=True, capabilities=None):
+    caps = capabilities or {}
     if asys.base_name.startswith('multiprocTCP') or \
        asys.base_name.startswith('multiprocUDP'):
         global testAdminPort
@@ -174,8 +183,8 @@ def similar_asys(asys, in_convention=True):
                        transientUnique=True)
     asys2.base_name = asys.base_name
     asys2.port_num  = caps.get('Admin Port', None)
-    if in_convention:
-        time.sleep(0.5)  # Wait for Actor Systems to start and connect together
+    if in_convention and start_wait:
+        time.sleep(0.25)  # Wait for Actor Systems to start and connect together
     return asys2
 
 
@@ -204,7 +213,7 @@ def asys2(request, asys):
 
 @pytest.fixture
 def asys_pair(request, asys):
-    asys2 = similar_asys(asys)
+    asys2 = similar_asys(asys, in_convention=True)
     # n.b. shutdown the second actor system first:
     #   1. Some tests ask asys1 to create an actor
     #   2. That actor is actually supported by asys2
