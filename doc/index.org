@@ -221,6 +221,17 @@ utilization document.
   The Wikipedia site has a good list of Actor Model implementations,
   but please let us know of others that should be listed here.
 
+** Unrelated Efforts
+
+  The following projects or sites are completely unrelated to this
+  site, despite apparent similarities in naming or purpose.  These
+  sites are legitimate and appropriate to their domain, however, they
+  have no relation to the Python Thespian project and are listed here
+  to provide clarification on this point and avoid confusion.
+
+  * [[http://pythonhackers.com/p/DrewEaster/thespian]]
+
+
 * Download
 
   The recommended way to obtain Thespian is by using ~pip~ to download
