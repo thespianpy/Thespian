@@ -1,7 +1,5 @@
-import unittest
-import thespian.test.helpers
 from thespian.actors import *
-from thespian.test import ActorSystemTestCase
+from thespian.test import *
 
 """This test is for a nasty corner case:
 
@@ -28,15 +26,6 @@ Specific notes for multiprocess system base:
 
 """
 
-try:
-    skip = unittest.skip
-except AttributeError:
-    def skip(mssg):
-        #raise unittest.SkipTest("Test %s skipped"%test.__doc__)
-        #SkipTest does not exist in python 2.6 :(
-        print("SKIPPED TEST: %s", mssg)
-        return lambda s: True
-
 
 class Parent(Actor):
     def receiveMessage(self, msg, sender):
@@ -53,20 +42,15 @@ class Child(Actor):
             raise AttributeError('I am Grumpy!')
 
 
-class TestASimpleSystem(ActorSystemTestCase):
-    testbase='Simple'
-    scope='func'
+class TestFuncStartupMessageFail(object):
 
-    @skip
-    def test_fail_on_startup_message(self):
-        aS = ActorSystem()
-        aS.systemUpdate('setProcessingLimit', 10)  # Ensure simpleSystemBase doesn't loop forever
-        aS.systemUpdate('dupLogToFile', '/tmp/bsm.log')  # Ensure simpleSystemBase doesn't loop forever
-        parent = aS.createActor(Parent)
-        self.assertEqual('Hi', aS.ask(parent, 'Hello', 3))
-        aS.tell(parent, 'Make Child')
-        self.assertEqual('Hi', aS.ask(parent, 'Hello', 3))
+    def test_fail_on_startup_message(self, asys):
+        asys.systemUpdate('setProcessingLimit', 10)  # Ensure simpleSystemBase doesn't loop forever
+        asys.systemUpdate('dupLogToFile', '/tmp/bsm.log')  # Ensure simpleSystemBase doesn't loop forever
+        parent = asys.createActor(Parent)
+        assert 'Hi' == asys.ask(parent, 'Hello', 3)
+        asys.tell(parent, 'Make Child')
+        assert 'Hi' == asys.ask(parent, 'Hello', 3)
         import time
-        time.sleep(20)
-        self.assertEqual('Hi', aS.ask(parent, 'Hello', 3))
-        self.assertEqual(2+2, 5)
+        time.sleep(1)  # Use to be (20) to allow analysis
+        assert 'Hi' == asys.ask(parent, 'Hello', 3)
