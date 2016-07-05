@@ -2,7 +2,9 @@
 unit testing Actors in an ActorSystem."""
 
 import unittest
+import pytest
 import logging
+import time
 from thespian.actors import ActorSystem
 
 
@@ -119,4 +121,71 @@ class ActorSystemTestCase(unittest.TestCase, LocallyManagedActorSystem):
         aAddr = ActorSystem().createActor(actorClass)
         # This depends on the internals of the systemBase
         return ActorSystem()._systemBase.actorRegistry[aAddr.actorAddressString].instance
+
+
+###
+### pytest fixtures and helpers
+###
+
+testAdminPort = 10000
+
+@pytest.fixture(params=['simpleSystemBase',
+                        'multiprocQueueBase',
+                        'multiprocUDPBase',
+                        'multiprocTCPBase',
+                        'multiprocTCPBase-AdminRouting'])
+def asys(request):
+    caps = {'Foo Allowed': True, 'Cows Allowed': True, 'Dogs Allowed': True}
+    if request.param.startswith('multiprocTCP') or \
+       request.param.startswith('multiprocUDP'):
+        global testAdminPort
+        caps['Admin Port'] = testAdminPort
+        testAdminPort = testAdminPort + 1
+    if request.param.endswith('-AdminRouting'):
+        caps['Admin Routing'] = True
+    asys = ActorSystem(systemBase=request.param.partition('-')[0],
+                       capabilities=caps,
+                       logDefs=(simpleActorTestLogging()
+                                if request.param.startswith('multiproc')
+                                else False),
+                       transientUnique=True)
+    asys.base_name = request.param
+    asys.port_num  = caps.get('Admin Port', None)
+    request.addfinalizer(lambda asys=asys: asys.shutdown())
+    return asys
+
+
+@pytest.fixture
+def asys_pair(request, asys):
+    caps = {}
+    if asys.base_name.startswith('multiprocTCP') or \
+       asys.base_name.startswith('multiprocUDP'):
+        global testAdminPort
+        caps['Admin Port'] = testAdminPort
+        testAdminPort = testAdminPort + 1
+        caps['Convention Address.IPv4'] = '', asys.port_num
+    if asys.base_name.endswith('-AdminRouting'):
+        caps['Admin Routing'] = True
+    asys2 = ActorSystem(systemBase=asys.base_name.partition('-')[0],
+                        capabilities=caps,
+                        logDefs=(simpleActorTestLogging()
+                                if asys.base_name.startswith('multiproc')
+                                else False),
+                       transientUnique=True)
+    asys2.base_name = asys.base_name
+    asys2.port_num  = caps.get('Admin Port', None)
+    request.addfinalizer(lambda asys=asys2: asys2.shutdown())
+    time.sleep(0.5)  # Wait for Actor Systems to start and connect together
+    return (asys, asys2)
+
+
+def unstable_test(asys, *unstable_bases):
+    if asys.base_name in unstable_bases and \
+       not pytest.config.getoption('unstable', default=False):
+        pytest.skip("Test unstable for %s system base"%asys.base_name)
+
+
+def actor_system_unsupported(asys, *unsupported_bases):
+    if asys.base_name in unsupported_bases:
+        pytest.skip("Functionality not supported for %s system base"%asys.base_name)
 
