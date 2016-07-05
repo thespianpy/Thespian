@@ -1,11 +1,12 @@
+from pytest import raises
 from thespian.actors import ActorAddress
 from thespian.system.addressManager import (ActorLocalAddress,
                                             CannotPickle,
                                             CannotPickleAddress,
                                             ActorAddressManager)
-import unittest
-import thespian.test.helpers
 import pickle
+
+class SomeRandomObject(object): pass
 
 
 # When creating ActorAddress objects in this file for non-LocalAddress
@@ -20,8 +21,7 @@ class FakeAddress(object):
         return id(self) == id(o)
 
 
-class TestActorLocalAddress(unittest.TestCase):
-    scope='unit'
+class TestUnitActorLocalAddress(object):
 
     # n.b. the ActorLocalAddress is the addressDetails portion of an ActorAddress
 
@@ -29,415 +29,438 @@ class TestActorLocalAddress(unittest.TestCase):
         genAddr = ActorAddress(id(self))
         addr = ActorLocalAddress(genAddr, 0, None)
         # No exception thrown
-        self.assertTrue(True)
+        assert True
 
     def testNonHashable(self):
         genAddr = ActorAddress(id(self))
         lclAddr1 = ActorLocalAddress(genAddr, 0, None)
         lclAddr2 = ActorLocalAddress(genAddr, 1, None)
-        self.assertRaises(TypeError, hash, lclAddr1)
-        self.assertRaises(TypeError, hash, lclAddr2)
+        raises(TypeError, hash, lclAddr1)
+        raises(TypeError, hash, lclAddr2)
 
     def testEquality(self):
         genAddr = ActorAddress(id(self))
         addr1 = ActorLocalAddress(genAddr, 0, None)
         addr2 = ActorLocalAddress(genAddr, 0, None)
-        self.assertEqual(addr1, addr2)
+        assert addr1 == addr2
 
     def testEqualityFailsIfDifferentGeneratingAddress(self):
         genAddr = ActorAddress(id(self))
         genAddr2 = ActorAddress('hi')
-        self.assertNotEqual(genAddr, genAddr2)
+        assert genAddr != genAddr2
         addr1 = ActorLocalAddress(genAddr, 0, None)
         addr2 = ActorLocalAddress(genAddr2, 0, None)
-        self.assertNotEqual(addr1, addr2)
+        assert addr1 != addr2
 
     def testEqualityFailsIfDifferentInstanceNums(self):
         genAddr = ActorAddress(id(self))
         addr1 = ActorLocalAddress(genAddr, 0, None)
         addr2 = ActorLocalAddress(genAddr, 1, None)
-        self.assertNotEqual(addr1, addr2)
+        assert addr1 != addr2
 
     # n.b. no test for equality failure on different AddressManagers:
     # that element is simply not part of the equality validation, but
     # it is not a requirement at this time that it is not part of it.
 
     def testStringForm(self):
-        self.assertNotEqual('', str(ActorLocalAddress(ActorAddress(id(self)), 0, None)))
+        assert '' != str(ActorLocalAddress(ActorAddress(id(self)), 0, None))
 
     def testInstanceID(self):
-        self.assertEqual(5, ActorLocalAddress(ActorAddress(id(self)), 5, None).addressInstanceNum)
+        assert 5 == ActorLocalAddress(ActorAddress(id(self)), 5, None).addressInstanceNum
 
 
-class TestAddressManager(unittest.TestCase):
-    scope='unit'
+class TestUnitAddressManager(object):
 
     def testCreate(self):
         am = ActorAddressManager(None, 'me')
         # no exception thrown
-        self.assertTrue(True)
+        assert True
 
-class TestLocalAddresses(unittest.TestCase):
-    scope='unit'
 
-    def setUp(self):
-        self.myAddress = 'me'
-        self.am = ActorAddressManager(None, self.myAddress)
+class TestUnitLocalAddresses(object):
 
     def testGetValidLocalAddress(self):
-        addr = ActorAddress(ActorLocalAddress(self.myAddress, 12, self.am))
-        self.assertIsInstance(addr.addressDetails, ActorLocalAddress)
+        am = ActorAddressManager(None, "I am me")
+        addr = ActorAddress(ActorLocalAddress('I am me', 12, am))
+        assert isinstance(addr.addressDetails, ActorLocalAddress)
 
     def testGetUniqueLocalAddresses(self):
-        addr1 = self.am.createLocalAddress()
-        addr2 = self.am.createLocalAddress()
-        self.assertNotEqual(addr1, addr2)
-        self.assertNotEqual(addr2, addr1)
-        self.assertEqual(addr1, addr1)
-        self.assertEqual(addr2, addr2)
+        am = ActorAddressManager(None, "an address")
+        addr1 = am.createLocalAddress()
+        addr2 = am.createLocalAddress()
+        assert addr1 != addr2
+        assert addr2 != addr1
+        assert addr1 == addr1
+        assert addr2 == addr2
 
     def testLocalAddressCannotBePickled(self):
-        self.am = ActorAddressManager(None, 'me')
-        addr = self.am.createLocalAddress()
-        self.assertRaises(CannotPickleAddress, pickle.dumps, addr)
+        am = ActorAddressManager(None, 'me')
+        addr = am.createLocalAddress()
+        raises(CannotPickleAddress, pickle.dumps, addr)
 
     def testLocalAddressCanBeReconstituted(self):
-        addr = self.am.createLocalAddress()
-        addr2 = self.am.getLocalAddress(addr.addressDetails.addressInstanceNum)
-        self.assertEqual(addr, addr2)
+        am = ActorAddressManager(None, 'my-address')
+        addr = am.createLocalAddress()
+        addr2 = am.getLocalAddress(addr.addressDetails.addressInstanceNum)
+        assert addr == addr2
 
     def testLocalAddressCannotBeUsedForSending(self):
-        addr = self.am.createLocalAddress()
-        self.assertIsNone(self.am.sendToAddress(addr))
+        am = ActorAddressManager(None, 'my:address')
+        addr = am.createLocalAddress()
+        assert am.sendToAddress(addr) is None
 
 
 
-class TestAddressManagerLocalAddresses(unittest.TestCase):
-    scope='unit'
-
-    def setUp(self):
-        self.myAddress = 'me'
-        self.am = ActorAddressManager(None, self.myAddress)
+class TestUnitAddressManagerLocalAddresses(object):
 
     def testGetValidLocalAddress(self):
-        addr = self.am.createLocalAddress()
-        self.assertIsInstance(addr.addressDetails, ActorLocalAddress)
+        am = ActorAddressManager(None, "self.myAddress")
+        addr = am.createLocalAddress()
+        assert isinstance(addr.addressDetails, ActorLocalAddress)
 
     def testGetUniqueLocalAddresses(self):
-        addr1 = self.am.createLocalAddress()
-        addr2 = self.am.createLocalAddress()
-        self.assertNotEqual(addr1, addr2)
-        self.assertNotEqual(addr2, addr1)
-        self.assertEqual(addr1, addr1)
-        self.assertEqual(addr2, addr2)
+        am = ActorAddressManager(None, "my address")
+        addr1 = am.createLocalAddress()
+        addr2 = am.createLocalAddress()
+        assert addr1 != addr2
+        assert addr2 != addr1
+        assert addr1 == addr1
+        assert addr2 == addr2
 
     def testLocalAddressCannotBePickled(self):
-        self.am = ActorAddressManager(None, 'me')
-        addr = self.am.createLocalAddress()
-        self.assertRaises(CannotPickleAddress, pickle.dumps, addr)
+        am = ActorAddressManager(None, 'me')
+        addr = am.createLocalAddress()
+        raises(CannotPickleAddress, pickle.dumps, addr)
 
     def testLocalAddressCanBeReconstituted(self):
-        addr = self.am.createLocalAddress()
-        addr2 = self.am.getLocalAddress(addr.addressDetails.addressInstanceNum)
-        self.assertEqual(addr, addr2)
+        am = ActorAddressManager(None, "my own: address")
+        addr = am.createLocalAddress()
+        addr2 = am.getLocalAddress(addr.addressDetails.addressInstanceNum)
+        assert addr == addr2
 
     def testLocalAddressCannotBeUsedForSending(self):
-        addr = self.am.createLocalAddress()
-        self.assertIsNone(self.am.sendToAddress(addr))
+        am = ActorAddressManager(None, "here")
+        addr = am.createLocalAddress()
+        assert am.sendToAddress(addr) is None
 
 
 
-class TestAddressManagerLocalAddressAssociations(unittest.TestCase):
-    scope='unit'
-
-    def setUp(self):
-        self.myAddress = 'me'
-        self.am = ActorAddressManager(None, self.myAddress)
+class TestUnitAddressManagerLocalAddressAssociations(object):
 
     def testMakeAssociation(self):
-        lclAddr = self.am.createLocalAddress()
+        myAddress = 'me'
+        am = ActorAddressManager(None, myAddress)
+        lclAddr = am.createLocalAddress()
         mainAddr = ActorAddress(id(self))
-        self.am.associateUseableAddress(self.myAddress,
-                                        lclAddr.addressDetails.addressInstanceNum,
-                                        mainAddr)
+        am.associateUseableAddress(myAddress,
+                                   lclAddr.addressDetails.addressInstanceNum,
+                                   mainAddr)
         # No exception thrown
-        self.assertTrue(True)
+        assert True
 
-    def _makeLocalAndAssociated(self):
-        lclAddr = self.am.createLocalAddress()
+    def _makeLocalAndAssociated(self, myAddress, am):
+        lclAddr = am.createLocalAddress()
         mainAddr = ActorAddress(id(lclAddr))
-        self.am.associateUseableAddress(self.myAddress,
-                                        lclAddr.addressDetails.addressInstanceNum,
-                                        mainAddr)
+        am.associateUseableAddress(myAddress,
+                                   lclAddr.addressDetails.addressInstanceNum,
+                                   mainAddr)
         return lclAddr, mainAddr
 
     def testAssociationRemembered(self):
-        lclAddr, mainAddr = self._makeLocalAndAssociated()
-        self.assertEqual(mainAddr, self.am.sendToAddress(lclAddr))
-        self.assertEqual(mainAddr, self.am.sendToAddress(mainAddr))
+        myAddress = 'me'
+        am = ActorAddressManager(None, myAddress)
+        lclAddr, mainAddr = self._makeLocalAndAssociated(myAddress, am)
+        assert mainAddr == am.sendToAddress(lclAddr)
+        assert mainAddr == am.sendToAddress(mainAddr)
 
     def testAssociationUnique(self):
+        myAddress = 'me'
+        am = ActorAddressManager(None, myAddress)
         self.testAssociationRemembered()
-        lclAddr2 = self.am.createLocalAddress()
-        self.assertIsNone(self.am.sendToAddress(lclAddr2))
+        lclAddr2 = am.createLocalAddress()
+        assert am.sendToAddress(lclAddr2) is None
 
     def testAssociationNotRequiredForUseableNonLocal(self):
+        myAddress = 'me'
+        am = ActorAddressManager(None, myAddress)
         addr = ActorAddress(id(self))
-        self.assertEqual(addr, self.am.sendToAddress(addr))
+        assert addr == am.sendToAddress(addr)
 
     def testAssociationEquality(self):
-        lclAddr = self.am.createLocalAddress()
+        myAddress = 'me'
+        am = ActorAddressManager(None, myAddress)
+        lclAddr = am.createLocalAddress()
         mainAddr = ActorAddress(id(self))
 
-        self.assertNotEqual(lclAddr, mainAddr)
-        self.assertNotEqual(mainAddr, lclAddr)
+        assert lclAddr != mainAddr
+        assert mainAddr != lclAddr
 
-        self.am.associateUseableAddress(self.myAddress,
-                                        lclAddr.addressDetails.addressInstanceNum,
-                                        mainAddr)
+        am.associateUseableAddress(myAddress,
+                                   lclAddr.addressDetails.addressInstanceNum,
+                                   mainAddr)
 
-        self.assertEqual(lclAddr, mainAddr)
-        self.assertEqual(mainAddr, lclAddr)
+        assert lclAddr == mainAddr
+        assert mainAddr == lclAddr
 
     def testAssociationStillNotHashable(self):
-        lclAddr = self.am.createLocalAddress()
+        myAddress = 'me'
+        am = ActorAddressManager(None, myAddress)
+        lclAddr = am.createLocalAddress()
         mainAddr = ActorAddress(id(self))
 
-        self.assertRaises(TypeError, hash, lclAddr)
-        self.assertRaises(TypeError, hash, mainAddr)
+        raises(TypeError, hash, lclAddr)
+        raises(TypeError, hash, mainAddr)
 
-        self.am.associateUseableAddress(self.myAddress,
-                                        lclAddr.addressDetails.addressInstanceNum,
-                                        mainAddr)
+        am.associateUseableAddress(myAddress,
+                                   lclAddr.addressDetails.addressInstanceNum,
+                                   mainAddr)
 
-        self.assertRaises(TypeError, hash, lclAddr)
-        self.assertRaises(TypeError, hash, mainAddr)
+        raises(TypeError, hash, lclAddr)
+        raises(TypeError, hash, mainAddr)
 
     def testAssociationEqualityWithReconstitutedNonLocalAddress(self):
-        lclAddr = self.am.createLocalAddress()
+        myAddress = 'me'
+        am = ActorAddressManager(None, myAddress)
+        lclAddr = am.createLocalAddress()
         mainAddr1 = ActorAddress(None)
         mainAddr2 = ActorAddress(9)
-        self.assertNotEqual(mainAddr1, mainAddr2)
+        assert mainAddr1 != mainAddr2
 
-        self.am.associateUseableAddress(self.myAddress,
-                                        lclAddr.addressDetails.addressInstanceNum,
-                                        mainAddr1)
+        am.associateUseableAddress(myAddress,
+                                   lclAddr.addressDetails.addressInstanceNum,
+                                   mainAddr1)
 
-        self.assertEqual(lclAddr, mainAddr1)
-        self.assertEqual(mainAddr1, lclAddr)
+        assert lclAddr == mainAddr1
+        assert mainAddr1 == lclAddr
 
-        self.assertNotEqual(lclAddr, mainAddr2)
-        self.assertNotEqual(mainAddr2, lclAddr)
+        assert lclAddr != mainAddr2
+        assert mainAddr2 != lclAddr
 
         mainAddr1_dup = ActorAddress(None)
-        self.assertEqual(mainAddr1, mainAddr1_dup)
+        assert mainAddr1 == mainAddr1_dup
 
-        self.assertNotEqual(mainAddr1_dup, lclAddr)
-        self.assertEqual(lclAddr, mainAddr1_dup)
+        assert mainAddr1_dup != lclAddr
+        assert lclAddr == mainAddr1_dup
 
-        self.am.importAddr(mainAddr1_dup)
+        am.importAddr(mainAddr1_dup)
 
-        self.assertEqual(mainAddr1_dup, lclAddr)
-        self.assertEqual(lclAddr, mainAddr1_dup)
-        self.assertEqual(mainAddr1_dup, mainAddr1)
+        assert mainAddr1_dup == lclAddr
+        assert lclAddr == mainAddr1_dup
+        assert mainAddr1_dup == mainAddr1
 
     def testAssociationHashEqualityWithReconstitutedNonLocalAddress(self):
-        lclAddr = self.am.createLocalAddress()
+        myAddress = 'me'
+        am = ActorAddressManager(None, myAddress)
+        lclAddr = am.createLocalAddress()
         mainAddr1 = ActorAddress(None)
         mainAddr2 = ActorAddress(9)
-        self.assertNotEqual(mainAddr1, mainAddr2)
+        assert mainAddr1 != mainAddr2
 
-        self.assertRaises(TypeError, hash, lclAddr)
-        self.assertRaises(TypeError, hash, mainAddr1)
-        self.assertRaises(TypeError, hash, mainAddr2)
+        raises(TypeError, hash, lclAddr)
+        raises(TypeError, hash, mainAddr1)
+        raises(TypeError, hash, mainAddr2)
 
-        self.am.associateUseableAddress(self.myAddress,
-                                        lclAddr.addressDetails.addressInstanceNum,
-                                        mainAddr1)
+        am.associateUseableAddress(myAddress,
+                                   lclAddr.addressDetails.addressInstanceNum,
+                                   mainAddr1)
 
-        self.assertRaises(TypeError, hash, lclAddr)
-        self.assertRaises(TypeError, hash, mainAddr1)
-        self.assertRaises(TypeError, hash, mainAddr2)
+        raises(TypeError, hash, lclAddr)
+        raises(TypeError, hash, mainAddr1)
+        raises(TypeError, hash, mainAddr2)
 
         mainAddr1_dup = ActorAddress(None)
-        self.assertEqual(mainAddr1, mainAddr1_dup)
+        assert mainAddr1 == mainAddr1_dup
 
-        self.assertRaises(TypeError, hash, lclAddr)
-        self.assertRaises(TypeError, hash, mainAddr1)
-        self.assertRaises(TypeError, hash, mainAddr1_dup)
-        self.assertRaises(TypeError, hash, mainAddr2)
+        raises(TypeError, hash, lclAddr)
+        raises(TypeError, hash, mainAddr1)
+        raises(TypeError, hash, mainAddr1_dup)
+        raises(TypeError, hash, mainAddr2)
 
-        self.am.importAddr(mainAddr1_dup)
+        am.importAddr(mainAddr1_dup)
 
-        self.assertRaises(TypeError, hash, lclAddr)
-        self.assertRaises(TypeError, hash, mainAddr1)
-        self.assertRaises(TypeError, hash, mainAddr1_dup)
-        self.assertRaises(TypeError, hash, mainAddr2)
+        raises(TypeError, hash, lclAddr)
+        raises(TypeError, hash, mainAddr1)
+        raises(TypeError, hash, mainAddr1_dup)
+        raises(TypeError, hash, mainAddr2)
 
 
     def testAssociatedAddressesDoNotMatchArbitraryStuff(self):
-        lclAddr1, mainAddr1 = self._makeLocalAndAssociated()
+        myAddress = 'my addr'
+        am = ActorAddressManager(None, myAddress)
+        lclAddr1, mainAddr1 = self._makeLocalAndAssociated(myAddress, am)
 
-        self.assertNotEqual(None, lclAddr1)
-        self.assertNotEqual(id(self), lclAddr1)
-        self.assertNotEqual(0, lclAddr1)
-        self.assertNotEqual("hi", lclAddr1)
-        self.assertNotEqual(unittest.TestCase, lclAddr1)
+        assert None != lclAddr1
+        assert id(self) != lclAddr1
+        assert 0 != lclAddr1
+        assert "hi" != lclAddr1
+        assert SomeRandomObject != lclAddr1
 
-        self.assertNotEqual(None, mainAddr1)
-        self.assertNotEqual(id(self), mainAddr1)
-        self.assertNotEqual(0, mainAddr1)
-        self.assertNotEqual("hi", mainAddr1)
-        self.assertNotEqual(unittest.TestCase, mainAddr1)
+        assert None != mainAddr1
+        assert id(self) != mainAddr1
+        assert 0 != mainAddr1
+        assert "hi" != mainAddr1
+        assert SomeRandomObject != mainAddr1
 
-        self.assertNotEqual(lclAddr1, None)
-        self.assertNotEqual(lclAddr1, id(self))
-        self.assertNotEqual(lclAddr1, 0)
-        self.assertNotEqual(lclAddr1, "hi")
-        self.assertNotEqual(lclAddr1, unittest.TestCase)
+        assert lclAddr1 != None
+        assert lclAddr1 != id(self)
+        assert lclAddr1 != 0
+        assert lclAddr1 != "hi"
+        assert lclAddr1 != SomeRandomObject
 
-        self.assertNotEqual(mainAddr1, None)
-        self.assertNotEqual(mainAddr1, id(self))
-        self.assertNotEqual(mainAddr1, 0)
-        self.assertNotEqual(mainAddr1, "hi")
-        self.assertNotEqual(mainAddr1, unittest.TestCase)
+        assert mainAddr1 != None
+        assert mainAddr1 != id(self)
+        assert mainAddr1 != 0
+        assert mainAddr1 != "hi"
+        assert mainAddr1 != SomeRandomObject
 
     def testAssociatedAddressEqualityIsUnique(self):
-        lclAddr1, mainAddr1 = self._makeLocalAndAssociated()
+        myAddress = 'thisaddr'
+        am = ActorAddressManager(None, myAddress)
+        lclAddr1, mainAddr1 = self._makeLocalAndAssociated(myAddress, am)
         print('Set 1: %s --> %s'%(str(lclAddr1), str(mainAddr1)))
-        lclAddr2, mainAddr2 = self._makeLocalAndAssociated()
+        lclAddr2, mainAddr2 = self._makeLocalAndAssociated(myAddress, am)
         print('Set 2: %s --> %s'%(str(lclAddr2), str(mainAddr2)))
-        lclAddr3, mainAddr3 = self._makeLocalAndAssociated()
+        lclAddr3, mainAddr3 = self._makeLocalAndAssociated(myAddress, am)
         print('Set 3: %s --> %s'%(str(lclAddr3), str(mainAddr3)))
 
-        self.assertEqual(lclAddr1, lclAddr1)
-        self.assertEqual(lclAddr2, lclAddr2)
-        self.assertEqual(lclAddr3, lclAddr3)
+        assert lclAddr1 == lclAddr1
+        assert lclAddr2 == lclAddr2
+        assert lclAddr3 == lclAddr3
 
-        self.assertEqual(mainAddr1, mainAddr1)
-        self.assertEqual(mainAddr2, mainAddr2)
-        self.assertEqual(mainAddr3, mainAddr3)
+        assert mainAddr1 == mainAddr1
+        assert mainAddr2 == mainAddr2
+        assert mainAddr3 == mainAddr3
 
-        self.assertEqual(lclAddr1, mainAddr1)
-        self.assertEqual(lclAddr2, mainAddr2)
-        self.assertEqual(lclAddr3, mainAddr3)
+        assert lclAddr1 == mainAddr1
+        assert lclAddr2 == mainAddr2
+        assert lclAddr3 == mainAddr3
 
-        self.assertEqual(mainAddr1, lclAddr1)
-        self.assertEqual(mainAddr2, lclAddr2)
-        self.assertEqual(mainAddr3, lclAddr3)
+        assert mainAddr1 == lclAddr1
+        assert mainAddr2 == lclAddr2
+        assert mainAddr3 == lclAddr3
 
-        self.assertNotEqual(lclAddr1, lclAddr2)
-        self.assertNotEqual(lclAddr2, lclAddr1)
-        self.assertNotEqual(lclAddr3, lclAddr2)
-        self.assertNotEqual(lclAddr2, lclAddr3)
-        self.assertNotEqual(lclAddr3, lclAddr1)
-        self.assertNotEqual(lclAddr1, lclAddr3)
+        assert lclAddr1 != lclAddr2
+        assert lclAddr2 != lclAddr1
+        assert lclAddr3 != lclAddr2
+        assert lclAddr2 != lclAddr3
+        assert lclAddr3 != lclAddr1
+        assert lclAddr1 != lclAddr3
 
-        self.assertNotEqual(mainAddr1, mainAddr2)
-        self.assertNotEqual(mainAddr2, mainAddr1)
-        self.assertNotEqual(mainAddr3, mainAddr2)
-        self.assertNotEqual(mainAddr2, mainAddr3)
-        self.assertNotEqual(mainAddr3, mainAddr1)
-        self.assertNotEqual(mainAddr1, mainAddr3)
+        assert mainAddr1 != mainAddr2
+        assert mainAddr2 != mainAddr1
+        assert mainAddr3 != mainAddr2
+        assert mainAddr2 != mainAddr3
+        assert mainAddr3 != mainAddr1
+        assert mainAddr1 != mainAddr3
 
-        self.assertNotEqual(mainAddr1, lclAddr2)
-        self.assertNotEqual(mainAddr2, lclAddr1)
-        self.assertNotEqual(mainAddr3, lclAddr2)
-        self.assertNotEqual(mainAddr2, lclAddr3)
-        self.assertNotEqual(mainAddr3, lclAddr1)
-        self.assertNotEqual(mainAddr1, lclAddr3)
+        assert mainAddr1 != lclAddr2
+        assert mainAddr2 != lclAddr1
+        assert mainAddr3 != lclAddr2
+        assert mainAddr2 != lclAddr3
+        assert mainAddr3 != lclAddr1
+        assert mainAddr1 != lclAddr3
 
-        self.assertNotEqual(lclAddr1, mainAddr2)
-        self.assertNotEqual(lclAddr2, mainAddr1)
-        self.assertNotEqual(lclAddr3, mainAddr2)
-        self.assertNotEqual(lclAddr2, mainAddr3)
-        self.assertNotEqual(lclAddr3, mainAddr1)
-        self.assertNotEqual(lclAddr1, mainAddr3)
+        assert lclAddr1 != mainAddr2
+        assert lclAddr2 != mainAddr1
+        assert lclAddr3 != mainAddr2
+        assert lclAddr2 != mainAddr3
+        assert lclAddr3 != mainAddr1
+        assert lclAddr1 != mainAddr3
 
 
-class TestAddressManagerAddressRevocation(unittest.TestCase):
-    scope='unit'
+class TestUnitAddressManagerAddressRevocation(object):
 
-    def setUp(self):
-        self.myAddress = 'me'
-        self.am = ActorAddressManager(None, self.myAddress)
-
-    def _makeLocalAndAssociated(self):
-        lclAddr = self.am.createLocalAddress()
+    def _makeLocalAndAssociated(self, myAddress, am):
+        lclAddr = am.createLocalAddress()
         mainAddr = ActorAddress(id(lclAddr))
-        self.am.associateUseableAddress(self.myAddress,
-                                        lclAddr.addressDetails.addressInstanceNum,
-                                        mainAddr)
+        am.associateUseableAddress(myAddress,
+                                   lclAddr.addressDetails.addressInstanceNum,
+                                   mainAddr)
         return lclAddr, mainAddr
 
     def testLocalAddressRevocation(self):
-        lcladdr = self.am.createLocalAddress()
-        self.am.deadAddress(lcladdr)
-        self.assertIsNone(self.am.sendToAddress(lcladdr))
-        self.assertTrue(self.am.isDeadAddress(lcladdr))
-        self.assertEqual(lcladdr,
-                         self.am.getLocalAddress(lcladdr.addressDetails.addressInstanceNum))
+        myAddress = 'me'
+        am = ActorAddressManager(None, myAddress)
+        lcladdr = am.createLocalAddress()
+        am.deadAddress(lcladdr)
+        assert am.sendToAddress(lcladdr) is None
+        assert am.isDeadAddress(lcladdr)
+        assert lcladdr == am.getLocalAddress(
+            lcladdr.addressDetails.addressInstanceNum)
 
     def testMainAddressRevocation(self):
+        myAddress = 'me'
+        am = ActorAddressManager(None, myAddress)
         addr = ActorAddress(id(self))
-        self.am.deadAddress(addr)
-        self.assertEqual(addr, self.am.sendToAddress(addr))
-        self.assertTrue(self.am.isDeadAddress(addr))
+        am.deadAddress(addr)
+        assert addr == am.sendToAddress(addr)
+        assert am.isDeadAddress(addr)
 
     def testLocalAddressRevocationAssociation(self):
-        lclAddr, mainAddr = self._makeLocalAndAssociated()
-        self.am.deadAddress(lclAddr)
-        self.assertEqual(mainAddr, self.am.sendToAddress(lclAddr))
-        self.assertEqual(mainAddr, self.am.sendToAddress(mainAddr))
-        self.assertTrue(self.am.isDeadAddress(lclAddr))
-        self.assertTrue(self.am.isDeadAddress(mainAddr))
-        self.assertTrue(self.am.isDeadAddress(self.am.sendToAddress(mainAddr)))
-        self.assertTrue(self.am.isDeadAddress(self.am.sendToAddress(lclAddr)))
+        myAddress = 'me'
+        am = ActorAddressManager(None, myAddress)
+        lclAddr, mainAddr = self._makeLocalAndAssociated(myAddress, am)
+        am.deadAddress(lclAddr)
+        assert mainAddr == am.sendToAddress(lclAddr)
+        assert mainAddr == am.sendToAddress(mainAddr)
+        assert am.isDeadAddress(lclAddr)
+        assert am.isDeadAddress(mainAddr)
+        assert am.isDeadAddress(am.sendToAddress(mainAddr))
+        assert am.isDeadAddress(am.sendToAddress(lclAddr))
 
     def testNonLocalAddressRevocationAssociation(self):
-        lclAddr, mainAddr = self._makeLocalAndAssociated()
-        self.am.deadAddress(mainAddr)
-        self.assertEqual(mainAddr, self.am.sendToAddress(lclAddr))
-        self.assertEqual(mainAddr, self.am.sendToAddress(mainAddr))
-        self.assertTrue(self.am.isDeadAddress(lclAddr))
-        self.assertTrue(self.am.isDeadAddress(mainAddr))
-        self.assertTrue(self.am.isDeadAddress(self.am.sendToAddress(mainAddr)))
-        self.assertTrue(self.am.isDeadAddress(self.am.sendToAddress(lclAddr)))
+        myAddress = 'me'
+        am = ActorAddressManager(None, myAddress)
+        lclAddr, mainAddr = self._makeLocalAndAssociated(myAddress, am)
+        am.deadAddress(mainAddr)
+        assert mainAddr == am.sendToAddress(lclAddr)
+        assert mainAddr == am.sendToAddress(mainAddr)
+        assert am.isDeadAddress(lclAddr)
+        assert am.isDeadAddress(mainAddr)
+        assert am.isDeadAddress(am.sendToAddress(mainAddr))
+        assert am.isDeadAddress(am.sendToAddress(lclAddr))
 
     def testAssociatedAddressRevocationIsUnique(self):
-        lclAddr1, mainAddr1 = self._makeLocalAndAssociated()
-        lclAddr2, mainAddr2 = self._makeLocalAndAssociated()
-        lclAddr3, mainAddr3 = self._makeLocalAndAssociated()
+        myAddress = 'me'
+        am = ActorAddressManager(None, myAddress)
+        lclAddr1, mainAddr1 = self._makeLocalAndAssociated(myAddress, am)
+        print('1',str(lclAddr1),str(mainAddr1))
+        lclAddr2, mainAddr2 = self._makeLocalAndAssociated(myAddress, am)
+        print('2',str(lclAddr2),str(mainAddr2))
+        lclAddr3, mainAddr3 = self._makeLocalAndAssociated(myAddress, am)
+        print('3',str(lclAddr3),str(mainAddr3))
 
-        self.assertFalse(self.am.isDeadAddress(lclAddr1))
-        self.assertFalse(self.am.isDeadAddress(mainAddr1))
-        self.assertFalse(self.am.isDeadAddress(self.am.sendToAddress(mainAddr1)))
-        self.assertFalse(self.am.isDeadAddress(self.am.sendToAddress(lclAddr1)))
+        assert not am.isDeadAddress(lclAddr1)
+        assert not am.isDeadAddress(mainAddr1)
+        print('1sm',str(am.sendToAddress(mainAddr1)))
+        assert not am.isDeadAddress(am.sendToAddress(mainAddr1))
+        print('1sl',str(am.sendToAddress(lclAddr1)))
+        assert not am.isDeadAddress(am.sendToAddress(lclAddr1))
 
-        self.assertFalse(self.am.isDeadAddress(lclAddr2))
-        self.assertFalse(self.am.isDeadAddress(mainAddr2))
-        self.assertFalse(self.am.isDeadAddress(self.am.sendToAddress(mainAddr2)))
-        self.assertFalse(self.am.isDeadAddress(self.am.sendToAddress(lclAddr2)))
+        assert not am.isDeadAddress(lclAddr2)
+        assert not am.isDeadAddress(mainAddr2)
+        assert not am.isDeadAddress(am.sendToAddress(mainAddr2))
+        assert not am.isDeadAddress(am.sendToAddress(lclAddr2))
 
-        self.assertFalse(self.am.isDeadAddress(lclAddr3))
-        self.assertFalse(self.am.isDeadAddress(mainAddr3))
-        self.assertFalse(self.am.isDeadAddress(self.am.sendToAddress(mainAddr3)))
-        self.assertFalse(self.am.isDeadAddress(self.am.sendToAddress(lclAddr3)))
+        assert not am.isDeadAddress(lclAddr3)
+        assert not am.isDeadAddress(mainAddr3)
+        assert not am.isDeadAddress(am.sendToAddress(mainAddr3))
+        assert not am.isDeadAddress(am.sendToAddress(lclAddr3))
 
-        self.am.deadAddress(lclAddr1)
-        self.am.deadAddress(mainAddr2)
+        am.deadAddress(lclAddr1)
+        am.deadAddress(mainAddr2)
 
-        self.assertTrue(self.am.isDeadAddress(lclAddr1))
-        self.assertTrue(self.am.isDeadAddress(mainAddr1))
-        self.assertTrue(self.am.isDeadAddress(self.am.sendToAddress(mainAddr1)))
-        self.assertTrue(self.am.isDeadAddress(self.am.sendToAddress(lclAddr1)))
+        assert am.isDeadAddress(lclAddr1)
+        assert am.isDeadAddress(mainAddr1)
+        assert am.isDeadAddress(am.sendToAddress(mainAddr1))
+        assert am.isDeadAddress(am.sendToAddress(lclAddr1))
 
-        self.assertTrue(self.am.isDeadAddress(lclAddr2))
-        self.assertTrue(self.am.isDeadAddress(mainAddr2))
-        self.assertTrue(self.am.isDeadAddress(self.am.sendToAddress(mainAddr2)))
-        self.assertTrue(self.am.isDeadAddress(self.am.sendToAddress(lclAddr2)))
+        assert am.isDeadAddress(lclAddr2)
+        assert am.isDeadAddress(mainAddr2)
+        assert am.isDeadAddress(am.sendToAddress(mainAddr2))
+        assert am.isDeadAddress(am.sendToAddress(lclAddr2))
 
-        self.assertFalse(self.am.isDeadAddress(lclAddr3))
-        self.assertFalse(self.am.isDeadAddress(mainAddr3))
-        self.assertFalse(self.am.isDeadAddress(self.am.sendToAddress(mainAddr3)))
-        self.assertFalse(self.am.isDeadAddress(self.am.sendToAddress(lclAddr3)))
+        assert not am.isDeadAddress(lclAddr3)
+        assert not am.isDeadAddress(mainAddr3)
+        assert not am.isDeadAddress(am.sendToAddress(mainAddr3))
+        assert not am.isDeadAddress(am.sendToAddress(lclAddr3))
