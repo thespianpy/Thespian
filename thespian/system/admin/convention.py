@@ -669,22 +669,22 @@ class ConventioneerAdmin(GlobalNamesAdmin):
                                                                    member.remoteCapabilities,
                                                                    True)))
         else:
-            self._conventionNotificationHandlers = [
-                H for H in self._conventionNotificationHandlers
-                if H != envelope.sender]
+            self._removeNotificationHandler(envelope.sender)
         return True
 
 
-    def h_PoisonMessage(self, envelope):
+    def _removeNotificationHandler(self, handlerAddr):
         self._conventionNotificationHandlers = [
             H for H in self._conventionNotificationHandlers
-            if H != envelope.sender]
+            if H != handlerAddr]
+
+
+    def h_PoisonMessage(self, envelope):
+        self._removeNotificationHandler(envelope.sender)
 
 
     def _handleChildExited(self, childAddr):
-        self._conventionNotificationHandlers = [
-            H for H in self._conventionNotificationHandlers
-            if H != childAddr]
+        self._removeNotificationHandler(childAddr)
         return super(ConventioneerAdmin, self)._handleChildExited(childAddr)
 
 
