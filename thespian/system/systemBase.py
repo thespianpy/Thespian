@@ -173,7 +173,8 @@ class systemBase(object):
             if self._pcrFAILED == PendingActorResponse.ERROR_No_Compatible_ActorSystem:
                 raise NoCompatibleSystemForActor(
                     actorClass, 'No compatible ActorSystem could be found')
-            raise ActorSystemFailure("Could not request new Actor from Admin")
+            raise ActorSystemFailure("Could not request new Actor from Admin (%s)"
+                                     % (self._pcrFAILED))
         if self._newActorAddress:
             return self._newActorAddress
         if self._newActorAddress is False:
