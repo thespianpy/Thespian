@@ -55,7 +55,13 @@ class wakeupTransportBase(object):
         """
         self._max_runtime = ExpiryTime(maximumDuration)
 
-        while not self._max_runtime.expired():
+        # Always make at least one pass through to handle expired wakeups
+        # and queued events; otherwise a null/negative maximumDuration could
+        # block all processing.
+        firstTime = True
+
+        while firstTime or not self._max_runtime.expired():
+            firstTime = False
             now = datetime.now()
             self.run_time = min([ExpiryTime(P - now) for P in self._pendingWakeups] +
                                 [self._max_runtime])
