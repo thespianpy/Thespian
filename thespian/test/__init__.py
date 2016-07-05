@@ -155,15 +155,15 @@ def asys(request):
     return asys
 
 
-@pytest.fixture
-def asys_pair(request, asys):
+def similar_asys(asys, in_convention=True):
     caps = {}
     if asys.base_name.startswith('multiprocTCP') or \
        asys.base_name.startswith('multiprocUDP'):
         global testAdminPort
         caps['Admin Port'] = testAdminPort
         testAdminPort = testAdminPort + 1
-        caps['Convention Address.IPv4'] = '', asys.port_num
+        if in_convention:
+            caps['Convention Address.IPv4'] = '', asys.port_num
     if asys.base_name.endswith('-AdminRouting'):
         caps['Admin Routing'] = True
     asys2 = ActorSystem(systemBase=asys.base_name.partition('-')[0],
@@ -174,8 +174,54 @@ def asys_pair(request, asys):
                        transientUnique=True)
     asys2.base_name = asys.base_name
     asys2.port_num  = caps.get('Admin Port', None)
+    if in_convention:
+        time.sleep(0.5)  # Wait for Actor Systems to start and connect together
+    return asys2
+
+
+@pytest.fixture
+def asys2(request, asys):
+    asys2 = similar_asys(asys, in_convention=False)
+    # n.b. shutdown the second actor system first:
+    #   1. Some tests ask asys1 to create an actor
+    #   2. That actor is actually supported by asys2
+    #   3. There is an external port the tester uses for each asys
+    #   4. When asys2 is shutdown, it will attempt to notify the
+    #      parent of the actor that the actor is dead
+    #   5. This parent is the external port for asys1.
+    #   6. If asys1 is shutdown first, then asys2 must time out
+    #      on the transmit attempt (usually 5 minutes) before
+    #      it can exit.
+    #   7. If the test is re-run within this 5 minute period, it will fail
+    #      because the old asys2 is still existing but in shutdown state
+    #      (and will therefore rightfully refuse new actions).
+    # By shutting down asys2 first, the parent notification can be
+    # performed and subsequent runs don't encounter the lingering
+    # asys2.
     request.addfinalizer(lambda asys=asys2: asys2.shutdown())
-    time.sleep(0.5)  # Wait for Actor Systems to start and connect together
+    return asys2
+
+
+@pytest.fixture
+def asys_pair(request, asys):
+    asys2 = similar_asys(asys)
+    # n.b. shutdown the second actor system first:
+    #   1. Some tests ask asys1 to create an actor
+    #   2. That actor is actually supported by asys2
+    #   3. There is an external port the tester uses for each asys
+    #   4. When asys2 is shutdown, it will attempt to notify the
+    #      parent of the actor that the actor is dead
+    #   5. This parent is the external port for asys1.
+    #   6. If asys1 is shutdown first, then asys2 must time out
+    #      on the transmit attempt (usually 5 minutes) before
+    #      it can exit.
+    #   7. If the test is re-run within this 5 minute period, it will fail
+    #      because the old asys2 is still existing but in shutdown state
+    #      (and will therefore rightfully refuse new actions).
+    # By shutting down asys2 first, the parent notification can be
+    # performed and subsequent runs don't encounter the lingering
+    # asys2.
+    request.addfinalizer(lambda asys=asys2: asys2.shutdown())
     return (asys, asys2)
 
 
