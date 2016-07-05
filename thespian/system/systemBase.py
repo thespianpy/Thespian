@@ -349,7 +349,8 @@ class systemBase(object):
         # how do we synthesize the remote Address?  via the capabilities?
         self.send(self.adminAddr,
                   ConventionRegister(self.transport.getAddressFromString(remoteAddress),
-                                     remoteCapabilities))
+                                     remoteCapabilities,
+                                     preRegister=True))
 
     def deRegisterRemoteSystem(self, remoteAddress):
         self.send(self.adminAddr,

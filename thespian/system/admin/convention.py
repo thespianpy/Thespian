@@ -367,6 +367,13 @@ class ConventioneerAdmin(GlobalNamesAdmin):
             self._send_intent(
                 TransmitIntent(self._conventionAddress,
                                ConventionDeRegister(self.myAddress)))
+        else:
+            for each in self._conventionMembers.values():
+                rmtaddr = each.remoteAddress
+                self._hysteresisSender.cancelSends(rmtaddr)
+                self._send_intent(
+                    TransmitIntent(rmtaddr,
+                                   ConventionDeRegister(self.myAddress)))
         return super(ConventioneerAdmin, self).h_SystemShutdown(envelope)
 
 
