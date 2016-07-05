@@ -1,101 +1,98 @@
-import unittest
-import thespian.test.helpers
-from thespian.system.transport import TransmitIntent, SendStatus, MAX_TRANSMIT_RETRIES
+from thespian.system.transport import (TransmitIntent, SendStatus,
+                                       MAX_TRANSMIT_RETRIES)
 from thespian.system.utilis import timePeriodSeconds
 from datetime import datetime, timedelta
 from time import sleep
 
 
-class TestSendStatus(unittest.TestCase):
-    scope="unit"
+class TestUnitSendStatus(object):
 
     def testSendStatusSuccess(self):
-        self.assertEqual(SendStatus.Sent, SendStatus.Sent)
-        self.assertTrue(SendStatus.Sent)
+        assert SendStatus.Sent == SendStatus.Sent
+        assert SendStatus.Sent
 
     def testSendStatusFailures(self):
-        self.assertEqual(SendStatus.Failed, SendStatus.Failed)
-        self.assertFalse(SendStatus.Failed)
-        self.assertEqual(SendStatus.NotSent, SendStatus.NotSent)
-        self.assertFalse(SendStatus.NotSent)
-        self.assertEqual(SendStatus.BadPacket, SendStatus.BadPacket)
-        self.assertFalse(SendStatus.BadPacket)
-        self.assertEqual(SendStatus.DeadTarget, SendStatus.DeadTarget)
-        self.assertFalse(SendStatus.DeadTarget)
+        assert SendStatus.Failed == SendStatus.Failed
+        assert not SendStatus.Failed
+        assert SendStatus.NotSent == SendStatus.NotSent
+        assert not SendStatus.NotSent
+        assert SendStatus.BadPacket == SendStatus.BadPacket
+        assert not SendStatus.BadPacket
+        assert SendStatus.DeadTarget == SendStatus.DeadTarget
+        assert not SendStatus.DeadTarget
 
     def testSendStatusComparisons(self):
-        self.assertNotEqual(SendStatus.Sent, SendStatus.Failed)
-        self.assertNotEqual(SendStatus.Sent, SendStatus.NotSent)
-        self.assertNotEqual(SendStatus.Sent, SendStatus.BadPacket)
-        self.assertNotEqual(SendStatus.Sent, SendStatus.DeadTarget)
+        assert SendStatus.Sent != SendStatus.Failed
+        assert SendStatus.Sent != SendStatus.NotSent
+        assert SendStatus.Sent != SendStatus.BadPacket
+        assert SendStatus.Sent != SendStatus.DeadTarget
 
-        self.assertNotEqual(SendStatus.Failed, SendStatus.Sent)
-        self.assertNotEqual(SendStatus.Failed, SendStatus.NotSent)
-        self.assertNotEqual(SendStatus.Failed, SendStatus.BadPacket)
-        self.assertNotEqual(SendStatus.Failed, SendStatus.DeadTarget)
+        assert SendStatus.Failed != SendStatus.Sent
+        assert SendStatus.Failed != SendStatus.NotSent
+        assert SendStatus.Failed != SendStatus.BadPacket
+        assert SendStatus.Failed != SendStatus.DeadTarget
 
-        self.assertNotEqual(SendStatus.NotSent, SendStatus.Failed)
-        self.assertNotEqual(SendStatus.NotSent, SendStatus.Sent)
-        self.assertNotEqual(SendStatus.NotSent, SendStatus.BadPacket)
-        self.assertNotEqual(SendStatus.NotSent, SendStatus.DeadTarget)
+        assert SendStatus.NotSent != SendStatus.Failed
+        assert SendStatus.NotSent != SendStatus.Sent
+        assert SendStatus.NotSent != SendStatus.BadPacket
+        assert SendStatus.NotSent != SendStatus.DeadTarget
 
-        self.assertNotEqual(SendStatus.BadPacket, SendStatus.Failed)
-        self.assertNotEqual(SendStatus.BadPacket, SendStatus.NotSent)
-        self.assertNotEqual(SendStatus.BadPacket, SendStatus.Sent)
-        self.assertNotEqual(SendStatus.BadPacket, SendStatus.DeadTarget)
+        assert SendStatus.BadPacket != SendStatus.Failed
+        assert SendStatus.BadPacket != SendStatus.NotSent
+        assert SendStatus.BadPacket != SendStatus.Sent
+        assert SendStatus.BadPacket != SendStatus.DeadTarget
 
-        self.assertNotEqual(SendStatus.DeadTarget, SendStatus.Failed)
-        self.assertNotEqual(SendStatus.DeadTarget, SendStatus.NotSent)
-        self.assertNotEqual(SendStatus.DeadTarget, SendStatus.BadPacket)
-        self.assertNotEqual(SendStatus.DeadTarget, SendStatus.Sent)
+        assert SendStatus.DeadTarget != SendStatus.Failed
+        assert SendStatus.DeadTarget != SendStatus.NotSent
+        assert SendStatus.DeadTarget != SendStatus.BadPacket
+        assert SendStatus.DeadTarget != SendStatus.Sent
 
 
-class TestTransmitIntent(unittest.TestCase):
-    scope="unit"
+class TestUnitTransmitIntent(object):
 
     def testNormalTransmit(self):
         ti = TransmitIntent('addr', 'msg')
-        self.assertEqual(ti.targetAddr, 'addr')
-        self.assertEqual(ti.message, 'msg')
-        self.assertEqual(ti.result, None)
+        assert ti.targetAddr == 'addr'
+        assert ti.message == 'msg'
+        assert ti.result == None
 
     def testNormalTransmitStr(self):
         ti = TransmitIntent('addr', 'msg')
         # Just ensure no exceptions are thrown
-        self.assertTrue(str(ti))
+        assert str(ti)
 
     def testNormalTransmitIdentification(self):
         ti = TransmitIntent('addr', 'msg')
         # Just ensure no exceptions are thrown
-        self.assertTrue(ti.identify())
+        assert ti.identify()
 
     def testNormalTransmitResetAddress(self):
         ti = TransmitIntent('addr', 'msg')
-        self.assertEqual(ti.targetAddr, 'addr')
-        self.assertEqual(ti.message, 'msg')
+        assert ti.targetAddr == 'addr'
+        assert ti.message == 'msg'
         ti.changeTargetAddr('addr2')
-        self.assertEqual(ti.targetAddr, 'addr2')
-        self.assertEqual(ti.message, 'msg')
+        assert ti.targetAddr == 'addr2'
+        assert ti.message == 'msg'
 
     def testNormalTransmitResetMessage(self):
         ti = TransmitIntent('addr', 'msg')
-        self.assertEqual(ti.targetAddr, 'addr')
-        self.assertEqual(ti.message, 'msg')
+        assert ti.targetAddr == 'addr'
+        assert ti.message == 'msg'
         ti.changeMessage('message2')
-        self.assertEqual(ti.targetAddr, 'addr')
-        self.assertEqual(ti.message, 'message2')
+        assert ti.targetAddr == 'addr'
+        assert ti.message == 'message2'
 
     def testTransmitIntentSetResult(self):
         ti = TransmitIntent('addr', 'msg')
-        self.assertEqual(None, ti.result)
+        assert None == ti.result
         ti.result = SendStatus.Sent
-        self.assertEqual(ti.result, SendStatus.Sent)
+        assert ti.result == SendStatus.Sent
         ti.result = SendStatus.Failed
-        self.assertEqual(ti.result, SendStatus.Failed)
+        assert ti.result == SendStatus.Failed
 
     def testTransmitIntentSetBadResultType(self):
         ti = TransmitIntent('addr', 'msg')
-        self.assertEqual(None, ti.result)
+        assert None == ti.result
 
     def _success(self, result, intent):
         self.successes.append( (result, intent) )
@@ -129,172 +126,200 @@ class TestTransmitIntent(unittest.TestCase):
     def testTransmitIntentCallbackSuccessWithTarget(self):
         self.successes = []
         self.failures = []
-        ti = TransmitIntent('addr', 'msg', onSuccess = self._success, onError = self._failed)
+        ti = TransmitIntent('addr', 'msg',
+                            onSuccess = self._success,
+                            onError = self._failed)
         ti.result = SendStatus.Sent
         # Ensure no exception thrown
         ti.completionCallback()
-        self.assertEqual(self.successes, [(SendStatus.Sent, ti)])
-        self.assertEqual(self.failures, [])
+        assert self.successes == [(SendStatus.Sent, ti)]
+        assert self.failures == []
         # And again
         ti.completionCallback()
-        self.assertEqual(self.successes, [(SendStatus.Sent, ti)])
-        self.assertEqual(self.failures, [])
+        assert self.successes == [(SendStatus.Sent, ti)]
+        assert self.failures == []
 
     def testTransmitIntentCallbackFailureNotSentWithTarget(self):
         self.successes = []
         self.failures = []
-        ti = TransmitIntent('addr', 'msg', onSuccess = self._success, onError = self._failed)
+        ti = TransmitIntent('addr', 'msg',
+                            onSuccess = self._success,
+                            onError = self._failed)
         ti.result = SendStatus.NotSent
         # Ensure no exception thrown
         ti.completionCallback()
-        self.assertEqual(self.successes, [])
-        self.assertEqual(self.failures, [(SendStatus.NotSent, ti)])
+        assert self.successes == []
+        assert self.failures == [(SendStatus.NotSent, ti)]
         # And again
         ti.completionCallback()
-        self.assertEqual(self.successes, [])
-        self.assertEqual(self.failures, [(SendStatus.NotSent, ti)])
+        assert self.successes == []
+        assert self.failures == [(SendStatus.NotSent, ti)]
 
     def testTransmitIntentCallbackFailureFailedWithTarget(self):
         self.successes = []
         self.failures = []
-        ti = TransmitIntent('addr', 'msg', onSuccess = self._success, onError = self._failed)
+        ti = TransmitIntent('addr', 'msg',
+                            onSuccess = self._success,
+                            onError = self._failed)
         ti.result = SendStatus.Failed
         # Ensure no exception thrown
         ti.completionCallback()
-        self.assertEqual(self.successes, [])
-        self.assertEqual(self.failures, [(SendStatus.Failed, ti)])
+        assert self.successes == []
+        assert self.failures == [(SendStatus.Failed, ti)]
         # And again
         ti.completionCallback()
-        self.assertEqual(self.successes, [])
-        self.assertEqual(self.failures, [(SendStatus.Failed, ti)])
+        assert self.successes == []
+        assert self.failures == [(SendStatus.Failed, ti)]
 
     def testTransmitIntentCallbackSuccessWithChainedTargets(self):
         self.successes = []
         self.failures = []
-        ti = TransmitIntent('addr', 'msg', onSuccess = self._success, onError = self._failed)
+        ti = TransmitIntent('addr', 'msg',
+                            onSuccess = self._success,
+                            onError = self._failed)
         ti.addCallback(self._success, self._failed)
         ti.result = SendStatus.Sent
         # Ensure no exception thrown
         ti.completionCallback()
-        self.assertEqual(self.successes, [(SendStatus.Sent, ti), (SendStatus.Sent, ti)])
-        self.assertEqual(self.failures, [])
+        assert self.successes == [(SendStatus.Sent, ti), (SendStatus.Sent, ti)]
+        assert self.failures == []
         # And again
         ti.completionCallback()
-        self.assertEqual(self.successes, [(SendStatus.Sent, ti), (SendStatus.Sent, ti)])
-        self.assertEqual(self.failures, [])
+        assert self.successes == [(SendStatus.Sent, ti), (SendStatus.Sent, ti)]
+        assert self.failures == []
 
     def testTransmitIntentCallbackFailureNotSentWithChainedTargets(self):
         self.successes = []
         self.failures = []
-        ti = TransmitIntent('addr', 'msg', onSuccess = self._success, onError = self._failed)
+        ti = TransmitIntent('addr', 'msg',
+                            onSuccess = self._success,
+                            onError = self._failed)
         ti.addCallback(self._success, self._failed)
         ti.result = SendStatus.NotSent
         # Ensure no exception thrown
         ti.completionCallback()
-        self.assertEqual(self.successes, [])
-        self.assertEqual(self.failures, [(SendStatus.NotSent, ti), (SendStatus.NotSent, ti)])
+        assert self.successes == []
+        assert self.failures == [(SendStatus.NotSent, ti),
+                                 (SendStatus.NotSent, ti)]
         # And again
         ti.completionCallback()
-        self.assertEqual(self.successes, [])
-        self.assertEqual(self.failures, [(SendStatus.NotSent, ti), (SendStatus.NotSent, ti)])
+        assert self.successes == []
+        assert self.failures == [(SendStatus.NotSent, ti),
+                                 (SendStatus.NotSent, ti)]
 
     def testTransmitIntentCallbackFailureFailedWithChainedTargets(self):
         self.successes = []
         self.failures = []
-        ti = TransmitIntent('addr', 'msg', onSuccess = self._success, onError = self._failed)
+        ti = TransmitIntent('addr', 'msg',
+                            onSuccess = self._success,
+                            onError = self._failed)
         ti.addCallback(self._success, self._failed)
         ti.result = SendStatus.Failed
         # Ensure no exception thrown
         ti.completionCallback()
-        self.assertEqual(self.successes, [])
-        self.assertEqual(self.failures, [(SendStatus.Failed, ti), (SendStatus.Failed, ti)])
+        assert self.successes == []
+        assert self.failures == [(SendStatus.Failed, ti),
+                                 (SendStatus.Failed, ti)]
         # And again
         ti.completionCallback()
-        self.assertEqual(self.successes, [])
-        self.assertEqual(self.failures, [(SendStatus.Failed, ti), (SendStatus.Failed, ti)])
+        assert self.successes == []
+        assert self.failures == [(SendStatus.Failed, ti),
+                                 (SendStatus.Failed, ti)]
 
     def testTransmitIntentCallbackSuccessWithChangedTargetsAdded(self):
         self.successes = []
         self.failures = []
-        ti = TransmitIntent('addr', 'msg', onSuccess = self._success, onError = self._failed)
+        ti = TransmitIntent('addr', 'msg',
+                            onSuccess = self._success,
+                            onError = self._failed)
         ti.result = SendStatus.Sent
         # Ensure no exception thrown
         ti.completionCallback()
-        self.assertEqual(self.successes, [(SendStatus.Sent, ti)])
-        self.assertEqual(self.failures, [])
+        assert self.successes == [(SendStatus.Sent, ti)]
+        assert self.failures == []
         # And again
         ti.addCallback(self._success, self._failed)
         ti.completionCallback()
-        self.assertEqual(self.successes, [(SendStatus.Sent, ti), (SendStatus.Sent, ti)])
-        self.assertEqual(self.failures, [])
+        assert self.successes == [(SendStatus.Sent, ti), (SendStatus.Sent, ti)]
+        assert self.failures == []
 
     def testTransmitIntentCallbackFailureNotSentWithChangedTargetsAdded(self):
         self.successes = []
         self.failures = []
-        ti = TransmitIntent('addr', 'msg', onSuccess = self._success, onError = self._failed)
+        ti = TransmitIntent('addr', 'msg',
+                            onSuccess = self._success,
+                            onError = self._failed)
         ti.result = SendStatus.NotSent
         # Ensure no exception thrown
         ti.completionCallback()
-        self.assertEqual(self.successes, [])
-        self.assertEqual(self.failures, [(SendStatus.NotSent, ti)])
+        assert self.successes == []
+        assert self.failures == [(SendStatus.NotSent, ti)]
         # And again
         ti.addCallback(self._success, self._failed)
         ti.completionCallback()
-        self.assertEqual(self.successes, [])
-        self.assertEqual(self.failures, [(SendStatus.NotSent, ti), (SendStatus.NotSent, ti)])
+        assert self.successes == []
+        assert self.failures == [(SendStatus.NotSent, ti),
+                                 (SendStatus.NotSent, ti)]
 
     def testTransmitIntentCallbackFailureFailedWithChangedTargetsAdded(self):
         self.successes = []
         self.failures = []
-        ti = TransmitIntent('addr', 'msg', onSuccess = self._success, onError = self._failed)
+        ti = TransmitIntent('addr', 'msg',
+                            onSuccess = self._success,
+                            onError = self._failed)
         ti.result = SendStatus.Failed
         # Ensure no exception thrown
         ti.completionCallback()
-        self.assertEqual(self.successes, [])
-        self.assertEqual(self.failures, [(SendStatus.Failed, ti)])
+        assert self.successes == []
+        assert self.failures == [(SendStatus.Failed, ti)]
         # And again
         ti.addCallback(self._success, self._failed)
         ti.completionCallback()
-        self.assertEqual(self.successes, [])
-        self.assertEqual(self.failures, [(SendStatus.Failed, ti), (SendStatus.Failed, ti)])
+        assert self.successes == []
+        assert self.failures == [(SendStatus.Failed, ti),
+                                 (SendStatus.Failed, ti)]
 
     def testTransmitIntentRetry(self):
         ti = TransmitIntent('addr', 'msg')
         for x in range(MAX_TRANSMIT_RETRIES+1):
-            self.assertTrue(ti.retry())
-        self.assertFalse(ti.retry())
+            assert ti.retry()
+        assert not ti.retry()
 
     def testTransmitIntentRetryTiming(self):
         maxPeriod = timedelta(milliseconds=90)
         period = timedelta(milliseconds=30)
-        ti = TransmitIntent('addr', 'msg', maxPeriod=maxPeriod, retryPeriod=period)
-        self.assertFalse(ti.timeToRetry())
+        ti = TransmitIntent('addr', 'msg',
+                            maxPeriod=maxPeriod,
+                            retryPeriod=period)
+        assert not ti.timeToRetry()
         sleep(timePeriodSeconds(period))
-        self.assertFalse(ti.timeToRetry())
+        assert not ti.timeToRetry()
 
-        self.assertTrue(ti.retry())
-        self.assertFalse(ti.timeToRetry())
+        assert ti.retry()
+        assert not ti.timeToRetry()
         sleep(timePeriodSeconds(period))
-        self.assertTrue(ti.timeToRetry())
+        assert ti.timeToRetry()
 
-        self.assertTrue(ti.retry())
-        self.assertFalse(ti.timeToRetry())
+        assert ti.retry()
+        assert not ti.timeToRetry()
         sleep(timePeriodSeconds(period))
-        self.assertFalse(ti.timeToRetry())  # Each retry increases
+        assert not ti.timeToRetry()  # Each retry increases
         sleep(timePeriodSeconds(period))
-        self.assertTrue(ti.timeToRetry())
+        assert ti.timeToRetry()
 
-        self.assertFalse(ti.retry())  # Exceeds maximum time
+        assert not ti.retry()  # Exceeds maximum time
 
     def testTransmitIntentRetryTimingExceedsLimit(self):
         maxPeriod = timedelta(seconds=90)
         period = timedelta(microseconds=1)
-        ti = TransmitIntent('addr', 'msg', maxPeriod=maxPeriod, retryPeriod=period)
-        self.assertFalse(ti.timeToRetry())
+        ti = TransmitIntent('addr', 'msg',
+                            maxPeriod=maxPeriod,
+                            retryPeriod=period)
+        assert not ti.timeToRetry()
 
         for N in range(MAX_TRANSMIT_RETRIES+1):
             # Indicate "failure" and the need to retry
-            self.assertTrue(ti.retry())
+            assert ti.retry()
             # Wait for the indication that it is time to retry
             time_to_retry = False
             for x in range(90):
@@ -302,34 +327,39 @@ class TestTransmitIntent(unittest.TestCase):
                 time_to_retry = ti.timeToRetry()
                 if time_to_retry: break
                 sleep(timePeriodSeconds(period) * 1.5)
-            self.assertTrue(time_to_retry)
+            assert time_to_retry
 
-        self.assertFalse(ti.retry())
+        assert not ti.retry()
 
     def testTransmitIntentDelay(self):
         maxPeriod = timedelta(milliseconds=90)
         period = timedelta(milliseconds=30)
-        ti = TransmitIntent('addr', 'msg', maxPeriod=maxPeriod, retryPeriod=period)
+        ti = TransmitIntent('addr', 'msg',
+                            maxPeriod=maxPeriod,
+                            retryPeriod=period)
         delay = ti.delay()
-        self.assertGreater(delay, timedelta(milliseconds=88))
-        self.assertLess(delay, timedelta(milliseconds=91))
+        assert delay > timedelta(milliseconds=88)
+        assert delay < timedelta(milliseconds=91)
 
     def testTransmitIntentRetryDelay(self):
         maxPeriod = timedelta(milliseconds=90)
         period = timedelta(milliseconds=30)
-        ti = TransmitIntent('addr', 'msg', maxPeriod=maxPeriod, retryPeriod=period)
+        ti = TransmitIntent('addr', 'msg',
+                            maxPeriod=maxPeriod,
+                            retryPeriod=period)
         ti.retry()
         delay = ti.delay()
-        self.assertGreater(delay, timedelta(milliseconds=28))
-        self.assertLess(delay, timedelta(milliseconds=31))
+        assert delay > timedelta(milliseconds=28)
+        assert delay < timedelta(milliseconds=31)
 
     def testTransmitIntentRetryRetryDelay(self):
         maxPeriod = timedelta(milliseconds=90)
         period = timedelta(milliseconds=30)
-        ti = TransmitIntent('addr', 'msg', maxPeriod=maxPeriod, retryPeriod=period)
+        ti = TransmitIntent('addr', 'msg',
+                            maxPeriod=maxPeriod,
+                            retryPeriod=period)
         ti.retry()
         ti.retry()
         delay = ti.delay()
-        self.assertGreater(delay, timedelta(milliseconds=58))
-        self.assertLess(delay, timedelta(milliseconds=61))
-
+        assert delay > timedelta(milliseconds=58)
+        assert delay < timedelta(milliseconds=61)
