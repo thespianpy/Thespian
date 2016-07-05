@@ -40,6 +40,9 @@ for sname in ['SIGCHLD']:
     except AttributeError:
         pass   # not defined for this OS
 
+#set_signal_handler = signal.signal
+set_signal_handler = lambda *args: None
+
 
 def detach_child(childref):
     if hasattr(multiprocessing.process, '_children'):
@@ -161,9 +164,9 @@ def startAdmin(adminClass, addrOfStarter, endpointPrep, transportClass,
         # behavior.
         if each not in uncatchable_signals:
             if each in child_exit_signals:
-                signal.signal(each, admin.childDied)
+                set_signal_handler(each, admin.childDied)
     if hasattr(signal, 'SIGUSR1'):
-        signal.signal(signal.SIGUSR1, signal_admin_sts(admin))
+        set_signal_handler(signal.SIGUSR1, signal_admin_sts(admin))
 
     _startLogger(transportClass, transport, admin, capabilities, logDefs)
     #closeUnusedFiles(transport)
@@ -480,12 +483,12 @@ def startChild(childClass, endpoint, transportClass,
         # behavior.
         if each not in uncatchable_signals:
             if each in child_exit_signals:
-                signal.signal(each, am.childDied)
+                set_signal_handler(each, am.childDied)
                 continue
             try:
-                signal.signal(each,
-                              sigexithandler if each in exit_signals
-                              else sighandler)
+                set_signal_handler(each,
+                                   sigexithandler if each in exit_signals
+                                   else sighandler)
             except (RuntimeError,ValueError,EnvironmentError) as ex:
                 # OK, this signal can't be caught for this
                 # environment.  We did our best.
