@@ -178,6 +178,13 @@ class asyncTransportBase(object):
                          QUEUE_TRANSMIT_UNBLOCK_THRESHOLD,
                          level = logging.WARNING)
                 while self._aTB_queuedPendingTransmits.qsize() > QUEUE_TRANSMIT_UNBLOCK_THRESHOLD:
+                    if transmitIntent.expired():
+                        thesplog('Exited tx-only mode because current request is timed out, qsize %s',
+                                 self._aTB_queuedPendingTransmits.qsize(),
+                                 level=logging.WARNING)
+                        transmitIntent.result = SendStatus.Failed
+                        transmitIntent.completionCallback()
+                        return
                     self.run(TransmitOnly, transmitIntent.delay())
                 thesplog('Exited tx-only mode after draining excessive queue (%s)',
                          self._aTB_queuedPendingTransmits.qsize(),
