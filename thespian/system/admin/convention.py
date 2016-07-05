@@ -473,7 +473,7 @@ class ConventioneerAdmin(GlobalNamesAdmin):
 
     def _preRegQueryNotPending(self, result, finishedIntent):
         remoteAddr = finishedIntent.targetAddr
-        member = self._conventionMembers(remoteAddr)
+        member = self._conventionMembers.find(remoteAddr)
         if member and member.preRegistered:
             member.preRegistered.pingPending = False
 
