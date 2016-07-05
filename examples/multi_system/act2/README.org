@@ -1,0 +1,73 @@
+* Thespian Multi-System Configurations, Act 2
+
+This example extends [[file:../act1/README.org][Act 1]] and will still be limited to a single
+system configuration, but this example will fix one of the observed
+issues with Act 1.  This iteration through the fixes is intended
+to provide further information about how these issues can be dealt
+with in other Actor-based applications as well as serving to make it
+easier to extend this application to be a multi-system application.
+
+The issues noted in the first Act are summarized as:
+
+  1. Periodic failures
+  1. No updates when sources changed
+  1. Additional actors created
+
+The first issue will be solved in this Act.  It can be solved by a
+number of methods, including:
+
+  * Adding a delay after sending the first message; the original
+    implementation has a small ~time.sleep()~ to attempt this, but it
+    is not a deterministic solution, and adding delays affects overall
+    performance.
+  
+  * Using a better startup handshake between the started Analyzers and
+    the Acceptor code.  The awkward part of this is that the Acceptor
+    must wait for the handshake completion before sending the messages.
+
+  * Make the Encoders ephemeral: they handle a single request and then
+    exit (via ~self.send(self.myAddress, ActorExitRequest())~).  In
+    the same manner as the current implementation, this would involve
+    a new set of Encoders for each message.
+
+  * Alternatively, each ~EncodeThis~ message sent to an Analyzer can
+    include the address of the Analyzer that the message is to be
+    passed to on completion.
+
+For simplicity, the last approach is taken in this version of the
+example code.
+
+/Note:/ The ~$ bash diff_from_prev.sh~ utility in this directory can be used
+to easily see the changes in this Act's code relative to the
+previous example.
+
+As can be seen in the ~app.py~ file changes for this Act, the explicit
+send of the analyzer address to the encoders are removed and the
+analyzer address is added to he encode request message.  It is not
+necessary to wait for the analyzer actor to be created before sending
+this message; it will automatically be delayed until the analyzer is
+ready.
+
+Once started, this version of the application can be run multiple
+times without encountering the periodic failures anymore.  However, it
+still does generate a whole new set of actors each time it is run.
+
+#+BEGIN_EXAMPLE
+$ echo "Hello, World" | PYTHONPATH=../../..:$PYTHONPATH python app.py
+$ echo "This is a test" | PYTHONPATH=../../..:$PYTHONPATH python app.py
+$ echo "Encode this" | PYTHONPATH=../../..:$PYTHONPATH python app.py
+$ ps -eafw | grep [a]ctorad
+#+END_EXAMPLE
+
+The ~ps~ command at the end of the above sequence will show all the
+running actors if the ~setproctitle~ Python package has been
+installed; if it has not, all of the processes will simply be python
+processes.  The stop command will remove all of the actors and
+shutdown the actor system.
+
+#+BEGIN_EXAMPLE
+$ PYTHONPATH=../../..:$PYTHONPATH python stop.py
+#+END_EXAMPLE
+
+In [[file:../act3/README.org][Act 3]] the application will be modified to only start a single
+set of Actors, regardless of the number of times it is run.
