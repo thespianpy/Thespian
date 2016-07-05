@@ -307,3 +307,25 @@ def setProcName(name, actorAddr):
     #actor names and addresses available in the process list.
     except: pass
     else: setproctitle('%s %s'%(name, str(actorAddr)))
+
+
+class AssocList(object):
+    def __init__(self):
+        self._qa = []  # (addr, val)
+    def find(self, addr):
+        for each in self._qa:
+            if each[0] == addr:
+                return each[1]
+        return None
+    def add(self, addr, val):
+        self._qa = [(A,V) for (A,V) in self._qa if A != addr] + [(addr,val)]
+    def rmv(self, addr):
+        self._qa = [(A,V) for (A,V) in self._qa if A != addr]
+    def values(self):
+        return [V for (A,V) in self._qa]
+    def items(self):
+        return self._qa
+    def fmap(self, func):
+        map(func, self._qa)
+
+

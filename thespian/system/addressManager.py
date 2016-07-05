@@ -23,7 +23,6 @@ class ActorLocalAddress:
         # n.b. compareAddressEq below expects this to throw an exception if o is not an ActorLocalAddress
         return isinstance(o, ActorLocalAddress) and self.generatingActor == o.generatingActor and self.addressInstanceNum == o.addressInstanceNum
     def __ne__(self, o): return not self.__eq__(o)
-    def __hash__(self):  return self.addressInstanceNum + hash(self.generatingActor)
     def __str__(self): return 'LocalAddr.%s'%self.addressInstanceNum
 
 

@@ -223,8 +223,9 @@ class TXOnlyAdminTCPv4ActorAddress(TCPv4ActorAddress):
 
 
 class IdleSocket(object):
-    def __init__(self, socket):
+    def __init__(self, socket, addr):
         self.socket = socket
+        self.rmtaddr = addr
         # n.b. the remote may have bound an outbound connect socket to
         # a different address, but rmtAddr represents the primary
         # address of an Actor/Admin: the one it listens on.
@@ -233,11 +234,15 @@ class IdleSocket(object):
     def expired(self):
         return self.validity.expired()
     def __str__(self):
-        return 'Idle-socket %s (%s)'%(str(self.socket), str(self.validity))
+        return 'Idle-socket %s->%s (%s)'%(str(self.socket),
+                                          str(self.rmtaddr),
+                                          str(self.validity))
     def shutdown(self, shtarg=socket.SHUT_RDWR):
         self.socket.shutdown(shtarg)
     def close(self):
         self.socket.close()
+
+def opsKey(addr): return addr.addressDetails
 
 
 class TCPTransport(asyncTransportBase, wakeupTransportBase):
@@ -311,7 +316,7 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
         self._incomingEnvelopes = []
         self._watches = []
         if REUSE_SOCKETS:
-            self._openSockets = {}  # key = remote listen address, value=IdleSocket
+            self._openSockets = {}  # key = opsKey(remote listen address), value=IdleSocket
 
 
     def __del__(self):
@@ -372,9 +377,8 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
             resp.addReceivedMessage(each.sender, self.myAddress, str(each.message))
         asyncTransportBase._updateStatusResponse(self, resp)
         wakeupTransportBase._updateStatusResponse(self, resp)
-        for num,each in enumerate(self._openSockets):
-            resp.addKeyVal('sock#%d-fd%d'%(num, self._openSockets[each].socket.fileno()),
-                           str(each))
+        for num,each in enumerate(self._openSockets.values()):
+            resp.addKeyVal('sock#%d-fd%d'%(num, each.socket.fileno()), str(each))
 
 
     @staticmethod
@@ -465,9 +469,10 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
            open sockets, etc.).
         """
         if hasattr(self, '_openSockets'):
-            if rmtaddr in self._openSockets:
-                _safeSocketShutdown(self._openSockets[rmtaddr])
-                del self._openSockets[rmtaddr]
+            opskey = opsKey(rmtaddr)
+            if opskey in self._openSockets:
+                _safeSocketShutdown(self._openSockets[opskey])
+                del self._openSockets[opskey]
         for each in [i for i in self._transmitIntents
                      if self._transmitIntents[i].targetAddr == rmtaddr]:
             self._cancel_fd_ops(each)
@@ -573,9 +578,11 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
                             pendingIncoming
                 else:
                     if status == SendStatus.Sent:
-                        if intent.targetAddr in self._openSockets:
-                            _safeSocketShutdown(self._openSockets[intent.targetAddr].socket)
-                        self._openSockets[intent.targetAddr] = IdleSocket(intent.socket)
+                        opskey = opsKey(intent.targetAddr)
+                        if opskey in self._openSockets:
+                            _safeSocketShutdown(self._openSockets[opskey].socket)
+                        self._openSockets[opskey] = IdleSocket(intent.socket,
+                                                               intent.targetAddr)
                         # No need to restart a pending transmit for
                         # this target here; the main loop will check
                         # the waitingIntents and find/start the next one
@@ -610,7 +617,7 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
         # time remaining still on this intent
         if self._socketFile(intent) == fileno or \
            (fileno == -1 and intent.timeToRetry(hasattr(self, '_openSockets') and
-                                                intent.targetAddr in self._openSockets)):
+                                                opsKey(intent.targetAddr) in self._openSockets)):
             if closed:
                 intent.stage = self._XMITStepRetry
             return self._nextTransmitStep(intent)
@@ -639,8 +646,9 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
 
     def _next_XMIT_1(self, intent):
         if hasattr(self, '_openSockets'):
-            if intent.targetAddr in self._openSockets:
-                intent.socket = self._openSockets[intent.targetAddr].socket
+            opskey = opsKey(intent.targetAddr)
+            if opskey in self._openSockets:
+                intent.socket = self._openSockets[opskey].socket
                 # This intent takes the open socket; there should be only
                 # one intent per target but this "take" prevents an
                 # erroneous second target intent from causing corruption.
@@ -651,7 +659,7 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
                 # the expected ACK and will close the socket to be
                 # re-opened on the next retry period, which is a
                 # reasonable approach.
-                del self._openSockets[intent.targetAddr]
+                del self._openSockets[opskey]
                 intent.stage = self._XMITStepSendData
                 intent.amtSent = 0
                 return self._nextTransmitStep(intent)
@@ -1008,7 +1016,7 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
                 # (including replacing the element) so ensure that
                 # only the sockets indicated by select are processed,
                 # and only once each.
-                idleSockets = list(getattr(self, '_openSockets', {}).items())
+                idleSockets = list(getattr(self, '_openSockets', {}).values())
 
                 if each in self._incomingSockets:
                     incoming = self._incomingSockets[each]
@@ -1021,8 +1029,9 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
                 if self._processIntents(each):
                     continue
 
-                for rmtaddr,idle in idleSockets:
-                    curOpen = self._openSockets.get(rmtaddr, None)
+                for idle in idleSockets:
+                    rmtaddr = idle.rmtaddr
+                    curOpen = self._openSockets.get(opsKey(rmtaddr), None)
                     if curOpen and curOpen != idle:
                         # duplicate sockets to remote, and this one is
                         # no longer tracked, so close it and keep
@@ -1030,14 +1039,14 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
                         _safeSocketShutdown(idle.socket)
                     else:
                         if each == idle.socket.fileno():
-                            del self._openSockets[rmtaddr]
+                            del self._openSockets[opsKey(rmtaddr)]
                             incoming = self._handlePossibleIncoming(
                                 TCPIncomingPersistent(rmtaddr, idle.socket), each)
                             if incoming:
                                 self._incomingSockets[incoming.socket.fileno()] = incoming
                         elif idle.expired():
                             _safeSocketShutdown(idle.socket)
-                            del self._openSockets[rmtaddr]
+                            del self._openSockets[opsKey(rmtaddr)]
 
             # Handle timeouts
             self._processIntentTimeouts()
@@ -1125,10 +1134,11 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
         # released.
         fromAddr = incomingSocket.fromAddress
         if fromAddr and isinstance(incomingSocket, TCPIncomingPersistent):
-            if fromAddr in self._openSockets:
+            opskey = opsKey(fromAddr)
+            if opskey in self._openSockets:
 
-                _safeSocketShutdown(self._openSockets[fromAddr].socket)
-            self._openSockets[fromAddr] = IdleSocket(incomingSocket.socket)
+                _safeSocketShutdown(self._openSockets[opskey].socket)
+            self._openSockets[opskey] = IdleSocket(incomingSocket.socket, fromAddr)
             for T in self._transmitIntents.values():
                 if T.targetAddr == fromAddr and T.stage == self._XMITStepRetry:
                     T.retry(immediately=True)

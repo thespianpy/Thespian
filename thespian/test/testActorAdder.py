@@ -127,8 +127,10 @@ class TestASimpleSystem(ActorSystemTestCase):
         sys = ActorSystem()
         addTen = sys.createActor(AddTen)
         children = sys.ask(addTen, "Names of Children?")
-        uniqueAddresses = set(children)
-        uniqueAddresses.add(addTen)
+        uniqueAddresses = [addTen]
+        for each in children:
+            self.assertNotIn(each, uniqueAddresses)
+            uniqueAddresses.append(each)
         self.assertEqual(11, len(uniqueAddresses))
         #Not needed: ActorSystem().tell(addTen, ActorExitRequest())
 

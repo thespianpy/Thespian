@@ -21,7 +21,7 @@ class AdminCore(systemCommonBase):
         # Things that help us look like an Actor, even though we're not
         self._sourceHash  = None
         thesplog('++++ Admin started @ %s / gen %s', self.transport.myAddress, str(ThespianGeneration), level=logging.INFO, primary=True)
-        self._nannying = {}  # key=child actorAddress, value=parent Address
+        self._nannying = []  # value = (child actorAddress, parent Address)
         self._deadLetterHandler = None
         self._sources = {}  # Index is sourcehash, value is requestor
                             # ActorAddress or zipsrc (when validated)
@@ -169,12 +169,14 @@ class AdminCore(systemCommonBase):
 
 
     def _handleChildExited(self, childAddress):
-        if childAddress in self._nannying:
-            # Let original requesting Actor (that *thinks* it's the
-            # parent) know about this child exit as well.
-            self._send_intent(TransmitIntent(self._nannying[childAddress],
-                                             ChildActorExited(childAddress)))
-            del self._nannying[childAddress]
+        for idx,addrs in enumerate(self._nannying):
+            if childAddress == addrs[0]:
+                del self._nannying[idx]
+                # Let original requesting Actor (that *thinks* it's the
+                # parent) know about this child exit as well.
+                self._send_intent(TransmitIntent(addrs[1],
+                                                 ChildActorExited(childAddress)))
+                break
         return super(AdminCore, self)._handleChildExited(childAddress)
 
 
@@ -265,7 +267,8 @@ class AdminCore(systemCommonBase):
 
         if requestEnvelope.message.forActor:
             # Proxy-parenting; remember the real parent
-            self._nannying[actualAddress] = requestEnvelope.message.forActor
+            self._nannying = [N for N in self._nannying if N[0] != actualAddress] + \
+                             [(actualAddress, requestEnvelope.message.forActor)]
         self._addrManager.associateUseableAddress(self.myAddress, childInstance, actualAddress)
         # n.b. childInstance is for this Admin, but caller's childInstance is in original request
         self._sendPendingActorResponse(requestEnvelope, actualAddress)

@@ -131,9 +131,14 @@ class TestASimpleSystem(unittest.TestCase):
     def test05_ManyActorsUniqueAddress(self):
         with TestSystem(self.sysbase, {'Admin Port': 10100+5}) as asys:
             addresses = [asys.createActor(Juliet) for n in range(50)]
-            uniqueAddresses = set(addresses)
+            uniqueAddresses = []
+            duplicates = []
+            for A in addresses:
+                if A in uniqueAddresses:
+                    duplicates.append(A)
+                else:
+                    uniqueAddresses.append(A)
             if len(addresses) != len(uniqueAddresses):
-                duplicates = [A for A in uniqueAddresses if len([X for X in addresses if X == A]) > 1]
                 print('Duplicates: %s'%map(str, duplicates))
                 if duplicates:
                     for each in duplicates:

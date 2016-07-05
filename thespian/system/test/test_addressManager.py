@@ -31,11 +31,12 @@ class TestActorLocalAddress(unittest.TestCase):
         # No exception thrown
         self.assertTrue(True)
 
-    def testUniqueHash(self):
+    def testNonHashable(self):
         genAddr = ActorAddress(id(self))
-        addrs = [ActorLocalAddress(genAddr, N, None) for N in range(32)]
-        hashes = set([hash(A) for A in addrs])
-        self.assertEqual(len(addrs), len(hashes))
+        lclAddr1 = ActorLocalAddress(genAddr, 0, None)
+        lclAddr2 = ActorLocalAddress(genAddr, 1, None)
+        self.assertRaises(TypeError, hash, lclAddr1)
+        self.assertRaises(TypeError, hash, lclAddr2)
 
     def testEquality(self):
         genAddr = ActorAddress(id(self))
@@ -198,20 +199,19 @@ class TestAddressManagerLocalAddressAssociations(unittest.TestCase):
         self.assertEqual(lclAddr, mainAddr)
         self.assertEqual(mainAddr, lclAddr)
 
-    def testAssociationHashEquality(self):
+    def testAssociationStillNotHashable(self):
         lclAddr = self.am.createLocalAddress()
         mainAddr = ActorAddress(id(self))
 
-        addrdict = { lclAddr: True, 99: False }
-        self.assertIn(lclAddr, addrdict)
-        self.assertNotIn(lclAddr, addrdict)
+        self.assertRaises(TypeError, hash, lclAddr)
+        self.assertRaises(TypeError, hash, mainAddr)
 
         self.am.associateUseableAddress(self.myAddress,
                                         lclAddr.addressDetails.addressInstanceNum,
                                         mainAddr)
 
-        self.assertIn(lclAddr, addrdict)
-        self.assertIn(lclAddr, addrdict)
+        self.assertRaises(TypeError, hash, lclAddr)
+        self.assertRaises(TypeError, hash, mainAddr)
 
     def testAssociationEqualityWithReconstitutedNonLocalAddress(self):
         lclAddr = self.am.createLocalAddress()
@@ -247,33 +247,32 @@ class TestAddressManagerLocalAddressAssociations(unittest.TestCase):
         mainAddr2 = ActorAddress(9)
         self.assertNotEqual(mainAddr1, mainAddr2)
 
-        addrdict = { lclAddr: True, 99: False }
-        self.assertIn(lclAddr, addrdict)
-        self.assertNotIn(mainAddr1, addrdict)
-        self.assertNotIn(mainAddr2, addrdict)
+        self.assertRaises(TypeError, hash, lclAddr)
+        self.assertRaises(TypeError, hash, mainAddr1)
+        self.assertRaises(TypeError, hash, mainAddr2)
 
         self.am.associateUseableAddress(self.myAddress,
                                         lclAddr.addressDetails.addressInstanceNum,
                                         mainAddr1)
 
-        self.assertIn(lclAddr, addrdict)
-        self.assertIn(mainAddr1, addrdict)
-        self.assertNotIn(mainAddr2, addrdict)
+        self.assertRaises(TypeError, hash, lclAddr)
+        self.assertRaises(TypeError, hash, mainAddr1)
+        self.assertRaises(TypeError, hash, mainAddr2)
 
         mainAddr1_dup = ActorAddress(None)
         self.assertEqual(mainAddr1, mainAddr1_dup)
 
-        self.assertIn(lclAddr, addrdict)
-        self.assertIn(mainAddr1, addrdict)
-        self.assertIn(mainAddr1_dup, addrdict)
-        self.assertNotIn(mainAddr2, addrdict)
+        self.assertRaises(TypeError, hash, lclAddr)
+        self.assertRaises(TypeError, hash, mainAddr1)
+        self.assertRaises(TypeError, hash, mainAddr1_dup)
+        self.assertRaises(TypeError, hash, mainAddr2)
 
         self.am.importAddr(mainAddr1_dup)
 
-        self.assertIn(lclAddr, addrdict)
-        self.assertIn(mainAddr1, addrdict)
-        self.assertIn(mainAddr1_dup, addrdict)
-        self.assertNotIn(mainAddr2, addrdict)
+        self.assertRaises(TypeError, hash, lclAddr)
+        self.assertRaises(TypeError, hash, mainAddr1)
+        self.assertRaises(TypeError, hash, mainAddr1_dup)
+        self.assertRaises(TypeError, hash, mainAddr2)
 
 
     def testAssociatedAddressesDoNotMatchArbitraryStuff(self):

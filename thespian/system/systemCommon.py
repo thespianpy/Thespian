@@ -7,6 +7,8 @@ from thespian.system.ratelimit import RateThrottle
 from thespian.system.addressManager import ActorAddressManager, CannotPickleAddress
 from thespian.system.messages.logcontrol import SetLogging
 from thespian.system.transport import *
+from thespian.system.utilis import fmap
+from itertools import chain
 
 # Assume a 2 KiB average packet size and a 100 Mb/s (12.5 MiB/s)
 # network link, the link could be saturated by transmitting N
@@ -17,6 +19,72 @@ RATE_THROTTLE = (lambda sizeAvg, linkSpeed, percentage:
                  int((linkSpeed / sizeAvg) * (percentage / 100.0)))(2048, 12.5*1024*1024, 70)
 
 
+class PendingTransmits(object):
+    def __init__(self):
+        self._ftp = []
+
+    def set_last_intent(self, stats, tgtAddr, sendAddr, intent):
+        newval = (sendAddr or tgtAddr), intent
+        for idx,each in enumerate(self._ftp):
+            if each[0] == tgtAddr or each[0] == sendAddr:
+                stats.inc('Actor.Message Send.Added to End of Sends')
+                each[1].nextIntent = intent
+                self._ftp[idx] = newval
+                return False
+        self._ftp.append(newval)
+        return True
+
+    def change_address_for_last(self, oldaddr, newaddr):
+        for idx,each in enumerate(self._ftp):
+            if each[0] == oldaddr:
+                self._ftp[idx] = newaddr, each[1]
+                return
+
+    def last_intent_sent(self, addrmgr, intent):
+        addrs = list(filter(None,
+                            [intent.targetAddr,
+                             getattr(intent.message, 'deadAddress', None), # DeadEnvelope
+                            ]))
+        fulladdrs = addrs + list(filter(None, map(addrmgr.sendToAddress, addrs)))
+        for idx,each in enumerate(self._ftp):
+            if each[0] in fulladdrs:
+                if each[1] != intent:
+                    thesplog('Completed final intent %s does not match recorded final intent: %s',
+                             intent.identify(), each[1].identify(),
+                             level=logging.WARNING)
+                del self._ftp[idx]
+                return True
+        thesplog('Completed Transmit Intent %s for unrecorded destination %s / %s in %s',
+                 intent.identify(),
+                 str(self._addrManager.sendToAddress(intent.targetAddr)),
+                 addrs,
+                 str(list(map(str,[F[0] for F in self._ftp]))),
+                 level=logging.WARNING)
+        return False
+
+
+class AddressWaitTransmits(object):
+    def __init__(self):
+        self._awt = []
+        # key = actorAddress waited on (usually local), value=array of transmit Intents
+    def fmap(self, func): map(func, self._awt)
+    def add(self, addr, intent):
+        for each in self._awt:
+            if each[0] == addr:
+                each[1].append(intent)
+                return
+        self._awt.append( (addr, [intent]) )
+    def remove_intents_for_address(self, addr):
+        for idx, each in enumerate(self._awt):
+            if each[0] == addr:
+                del self._awt[idx]
+                return each[1]
+        return []
+
+len_second = lambda x: (x[0], len(x[1]))
+
+
+
 class systemCommonBase(object):
 
     def __init__(self, adminAddr, transport):
@@ -24,8 +92,8 @@ class systemCommonBase(object):
         self.transport    = transport
         self._addrManager = ActorAddressManager(adminAddr, self.transport.myAddress)
         self.transport.setAddressManager(self._addrManager)
-        self._finalTransmitPending = {} # key = target ActorAddress, value=None or the last pending Intent
-        self._awaitingAddressUpdate = {}  # key = actorAddress waited on (usually local), value=array of transmit Intents
+        self._finalTransmitPending = PendingTransmits()
+        self._awaitingAddressUpdate = AddressWaitTransmits()
         self._receiveQueue = []  # array of ReceiveMessage to be processed
         self._children = []  # array of Addresses of children of this Actor/Admin
         self._governer = RateThrottle(RATE_THROTTLE)
@@ -70,8 +138,8 @@ class systemCommonBase(object):
         self._sCBStats.copyToStatusResponse(resp)
         # Need to show _finalTransmitPending?  where is head of chain? shown by transport? (no)
         resp.governer = str(self._governer)
-        for addr in self._awaitingAddressUpdate:
-            resp.addTXPendingAddressCount(addr, len(self._awaitingAddressUpdate[addr]))
+        fmap(lambda x: resp.addTXPendingAddressCount(*len_second(x)),
+             self._awaitingAddressUpdate)
         self.transport._updateStatusResponse(resp)
 
 
@@ -92,15 +160,12 @@ class systemCommonBase(object):
         # address); if so, just add the new one to the list and
         # return.
         sendAddr = self._addrManager.sendToAddress(intent.targetAddr)
-        finalIntent = self._finalTransmitPending.get(
-            intent.targetAddr,
-            self._finalTransmitPending.get(sendAddr, None))
-        self._finalTransmitPending[sendAddr or intent.targetAddr] = intent
-        if finalIntent:
-            finalIntent.nextIntent = intent
-            self._sCBStats.inc('Actor.Message Send.Added to End of Sends')
-            return
-        self._send_intent_to_transport(intent)
+        if self._finalTransmitPending.set_last_intent(
+                self._sCBStats,
+                intent.targetAddr,
+                sendAddr,
+                intent):
+            self._send_intent_to_transport(intent)
 
 
     def _retryPendingChildOperations(self, childInstance, actualAddress):
@@ -110,29 +175,24 @@ class systemCommonBase(object):
         if not actualAddress:
             self._receiveQueue.append(ReceiveEnvelope(lcladdr, ChildActorExited(lcladdr)))
 
-        if lcladdr in self._finalTransmitPending:
-            # KWQ: what to do when actualAddress is None?
-            self._finalTransmitPending[actualAddress] = self._finalTransmitPending[lcladdr]
-            del self._finalTransmitPending[lcladdr]
+        self._finalTransmitPending.change_address_for_last(lcladdr, actualAddress)
+        # KWQ: what to do when actualAddress is None?
 
-        if lcladdr in self._awaitingAddressUpdate:
-            pending = self._awaitingAddressUpdate[lcladdr]
-            del self._awaitingAddressUpdate[lcladdr]
-            for each in pending:
-                if actualAddress:
-                    # KWQ: confirm the following two lines can be removed; send_intent_to_transport should do this translation on its own.  At that point, the changeTargetAddr method should be able to be removed.
-    #                if each.targetAddr == lcladdr:
-    #                    each.changeTargetAddr(actualAddress)
-                    self._sCBStats.inc('Actor.Message Send.Transmit ReInitiated')
-                    self._send_intent(each)
-                else:
-                    if not isinstance(each.message, PoisonMessage):
-                        self._receiveQueue.append(
-                            ReceiveEnvelope(self.myAddress,
-                                            PoisonMessage(each.message)))
-                    self._sCBStats.inc('Actor.Message Send.Poison Return on Child Abort')
-                    each.result = SendStatus.Failed
-                    each.completionCallback()
+        for each in self._awaitingAddressUpdate.remove_intents_for_address(lcladdr):
+            if actualAddress:
+                # KWQ: confirm the following two lines can be removed; send_intent_to_transport should do this translation on its own.  At that point, the changeTargetAddr method should be able to be removed.
+#                if each.targetAddr == lcladdr:
+#                    each.changeTargetAddr(actualAddress)
+                self._sCBStats.inc('Actor.Message Send.Transmit ReInitiated')
+                self._send_intent(each)
+            else:
+                if not isinstance(each.message, PoisonMessage):
+                    self._receiveQueue.append(
+                        ReceiveEnvelope(self.myAddress,
+                                        PoisonMessage(each.message)))
+                self._sCBStats.inc('Actor.Message Send.Poison Return on Child Abort')
+                each.result = SendStatus.Failed
+                each.completionCallback()
 
 
     def _send_intent_to_transport(self, intent):
@@ -146,9 +206,9 @@ class systemCommonBase(object):
             self.transport.scheduleTransmit(self._addrManager, intent)
             self._sCBStats.inc('Actor.Message Send.Transmit Started')
         except CannotPickleAddress as ex:
-            thesplog('CannotPickleAddress, appending intent for %s (hash=%s)',
-                     ex.address, hash(ex.address), level=logging.DEBUG)
-            self._awaitingAddressUpdate.setdefault(ex.address, []).append(intent)
+            thesplog('CannotPickleAddress, appending intent for %s',
+                     ex.address, level=logging.DEBUG)
+            self._awaitingAddressUpdate.add(ex.address, intent)
             self._sCBStats.inc('Actor.Message Send.Postponed for Address')
             self._checkNextTransmit(0, intent)
         except Exception:
@@ -168,29 +228,7 @@ class systemCommonBase(object):
         if completedIntent.nextIntent:
             self._send_intent_to_transport(completedIntent.nextIntent)
         else:
-            fkey = completedIntent.targetAddr
-            if fkey not in self._finalTransmitPending:
-                fkey = self._addrManager.sendToAddress(completedIntent.targetAddr)
-                if fkey not in self._finalTransmitPending:
-                    if isinstance(completedIntent.message, DeadEnvelope):
-                        fkey = completedIntent.message.deadAddress
-                        if fkey not in self._finalTransmitPending:
-                            fkey = self._addrManager.sendToAddress(fkey)
-
-            if fkey in self._finalTransmitPending:
-                if self._finalTransmitPending[fkey] != completedIntent:
-                    thesplog('Completed final intent %s does not match recorded final intent: %s',
-                             completedIntent.identify(),
-                             self._finalTransmitPending[fkey].identify(),
-                             level=logging.WARNING)
-                del self._finalTransmitPending[fkey]
-            else:
-                thesplog('Completed Transmit Intent %s for unrecorded destination %s / %s in %s',
-                         completedIntent.identify(),
-                         str(self._addrManager.sendToAddress(completedIntent.targetAddr)),
-                         fkey,
-                         str(list(map(str,self._finalTransmitPending.keys()))),
-                         level=logging.WARNING)
+            if not self._finalTransmitPending.last_intent_sent(self._addrManager,
+                                                               completedIntent):
                 self._sCBStats.inc('Action.Message Send.Unknown Completion')
-                return
 
