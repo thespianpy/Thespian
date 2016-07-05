@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name = 'thespian',
-    version = '2.6.1',
+    version = '3.0.0',
     description = 'Python Actor concurrency library',
     author = 'Kevin Quick, GoDaddy',
     author_email = 'kquick@godaddy.com',
@@ -28,13 +28,13 @@ setup(
     ],
     long_description = '''
 
-    Thespian is a Python library providing a framework for developing
-    concurrent, distributed, fault tolerant applications.
+Thespian is a Python library providing a framework for developing
+concurrent, distributed, fault tolerant applications.
 
-    Thespian is built on the Actor Model which allows applications to
-    be written as a group of independently executing but cooperating
-    "Actors" which communicate via messages.  These Actors run within
-    the Actor System provided by the Thespian library.
+Thespian is built on the Actor Model which allows applications to be
+written as a group of independently executing but cooperating
+"Actors" which communicate via messages.  These Actors run within
+the Actor System provided by the Thespian library.
 
       * Concurrent
       * Distributed
@@ -42,9 +42,12 @@ setup(
       * Scalable
       * Location independent
 
-    Actor programming is broadly applicable and it is ideally suited
-    for Cloud-based applications as well, where compute nodes are
-    added and removed from the environment dynamically.
+Actor programming is broadly applicable and it is ideally suited
+for Cloud-based applications as well, where compute nodes are
+added and removed from the environment dynamically.
+
+   * More Information: http://thespianpy.com
+   * Release Notes: http://thespianpy.com/releases.html
 
     ''',
     keywords = ['actors', 'concurrent', 'concurrency', 'asynchronous',

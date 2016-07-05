@@ -7,7 +7,7 @@
 #+LATEX_HEADER: \product{Thespian}
 #+LATEX_HEADER: \component{Python Actor System}
 #+LATEX_HEADER: \doctype{Release Notes}
-#+LATEX_HEADER: \docrev{2.6.1}{2016 May 20}
+#+LATEX_HEADER: \docrev{3.0.0}{2016 Jul 04}
 #+LATEX_HEADER: \docid{TheDoc-06}
 #+OPTIONS: ^:nil num:nil
 
@@ -16,6 +16,66 @@ version changes indicate incompatible changes, minor versions indicate
 added functionality that is backwards compatible, and bugfix changes
 do not change the API.
 
+
+* 3.x
+
+** 3.0
+
+*** 3.0.0 <2016-07-04 Mon>
+
+  * Actor Addresses are not hashable.  Previously they were
+    incorrectly marked as hashable, but they may be updated internally
+    over time, and this internal mutability makes them non-hashable.
+    This does not affect the ability to compare addresses for equality
+    and inequality.
+
+  * Converted to using pytest for test framework; more information is
+    available in the ~thespian/test/00README.txt~ file.  These changes
+    include significant test updates and enhancements, as well as
+    broader coverage of all current system bases and configurations
+    (e.g. Admin Routing and TX Only base settings).
+
+  * Documentation updates, including distinguishing this Thespian
+    against unrelated efforts with overlapping similarities.
+
+  * Updated sourceloading support to handle uses of __import__
+    directly (e,g. for sqlalchemy support).
+
+  * Better handling of socket accept failures in the TCP transport.
+
+  * Fixed ChildActorExited messages for unresolved local addresses to
+    no longer be fatal issue.
+
+  * Updated Convention pre-registration to properly identify as a
+    pre-registration and to send a Convention De-Register for
+    pre-registered systems on system shutdown.
+
+  * Sending an ACK or NACK in the TCP transport is no longer capable
+    of causing a hang in the transport on blocking sends or errors.
+
+  * Updated the common Capabilities definitions for the
+    simpleSystemBase to match the other system bases.
+
+  * More regular throwing of exceptions for
+    ~ActorSystem().createActor()~ requests for top level actors that
+    cannot be satisifed.
+
+  * Asynchronous transports will immediately fail transmit requests if
+    the outbound queue has reached an upper-limit threshold in size.
+
+  * If in transmit-only mode, fail expired requests appropriately.
+
+  * Fix wakeup-supporting transports to always check for expired
+    wakeups and immediately-processable events even if there is no
+    positive non-zero time duration for transport processing.
+
+  * Revert signal handling introduced in version 2.5.8: internal
+    Python issues (e.g. http://bugs.python.org/issues14976) made the
+    initial approach buggy.  Newly engineered signals support will be
+    added in a forthcoming release.
+
+  * Updated Convention Notification handler removal for common code to
+    ensure the same treatment is given for all cases of handler removal.
 
 * 2.x
 
