@@ -38,7 +38,7 @@ do not change the API.
   * Documentation updates, including distinguishing this Thespian
     against unrelated efforts with overlapping similarities.
 
-  * Updated sourceloading support to handle uses of __import__
+  * Updated sourceloading support to handle uses of ~__import__~
     directly (e,g. for sqlalchemy support).
 
   * Better handling of socket accept failures in the TCP transport.
