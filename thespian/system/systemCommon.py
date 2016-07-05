@@ -56,7 +56,7 @@ class PendingTransmits(object):
                 return True
         thesplog('Completed Transmit Intent %s for unrecorded destination %s / %s in %s',
                  intent.identify(),
-                 str(self._addrManager.sendToAddress(intent.targetAddr)),
+                 str(intent.targetAddr),  # cannot addrManager.sendToAddress translate this address here.
                  addrs,
                  str(list(map(str,[F[0] for F in self._ftp]))),
                  level=logging.WARNING)
