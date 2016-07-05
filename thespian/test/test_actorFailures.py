@@ -130,13 +130,17 @@ class KillReq(object):
 class TestFuncActorFailures(object):
 
     def test01_NonStartingSystemLevelActor(self, asys):
-        nonstarter = asys.createActor(NonStarter)
-        # just finish, make sure no exception is thrown.  Primary
-        # actors (those owned by the ActorSystem itself) are not
-        # restarted on failure, so the actor won't actually be
-        # recreated.  The "anything" message will actually be routed
-        # to the Dead Letter handler (see testDeadLettering).
-        assert asys.ask(nonstarter, "anything", 0.3) is None
+        try:
+            nonstarter = asys.createActor(NonStarter)
+        except Exception:
+            assert True  # this is an acceptable effect
+        else:
+            # Primary actors (those owned by the ActorSystem itself)
+            # are not restarted on failure, so the actor won't
+            # actually be recreated.  The "anything" message will
+            # actually be routed to the Dead Letter handler (see
+            # testDeadLettering).
+            assert asys.ask(nonstarter, "anything", 0.3) is None
 
     def test02_NonStartingSubActorWithRestarts(self, asys):
         unstable_test(asys, 'multiprocUDPBase', 'multiprocQueueBase')

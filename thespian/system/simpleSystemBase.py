@@ -418,6 +418,7 @@ class ActorSystemBase:
         except Exception:
             logging.getLogger('Thespian').warning('Actor total creation error', exc_info=True)
             actor = None
+            if isTopLevel: raise
         nar = ActorRef(actorSystem, parentAddr, actorAddr, actor, mySourceHash=sourceHash)
         if actor:
             nar.instance._myRef = nar
