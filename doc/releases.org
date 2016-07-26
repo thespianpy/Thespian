@@ -7,7 +7,7 @@
 #+LATEX_HEADER: \product{Thespian}
 #+LATEX_HEADER: \component{Python Actor System}
 #+LATEX_HEADER: \doctype{Release Notes}
-#+LATEX_HEADER: \docrev{3.0.0}{2016 Jul 04}
+#+LATEX_HEADER: \docrev{3.0.1}{2016 Jul 26}
 #+LATEX_HEADER: \docid{TheDoc-06}
 #+OPTIONS: ^:nil num:nil
 
@@ -20,6 +20,29 @@ do not change the API.
 * 3.x
 
 ** 3.0
+
+
+*** 3.0.1 <2016-07-26 Tue>
+
+  * Internal updates to tests for selection of available network ports
+    for each test's admin address.
+
+  * Added test delay function for convenient centralization and
+    standardizationof testing delays and the ability to override,
+    mock, or adjust the delay as needed.
+
+  * Updated ~mark.skip~ specifications for broader pytest compatibility.
+
+  * On loaded source unload, skip None (in-progress) entries in
+    ~sys.modules~.
+
+  * Optimize source load import intercept; only one definition per
+    sourceload module is needed instead of per file.
+
+  * Updated thespian shell to handle non-hashable Actor Addresses.
+
+  * More information reported in Pending Actor timeout exceptions.
+
 
 *** 3.0.0 <2016-07-04 Mon>
 
