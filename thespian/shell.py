@@ -193,8 +193,9 @@ class ThespianShell(cmd.Cmd):
         if not response: return systems
         if isinstance(response, Thespian_SystemStatus):
             for each in response.conventionAttendees:
-                if isinstance(each, ActorAddress):
-                    systems[each[0]] = self._parseStatusResponse(self.system.ask(each[0], Thespian_StatusReq(), 10))
+                if isinstance(each[0], ActorAddress):
+                    systems[str(each[0])] = self._parseStatusResponse(
+                        self.system.ask(each[0], Thespian_StatusReq(), 10))
             systems = self._gatherSubActorCounts(systems, response)
             # globals and deadletter handlers should be in children, so shouldn't need to count them
             # systems[response.adminAddress]['global'] = len(Response.globalActors)
@@ -211,9 +212,13 @@ class ThespianShell(cmd.Cmd):
             systems['Unresponsive Actors'] = systems.get('Unresponsive Actors', 0) + 1
         else:
             if isinstance(response, Thespian_ActorStatus):
-                systems[response.adminAddress] = self._countSubActor(systems.get(response.adminAddress, None), response.actorClass)
+                systems[str(response.adminAddress)] = self._countSubActor(
+                    systems.get(str(response.adminAddress), None),
+                    response.actorClass)
             for each in response.childActors:
-                systems = self._gatherSubActorCounts(systems, self.system.ask(each, Thespian_StatusReq(), 10))
+                systems = self._gatherSubActorCounts(
+                    systems,
+                    self.system.ask(each, Thespian_StatusReq(), 10))
         return systems
 
 
