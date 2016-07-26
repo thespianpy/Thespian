@@ -143,13 +143,15 @@ def fix_imports(sourceCode, filename, sourceHashDot, toplevel):
 def hashimporter(hash):
     """Returns an importer that can be provided as __import__ to try the
        hash first."""
+    imp = getattr(importlib, '__import__', __import__)
     def _hashsupplier(*args, **kw):
-        hashargs = tuple([hash + args[0]] + list(args)[1:])
-        imp = importlib.__import__ if hasattr(importlib, '__import__') else __import__
-        try:
-            return imp(*hashargs, **kw)
-        except ImportError:
-            return imp(*args, **kw)
+        if not args[0].startswith(hash):
+            hashargs = tuple([hash + args[0]] + list(args)[1:])
+            try:
+                return imp(*hashargs, **kw)
+            except ImportError:
+                pass
+        return imp(*args, **kw)
     return _hashsupplier
 
 
@@ -206,14 +208,13 @@ class HashLoader(LoaderBase):
 
             # Intercept uses of __import__ in the loaded module, which
             # bypasses the normal import machinery.
-            try:
+            if self.finder.src_builtins:
                 ### Python 3:
-                module.__dict__['__builtins__'] = dict(
-                    list(sys.modules['builtins'].__dict__.items()) +
-                    [('__import__', hashimporter(hashRoot))])
-            except KeyError:
+                module.__dict__['__builtins__'] = self.finder.src_builtins
+            else:
                 ### Python 2-ish
-                module.__dict__['__import__'] = hashimporter(hashRoot)
+                module.__dict__['__import__'] = self.finder.src_hashimporter
+
             do_exec(code, module.__dict__)
         except Exception as ex:
             thesplog('sourceload realization failure in %s: %s',
@@ -275,6 +276,16 @@ class SourceHashFinder(FinderBase):
         self.enczfsrc = enczfsrc
         self.srcHash = srcHash
         super(SourceHashFinder, self).__init__()
+        # Precompute the following for fast usage in modules created in
+        # this loaded source context.
+        self.src_hashimporter = hashimporter(self.hashRoot())
+        try:
+            ### Python 3
+            self.src_builtins = sys.modules['builtins'].__dict__.copy()
+            self.src_builtins['__import__'] = self.src_hashimporter
+        except KeyError:
+            ### Python 2-ish
+            self.src_builtins = None
     def hashRoot(self):
         # All imports that come from a hashedSource will have the
         # hashRoot automatically inserted as the start of the import
