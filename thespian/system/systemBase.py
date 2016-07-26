@@ -180,7 +180,7 @@ class systemBase(object):
         if self._newActorAddress is False:
             raise NoCompatibleSystemForActor(
                 actorClass, 'No compatible ActorSystem could be found')
-        raise ActorSystemRequestTimeout('No response received to PendingActor request to Admin')
+        raise ActorSystemRequestTimeout('No response received to PendingActor request to Admin at %s'%(str(self.myAddress)))
 
     def _newPrimarySendFailed(self, result, msg):
         self._pcrFAILED = True
