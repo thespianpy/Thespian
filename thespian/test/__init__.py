@@ -250,3 +250,9 @@ def actor_system_unsupported(asys, *unsupported_bases):
     if asys.base_name in unsupported_bases:
         pytest.skip("Functionality not supported for %s system base"%asys.base_name)
 
+
+from thespian.system.utilis import timePeriodSeconds
+import time
+
+inTestDelay = lambda period: time.sleep(timePeriodSeconds(period))
+
