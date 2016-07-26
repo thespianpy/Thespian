@@ -452,7 +452,7 @@ class BaselineDirectZipfile(object):
         # non-module-level imports to occur.
         raises(InvalidActorAddress, f.receiveMessage, "what", "sender")
 
-    @mark.skipif(sys.version_info >= (3,0),
+    @mark.skipif("sys.version_info >= (3,0)",
                  reason="Python 2 import syntax only")
     def testPiglet(self, source_zips, sys_path):
         tmpdir, foozipFname, foozipEncFile, dogzipFname, dogzipEncFile = source_zips
@@ -570,7 +570,7 @@ class TestFuncLoadSource(object):
         sow = asys.createActor('barn.sow.SowActor', sourceHash=srchash)
         assert 'Moooo Oink Cluck Honk ready?' == asys.ask(sow, 'ready?', 1)
 
-    @mark.skip(sys.version_info >= (3,0), "Python 2 version imports")
+    @mark.skipif("sys.version_info >= (3,0)", reason="Python 2 version imports")
     def test02_verifyAllOLDSTYLERelativeImportPossibilities(self, asys, source_zips):
         thesplog('tt7 %s', asys.port_num)
         tmpdir, foozipFname, foozipEncFile, dogzipFname, dogzipEncFile = source_zips
