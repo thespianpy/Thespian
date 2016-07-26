@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
 <title>Thespian Release Notes</title>
-<!-- 2016-07-04 Mon 23:11 -->
+<!-- 2016-07-26 Tue 15:42 -->
 <meta  http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta  name="generator" content="Org-mode" />
 <meta  name="author" content="Kevin Quick &lt;kquick@godaddy.com&gt;" />
@@ -159,7 +159,8 @@ for the JavaScript code in this tag.
 <ul>
 <li><a href="#sec-1-1">3.0</a>
 <ul>
-<li><a href="#sec-1-1-1">3.0.0 <span class="timestamp-wrapper"><span class="timestamp">&lt;2016-07-04 Mon&gt;</span></span></a></li>
+<li><a href="#sec-1-1-1">3.0.1 <span class="timestamp-wrapper"><span class="timestamp">&lt;2016-07-26 Tue&gt;</span></span></a></li>
+<li><a href="#sec-1-1-2">3.0.0 <span class="timestamp-wrapper"><span class="timestamp">&lt;2016-07-04 Mon&gt;</span></span></a></li>
 </ul>
 </li>
 </ul>
@@ -235,8 +236,42 @@ do not change the API.
 <h3 id="sec-1-1">3.0</h3>
 <div class="outline-text-3" id="text-1-1">
 </div><div id="outline-container-sec-1-1-1" class="outline-4">
-<h4 id="sec-1-1-1">3.0.0 <span class="timestamp-wrapper"><span class="timestamp">&lt;2016-07-04 Mon&gt;</span></span></h4>
+<h4 id="sec-1-1-1">3.0.1 <span class="timestamp-wrapper"><span class="timestamp">&lt;2016-07-26 Tue&gt;</span></span></h4>
 <div class="outline-text-4" id="text-1-1-1">
+<ul class="org-ul">
+<li>Internal updates to tests for selection of available network ports
+for each test's admin address.
+</li>
+
+<li>Added test delay function for convenient centralization and
+standardizationof testing delays and the ability to override,
+mock, or adjust the delay as needed.
+</li>
+
+<li>Updated <code>mark.skip</code> specifications for broader pytest compatibility.
+</li>
+
+<li>On loaded source unload, skip None (in-progress) entries in
+<code>sys.modules</code>.
+</li>
+
+<li>Optimize source load import intercept; only one definition per
+sourceload module is needed instead of per file.
+</li>
+
+<li>Updated thespian shell to handle non-hashable Actor Addresses.
+</li>
+
+<li>More information reported in Pending Actor timeout exceptions.
+</li>
+</ul>
+</div>
+</div>
+
+
+<div id="outline-container-sec-1-1-2" class="outline-4">
+<h4 id="sec-1-1-2">3.0.0 <span class="timestamp-wrapper"><span class="timestamp">&lt;2016-07-04 Mon&gt;</span></span></h4>
+<div class="outline-text-4" id="text-1-1-2">
 <ul class="org-ul">
 <li>Actor Addresses are not hashable.  Previously they were
 incorrectly marked as hashable, but they may be updated internally
@@ -256,7 +291,7 @@ broader coverage of all current system bases and configurations
 against unrelated efforts with overlapping similarities.
 </li>
 
-<li>Updated sourceloading support to handle uses of <span class="underline"><span class="underline">import</span></span>
+<li>Updated sourceloading support to handle uses of <code>__import__</code>
     directly (e,g. for sqlalchemy support).
 </li>
 
@@ -1093,7 +1128,7 @@ The 1.x Release series was developed and used internally by GoDaddy
 </div>
 <div id="postamble" class="status">
 <p class="author">Author: Kevin Quick &lt;kquick@godaddy.com&gt;</p>
-<p class="date">Created: 2016-07-04 Mon 23:11</p>
+<p class="date">Created: 2016-07-26 Tue 15:42</p>
 <p class="creator"><a href="http://www.gnu.org/software/emacs/">Emacs</a> 24.5.2 (<a href="http://orgmode.org">Org</a> mode 8.2.10)</p>
 <p class="validation"><a href="http://validator.w3.org/check?uri=referer">Validate</a></p>
 </div>

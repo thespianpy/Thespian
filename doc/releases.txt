@@ -11,6 +11,7 @@ Table of Contents
 
 3.x
 .. 3.0
+..... 3.0.1 <2016-07-26 Tue>
 ..... 3.0.0 <2016-07-04 Mon>
 2.x
 .. 2.6
@@ -61,6 +62,29 @@ not change the API.
 3.0
 ───
 
+3.0.1 <2016-07-26 Tue>
+╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+
+  ‣ Internal updates to tests for selection of available network ports
+    for each test's admin address.
+
+  ‣ Added test delay function for convenient centralization and
+    standardizationof testing delays and the ability to override, mock,
+    or adjust the delay as needed.
+
+  ‣ Updated `mark.skip' specifications for broader pytest compatibility.
+
+  ‣ On loaded source unload, skip None (in-progress) entries in
+    `sys.modules'.
+
+  ‣ Optimize source load import intercept; only one definition per
+    sourceload module is needed instead of per file.
+
+  ‣ Updated thespian shell to handle non-hashable Actor Addresses.
+
+  ‣ More information reported in Pending Actor timeout exceptions.
+
+
 3.0.0 <2016-07-04 Mon>
 ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 
@@ -78,8 +102,8 @@ not change the API.
   ‣ Documentation updates, including distinguishing this Thespian
     against unrelated efforts with overlapping similarities.
 
-  ‣ Updated sourceloading support to handle uses of __import__ directly
-        (e,g. for sqlalchemy support).
+  ‣ Updated sourceloading support to handle uses of `__import__'
+        directly (e,g. for sqlalchemy support).
 
   ‣ Better handling of socket accept failures in the TCP transport.
 
