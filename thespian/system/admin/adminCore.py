@@ -346,7 +346,8 @@ class AdminCore(systemCommonBase):
             del self._sources[sourceHash]
         for pnum, metapath in enumerate(sys.meta_path):
             if getattr(metapath, 'srcHash', None) == sourceHash:
-                rmmods = [M for M in sys.modules if M.startswith(metapath.hashRoot())]
+                rmmods = [M for M in sys.modules
+                          if M and M.startswith(metapath.hashRoot())]
                 for each in rmmods:
                     del sys.modules[each]
                 del sys.meta_path[pnum]
