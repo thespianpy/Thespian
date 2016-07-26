@@ -34,6 +34,7 @@ smallwait = datetime.timedelta(milliseconds=350)
 
 @pytest.fixture(params=[
     # Non-deadly
+    'signal.SIGCONT-world',
     # 'signal.SIGINT-world',
     # 'signal.SIGUSR1-world',
     # 'signal.SIGUSR2-world',
