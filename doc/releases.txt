@@ -11,6 +11,7 @@ Table of Contents
 
 3.x
 .. 3.0
+..... 3.0.2 <2016-07-29 Fri>
 ..... 3.0.1 <2016-07-26 Tue>
 ..... 3.0.0 <2016-07-04 Mon>
 2.x
@@ -61,6 +62,21 @@ not change the API.
 
 3.0
 ───
+
+3.0.2 <2016-07-29 Fri>
+╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+
+  ‣ More updates to tests for timing issues and adding idempotency of
+    assert statements because pytest may re-execute them.
+
+  ‣ An Actor call to createActor may specify a sourceHash that it does
+    not have the source for; fixed to properly handle this case to defer
+    the createActor to the Admin and remove the erroneous error log
+    output.
+
+  ‣ Only hook __import__ for Python3.5 source loading; do not replicate
+    all builtins.
+
 
 3.0.1 <2016-07-26 Tue>
 ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
