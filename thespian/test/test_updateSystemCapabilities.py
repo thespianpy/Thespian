@@ -10,6 +10,15 @@ from pytest import raises
 from thespian.test import *
 import time
 from thespian.actors import *
+from datetime import timedelta
+from thespian.system.utilis import timePeriodSeconds
+
+
+MAX_ASK_WAIT_PERIOD = timedelta(seconds=3)
+UPDATE_WAIT_PERIOD = timedelta(seconds=1)
+
+update_wait = lambda: time.sleep(timePeriodSeconds(UPDATE_WAIT_PERIOD))
+
 
 
 colors = ['Red', 'Blue', 'Green', 'Yellow']
@@ -400,16 +409,16 @@ class TestFuncCapabilityUpdates(object):
         assert isinstance(green, ActorAddress)
         assert isinstance(blue, ActorAddress)
         # Verify actors are responsive
-        assert "Got: hello" == asys1.ask(red, 'hello', max_wait)
-        assert "Got: howdy" == asys1.ask(green, 'howdy', max_wait)
-        assert "Got: greetings" == asys1.ask(blue, 'greetings', max_wait)
+        assert "Got: hello" == asys1.ask(red, 'hello', MAX_ASK_WAIT_PERIOD)
+        assert "Got: howdy" == asys1.ask(green, 'howdy', MAX_ASK_WAIT_PERIOD)
+        assert "Got: greetings" == asys1.ask(blue, 'greetings', MAX_ASK_WAIT_PERIOD)
         # Remove one Capability and verify that all Actors created via that ActorSystem are removed
 
         asys3.updateCapability('Blue', None)
         time.sleep(0.1)
         assert asys1.ask(blue, 'yono', max_wait) is None
-        assert "Got: hellono" == asys1.ask(red, 'hellono', max_wait)
-        assert "Got: hino" == asys1.ask(green, 'hino', max_wait)
+        assert "Got: hellono" == asys1.ask(red, 'hellono', MAX_ASK_WAIT_PERIOD)
+        assert "Got: hino" == asys1.ask(green, 'hino', MAX_ASK_WAIT_PERIOD)
 
         asys1.updateCapability('Red', None)
         time.sleep(0.1)  # wait for capability update to propagate
@@ -431,14 +440,14 @@ class TestFuncCapabilityUpdates(object):
         assert blue is not None
         assert isinstance(green, ActorAddress)
         assert isinstance(blue, ActorAddress)
-        assert "Got: howdy howdy" == asys1.ask(green, 'howdy howdy', max_wait)
+        assert "Got: howdy howdy" == asys1.ask(green, 'howdy howdy', MAX_ASK_WAIT_PERIOD)
         assert "Got: greetings all" == asys1.ask(blue, 'greetings all',
-                                                 max_wait)
+                                                 MAX_ASK_WAIT_PERIOD)
         assert asys1.ask(blue, (RedActor, 'hey, red'), max_wait) is None
         assert "hey, blue" == asys1.ask(green, (BlueActor, 'hey, blue'),
-                                        max_wait*10)
+                                        MAX_ASK_WAIT_PERIOD*10)
         assert "hey, green" == asys1.ask(blue, (GreenActor, 'hey, green'),
-                                         max_wait*10)
+                                         MAX_ASK_WAIT_PERIOD*10)
         # Remove remaining capabilities
         asys2.updateCapability('Green', None)
         assert 'ok' == asys1.ask(blue, SetCap('Blue', None), 1)
@@ -451,12 +460,12 @@ class TestFuncCapabilityUpdates(object):
     def test07_removingNonExistentCapabilitiesHasNoEffect(self, asys_trio):
         asys1, asys2, asys3 = asys_trio
         actor_system_unsupported(asys1, "simpleSystemBase", "multiprocQueueBase")
-        max_wait = 1.0
         # Setup systems
         asys1.updateCapability('Red', True)
         asys2.updateCapability('Green', True)
         asys3.updateCapability('Blue', True)
-        time.sleep(max_wait*2)  # Allow for propagation (with hysteresis)
+        update_wait()  # Allow for propagation (with hysteresis)
+        update_wait()
         # Create Actors
         red = asys1.createActor(RedActor)
         green = asys1.createActor(GreenActor)
@@ -469,39 +478,39 @@ class TestFuncCapabilityUpdates(object):
         assert isinstance(green, ActorAddress)
         assert isinstance(blue, ActorAddress)
         # Verify actors are responsive
-        assert "Got: hello" == asys1.ask(red, 'hello', 1)
-        assert "Got: howdy", asys1.ask(green, 'howdy' == 1)
-        assert "Got: greetings" == asys1.ask(blue, 'greetings', 1)
+        assert "Got: hello" == asys1.ask(red, 'hello', MAX_ASK_WAIT_PERIOD)
+        assert "Got: howdy" == asys1.ask(green, 'howdy', MAX_ASK_WAIT_PERIOD)
+        assert "Got: greetings" == asys1.ask(blue, 'greetings', MAX_ASK_WAIT_PERIOD)
         assert 'long path' == asys1.ask(blue, (RedActor, GreenActor, RedActor,
                                                BlueActor, GreenActor,
                                                'long path'),
-                                        max_wait)
+                                        MAX_ASK_WAIT_PERIOD)
         # Verify sub-actors are responsive
-        assert 'bluered' == asys1.ask(blue, (RedActor, 'bluered'), max_wait)
+        assert 'bluered' == asys1.ask(blue, (RedActor, 'bluered'), MAX_ASK_WAIT_PERIOD)
         assert "greenblue" == asys1.ask(green, (BlueActor, 'greenblue'),
-                                        max_wait)
+                                        MAX_ASK_WAIT_PERIOD)
         assert "bluegreen" == asys1.ask(blue, (GreenActor, 'bluegreen'),
-                                        max_wait)
+                                        MAX_ASK_WAIT_PERIOD)
         # Remove non-color capabilities from ActorSystems
         asys1.updateCapability('Frog', None)
-        assert 'ok' == asys1.ask(blue, SetCap('Bark', None), 1)
+        assert 'ok' == asys1.ask(blue, SetCap('Bark', None), MAX_ASK_WAIT_PERIOD)
         asys1.updateCapability('Cow', None)
-        time.sleep(0.1)
+        update_wait()
         # Verify actors are still responsive
-        assert "Got: hello" == asys1.ask(red, 'hello', 1)
-        assert "Got: howdy" == asys1.ask(green, 'howdy', 1)
-        assert "Got: greetings" == asys1.ask(blue, 'greetings', 1)
+        assert "Got: hello" == asys1.ask(red, 'hello', MAX_ASK_WAIT_PERIOD)
+        assert "Got: howdy" == asys1.ask(green, 'howdy', MAX_ASK_WAIT_PERIOD)
+        assert "Got: greetings" == asys1.ask(blue, 'greetings', MAX_ASK_WAIT_PERIOD)
         # Verify sub-actors are still responsive
-        assert 'hey, red' == asys1.ask(blue, (RedActor, 'hey, red'), max_wait)
+        assert 'hey, red' == asys1.ask(blue, (RedActor, 'hey, red'), MAX_ASK_WAIT_PERIOD)
         assert "howdy howdy" == asys1.ask(green, (BlueActor, 'howdy howdy'),
-                                          max_wait)
+                                          MAX_ASK_WAIT_PERIOD)
         assert "greetings all" == asys1.ask(red, (GreenActor, 'greetings all'),
-                                            max_wait)
+                                            MAX_ASK_WAIT_PERIOD)
         # Verify new sub-actors can be created
         assert 'long path' == asys1.ask(blue, (RedActor, GreenActor, RedActor,
                                                BlueActor, GreenActor,
                                                'long path'),
-                                        max_wait)
+                                        MAX_ASK_WAIT_PERIOD)
         # Tell actors to exit
         asys1.tell(red, ActorExitRequest())
         asys1.tell(green, ActorExitRequest())
@@ -534,30 +543,30 @@ class TestFuncCapabilityUpdates(object):
         assert "Got: howdy" == asys1.ask(green, 'howdy', 1)
         assert "Got: greetings" == asys1.ask(blue, 'greetings', 1)
         # Verify sub-actors are responsive
-        assert 'hey, red' == asys1.ask(blue, (RedActor, 'hey, red'), max_wait)
+        assert 'hey, red' == asys1.ask(blue, (RedActor, 'hey, red'), MAX_ASK_WAIT_PERIOD)
         assert "howdy howdy" == asys1.ask(green, (GreenActor, 'howdy howdy'),
-                                          max_wait)
+                                          MAX_ASK_WAIT_PERIOD)
         assert "greetings all" == asys1.ask(red, (BlueActor, 'greetings all'),
-                                            max_wait)
+                                            MAX_ASK_WAIT_PERIOD)
         # Remove non-color capabilities from ActorSystems
         asys1.updateCapability('Red', True)
         asys2.updateCapability('Green', True)
-        assert 'ok' == asys1.ask(blue, SetCap('Blue', True), 1)
+        assert 'ok' == asys1.ask(blue, SetCap('Blue', True), MAX_ASK_WAIT_PERIOD)
         # Verify actors are still responsive
-        assert "Got: hello" == asys1.ask(red, 'hello', 1)
-        assert "Got: howdy" == asys1.ask(green, 'howdy', 1)
-        assert "Got: greetings" == asys1.ask(blue, 'greetings', 1)
+        assert "Got: hello" == asys1.ask(red, 'hello', MAX_ASK_WAIT_PERIOD)
+        assert "Got: howdy" == asys1.ask(green, 'howdy', MAX_ASK_WAIT_PERIOD)
+        assert "Got: greetings" == asys1.ask(blue, 'greetings', MAX_ASK_WAIT_PERIOD)
         # Verify sub-actors are still responsive
-        assert 'hey, red' == asys1.ask(blue, (RedActor, 'hey, red'), max_wait)
+        assert 'hey, red' == asys1.ask(blue, (RedActor, 'hey, red'), MAX_ASK_WAIT_PERIOD)
         assert "howdy howdy" == asys1.ask(green, (RedActor, 'howdy howdy'),
-                                          max_wait)
+                                          MAX_ASK_WAIT_PERIOD)
         assert "greetings all" == asys1.ask(red, (BlueActor, 'greetings all'),
-                                            max_wait)
+                                            MAX_ASK_WAIT_PERIOD)
         # Verify new sub-actors can be created
         assert 'long path' == asys1.ask(blue, (RedActor, GreenActor, RedActor,
                                                BlueActor, GreenActor,
                                                'long path'),
-                                        max_wait)
+                                        MAX_ASK_WAIT_PERIOD)
         # Tell actors to exit
         asys1.tell(red, ActorExitRequest())
         asys1.tell(green, ActorExitRequest())
@@ -590,9 +599,9 @@ class TestFuncCapabilityUpdates(object):
         assert "Got: howdy" == asys1.ask(green, 'howdy', 1)
         assert "Got: greetings" == asys1.ask(blue, 'greetings', 1)
         # Verify sub-actors are responsive
-        assert 'hey, red' == asys1.ask(blue, (RedActor, 'hey, red'), max_wait)
+        assert 'hey, red' == asys1.ask(blue, (RedActor, 'hey, red'), MAX_ASK_WAIT_PERIOD)
         assert "howdy howdy" == asys1.ask(green, (BlueActor, 'howdy howdy'),
-                                          max_wait)
+                                          MAX_ASK_WAIT_PERIOD)
 #        assert "greetings all" == asys1.ask(red, (BlueActor, 'greetings all'), max_wait)
         # Remove color capabilities from two ActorSystems
         asys2.updateCapability('Green')
@@ -661,7 +670,6 @@ class TestFuncCapabilityUpdates(object):
         actor_system_unsupported(asys1,
                                  "simpleSystemBase",
                                  "multiprocQueueBase")
-        max_wait = 0.5
         # Setup systems
         asys1.updateCapability('Red', True)
         asys1.updateCapability('Green', True)
@@ -673,12 +681,12 @@ class TestFuncCapabilityUpdates(object):
                                               OrangeActor, BlueActor,
                                               GreenActor,
                                               'long path'),
-                                        max_wait)
-        assert 6, self._actorCount(asys1 == red)
+                                        MAX_ASK_WAIT_PERIOD)
+        assert 6 == self._actorCount(asys1, red)
         # Now remove a capability needed by a deep sub-Actor and
         # verify that sub-Actor (and it's children) are gone.
         asys1.updateCapability('Blue')
-        time.sleep(max_wait)
+        update_wait()
         assert 4 == self._actorCount(asys1, red)
 
 
@@ -690,28 +698,27 @@ class TestFuncCapabilityUpdates(object):
         # Creates sub-actors in another system.  Removal of a
         # capability on the current environment should not cause
         # impact to sub-actors in another environment
-        max_wait = 0.5
         # Setup systems
         asys2.updateCapability('Green', True)
         asys2.updateCapability('Red', True)
         asys2.updateCapability('Blue', True)
-        time.sleep(1)  # wait for hysteresis delay of multiple updates
+        update_wait()  # wait for hysteresis delay of multiple updates
         # Create parent in system one with child in system two
         parent = asys1.createActor(OrangeActor)
-        assert "red" == asys1.ask(parent, (RedActor, "red"), 1)
+        assert "red" == asys1.ask(parent, (RedActor, "red"), MAX_ASK_WAIT_PERIOD)
         assert 2 == self._actorCount(asys1, parent)
         # Add capability associated with child in primary system
         asys1.updateCapability('Red', True)
-        time.sleep(max_wait)  # allow capabilities to update
+        update_wait()  # allow capabilities to update
         # Remove capability associated with child from primary system;
         # this should not cause the child to exit because it is still
         # in a valid system.
         asys1.updateCapability('Red', None)
-        time.sleep(max_wait)  # allow capabilities to update
+        update_wait()  # allow capabilities to update
         assert 2 == self._actorCount(asys1, parent)
         # Removal of the capability in the system hosting the child does cause the child to exit
         asys2.updateCapability('Red', None)
-        time.sleep(max_wait)  # allow capabilities to update
+        update_wait()  # allow capabilities to update
         assert 1 == self._actorCount(asys1, parent)
 
 
@@ -745,7 +752,7 @@ class TestFuncCapabilityUpdates(object):
                                                RedActor, OrangeActor,
                                                BlueActor, GreenActor,
                                                'long path'),
-                                        max_wait)
+                                        MAX_ASK_WAIT_PERIOD)
         # Remove that capability again
         assert 'ok' == asys1.ask(red, SetCap('Green', None), 1)
         time.sleep(max_wait)  # allow capabilities to settle
@@ -775,7 +782,7 @@ class TestFuncCapabilityUpdates(object):
         assert 'long path' == asys1.ask(blue, (GreenActor, RedActor,
                                                BlueActor, GreenActor,
                                                'long path'),
-                                        max_wait)
+                                        MAX_ASK_WAIT_PERIOD)
         # Remove an originally-existing capability
         assert 'ok' == asys1.ask(red, SetCap('Green', None), 1)
         time.sleep(max_wait)  # allow capabilities to settle
