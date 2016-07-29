@@ -389,6 +389,8 @@ def loadModuleFromHashSource(sourceHash, sources, modName, modClass):
         logging.getLogger('Thespian').warning('Specified sourceHash %s is not currently loaded',
                                               sourceHash)
         raise InvalidActorSourceHash(sourceHash)
+    if not sources[sourceHash]:
+        raise ValueError('Local Actor does not have sources for hash %s' % sourceHash)
 
     for metapath in sys.meta_path:
         if getattr(metapath, 'srcHash', None) == sourceHash:
