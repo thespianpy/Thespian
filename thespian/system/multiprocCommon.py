@@ -254,11 +254,24 @@ class MultiProcReplicator(object):
         if self.asLogger is None:
             raise ActorSystemFailure('logger ADDR cannot be None!')
 
-        if not checkActorCapabilities(childClass, self.capabilities, childRequirements,
-                                      partial(loadModuleFromHashSource,
-                                              sourceHash,
-                                              { sourceHash: sourceToLoad })
-                                      if sourceHash else None):
+        try:
+            if not checkActorCapabilities(childClass, self.capabilities, childRequirements,
+                                          partial(loadModuleFromHashSource,
+                                                  sourceHash,
+                                                  { sourceHash: sourceToLoad })
+                                          if sourceHash # and sourceToLoad
+                                          else None):
+                raise NoCompatibleSystemForActor(childClass,
+                                                 "no system has compatible capabilities")
+        except (InvalidActorSourceHash, ImportError):
+            # Allow these exceptions to propagate outward since they
+            # have special, public meaning
+            raise
+        except Exception:
+            # Most exceptions should be converted to
+            # NoCompatibleSystemForActor so that calling code
+            # recognizes this issue and defers the create request to
+            # the Admin.
             raise NoCompatibleSystemForActor(childClass,
                                              "no system has compatible capabilities")
 
