@@ -259,6 +259,13 @@ def jormungandr(): return 'dragon'
 
 lizardSource = '''
 # Direct attempts to access the import machinery, a la sqlalchemy
+
+"This is a module docstring"
+
+
+from __future__ import with_statement
+
+from __future__ import print_function
 import sys
 py3k = sys.version_info >= (3,0)
 if py3k:

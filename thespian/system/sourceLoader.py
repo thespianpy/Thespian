@@ -104,6 +104,27 @@ else:
     exec("def do_exec(co, loc): exec co in loc\n")
 
 
+def find_future_end(s, startpos):
+    next_future = s.find(b'from __future__ import', startpos)
+    if next_future == -1:
+        return startpos
+    end_future = s.find(b'\n', next_future)
+    if -1 == end_future:
+        # Unlikely! A file containing only "from __future__ import"
+        # statements and no final newline on the last import... how
+        # bizarre.
+        return len(s)
+    return find_future_end(s, end_future + 1)
+
+def py3_source_converter(s):
+    end_future = find_future_end(s, 0)
+    return (s[:end_future] + b'''
+import builtins
+builtins.__import__ = __hashimporter__
+''' +
+            s[end_future:] + b'\n')
+
+
 class ImportRePackage(ast.NodeTransformer):
     def __init__(self, sourceHashDot, topnames):
         self._sourceHashDot = sourceHashDot
@@ -199,7 +220,8 @@ class HashLoader(LoaderBase):
             # (e.g. ntlm.HTTPNtlmAuthHandler.py, so explicitly ensure
             # the proper line endings for the compiler.
             if sys.version_info >= (3,0):
-                converter = lambda s: codeproc(s + b'\n')
+                converter = lambda s: codeproc(py3_source_converter(s))
+                #converter = lambda s: codeproc(s + b'\n')
             else:
                 converter = lambda s: codeproc(s.replace('\r\n', '\n')+'\n')
             code = self.finder.withZipElementSource(
@@ -210,7 +232,7 @@ class HashLoader(LoaderBase):
             # bypasses the normal import machinery.
             if self.finder.src_builtins:
                 ### Python 3:
-                module.__dict__['__builtins__'] = self.finder.src_builtins
+                module.__dict__['__hashimporter__'] = self.finder.src_hashimporter
             else:
                 ### Python 2-ish
                 module.__dict__['__import__'] = self.finder.src_hashimporter
