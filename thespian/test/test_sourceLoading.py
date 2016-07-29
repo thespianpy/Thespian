@@ -10,9 +10,8 @@ from datetime import timedelta
 from pytest import raises, mark
 from thespian.system.utilis import thesplog
 
-
-sourceauthority_reg_wait = lambda: inTestDelay(timedelta(milliseconds=10))
-sourceload_wait = lambda: inTestDelay(timedelta(milliseconds=100))
+sourceauthority_reg_wait = lambda: inTestDelay(timedelta(milliseconds=100))
+sourceload_wait = lambda: inTestDelay(timedelta(milliseconds=300))
 sourceunload_wait = lambda: inTestDelay(timedelta(milliseconds=200))
 
 
