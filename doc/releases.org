@@ -7,7 +7,7 @@
 #+LATEX_HEADER: \product{Thespian}
 #+LATEX_HEADER: \component{Python Actor System}
 #+LATEX_HEADER: \doctype{Release Notes}
-#+LATEX_HEADER: \docrev{3.0.1}{2016 Jul 26}
+#+LATEX_HEADER: \docrev{3.0.2}{2016 Jul 29}
 #+LATEX_HEADER: \docid{TheDoc-06}
 #+OPTIONS: ^:nil num:nil
 
@@ -21,6 +21,18 @@ do not change the API.
 
 ** 3.0
 
+*** 3.0.2 <2016-07-29 Fri>
+
+  * More updates to tests for timing issues and adding idempotency of
+    assert statements because pytest may re-execute them.
+
+  * An Actor call to createActor may specify a sourceHash that it does
+    not have the source for; fixed to properly handle this case to
+    defer the createActor to the Admin and remove the erroneous error
+    log output.
+
+  * Only hook ~__import__~ for Python3.5 source loading; do not
+    replicate all builtins.
 
 *** 3.0.1 <2016-07-26 Tue>
 
