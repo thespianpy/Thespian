@@ -194,16 +194,16 @@ class TestFuncCapabilityUpdates(object):
         assert "path1" == asys1.ask(red, (BlueActor, GreenActor, RedActor,
                                           GreenActor, BlueActor, RedActor,
                                           "path1"),
-                                    1)
+                                    MAX_ASK_WAIT_PERIOD)
         assert "path2" == asys1.ask(green, (BlueActor, GreenActor, RedActor,
                                             GreenActor, BlueActor, RedActor,
                                             "path2"),
-                                    1)
+                                    MAX_ASK_WAIT_PERIOD)
         assert "path3" == asys1.ask(blue, (BlueActor, GreenActor, RedActor,
                                            GreenActor, OrangeActor, BlueActor,
                                            RedActor,
                                            "path3"),
-                                    1)
+                                    MAX_ASK_WAIT_PERIOD)
         # Tell actors to exit
         asys1.tell(red, ActorExitRequest())
         asys1.tell(green, ActorExitRequest())

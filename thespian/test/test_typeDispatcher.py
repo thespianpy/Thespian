@@ -3,6 +3,10 @@ import logging
 import time, datetime
 from thespian.test import *
 from thespian.actors import *
+from datetime import timedelta
+
+
+MAX_ASK_DELAY = timedelta(seconds=3)
 
 
 class Message1(object):
@@ -79,7 +83,7 @@ def top(request, asys):
 class TestFuncTypeDispatching(object):
 
     def verifyExpectedResponses(self, asys, target, requestMsg, expected):
-        resp = asys.ask(target, requestMsg, 1.1)
+        resp = asys.ask(target, requestMsg, MAX_ASK_DELAY)
         if expected == None:
             assert resp is None
         else:
@@ -123,11 +127,11 @@ class TestFuncTypeDispatching(object):
 
     def testMiddleMsg2(self, asys, middle):
         expected = ["middle got m2", "got m1"]
-        resp = asys.ask(middle, Message2(), 0.1)
+        resp = asys.ask(middle, Message2(), MAX_ASK_DELAY)
         while resp:
             assert resp in expected
             del expected[expected.index(resp)]
-            resp = asys.listen(0.1)
+            resp = asys.listen(MAX_ASK_DELAY)
         assert len(expected) == 0
 
     def testMiddleMsg3(self, asys, middle):
@@ -147,12 +151,12 @@ class TestFuncTypeDispatching(object):
 
     def testTopMsg2(self, asys, top):
         expected = ["top got m2"]
-        resp = asys.ask(top, Message2(), 0.1)
+        resp = asys.ask(top, Message2(), MAX_ASK_DELAY)
         print('resp',resp)
         while resp:
             assert resp in expected
             del expected[expected.index(resp)]
-            resp = asys.listen(0.1)
+            resp = asys.listen(MAX_ASK_DELAY)
             print('resp',resp)
         assert len(expected) == 0
 

@@ -19,7 +19,7 @@ class FakeSystemMessage(ActorSystemMessage):
     pass
 
 
-smallwait = datetime.timedelta(milliseconds=100)
+smallwait = datetime.timedelta(milliseconds=200)
 
 
 class TestFuncSystemMessages(object):

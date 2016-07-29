@@ -6,6 +6,9 @@ from thespian.actors import *
 from thespian.system.messages.status import *
 
 
+wait_for_registration = lambda: inTestDelay(timedelta(milliseconds=250))
+
+
 class PreRegistrationActor(ActorTypeDispatcher):
 
     def receiveMsg_tuple(self, msg, sender):
@@ -63,6 +66,7 @@ class TestFuncRegistration(object):
         rsp = asys.ask(regActor, ("Register", "127.0.0.1:%d"%(asys2.port_num),
                                   {'moo': True}),
                        timedelta(seconds=2))
+        wait_for_registration()
         showAdminStatus(asys)
         showAdminStatus(asys2)
         horse = asys.createActor(Horse)
@@ -100,6 +104,7 @@ class TestFuncRegistration(object):
                                   {'barn': 'oats'}),
                        timedelta(seconds=2))
         assert rsp == "OK"
+        wait_for_registration()
 
         horse = asys.createActor(Horse)
         assert asys.ask(horse, 'bor', 2) == 'Neigh: bor'
@@ -108,6 +113,7 @@ class TestFuncRegistration(object):
         rsp = asys.ask(regActor, ("Deregister", "127.0.0.1:%d"%asys2.port_num),
                        timedelta(seconds=2))
         assert rsp == "OK"
+        wait_for_registration()
         showAdminStatus(asys)
         showAdminStatus(asys2)
 
@@ -134,6 +140,7 @@ class TestFuncRegistration(object):
                                   {'barn': 'oats'}),
                        timedelta(seconds=2))
         assert rsp == "OK"
+        wait_for_registration()
 
         horse = asys.createActor(Horse)
         assert asys.ask(horse, 'bor', 2) == 'Neigh: bor'
