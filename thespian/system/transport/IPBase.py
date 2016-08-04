@@ -2,6 +2,7 @@
 
 
 import socket
+import logging
 from thespian.actors import ActorAddress
 
 
@@ -14,11 +15,31 @@ class ThisSystem(object):
         af       = socket.AF_INET
         socktype = socket.SOCK_DGRAM
         proto    = socket.IPPROTO_UDP
+        try:
+            hostname = socket.gethostname()
+        except Exception as ex:
+            logging.warning('Unable to determine hostname')
+            hostname = None
+        try:
+            fqdn = socket.getfqdn()
+        except Exception as ex:
+            logging.warning('Unable to determine fqdn')
+            fqdn = None
         self._myAddresses = [ rslt[4][0]
                               for usage in [0, socket.AI_PASSIVE]
-                              for useAddr in [None, socket.gethostname(), socket.getfqdn()]
+                              for useAddr in [None, hostname, fqdn]
                               for rslt in socket.getaddrinfo(useAddr, 0, af, socktype, proto, usage)
+                              if rslt
                           ]
+
+    def _probeAddrInfo(self, useage, useAddr, af, socktype, proto):
+        try:
+            return socket.getaddrinfo(useAddr, 0, af, socktype, proto, usage)
+        except Exception as ex:
+            logging.warning('Unable to get address info for address %s (%s, %s, %s, %s): %s %s',
+                            useAddr, af, socktype, proto, usage, type(ex), ex)
+            return None
+
 
 
     def cmpIP2Tuple(self, af, socktype, proto, t1, t2):
