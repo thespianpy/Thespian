@@ -11,6 +11,7 @@ Table of Contents
 
 3.x
 .. 3.0
+..... 3.0.3 <2016-08-11 Thu>
 ..... 3.0.2 <2016-07-29 Fri>
 ..... 3.0.1 <2016-07-26 Tue>
 ..... 3.0.0 <2016-07-04 Mon>
@@ -63,6 +64,17 @@ not change the API.
 3.0
 ───
 
+3.0.3 <2016-08-11 Thu>
+╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+
+  ‣ Hardened initialization for environments where the fqdn, hostname,
+    or dns lookup could cause gaierror exceptions.
+
+  ‣ Fixed error reporting for actor creation failure exception.
+
+  ‣ Internal code cleanup/enhancements and minor test updates.
+
+
 3.0.2 <2016-07-29 Fri>
 ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 
@@ -74,8 +86,8 @@ not change the API.
     the createActor to the Admin and remove the erroneous error log
     output.
 
-  ‣ Only hook __import__ for Python3.5 source loading; do not replicate
-    all builtins.
+  ‣ Only hook `__import__' for Python3.5 source loading; do not
+    replicate all builtins.
 
 
 3.0.1 <2016-07-26 Tue>
