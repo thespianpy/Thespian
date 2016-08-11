@@ -248,14 +248,21 @@ except NameError:
     foldl = functools.reduce
 
 
-def partition(testPred, inpList):
-    """Splits a list into two lists: the first list contains the elements
-       that pass the testPred (i.e. testPred(Element) is True), and the
-       second list contains elements that do not pass the testPred."""
-    appLeft  = lambda ll, e: (ll[0]+[e], ll[1])
-    appRight = lambda ll, e: (ll[0],     ll[1]+[e])
+def _append(iterable, value):
+    iterable.append(value)
+    return iterable
+
+def partition(testPred, inp_iterable, output_type=list):
+    """Splits an iterable (e.g. list) into a tuple of two lists (or other
+       output_type): the first output iterable contains the elements
+       that pass the testPred (i.e. testPred(Element) is True), and
+       the second output iterable contains elements that do not pass
+       the testPred.
+    """
+    appLeft  = lambda ll, e: (_append(ll[0], e), ll[1])
+    appRight = lambda ll, e: (ll[0], _append(ll[1], e))
     appendLeftOrRight = lambda ll, e: (appLeft if testPred(e) else appRight)(ll, e)
-    return foldl(appendLeftOrRight, inpList, ([],[]))
+    return foldl(appendLeftOrRight, inp_iterable, (output_type(), output_type()))
 
 
 
