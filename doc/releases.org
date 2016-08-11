@@ -7,7 +7,7 @@
 #+LATEX_HEADER: \product{Thespian}
 #+LATEX_HEADER: \component{Python Actor System}
 #+LATEX_HEADER: \doctype{Release Notes}
-#+LATEX_HEADER: \docrev{3.0.2}{2016 Jul 29}
+#+LATEX_HEADER: \docrev{3.0.3}{2016 Aug 11}
 #+LATEX_HEADER: \docid{TheDoc-06}
 #+OPTIONS: ^:nil num:nil
 
@@ -20,6 +20,16 @@ do not change the API.
 * 3.x
 
 ** 3.0
+
+*** 3.0.3 <2016-08-11 Thu>
+
+  * Hardened initialization for environments where the fqdn, hostname,
+    or dns lookup could cause gaierror exceptions.
+
+  * Fixed error reporting for actor creation failure exception.
+
+  * Internal code cleanup/enhancements and minor test updates.
+
 
 *** 3.0.2 <2016-07-29 Fri>
 
