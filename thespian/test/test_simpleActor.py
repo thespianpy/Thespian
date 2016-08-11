@@ -41,12 +41,14 @@ class TestFuncSimpleActorOperations(object):
 
     def testSimpleActorAsk(self, asys):
         clooney = asys.createActor(Clooney)
-        assert asys.ask(clooney, 'hello', 0.5) == 'Greetings.'
+        r = asys.ask(clooney, 'hello', 3.5)
+        assert r == 'Greetings.'
 
     def testSimpleActorAskTimeout(self, asys):
         clooney = asys.createActor(Clooney)
         t1 = datetime.datetime.now()
-        assert asys.ask(clooney, 'Silence!', 0.5) == None
+        r = asys.ask(clooney, 'Silence!', 3.5)
+        assert r == None
         t2 = datetime.datetime.now()
         # Could test that it waited the proper amount of time, but
         # that doesn't allow an ActorSystems that knows there will be
@@ -55,5 +57,5 @@ class TestFuncSimpleActorOperations(object):
 
     def testSendTupleToSelf(self, asys):
         hamlet = asys.createActor(Hamlet)
-        assert asys.ask(hamlet, 'Alas, poor Yorick!', 1) == \
-            'That is the question.'
+        r = asys.ask(hamlet, 'Alas, poor Yorick!', 3)
+        assert r == 'That is the question.'
