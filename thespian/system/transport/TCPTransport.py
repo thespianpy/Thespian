@@ -435,15 +435,13 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
         for _, each in canceli:
             each.socket.close()
             delattr(each, 'socket')
-            each.result = SendStatus.DeadTarget
-            each.completionCallback()
+            each.tx_done(SendStatus.DeadTarget)
 
         canceli, continuei = partition(lambda i: i.targetAddr == childAddr,
                                        self._waitingTransmits)
         self._waitingTransmits = continuei
         for each in canceli:
-            each.result = SendStatus.DeadTarget
-            each.completionCallback()
+            each.tx_done(SendStatus.DeadTarget)
 
         # No need to clean up self._incomingSockets entries: they will
         # timeout naturally.
@@ -596,8 +594,7 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
                         self._waitingTransmits = waiting
                         for R in runnable:
                             if status == SendStatus.DeadTarget:
-                                R.result = status
-                                R.completionCallback()
+                                R.tx_done(status)
                             elif self._nextTransmitStep(R):
                                 if hasattr(R, 'socket'):
                                     thesplog('<S> waiting intent is now re-processing: %s', R.identify())
@@ -607,8 +604,7 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
             else:
                 _safeSocketShutdown(intent.socket)
             delattr(intent, 'socket')
-        intent.result = status
-        intent.completionCallback()
+        intent.tx_done(status)
         return False  # intent no longer needs to be attempted
 
     def _nextTransmitStepCheck(self, intent, fileno, closed=False):

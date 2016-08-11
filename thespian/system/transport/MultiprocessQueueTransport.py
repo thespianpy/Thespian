@@ -368,5 +368,4 @@ class MultiprocessQueueTransport(asyncTransportBase, wakeupTransportBase):
                 topOrFromBelow = self._myQAddress if self._parentQ else None
                 (self._parentQ or self._adminQ).put((topOrFromBelow, transmitIntent.serMsg), True)
 
-        transmitIntent.result = SendStatus.Sent
-        transmitIntent.completionCallback()
+        transmitIntent.tx_done(SendStatus.Sent)

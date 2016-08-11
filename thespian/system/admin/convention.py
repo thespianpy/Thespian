@@ -105,8 +105,7 @@ class HysteresisDelaySender(object):
     def cancelSends(self, remoteAddr):
         cancels = self._keepIf(lambda M: M.targetAddr != remoteAddr)
         for each in cancels:
-            each.result = SendStatus.Failed
-            each.completionCallback()
+            each.tx_done(SendStatus.Failed)
     def _keepIf(self, keepFunc):
         requeues, removes = partition(keepFunc, self._hysteresis_queue)
         self._hysteresis_queue = requeues
@@ -115,15 +114,13 @@ class HysteresisDelaySender(object):
     def _dupSentGood(dups):
         def _finishDups(result, finishedIntent):
             for each in dups:
-                each.result = result
-                each.completionCallback()
+                each.tx_done(result)
         return _finishDups
     @staticmethod
     def _dupSentFail(dups):
         def _finishDups(result, finishedIntent):
             for each in dups:
-                each.result = result
-                each.completionCallback()
+                each.tx_done(result)
         return _finishDups
 
 

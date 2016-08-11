@@ -131,8 +131,7 @@ class asyncTransportBase(object):
                 # recursive error generation.
                 thesplog('Faking transmit result Sent for %s because target is dead',
                          transmitIntent, level = logging.WARNING)
-                transmitIntent.result = SendStatus.Sent
-                transmitIntent.completionCallback()
+                transmitIntent.tx_done(SendStatus.Sent)
                 return
 
             if not targetAddr:
@@ -154,16 +153,14 @@ class asyncTransportBase(object):
     def _schedulePreparedIntent(self, transmitIntent):
         # If there's nothing to send, that's implicit success
         if not transmitIntent.serMsg:
-            transmitIntent.result = SendStatus.Sent
-            transmitIntent.completionCallback()
+            transmitIntent.tx_done(SendStatus.Sent)
             return
 
         # OK, this can be sent now, so go ahead and get it sent out
         if not self._canSendNow(transmitIntent):
             if self._aTB_queuedPendingTransmits.qsize() >= DROP_TRANSMITS_LEVEL:
                 thesplog('Dropping TX: overloaded', level=logging.WARNING)
-                transmitIntent.result = SendStatus.Failed
-                transmitIntent.completionCallback()
+                transmitIntent.tx_done(SendStatus.Failed)
                 return
             self._aTB_queuedPendingTransmits.put(transmitIntent)
             if self._aTB_queuedPendingTransmits.qsize() >= MAX_QUEUED_TRANSMITS:
@@ -182,8 +179,7 @@ class asyncTransportBase(object):
                         thesplog('Exited tx-only mode because current request is timed out, qsize %s',
                                  self._aTB_queuedPendingTransmits.qsize(),
                                  level=logging.WARNING)
-                        transmitIntent.result = SendStatus.Failed
-                        transmitIntent.completionCallback()
+                        transmitIntent.tx_done(SendStatus.Failed)
                         return
                     self.run(TransmitOnly, transmitIntent.delay())
                 thesplog('Exited tx-only mode after draining excessive queue (%s)',

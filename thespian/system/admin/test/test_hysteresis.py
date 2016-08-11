@@ -9,8 +9,7 @@ class TestUnitHysteresis(object):
     def send(self, intent):
         if not hasattr(self, 'sends'): self.sends = []
         self.sends.append(intent)
-        intent.result = SendStatus.Sent
-        intent.completionCallback()
+        intent.tx_done(SendStatus.Sent)
 
     def successfulIntent(self, err, intent):
         if not hasattr(self, 'successes'): self.successes = []

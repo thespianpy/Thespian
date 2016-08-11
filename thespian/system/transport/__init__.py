@@ -191,6 +191,12 @@ class TransmitIntent(PauseWithBackoff):
     def addCallback(self, onSuccess=None, onFailure=None):
         self._callbackTo = ResultCallback(onSuccess, onFailure, self._callbackTo)
 
+
+    def tx_done(self, status):
+        self.result = status
+        self.completionCallback()
+
+
     def awaitingTXSlot(self):
         self._awaitingTXSlot = True
 

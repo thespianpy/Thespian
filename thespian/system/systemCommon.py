@@ -191,8 +191,7 @@ class systemCommonBase(object):
                         ReceiveEnvelope(self.myAddress,
                                         PoisonMessage(each.message)))
                 self._sCBStats.inc('Actor.Message Send.Poison Return on Child Abort')
-                each.result = SendStatus.Failed
-                each.completionCallback()
+                each.tx_done(SendStatus.Failed)
 
 
     def _send_intent_to_transport(self, intent):
@@ -218,8 +217,7 @@ class systemCommonBase(object):
             if not isinstance(intent.message, PoisonMessage):
                 self._receiveQueue.append(ReceiveEnvelope(intent.targetAddr, PoisonMessage(intent.message)))
             self._sCBStats.inc('Actor.Message Send.Transmit Poison Rejection')
-            intent.result = SendStatus.Failed
-            intent.completionCallback()
+            intent.tx_done(SendStatus.Failed)
 
 
     def _checkNextTransmit(self, result, completedIntent):

@@ -20,8 +20,7 @@ class FakeTransport(asyncTransportBase):
     def forTestingCompleteAPendingIntent(self, result):
         for I in self.intents:
             if I.result is None:
-                I.result = result
-                I.completionCallback()
+                I.tx_done(result)
                 return
 
 

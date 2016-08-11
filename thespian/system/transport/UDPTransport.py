@@ -191,8 +191,9 @@ class UDPTransport(asyncTransportBase, wakeupTransportBase):
             # and receiver provide lots of buffering.  At present, there
             # is no receipt confirmation (KWQ: but there should be)
             r = self.socket.sendto(transmitIntent.serMsg, transmitIntent.targetAddr.addressDetails.sockname)
-        transmitIntent.result = SendStatus.Sent if r else SendStatus.BadPacket
-        transmitIntent.completionCallback()
+        transmitIntent.tx_done(SendStatus.Sent
+                               if r else
+                               SendStatus.BadPacket)
 
 
     def _runWithExpiry(self, incomingHandler):
