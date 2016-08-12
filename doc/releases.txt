@@ -11,6 +11,7 @@ Table of Contents
 
 3.x
 .. 3.0
+..... 3.0.4 <2016-08-12 Fri>
 ..... 3.0.3 <2016-08-11 Thu>
 ..... 3.0.2 <2016-07-29 Fri>
 ..... 3.0.1 <2016-07-26 Tue>
@@ -63,6 +64,17 @@ not change the API.
 
 3.0
 ───
+
+3.0.4 <2016-08-12 Fri>
+╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+
+  ‣ Fix for initialization hardening in previous release.
+
+  ‣ Optimize `__import__' interceptor to avoid repeated lookup failures.
+
+  ‣ Extended actor creation startup allowance period to accomodate
+    remote fetch of large sources.
+
 
 3.0.3 <2016-08-11 Thu>
 ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
