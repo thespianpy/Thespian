@@ -24,7 +24,7 @@ from datetime import datetime, timedelta
 import os
 
 MAX_SYSTEM_SHUTDOWN_DELAY    = timedelta(seconds=10)
-MAX_CHILD_ACTOR_CREATE_DELAY = timedelta(seconds=5)
+MAX_CHILD_ACTOR_CREATE_DELAY = timedelta(seconds=50)
 MAX_CAPABILITY_UPDATE_DELAY  = timedelta(seconds=5)
 MAX_LOAD_SOURCE_DELAY        = timedelta(seconds=61)
 MAX_ADMIN_STATUS_REQ_DELAY   = timedelta(seconds=2)
