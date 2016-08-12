@@ -165,13 +165,15 @@ def hashimporter(hash):
     """Returns an importer that can be provided as __import__ to try the
        hash first."""
     imp = getattr(importlib, '__import__', __import__)
+    holes = {}  # key = name, value = ignored
     def _hashsupplier(*args, **kw):
         if not args[0].startswith(hash):
-            hashargs = tuple([hash + args[0]] + list(args)[1:])
-            try:
-                return imp(*hashargs, **kw)
-            except ImportError:
-                pass
+            hashname = hash + args[0]
+            if not hashname in holes:
+                try:
+                    return imp(hashname, *(args[1:]), **kw)
+                except ImportError:
+                    holes[hashname] = True
         return imp(*args, **kw)
     return _hashsupplier
 
