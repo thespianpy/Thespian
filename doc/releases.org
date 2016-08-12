@@ -7,7 +7,7 @@
 #+LATEX_HEADER: \product{Thespian}
 #+LATEX_HEADER: \component{Python Actor System}
 #+LATEX_HEADER: \doctype{Release Notes}
-#+LATEX_HEADER: \docrev{3.0.3}{2016 Aug 11}
+#+LATEX_HEADER: \docrev{3.0.4}{2016 Aug 12}
 #+LATEX_HEADER: \docid{TheDoc-06}
 #+OPTIONS: ^:nil num:nil
 
@@ -20,6 +20,15 @@ do not change the API.
 * 3.x
 
 ** 3.0
+
+*** 3.0.4 <2016-08-12 Fri>
+
+  * Fix for initialization hardening in previous release.
+
+  * Optimize ~__import__~ interceptor to avoid repeated lookup failures.
+
+  * Extended actor creation startup allowance period to accomodate
+    remote fetch of large sources.
 
 *** 3.0.3 <2016-08-11 Thu>
 
