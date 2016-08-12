@@ -28,17 +28,17 @@ class ThisSystem(object):
         self._myAddresses = [ rslt[4][0]
                               for usage in [0, socket.AI_PASSIVE]
                               for useAddr in [None, hostname, fqdn]
-                              for rslt in socket.getaddrinfo(useAddr, 0, af, socktype, proto, usage)
+                              for rslt in self._probeAddrInfo(usage, useAddr, af, socktype, proto)
                               if rslt
                           ]
 
-    def _probeAddrInfo(self, useage, useAddr, af, socktype, proto):
+    def _probeAddrInfo(self, usage, useAddr, af, socktype, proto):
         try:
             return socket.getaddrinfo(useAddr, 0, af, socktype, proto, usage)
         except Exception as ex:
             logging.warning('Unable to get address info for address %s (%s, %s, %s, %s): %s %s',
                             useAddr, af, socktype, proto, usage, type(ex), ex)
-            return None
+            return [None]
 
 
 
