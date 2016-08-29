@@ -79,10 +79,16 @@ class ActorManager(systemCommonBase):
         if self.actorInst is None: self._createInstance()
         if self.actorInst:
             try:
-                self.transport.run(self.handleMessages)
-                # Expects that on completion of self.transport.run
-                # that the Actor is done processing and that it has
-                # been shutdown gracefully.
+                while True:
+                    r = self.transport.run(self.handleMessages)
+                    if isinstance(r, Thespian__UpdateWork):
+                        self._send_intent(
+                            TransmitIntent(self.myAddress, r))  # tickle the transmit queues
+                        continue
+                    # Expects that on completion of self.transport.run
+                    # that the Actor is done processing and that it has
+                    # been shutdown gracefully.
+                    break
             except Exception as ex:
                 # This is usually an internal problem, since the
                 # request handling itself catches any exceptions from

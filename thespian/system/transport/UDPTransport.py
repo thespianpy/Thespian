@@ -175,16 +175,21 @@ class UDPTransport(asyncTransportBase, wakeupTransportBase):
     def serializer(self, intent):
         return serializer.dumps(intent.message)
 
+
+    def interrupt_wait(self):
+        # Under some python implementations, signal handling (which
+        # could generate an ActorShutdownRequest) can be performed
+        # without interrupting the underlying syscall, so this message
+        # is otherwise ignored but causes the select.select below to
+        # return.
+        r = self.socket.sendto(b'BuMP', self.myAddress.addressDetails.sockname)
+
+
     def _scheduleTransmitActual(self, transmitIntent):
         if transmitIntent.targetAddr == self.myAddress:
             self._rcvd.append(ReceiveEnvelope(transmitIntent.targetAddr,
                                               transmitIntent.message))
-            # Under some python implementations, signal handling
-            # (which could generate an ActorShutdownRequest) can be
-            # performed without interrupting the underlying syscall,
-            # so this message is otherwise ignored but causes the
-            # select.select below to return.
-            r = self.socket.sendto(b'BuMP', transmitIntent.targetAddr.addressDetails.sockname)
+            self.interrupt_wait()
             r = True
         else:
             # UDPTransport transmit is serially blocking, but both sender
@@ -226,7 +231,7 @@ class UDPTransport(asyncTransportBase, wakeupTransportBase):
                     continue
                 rawmsg, sender = self.socket.recvfrom(65535)
                 if rawmsg == b'BuMP':
-                    continue
+                    return Thespian__UpdateWork()
                 sendAddr = ActorAddress(UDPv4ActorAddress(*sender, external=True))
                 try:
                     msg = serializer.loads(rawmsg)

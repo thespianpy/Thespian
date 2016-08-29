@@ -508,20 +508,24 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
             del self._openSockets[each]
 
 
+    def interrupt_wait(self):
+        # Now generate a spurious connection to break out of the
+        # select.select loop.  This is especially useful if a signal
+        # handler caused a message to be sent to myself: get the
+        # select loop to wakeup and process the message.
+        with closing(socket.socket(*self.myAddress.addressDetails.socketArgs)) as ts:
+            try:
+                ts.connect(*self.myAddress.addressDetails.connectArgs)
+            except Exception:
+                pass
+
+
     def _scheduleTransmitActual(self, intent):
         if intent.targetAddr == self.myAddress:
             self._processReceivedEnvelope(ReceiveEnvelope(intent.targetAddr,
                                                           intent.message))
-            # Now generate a spurious connection to break out of the select.select loop
             if not isinstance(intent.message, ForwardMessage):
-                # This is especially useful if a signal handler caused
-                # a message to be sent to myself: get the select loop
-                # to wakeup and process the message.
-                with closing(socket.socket(*self.myAddress.addressDetails.socketArgs)) as ts:
-                    try:
-                        ts.connect(*self.myAddress.addressDetails.connectArgs)
-                    except Exception:
-                        pass
+                self.interrupt_wait()
             return self._finishIntent(intent)
         if isinstance(intent.targetAddr.addressDetails, RoutedTCPv4ActorAddress):
             if not isinstance(intent.message, ForwardMessage):
@@ -533,27 +537,37 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
                     routing.insert(0, self._adminAddr)
                 if routing:
                     if len(routing) != 1 or routing[0] != intent.targetAddr:
-                        intent.changeMessage(ForwardMessage(intent.message,
-                                                            intent.targetAddr,
-                                                            self.myAddress, routing))
-                        # Changing the target addr to the next relay target
-                        # for the transmit machinery, but the levels above may
-                        # process completion based on the original target
-                        # (e.g. systemCommon _checkNextTransmit), so add a
-                        # completion operation that will reset the target back
-                        # to the original (this occurs before other callbacks
-                        # because callbacks are called in reverse order of
-                        # addition).
+                        newmsg = ForwardMessage(intent.message,
+                                                intent.targetAddr,
+                                                self.myAddress, routing)
+                        newaddr = newmsg.fwdTargets[0]
+                        if hasattr(self, '_addressMgr'):
+                            newaddr, newmsg = self._addressMgr.prepMessageSend(
+                                newaddr, newmsg)
+                            try:
+                                isDead = newmsg == SendStatus.DeadTarget
+                            except Exception:
+                                isDead = False
+                            if isDead:
+                                # this is a DeadEnvelope or a
+                                # ChildActorExited; drop it instead of
+                                # recursing forever.
+                                intent.tx_done(SendStatus.Sent)
+                                return
+                        # Changing the target addr to the next relay
+                        # target for the transmit machinery, but the
+                        # levels above may process completion based on
+                        # the original target (e.g. systemCommon
+                        # _checkNextTransmit), so add a completion
+                        # operation that will reset the target back to
+                        # the original (this occurs before other
+                        # callbacks because callbacks are called in
+                        # reverse order of addition).
                         intent.addCallback(lambda r,i,ta=intent.targetAddr: i.changeTargetAddr(ta))
-                        intent.changeTargetAddr(intent.message.fwdTargets[0])
-                        # Send back through main entry point for
-                        # general consieration of this new target
-                        # address (e.g. dead-letter handling).
-                        # However, thresholding already allowed for
-                        # this transmit, so mark it so that it can
-                        # bypass regulatory gates.
-                        intent.can_send_now = True
-                        self.scheduleTransmit(getattr(self, '_addressMgr', None), intent)
+                        intent.changeMessage(newmsg)
+                        intent.changeTargetAddr(newaddr)
+                        intent.serMsg = self.serializer(intent)
+                        self._scheduleTransmitActual(intent)
                         return
 
         intent.stage = self._XMITStepSendConnect
@@ -1092,6 +1106,8 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
         except (OSError, socket.error) as ex:
             thesplog('Error accepting incoming: %s', ex)
             return
+        if rmtTxAddr == self.myAddress:
+            rEnv = self._incomingEnvelopes.append(Thespian__UpdateWork())
         lsock.setblocking(0)
         # Disable Nagle to transmit headers and acks asap
         lsock.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)

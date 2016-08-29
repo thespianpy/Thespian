@@ -201,6 +201,9 @@ class ActorAddressManager:
            SendStatus.DeadTarget (because this is *never* a valid
            message to actually send).
 
+           n.b. this method may or may not be called while holding a
+           lock.  It is a lookup-only operation, so the lock should
+           not be of any consequence.
         """
         tgtaddr = self.exportAddr(anAddress)
         if tgtaddr is None:

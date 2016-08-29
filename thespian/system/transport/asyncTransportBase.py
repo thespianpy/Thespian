@@ -3,16 +3,11 @@ are asynchronously created.  It handles issues related to
 ActorLocalAddress resolution."""
 
 
-from thespian.system.transport import TransmitOnly, SendStatus
-from thespian.system.utilis import thesplog
+from thespian.system.transport import TransmitOnly, SendStatus, Thespian__UpdateWork
+from thespian.system.utilis import thesplog, partition
 import logging
 from thespian.system.addressManager import ActorLocalAddress, CannotPickleAddress
-try:
-    # python 3 module name
-    from queue import Queue, Empty
-except ImportError:
-    # python 2 module name
-    from Queue import Queue, Empty
+from collections import deque
 import threading
 
 if hasattr(threading, 'main_thread'):
@@ -65,9 +60,11 @@ class asyncTransportBase(object):
 
     def __init__(self, *args, **kw):
         super(asyncTransportBase, self).__init__(*args, **kw)
-        self._aTB_numPendingTransmits = 0
-        self._aTB_queuedPendingTransmits = Queue()
-        self._aTB_submitting = []
+        self._aTB_numPendingTransmits = 0  # counts recursion and in-progress
+        self._aTB_processing = False       # limits to a single operation
+        self._aTB_lock = threading.Lock()  # protects the following:
+        self._aTB_queuedPendingTransmits = deque()
+
 
     def setAddressManager(self, addrManager):
         self._addressMgr = addrManager
@@ -75,24 +72,40 @@ class asyncTransportBase(object):
 
     def _updateStatusResponse(self, resp):
         "Called to update a Thespian_SystemStatus or Thespian_ActorStatus with common information"
-        for each in range(self._aTB_queuedPendingTransmits.qsize()):
-            #n.b. cannot safely walk queue to get info on each entry, so return placeholders
-            resp.addPendingMessage(self.myAddress, '<targetAddr>', '<message>')
+        with self._aTB_lock:
+            for each in self._aTB_queuedPendingTransmits:
+                resp.addPendingMessage(self.myAddress,
+                                       each.targetAddr,
+                                       each.message)
 
 
-    def _canSendNow(self, intent):
-        return getattr(intent, "can_send_now", False) or \
-            (MAX_PENDING_TRANSMITS > self._aTB_numPendingTransmits and
-             is_main_thread() and
-             self._aTB_queuedPendingTransmits.empty())
+    def _canSendNow(self):
+        return (MAX_PENDING_TRANSMITS > self._aTB_numPendingTransmits and
+                not self._aTB_processing)
 
-    def _runQueued(self, _TXresult, _TXIntent):
+
+    def _async_txdone(self, _TXresult, _TXIntent):
         self._aTB_numPendingTransmits -= 1
-        try:
-            nextTransmit = self._aTB_queuedPendingTransmits.get_nowait()
-        except (Empty, IndexError):
-            return  # no more pending
+
+        # If in the context of an initiated transmit, do not process
+        # timeouts or do more scheduling because that could recurse
+        # indefinitely.
+        if self._aTB_processing:
+            return  # do not recurse
+        self._runQueued()
+
+
+    def _runQueued(self):
+        v,e = self._complete_expired_intents()
+        while e:
+            v,e = self._complete_expired_intents()
+        # If something is queued, submit it to the lower level for transmission
+        if not v:
+            return False  # nothing queued up to be transmitted
+        with self._aTB_lock:
+            nextTransmit = self._aTB_queuedPendingTransmits.popleft()
         self._submitTransmit(nextTransmit)
+        return True
 
 
     def scheduleTransmit(self, addressManager, transmitIntent):
@@ -109,6 +122,10 @@ class asyncTransportBase(object):
            normally only used at Admin or Actor startup time when
            confirming the established connection back to the parent,
            at which time the target address should always be valid.
+
+           Any transmit attempts from a thread other than the main
+           thread are queued; calls to the underlying transmit layer
+           are done only from the context of the main thread.
         """
 
         if addressManager:
@@ -150,86 +167,118 @@ class asyncTransportBase(object):
         self._schedulePreparedIntent(transmitIntent)
 
 
+    def _qtx(self, transmitIntent):
+        with self._aTB_lock:
+            if len(self._aTB_queuedPendingTransmits) < DROP_TRANSMITS_LEVEL:
+                self._aTB_queuedPendingTransmits.append(transmitIntent)
+                return True
+        return False
+
+    def _queue_tx(self, transmitIntent):
+        if self._qtx(transmitIntent):
+            return True
+        thesplog('Dropping TX: overloaded', level=logging.WARNING)
+        transmitIntent.tx_done(SendStatus.Failed)
+        return False
+
+    def _complete_expired_intents(self):
+        with self._aTB_lock:
+            expiredTX, validTX = partition(lambda i: i.expired(),
+                                           self._aTB_queuedPendingTransmits,
+                                           deque)
+            self._aTB_queuedPendingTransmits = validTX
+            rlen = len(validTX)
+        for each in expiredTX:
+            thesplog('TX intent %s timed out', each, level=logging.WARNING)
+            each.tx_done(SendStatus.Failed)
+        return rlen, bool(expiredTX)
+
+    def _check_tx_queue_length(self):
+        while self._complete_expired_intents(): pass
+        with self._aTB_lock:
+            validTX, expiredTX = partition(lambda i: i.expired(),
+                                           self._aTB_queuedPendingTransmits)
+
+
+    def _drain_tx_queue_if_needed(self, max_delay=None):
+        v, _ = self._complete_expired_intents()
+        if v >= MAX_QUEUED_TRANSMITS:
+            # Try to drain our local work before accepting more
+            # because it looks like we're getting really behind.  This
+            # is dangerous though, because if other Actors are having
+            # the same issue this can create a deadlock.
+            thesplog('Entering tx-only mode to drain excessive queue'
+                     ' (%s > %s, drain-to %s)',
+                     v, MAX_QUEUED_TRANSMITS,
+                     QUEUE_TRANSMIT_UNBLOCK_THRESHOLD,
+                     level = logging.WARNING)
+            finish_time = datetime.now() + max_delay if max_delay else None
+            while v > QUEUE_TRANSMIT_UNBLOCK_THRESHOLD and \
+                  finish_time > datetime.now():
+                self.run(TransmitOnly, finish_time - datetime.now())
+                v, _ = self._complete_expired_intents()
+            thesplog('Exited tx-only mode after draining excessive queue (%s)',
+                     len(self._aTB_queuedPendingTransmits),
+                     level = logging.WARNING)
+
+
     def _schedulePreparedIntent(self, transmitIntent):
         # If there's nothing to send, that's implicit success
         if not transmitIntent.serMsg:
             transmitIntent.tx_done(SendStatus.Sent)
             return
 
-        # OK, this can be sent now, so go ahead and get it sent out
-        if not self._canSendNow(transmitIntent):
-            if self._aTB_queuedPendingTransmits.qsize() >= DROP_TRANSMITS_LEVEL:
-                thesplog('Dropping TX: overloaded', level=logging.WARNING)
-                transmitIntent.tx_done(SendStatus.Failed)
+        if not isinstance(transmitIntent.message, Thespian__UpdateWork):
+            queued = self._queue_tx(transmitIntent)
+            if not queued:
                 return
-            self._aTB_queuedPendingTransmits.put(transmitIntent)
-            if self._aTB_queuedPendingTransmits.qsize() >= MAX_QUEUED_TRANSMITS:
-                # Try to drain out local work before accepting more
-                # because it looks like we're getting really behind.
-                # This is dangerous though, because if other Actors
-                # are having the same issue this can create a
-                # deadlock.
-                thesplog('Entering tx-only mode to drain excessive queue (%s > %s, drain-to %s)',
-                         self._aTB_queuedPendingTransmits.qsize(),
-                         MAX_QUEUED_TRANSMITS,
-                         QUEUE_TRANSMIT_UNBLOCK_THRESHOLD,
-                         level = logging.WARNING)
-                while self._aTB_queuedPendingTransmits.qsize() > QUEUE_TRANSMIT_UNBLOCK_THRESHOLD:
-                    if transmitIntent.expired():
-                        thesplog('Exited tx-only mode because current request is timed out, qsize %s',
-                                 self._aTB_queuedPendingTransmits.qsize(),
-                                 level=logging.WARNING)
-                        transmitIntent.tx_done(SendStatus.Failed)
-                        return
-                    self.run(TransmitOnly, transmitIntent.delay())
-                thesplog('Exited tx-only mode after draining excessive queue (%s)',
-                         self._aTB_queuedPendingTransmits.qsize(),
-                         level = logging.WARNING)
+
+        if not is_main_thread():
+            if queued:
+                # Wakeup main thread: there is something to do
+                self.interrupt_wait()
             return
 
-        self._submitTransmit(transmitIntent)
+        # OK, this can be sent now, so go ahead and get it sent out
+        if not self._canSendNow():
+            if not self._aTB_processing:  # recursion protection
+                self._aTB_processing = True
+                self._drain_tx_queue_if_needed(transmitIntent.delay())
+                self._aTB_processing = False
+            return
+
+        self._aTB_processing = True
+
+        try:
+            # Queue transmits until there is one still pending; at that
+            # point exit because the completion of that transmit will
+            # resume consuming the queue.
+            while True:
+                if not self._runQueued() or self._aTB_numPendingTransmits:
+                    break
+        finally:
+            self._aTB_processing = False
 
 
     def _submitTransmit(self, transmitIntent):
         self._aTB_numPendingTransmits += 1
-        transmitIntent.addCallback(self._runQueued, self._runQueued)
+        transmitIntent.addCallback(self._async_txdone, self._async_txdone)
 
-        if self._aTB_submitting:
-            self._aTB_submitting.insert(0, transmitIntent)  # recursion protection
-            return
-
-        self._aTB_submitting = [transmitIntent]
-
-        while self._aTB_submitting:
-            tx = self._aTB_submitting[-1]
-            try:
-                thesplog('actualTransmit of %s', tx.identify(), level=logging.DEBUG)
-                self._scheduleTransmitActual(tx)
-            finally:
-                self._aTB_submitting.pop()
+        thesplog('actualTransmit of %s', transmitIntent.identify(), level=logging.DEBUG)
+        self._scheduleTransmitActual(transmitIntent)
 
 
     def deadAddress(self, addressManager, childAddr):
-        # Go through pending transmits and update any to this child to a dead letter delivery
-        oldQ = self._aTB_queuedPendingTransmits
-        # n.b. This rebuilds the Queue; the entries from the original
-        # queue are preserved in the same order, but it is possible
-        # that concurrent transmit attempts from other threads will be
-        # interspersed in the new Queue.
-        self._aTB_queuedPendingTransmits = Queue()
-        while True:
-            try:
-                each = oldQ.get_nowait()
-            except Empty:
-                break
-            if each.targetAddr == childAddr:
-                newtgt, newmsg = addressManager.prepMessageSend(each.targetAddr, each.message)
-                each.changeTargetAddr(newtgt)
-                # n.b. prepMessageSend might return
-                # SendStatus.DeadTarget for newmsg; when this is later
-                # attempted, that will be handled normally and the
-                # transmit will be completed as "Sent"
-                each.changeMessage(newmsg)
-            self._aTB_queuedPendingTransmits.put(each)
-
-
+        # Go through pending transmits and update any to this child to
+        # a dead letter delivery
+        with self._aTB_lock:
+            for each in self._aTB_queuedPendingTransmits:
+                if each.targetAddr == childAddr:
+                    newtgt, newmsg = addressManager.prepMessageSend(
+                        each.targetAddr, each.message)
+                    each.changeTargetAddr(newtgt)
+                    # n.b. prepMessageSend might return
+                    # SendStatus.DeadTarget for newmsg; when this is later
+                    # attempted, that will be handled normally and the
+                    # transmit will be completed as "Sent"
+                    each.changeMessage(newmsg)

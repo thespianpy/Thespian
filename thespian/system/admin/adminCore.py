@@ -39,7 +39,16 @@ class AdminCore(systemCommonBase):
 
     def run(self):
         try:
-            self.transport.run(self.handleIncoming, None)
+            while True:
+                r = self.transport.run(self.handleIncoming, None)
+                if isinstance(r, Thespian__UpdateWork):
+                    self._send_intent(
+                        TransmitIntent(self.myAddress, r))  # tickle the transmit queues
+                    continue
+                # Expects that on completion of self.transport.run
+                # that the Actor is done processing and that it has
+                # been shutdown gracefully.
+                break
         except Exception as ex:
             import traceback
             thesplog('ActorAdmin uncaught exception: %s', traceback.format_exc(),

@@ -255,6 +255,8 @@ class MultiprocessQueueTransport(asyncTransportBase, wakeupTransportBase):
             except Q.Empty:
                 # Probably a timeout, but let the while loop decide for sure
                 continue
+            if rcvd == 'BuMP':
+                return Thespian__UpdateWork()
             relayAddr, (sendAddr, destAddr, msg) = rcvd
             if not self._queues.find(sendAddr):
                 # We don't directly know about this sender, so
@@ -363,9 +365,15 @@ class MultiprocessQueueTransport(asyncTransportBase, wakeupTransportBase):
         discard = pickle.dumps(wrappedMsg)
         return wrappedMsg
 
+
+    def interrupt_wait(self):
+        self._myInputQ.put_nowait('BuMP')
+
+
     def _scheduleTransmitActual(self, transmitIntent):
         if transmitIntent.targetAddr == self.myAddress:
-            self._myInputQ.put( (self._myQAddress, transmitIntent.serMsg), True)
+            if transmitIntent.message:
+                self._myInputQ.put( (self._myQAddress, transmitIntent.serMsg), True)
         else:
             tgtQ = self._queues.find(transmitIntent.targetAddr)
             if tgtQ:

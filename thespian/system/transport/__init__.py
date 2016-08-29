@@ -14,6 +14,17 @@ MIN_BACKOFF_DELAY = timedelta(milliseconds=20)
 BACKOFF_FACTOR = 1.7
 
 
+class Thespian__UpdateWork(object):
+    """Returned from the transmit run() method to cause the transmit send
+       to be called with this same object.  This object is not
+       actually transmitted, but this send causes the transmit queues
+       to be checked in the context of the main thread) that has a
+       chance of seeing alternative work (like a signal-driven exit
+       request).
+    """
+    pass
+
+
 class TransportInit__Base(object): pass
 class ExternalInterfaceTransportInit(TransportInit__Base):
     """Used as first argument to Transport __init__ to indicate that this
