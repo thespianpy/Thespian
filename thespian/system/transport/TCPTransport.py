@@ -88,7 +88,7 @@ from thespian.system.transport import *
 from thespian.system.transport.IPBase import TCPv4ActorAddress
 from thespian.system.transport.streamBuffer import (toSendBuffer, ReceiveBuffer,
                                                     ackMsg, ackPacket,
-                                                    ackDataErrMsg, ackDataErrPacket,
+                                                    ackDataErrMsg,
                                                     isControlMessage)
 from thespian.system.transport.asyncTransportBase import asyncTransportBase
 from thespian.system.transport.wakeupTransportBase import wakeupTransportBase
@@ -993,7 +993,7 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
                                     rerr.append(each)
                             for each in wsend:
                                 try:
-                                    _ = select.select([each], [], [], 0)
+                                    select.select([each], [], [], 0)
                                 except:
                                     thesplog('wsend %s is bad', each)
                                     rerr.append(each)
@@ -1109,7 +1109,7 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
             thesplog('Error accepting incoming: %s', ex)
             return
         if rmtTxAddr == self.myAddress:
-            rEnv = self._incomingEnvelopes.append(Thespian__UpdateWork())
+            self._incomingEnvelopes.append(Thespian__UpdateWork())
         lsock.setblocking(0)
         # Disable Nagle to transmit headers and acks asap
         lsock.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
