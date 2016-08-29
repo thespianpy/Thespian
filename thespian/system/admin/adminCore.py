@@ -165,7 +165,8 @@ class AdminCore(systemCommonBase):
         for each in self.childAddresses:
             self._send_intent(
                 TransmitIntent(each, ActorExitRequest(recursive=True),
-                               onError=lambda r,m: self._handleChildExited(each)))
+                               onError=lambda r,m,a=each:
+                               self._handleChildExited(a)))
 
 
     def _sayGoodbye(self):
