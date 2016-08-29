@@ -185,14 +185,16 @@ class TestFuncActorFailures(object):
         askParent = lambda m,d=max_response_delay: asys.ask(parent, m, d)
         askKid    = lambda m: askParent(TellDaughter(m))
 
-        assert askParent('name?') == parent
+        r = askParent('name?')
+        assert r == parent
         son = askParent('have a son?')
         assert son is not None
         askParent('wait for replacement')
-        r = askParent(TellSon('name?'), max_no_response_delay)
+        r = askParent(TellSon('name?'), max_no_response_delay*5)
         assert r is None
 
-        assert askParent('name?') == parent
+        r = askParent('name?')
+        assert r == parent
         tellParent(ActorExitRequest())
         r = askParent('name?', max_no_response_delay)
         assert r is None
