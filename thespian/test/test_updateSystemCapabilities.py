@@ -14,7 +14,7 @@ from datetime import timedelta
 from thespian.system.utilis import timePeriodSeconds
 
 
-MAX_ASK_WAIT_PERIOD = timedelta(seconds=3)
+MAX_ASK_WAIT_PERIOD = timedelta(seconds=7)
 UPDATE_WAIT_PERIOD = timedelta(seconds=1)
 
 update_wait = lambda: time.sleep(timePeriodSeconds(UPDATE_WAIT_PERIOD))
