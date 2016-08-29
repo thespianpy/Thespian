@@ -1,6 +1,11 @@
 import time
+from datetime import timedelta
 from thespian.test import *
 from thespian.actors import *
+
+
+ask_wait = timedelta(seconds=8)
+count_update_wait = lambda: inTestDelay(timedelta(milliseconds=100))
 
 
 class PoisonCounter(Actor):
@@ -62,17 +67,19 @@ class TestFuncPoisonMessage(object):
 
     def waitForCount(self, asys, counter, newCount):
         for X in range(50):
-            cnt = asys.ask(counter, "Count?", 1)
+            cnt = asys.ask(counter, "Count?", ask_wait)
             if newCount == cnt:
                 break
-            time.sleep(0.01)
-        assert asys.ask(counter, "Count?", 1) == newCount
+            count_update_wait()
+        r = asys.ask(counter, "Count?", ask_wait)
+        assert r == newCount
 
     def testBadNews(self, asys):
         counter = asys.createActor(PoisonCounter)
         t1 = asys.createActor(TestActor)
         asys.tell(t1, counter)
-        assert asys.ask(counter, "Count?", 1) == 0
+        r = asys.ask(counter, "Count?", ask_wait)
+        assert r == 0
         asys.tell(t1, 1)
         self.waitForCount(asys, counter, 1)
         asys.tell(t1, ActorExitRequest())
@@ -82,7 +89,8 @@ class TestFuncPoisonMessage(object):
         counter = asys.createActor(PoisonCounter)
         t1 = asys.createActor(TestActor)
         asys.tell(t1, counter)
-        assert asys.ask(counter, "Count?", 1) == 0
+        r = asys.ask(counter, "Count?", ask_wait)
+        assert r == 0
         asys.tell(t1, 2)
         self.waitForCount(asys, counter, 1)
         asys.tell(t1, 2)
@@ -94,7 +102,8 @@ class TestFuncPoisonMessage(object):
         counter = asys.createActor(PoisonCounter)
         t1 = asys.createActor(TestActor)
         asys.tell(t1, counter)
-        assert asys.ask(counter, "Count?", 1) == 0
+        r = asys.ask(counter, "Count?", ask_wait)
+        assert r == 0
         asys.tell(t1, 1)
         self.waitForCount(asys, counter, 1)
         asys.tell(t1, 1)
@@ -105,8 +114,10 @@ class TestFuncPoisonMessage(object):
         counter = asys.createActor(PoisonCounter)
         t1 = asys.createActor(TestActor)
         asys.tell(t1, counter)
-        assert asys.ask(counter, "Count?", 1) == 0
-        assert asys.ask(t1, "Hello", 1) == 'hi'
+        r = asys.ask(counter, "Count?", ask_wait)
+        assert r == 0
+        r = asys.ask(t1, "Hello", ask_wait)
+        assert r == 'hi'
         # Send a message that will cause the TestActor to throw an
         # exception.  The system will restart the TestActor and
         # re-attempt delivery, but on multiple failures it will send
@@ -120,8 +131,10 @@ class TestFuncPoisonMessage(object):
             assert isinstance(r, PoisonMessage)
             assert r.poisonMessage == 3
 
-        assert asys.ask(counter, "Count?", 1) == 0
-        assert asys.ask(t1, "Hello", 1) == 'hi'
+        r = asys.ask(counter, "Count?", ask_wait)
+        assert r == 0
+        r = asys.ask(t1, "Hello", ask_wait)
+        assert r == 'hi'
         asys.tell(t1, 3)
         asys.tell(t1, 3)
         time.sleep(0.01)
@@ -135,37 +148,45 @@ class TestFuncPoisonMessage(object):
             assert isinstance(r, PoisonMessage)
             assert r.poisonMessage == 3
 
-        assert asys.ask(counter, "Count?", 1) == 0
-        assert asys.ask(t1, "Hello", 1) == 'hi'
+        r = asys.ask(counter, "Count?", ask_wait)
+        assert r == 0
+        r =  asys.ask(t1, "Hello", ask_wait)
+        assert r == 'hi'
 
 
     def testLevel3ask(self, asys):
         counter = asys.createActor(PoisonCounter)
         t1 = asys.createActor(TestActor)
         asys.tell(t1, counter)
-        assert asys.ask(counter, "Count?", 1) == 0
-        assert asys.ask(t1, "Hello", 1) == 'hi'
+        r = asys.ask(counter, "Count?", ask_wait)
+        assert r == 0
+        r = asys.ask(t1, "Hello", ask_wait)
+        assert r == 'hi'
         # Send a message that will cause the TestActor to throw an
         # exception.  The system will restart the TestActor and
         # re-attempt delivery, but on multiple failures it will send
         # back the request to the originator in a PoisonMessage
         # wrapper.
-        rsp = asys.ask(t1, 3, 1)
+        rsp = asys.ask(t1, 3, ask_wait)
         assert isinstance(rsp, PoisonMessage)
         assert rsp.poisonMessage == 3
 
-        assert asys.ask(counter, "Count?", 1) == 0
-        assert asys.ask(t1, "Hello", 1) == 'hi'
-        asys.ask(t1, 3, 1)
-        rsp = asys.ask(t1, 3, 1)
+        r = asys.ask(counter, "Count?", ask_wait)
+        assert r == 0
+        r = asys.ask(t1, "Hello", ask_wait)
+        assert r == 'hi'
+        asys.ask(t1, 3, ask_wait)
+        rsp = asys.ask(t1, 3, ask_wait)
         assert isinstance(rsp, PoisonMessage)
         assert rsp.poisonMessage == 3
-        assert asys.ask(counter, "Count?", 1) == 0
+        r = asys.ask(counter, "Count?", ask_wait)
+        assert r == 0
 
 
     def testUseBadAddressInActorGetsReturnedAsPoison(self, asys):
         dummy = asys.createActor(Dummy)
-        resp = asys.ask(dummy, 'Aside', 0.5)
+        resp = asys.ask(dummy, 'Aside', ask_wait)
         assert isinstance(resp, PoisonMessage)
         assert resp.poisonMessage == 'Aside'
-        assert asys.ask(dummy, 'hello', 0.5) == 'Greetings.'
+        r = asys.ask(dummy, 'hello', ask_wait)
+        assert r == 'Greetings.'
