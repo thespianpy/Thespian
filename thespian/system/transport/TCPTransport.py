@@ -114,6 +114,7 @@ def err_recv_connreset(errex): return (errex.errno in [errno.ECONNRESET,
                                                        errno.EPIPE] or
                                        (hasattr(errex, 'winerror') and
                                         errex.winerror == 10053)) # 10053 == WSAECONNABORTED
+def err_send_connreset(errex): return err_recv_connreset(errex)
 def err_select_retry(err): return err in [errno.EINVAL, errno.EINTR]
 def err_bad_fileno(err): return err == errno.EBADF
 try:
@@ -1210,7 +1211,14 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
                 pass  # socket will be closed anyhow; AckErr was a courtesy
             inc.close()
             return None
-        inc.socket.send(ackMsg)
+        try:
+            inc.socket.send(ackMsg)
+        except socket.error as err:
+            if err_send_connreset(err):
+                thesplog('Remote %s closed socket before ACK could be sent',
+                         inc.socket, level=logging.WARNING)
+            else:
+                raise
         inc.fromAddress = rdata[0]
         self._processReceivedEnvelope(rEnv)
         if extra and isinstance(inc, TCPIncomingPersistent):
