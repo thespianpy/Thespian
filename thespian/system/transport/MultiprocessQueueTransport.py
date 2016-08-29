@@ -49,8 +49,8 @@ testActorAdder.py:test07_LotsOfActorsEveryTenWithBackground (deadlocks
 
 import logging
 from thespian.actors import *
-from thespian.system.utilis import (ExpiryTime, thesplog, partition, foldl, fmap,
-                                    AssocList)
+from thespian.system.utilis import (ExpiryTime, thesplog, partition, foldl,
+                                    timePeriodSeconds, AssocList)
 from thespian.system.transport import *
 from thespian.system.transport.asyncTransportBase import asyncTransportBase
 from thespian.system.transport.wakeupTransportBase import wakeupTransportBase
@@ -66,6 +66,7 @@ import pickle
 
 MAX_ADMIN_QUEUESIZE=40  # depth of Admin queue
 MAX_ACTOR_QUEUESIZE=10  # depth of Actor queue
+MAX_QUEUE_TRANSMIT_PERIOD = timedelta(seconds=20)  # always local, so shorter times are appropriate
 
 
 class QueueActorAddress(object):  # internal use by this module only
@@ -287,62 +288,87 @@ class MultiprocessQueueTransport(asyncTransportBase, wakeupTransportBase):
             else:
                 # Note: the following code has implicit knowledge of serialize() and xmit
                 putQValue = lambda relayer: (relayer, (sendAddr, destAddr, msg))
+                deadQValue = lambda relayer: (relayer, (sendAddr,
+                                                        self._adminAddr,
+                                                        DeadEnvelope(destAddr, msg)))
                 # Must forward this packet via a known forwarder or our parent.
                 tgtQ = self._queues.find(destAddr)
                 if tgtQ:
-                    tgtQ.put(putQValue(self.myAddress), True)
-                else:
+                    sendArgs = putQValue(self.myAddress), True
+                if not tgtQ:
                     tgtA = self._fwdvia.find(destAddr)
                     if tgtA:
-                        self._queues.find(tgtA).put(putQValue(None))
+                        tgtQ = self._queues.find(tgtA)
+                        sendArgs = putQValue(None),
+                if tgtQ:
+                    try:
+                        tgtQ.put(*sendArgs,
+                                 timeout=timePeriodSeconds(MAX_QUEUE_TRANSMIT_PERIOD))
+                    except Q.Full:
+                        thesplog('Unable to send msg %s to dest %s; dead lettering',
+                                 msg, destAddr)
+                        try:
+                            (self._parentQ or self._adminQ).put(
+                                deadQValue(self.myAddress if self._parentQ else None),
+                                True,
+                                timePeriodSeconds(MAX_QUEUE_TRANSMIT_PERIOD))
+                        except Q.Full:
+                            thesplog('Unable to send deadmsg %s to %s or admin; discarding',
+                                     msg, destAddr)
+                else:
+                    # Not sure how to route this message yet.  It
+                    # could be a heretofore silent child of one of our
+                    # children, it could be our parent (whose address
+                    # we don't know), or it could be elsewhere in the
+                    # tree.
+                    #
+                    # Try sending it to the parent first.  If the
+                    # parent can't determine the routing, it will be
+                    # sent back down (relayAddr will be None in that
+                    # case) and it must be sprayed out to all children
+                    # in case the target lives somewhere beneath us.
+                    # Note that _parentQ will be None for top-level
+                    # actors, which send up to the Admin instead.
+                    #
+                    # As a special case, the external system is the
+                    # parent of the admin, but the admin is the
+                    # penultimate parent of all others, so this code
+                    # must keep the admin and the parent from playing
+                    # ping-pong with the message.  But... the message
+                    # might be directed to the external system, which
+                    # is the parent of the Admin, so we need to check
+                    # with it first.
+                    #   parentQ == None but adminQ good --> external
+                    #   parentQ and adminQ and myAddress == adminAddr --> Admin
+                    #   parentQ and adminQ and myAddress != adminADdr --> other Actor
+
+                    if relayAddr:
+                        # Send message up to the parent to see if the
+                        # parent knows how to forward it
+                        try:
+                            (self._parentQ or self._adminQ).put(
+                                putQValue(self.myAddress if self._parentQ else None),
+                                True,
+                                timePeriodSeconds(MAX_QUEUE_TRANSMIT_PERIOD))
+                        except Q.Full:
+                            thesplog('Unable to send dead msg %s to %s or admin; discarding',
+                                     msg, destAddr)
                     else:
-                        # Not sure how to route this message yet.  It
-                        # could be a heretofore silent child of one of our
-                        # children, it could be our parent (whose address
-                        # we don't know), or it could be elsewhere in the
-                        # tree.
-                        #
-                        # Try sending it to the parent first.  If the
-                        # parent can't determine the routing, it will be
-                        # sent back down (relayAddr will be None in that
-                        # case) and it must be sprayed out to all children
-                        # in case the target lives somewhere beneath us.
-                        # Note that _parentQ will be None for top-level
-                        # actors, which send up to the Admin instead.
-                        #
-                        # As a special case, the external system is the
-                        # parent of the admin, but the admin is the
-                        # penultimate parent of all others, so this code
-                        # must keep the admin and the parent from playing
-                        # ping-pong with the message.  But... the message
-                        # might be directed to the external system, which
-                        # is the parent of the Admin, so we need to check
-                        # with it first.
-                        #   parentQ == None but adminQ good --> external
-                        #   parentQ and adminQ and myAddress == adminAddr --> Admin
-                        #   parentQ and adminQ and myAddress != adminADdr --> other Actor
-
-                        if relayAddr:
-                            # Send message up to the parent to see if the
-                            # parent knows how to forward it
-                            (self._parentQ or self._adminQ).put(putQValue(self.myAddress if self._parentQ else None), True)
-                        else:
-                            # Sent by parent or we are an external, so this
-                            # may be some grandchild not currently known.
-                            # Do the worst case and just send this message
-                            # to ALL immediate children, hoping it will
-                            # get there via some path.
-                            for A,AQ in self._queues.items():
-                                if A not in [self._adminAddr, str(self._adminAddr)]:
-                                    # None means sent by Parent, so don't
-                                    # send BACK to parent if unknown
-                                    AQ.put(putQValue(None), True)
-
-                            # fmap(lambda A,Q: A not in [self._adminAddr, str(self._adminAddr)]
-                            #                  # None means sent by Parent, so don't
-                            #                  # send BACK to parent if unknown
-                            #                  and Q.put(putQValue(None), True),
-                            #      self._queues)
+                        # Sent by parent or we are an external, so this
+                        # may be some grandchild not currently known.
+                        # Do the worst case and just send this message
+                        # to ALL immediate children, hoping it will
+                        # get there via some path.
+                        for A,AQ in self._queues.items():
+                            if A not in [self._adminAddr, str(self._adminAddr)]:
+                                # None means sent by Parent, so don't
+                                # send BACK to parent if unknown
+                                try:
+                                    AQ.put(putQValue(None),
+                                           True,
+                                           timePeriodSeconds(MAX_QUEUE_TRANSMIT_PERIOD))
+                                except Q.Full:
+                                    pass
         return None
 
 
@@ -371,16 +397,29 @@ class MultiprocessQueueTransport(asyncTransportBase, wakeupTransportBase):
 
 
     def _scheduleTransmitActual(self, transmitIntent):
-        if transmitIntent.targetAddr == self.myAddress:
-            if transmitIntent.message:
-                self._myInputQ.put( (self._myQAddress, transmitIntent.serMsg), True)
-        else:
-            tgtQ = self._queues.find(transmitIntent.targetAddr)
-            if tgtQ:
-                tgtQ.put((self._myQAddress, transmitIntent.serMsg), True)
+        try:
+            if transmitIntent.targetAddr == self.myAddress:
+                if transmitIntent.message:
+                    self._myInputQ.put( (self._myQAddress, transmitIntent.serMsg), True,
+                                        timePeriodSeconds(transmitIntent.delay()))
             else:
-                # None means sent by parent, so don't send BACK to parent if unknown
-                topOrFromBelow = self._myQAddress if self._parentQ else None
-                (self._parentQ or self._adminQ).put((topOrFromBelow, transmitIntent.serMsg), True)
+                tgtQ = self._queues.find(transmitIntent.targetAddr)
+                if tgtQ:
+                    tgtQ.put((self._myQAddress, transmitIntent.serMsg), True,
+                             timePeriodSeconds(transmitIntent.delay()))
+                else:
+                    # None means sent by parent, so don't send BACK to parent if unknown
+                    topOrFromBelow = self._myQAddress if self._parentQ else None
+                    (self._parentQ or self._adminQ).put(
+                        (topOrFromBelow, transmitIntent.serMsg),
+                        True,
+                        timePeriodSeconds(transmitIntent.delay()))
 
-        transmitIntent.tx_done(SendStatus.Sent)
+            transmitIntent.tx_done(SendStatus.Sent)
+            return
+        except Q.Full:
+            pass
+        transmitIntent.tx_done(SendStatus.DeadTarget if not isinstance(
+            transmitIntent._message,
+            (ChildActorExited, ActorExitRequest)) else SendStatus.Failed)
+        thesplog('Q.Full %s to %s result %s', transmitIntent._message, transmitIntent.targetAddr, transmitIntent.result)
