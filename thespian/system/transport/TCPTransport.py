@@ -141,6 +141,7 @@ LISTEN_DEPTH=100  # max # of listens to sign up for at a time
 MAX_INCOMING_SOCKET_PERIOD=timedelta(minutes=7)  # max time to hold open an incoming socket
 MAX_CONSECUTIVE_READ_FAILURES = 20
 MAX_IDLE_SOCKET_PERIOD=timedelta(minutes=20) # close idle sockets after this amount of time
+CONNECT_TIMEOUT=timedelta(milliseconds=150)
 REUSE_SOCKETS = True  # if true, keep sockets open for multiple messages
 
 
@@ -693,9 +694,10 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
         # Disable Nagle to transmit headers and acks asap; our sends are usually small
         intent.socket.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
 
-        #intent.socket.settimeout(timePeriodSeconds(intent.delay()))
+        intent.socket.settimeout(timePeriodSeconds(CONNECT_TIMEOUT))
         try:
             intent.socket.connect(*intent.targetAddr.addressDetails.connectArgs)
+            intent.socket.setblocking(0)
         except socket.error as err:
             # EINPROGRESS means non-blocking socket connect is in progress...
             if not err_inprogress(err.errno):
