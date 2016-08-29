@@ -5,7 +5,8 @@ from datetime import timedelta, datetime
 
 
 max_replacement_delay = timedelta(seconds=0.50)
-max_response_delay = timedelta(seconds=0.75)
+max_response_delay = timedelta(seconds=5.75)
+max_no_response_delay = timedelta(seconds=0.75)
 
 
 class TellChild(object):
@@ -181,18 +182,20 @@ class TestFuncActorFailures(object):
 
         tellParent = lambda m: asys.tell(parent, m)
 
-        askParent = lambda m: asys.ask(parent, m, max_response_delay)
+        askParent = lambda m,d=max_response_delay: asys.ask(parent, m, d)
         askKid    = lambda m: askParent(TellDaughter(m))
 
         assert askParent('name?') == parent
         son = askParent('have a son?')
         assert son is not None
         askParent('wait for replacement')
-        assert askParent(TellSon('name?')) is None
+        r = askParent(TellSon('name?'), max_no_response_delay)
+        assert r is None
 
         assert askParent('name?') == parent
         tellParent(ActorExitRequest())
-        assert askParent('name?') is None
+        r = askParent('name?', max_no_response_delay)
+        assert r is None
 
 
     def test03_NonStartingSubActorWithoutRestarts(self, asys):
@@ -238,14 +241,14 @@ class TestFuncActorFailures(object):
         # root Actors are not restarted which should cause children to be shutdown.
         tellParent(ActorExitRequest())
         assert askParent('name?') is None
-        assert asys.ask(stableKid, 'name?', max_response_delay) is None
+        assert asys.ask(stableKid, 'name?', max_no_response_delay) is None
 
 
     def test05_RestartedSubActorWithoutRestarts(self, asys):
         unstable_test(asys, 'multiprocUDPBase')
         parent = asys.createActor(NoRestartParent)
 
-        askParent = lambda m: asys.ask(parent, m, 0.5)
+        askParent = lambda m: asys.ask(parent, m, max_response_delay)
         askKid    = lambda m: askParent(TellDaughter(m))
 
         assert askParent('name?') == parent
