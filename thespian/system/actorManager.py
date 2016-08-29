@@ -26,8 +26,10 @@ MAX_SHUTDOWN_DRAIN_PERIOD=timedelta(seconds=7)
 class ActorManager(systemCommonBase):
     def __init__(self, childClass, transport, sourceHash, sourceToLoad,
                  parentAddr, adminAddr,
-                 childRequirements, currentSystemCapabilities):
+                 childRequirements, currentSystemCapabilities,
+                 concurrency_context):
         super(ActorManager, self).__init__(adminAddr, transport)
+        self.init_replicator(transport, concurrency_context)
         self._parentAddr = parentAddr
         self._sourceHash = sourceHash
         self._sources    = { sourceHash: sourceToLoad }

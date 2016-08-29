@@ -2601,6 +2601,19 @@ The multiprocQueueBase uses the following [[*ActorSystem Capabilities][ActorSyst
   * *Admin Address* :: /read-only/ the address for the Admin queue. This is an
     arbitrary string value; the default is 'ThespianQ'.
 
+  * *Process Startup Method* :: /optional/ specifies the
+       multiprocessing process startup method (see
+       ~multiprocessing.get_context()~).  Supported values are "fork"
+       and "spawn".  The "spawn" method is generally slower because it
+       creates each new process from scratch, but it provides better
+       independence and isolation.  The "fork" method is faster but
+       can inherit memory and other resources from the parent, and it
+       is only available under Unix.  Note that the other
+       multi-process bases support the multiprocessing "forkserver"
+       method, but this multiprocQueueBase does not support the
+       "forkserver" method.
+
+
 ** multiprocTCPBase
 
 The multiprocTCPBase runs each Actor in its own separate process
@@ -2692,6 +2705,16 @@ The multiprocTCPBase uses the following [[*ActorSystem Capabilities][ActorSystem
        of the numbered file descriptors passed in the ~ThespianWatch~
        object.
 
+  * *Process Startup Method* :: /optional/ specifies the
+       multiprocessing process startup method (see
+       ~multiprocessing.get_context()~).  Supported values are "fork",
+       "forkserver", and "spawn".  The "spawn" method is generally
+       slower because it creates each new process from scratch, but it
+       provides better independence and isolation.  The "fork" method
+       is faster but can inherit memory and other resources from the
+       parent, and it is only available under Unix.    The "forkserver"
+       performance is between the other two, but closer to the
+       performance of the "spawn" method.
 
 
 ** multiprocUDPBase
@@ -2740,6 +2763,18 @@ The multiprocUDPBase uses the following [[*ActorSystem Capabilities][ActorSystem
   * *Convention Address.IPv4* :: the IPv4 address of the convention
     leader's Admin.  See the description of the same capability in the
     [[*multiprocTCPBase][multiprocTCPBase]] for more details.
+
+  * *Process Startup Method* :: /optional/ specifies the
+       multiprocessing process startup method (see
+       ~multiprocessing.get_context()~).  Supported values are "fork",
+       "forkserver", and "spawn".  The "spawn" method is generally
+       slower because it creates each new process from scratch, but it
+       provides better independence and isolation.  The "fork" method
+       is faster but can inherit memory and other resources from the
+       parent, and it is only available under Unix.  The "forkserver"
+       performance is between the other two, but closer to the
+       performance of the "spawn" method.
+
 
 * Deploying Actor-based Projects
 

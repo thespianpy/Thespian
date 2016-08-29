@@ -54,6 +54,21 @@ def detach_child(childref):
             multiprocessing.process._current_process._children.remove(childref)
 
 
+def get_multiproc_context(capabilities):
+    best_concurrency = capabilities.get('Process Startup Method', 'fork')
+    if hasattr(multiprocessing, 'get_context'):
+        for each in (best_concurrency, 'fork', 'spawn'):
+            if hasattr(multiprocessing, 'get_all_start_methods'):
+                if each in multiprocessing.get_all_start_methods():
+                    return multiprocessing.get_context(each)
+            else:
+                try:
+                    return multiprocessing.get_context(each)
+                except ValueError:
+                    pass # invalid concurrency for this system
+    return multiprocessing
+
+
 class multiprocessCommon(systemBase):
 
     def __init__(self, system, logDefs = None):
@@ -61,24 +76,28 @@ class multiprocessCommon(systemBase):
         system.capabilities['Python Version'] = tuple(sys.version_info)
         system.capabilities['Thespian Generation'] = ThespianGeneration
         system.capabilities['Thespian Version'] = str(int(time.time()*1000))
+        self.mpcontext = get_multiproc_context(system.capabilities)
 
         self.transport = self.transportType(ExternalInterfaceTransportInit(),
-                                            system.capabilities, logDefs)
+                                            system.capabilities, logDefs,
+                                            self.mpcontext)
         super(multiprocessCommon, self).__init__(system, logDefs)
 
 
     def _startAdmin(self, adminAddr, addrOfStarter, capabilities, logDefs):
+        mp = self.mpcontext
         endpointPrep = self.transport.prepEndpoint(adminAddr, capabilities)
 
         multiprocessing.process._current_process._daemonic = False
-        admin = multiprocessing.Process(target=startAdmin,
+        admin = mp.Process(target=startAdmin,
                                         args=(MultiProcAdmin,
                                               addrOfStarter,
                                               endpointPrep,
                                               self.transport.__class__,
                                               adminAddr,
                                               capabilities,
-                                              logDefs),
+                                              logDefs,
+                                              mp),
                                         name='ThespianAdmin')
         admin.start()
         # admin must be explicity shutdown and is not automatically
@@ -124,7 +143,7 @@ def signal_admin_sts(admin):
 
 
 def startAdmin(adminClass, addrOfStarter, endpointPrep, transportClass,
-               adminAddr, capabilities, logDefs):
+               adminAddr, capabilities, logDefs, concurrency_context):
     # Unix Daemonization; skipped if not available
     import os,sys
     if hasattr(os, 'setsid'):
@@ -146,7 +165,8 @@ def startAdmin(adminClass, addrOfStarter, endpointPrep, transportClass,
     # _verifyAdminRunning to ensure things are OK.
     transport = transportClass(endpointPrep)
     try:
-        admin = adminClass(transport, adminAddr, capabilities, logDefs)
+        admin = adminClass(transport, adminAddr, capabilities, logDefs,
+                           concurrency_context)
     except Exception:
         transport.scheduleTransmit(None,
                                    TransmitIntent(addrOfStarter, EndpointConnected(0)))
@@ -168,12 +188,14 @@ def startAdmin(adminClass, addrOfStarter, endpointPrep, transportClass,
     if hasattr(signal, 'SIGUSR1'):
         set_signal_handler(signal.SIGUSR1, signal_admin_sts(admin))
 
-    _startLogger(transportClass, transport, admin, capabilities, logDefs)
+    _startLogger(transportClass, transport, admin, capabilities, logDefs,
+                 concurrency_context)
     #closeUnusedFiles(transport)
     admin.run()
 
 
-def _startLogger(transportClass, transport, admin, capabilities, logDefs):
+def _startLogger(transportClass, transport, admin, capabilities, logDefs,
+                 concurrency_context):
     # Generate the "placeholder" loggerAddr directly instead of going
     # through the AddressManager because the logger is not managed as
     # a normal child.
@@ -186,10 +208,14 @@ def _startLogger(transportClass, transport, admin, capabilities, logDefs):
         except Exception as ex:
             thesplog('Unable to adapt log aggregator address "%s" to a transport address: %s',
                      logAggregator, ex, level=logging.WARNING)
-    admin.asLogProc = startASLogger(loggerAddr, logDefs, transport, capabilities,
+    admin.asLogProc = startASLogger(loggerAddr,
+                                    logDefs,
+                                    transport,
+                                    capabilities,
                                     logAggregator
                                     if logAggregator != admin.transport.myAddress
-                                    else None)
+                                    else None,
+                                    concurrency_context)
 
 
 class ChildInfo(object):
@@ -205,13 +231,16 @@ class ChildInfo(object):
                                                str(self.childProc))
 
 
-def startASLogger(loggerAddr, logDefs, transport, capabilities, aggregatorAddress=None):
+def startASLogger(loggerAddr, logDefs, transport, capabilities,
+                  aggregatorAddress=None,
+                  concurrency_context = None):
     endpointPrep = transport.prepEndpoint(loggerAddr, capabilities)
     multiprocessing.process._current_process._daemonic = False
-    logProc = multiprocessing.Process(target=startupASLogger,
-                                      args = (transport.myAddress, endpointPrep,
-                                              logDefs,
-                                              transport.__class__, aggregatorAddress))
+    NewProc = concurrency_context.Process if concurrency_context else Process
+    logProc = NewProc(target=startupASLogger,
+                      args = (transport.myAddress, endpointPrep,
+                              logDefs,
+                              transport.__class__, aggregatorAddress))
     logProc.daemon = True
     logProc.start()
     transport.connectEndpoint(endpointPrep)
@@ -224,6 +253,11 @@ def startASLogger(loggerAddr, logDefs, transport, capabilities, aggregatorAddres
 
 
 class MultiProcReplicator(object):
+
+
+    def init_replicator(self, transport, concurrency_context):
+        self.mpcontext = concurrency_context
+
 
     def _startChildActor(self, childAddr, childClass, parentAddr, notifyAddr,
                          childRequirements=None,
@@ -284,7 +318,7 @@ class MultiProcReplicator(object):
         # is an argument passed to the child.
         fileNumsToClose = list(self.transport.childResetFileNumList())
 
-        child = multiprocessing.Process(target=startChild,  #KWQ: instantiates module specified by sourceHash to create actor
+        child = self.mpcontext.Process(target=startChild,  #KWQ: instantiates module specified by sourceHash to create actor
                                         args=(childClass,
                                               endpointPrep,
                                               self.transport.__class__,
@@ -296,7 +330,8 @@ class MultiProcReplicator(object):
                                               self.asLogger,
                                               childRequirements,
                                               self.capabilities,
-                                              fileNumsToClose),
+                                              fileNumsToClose,
+                                              self.mpcontext),
                                         name='Actor_%s__%s'%(getattr(childClass, '__name__', childClass), str(childAddr)))
         child.start()
         # Also note that while non-daemonic children cause the current
@@ -439,7 +474,7 @@ def startChild(childClass, endpoint, transportClass,
                sourceHash, sourceToLoad,
                parentAddr, adminAddr, notifyAddr, loggerAddr,
                childRequirements, currentSystemCapabilities,
-               fileNumsToClose):
+               fileNumsToClose, concurrency_context):
 
     closeFileNums(fileNumsToClose)
 
@@ -476,7 +511,8 @@ def startChild(childClass, endpoint, transportClass,
     am = MultiProcManager(childClass, transport,
                           sourceHash, sourceToLoad,
                           parentAddr, adminAddr,
-                          childRequirements, currentSystemCapabilities)
+                          childRequirements, currentSystemCapabilities,
+                          concurrency_context)
     am.asLogger = loggerAddr
     am.transport.scheduleTransmit(None,
                                   TransmitIntent(notifyAddr,

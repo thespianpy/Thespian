@@ -106,14 +106,16 @@ class MultiprocessQueueTransport(asyncTransportBase, wakeupTransportBase):
         if isinstance(initType, ExternalInterfaceTransportInit):
             # External process that's going to talk "in".  There is no
             # parent, and the child is the systemAdmin.
-            capabilities, logDefs = args
+            capabilities, logDefs, self._concontext = args
             self._parentQ         = None
-            self._adminQ          = Queue(MAX_ADMIN_QUEUESIZE)
+            NewQ = self._concontext.Queue if self._concontext else Queue
+            self._adminQ          = NewQ(MAX_ADMIN_QUEUESIZE)
             self._adminAddr       = self.getAdminAddr(capabilities)
             self._myQAddress      = ActorAddress(QueueActorAddress('~'))
-            self._myInputQ        = Queue(MAX_ACTOR_QUEUESIZE)
+            self._myInputQ        = NewQ(MAX_ACTOR_QUEUESIZE)
         elif isinstance(initType, MpQTEndpoint):
-            _addrInst, myAddr, myQueue, parentQ, adminQ, adminAddr = initType.args
+            _addrInst, myAddr, myQueue, parentQ, adminQ, adminAddr, ccon = initType.args
+            self._concontext = ccon
             self._parentQ    = parentQ
             self._adminQ     = adminQ
             self._adminAddr  = adminAddr
@@ -197,19 +199,24 @@ class MultiprocessQueueTransport(asyncTransportBase, wakeupTransportBase):
            communications after creation of the Child by calling
            connectEndpoint() with this returned object.
         """
+        NewQ = self._concontext.Queue if self._concontext else Queue
         if isinstance(assignedLocalAddr.addressDetails, ActorLocalAddress):
             return MpQTEndpoint(assignedLocalAddr.addressDetails.addressInstanceNum,
                                 self._nextSubAddress(),
-                                Queue(MAX_ACTOR_QUEUESIZE),
-                                self._myInputQ, self._adminQ, self._adminAddr)
+                                NewQ(MAX_ACTOR_QUEUESIZE),
+                                self._myInputQ, self._adminQ, self._adminAddr,
+                                self._concontext)
         return MpQTEndpoint(None,
                             assignedLocalAddr,
-                            self._adminQ, self._myInputQ, self._adminQ, self._adminAddr)
+                            self._adminQ, self._myInputQ, self._adminQ,
+                            self._adminAddr,
+                            self._concontext)
 
     def connectEndpoint(self, endPoint):
         """Called by the Parent after creating the Child to fully connect the
            endpoint to the Child for ongoing communications."""
-        _addrInst, childAddr, childQueue, _myQ, _adminQ, _adminAddr = endPoint.args
+        (_addrInst, childAddr, childQueue, _myQ,
+         _adminQ, _adminAddr, _concurrency_context) = endPoint.args
         self._queues.add(childAddr, childQueue)
 
 

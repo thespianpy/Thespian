@@ -12,9 +12,10 @@ from thespian.system.sourceLoader import SourceHashFinder
 
 class AdminCore(systemCommonBase):
 
-    def __init__(self, transport, address, capabilities, logdefs):
+    def __init__(self, transport, address, capabilities, logdefs, concurrency_context):
         thesplog('++++ Starting Admin from %s', sys.modules['thespian'].__file__, level=logging.DEBUG)
         super(AdminCore, self).__init__(address, transport)
+        self.init_replicator(transport, concurrency_context)
         self.capabilities = capabilities
         self.logdefs      = logdefs
         self._pendingChildren = {}  # key = childLocalAddr instance #, value = PendingActorEnvelope

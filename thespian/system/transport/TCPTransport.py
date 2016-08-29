@@ -254,7 +254,7 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
         if isinstance(initType, ExternalInterfaceTransportInit):
             # External process that is going to talk "in".  There is
             # no parent, and the child is the systemAdmin.
-            capabilities, logDefs = args
+            capabilities, logDefs, concurrency_context = args
             adminRouting     = False
             self.txOnly      = False  # communications from outside-in are always local and therefore not restricted.
             convAddr = capabilities.get('Convention Address.IPv4', '')

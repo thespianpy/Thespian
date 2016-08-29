@@ -49,7 +49,7 @@ class UDPTransport(asyncTransportBase, wakeupTransportBase):
         if isinstance(initType, ExternalInterfaceTransportInit):
             # External process that is going to talk "in".  There is
             # no parent, and the child is the systemAdmin.
-            capabilities, logDefs = args
+            capabilities, logDefs, concurrency_context = args
             templateAddr          = UDPv4ActorAddress(None, 0)
             self.socket           = socket.socket(*templateAddr.socketArgs)
             self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
