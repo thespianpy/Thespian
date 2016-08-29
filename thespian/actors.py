@@ -16,7 +16,8 @@ class ActorSystemException(Exception):
 
 class InvalidActorAddress(ActorSystemException):
     '''Exception thrown if an ActorAddress is not valid (i.e. synthesized
-    or altered) or could not be generated.'''
+       or altered) or could not be generated.
+    '''
     def __init__(self, addr, desc, *args, **kw):
         self.actorAddress = addr
         ActorSystemException.__init__(self, str(addr) + ' is ' + desc,
@@ -66,20 +67,20 @@ class InvalidActorSpecification(ActorSystemException):
 
 class ActorAddress(object):
     '''Used to reference a specific Actor (or Troupe).  The Actor could be
-    local or remote, in another thread, or another process.  The actor
-    is not even guaranteed to be alive anymore.  Regardless, this is
-    the identifier by which messages can be directed to an Actor.
+       local or remote, in another thread, or another process.  The
+       actor is not even guaranteed to be alive anymore.  Regardless,
+       this is the identifier by which messages can be directed to an
+       Actor.
     '''
     def __init__(self, aaddr):
         '''Can only be constructed by the ActorSystem(); cannot be constructed
-        or synthesized externally.
+           or synthesized externally.
 
-        The aaddr is meant to be an opaque reference generated
-        internally by the ActorSystem implementation and used by it
-        for routing purposes.  The user may request a string-version
-        of the aaddr, but this should be used for informative or
-        display purposes only.
-
+           The aaddr is meant to be an opaque reference generated
+           internally by the ActorSystem implementation and used by it
+           for routing purposes.  The user may request a
+           string-version of the aaddr, but this should be used for
+           informative or display purposes only.
         '''
         self._aaddr = aaddr
 
@@ -404,13 +405,13 @@ class WakeupMessage(ActorSystemMessage):
 
 class ThespianWatch(object):
     """If an Actor's receiveMessage returns this object, it specifies a
-    list of fileno's to watch for activity/availability (in addition
-    to the normal mailbox for the Actor).  If any of these fileno's
-    become ready, the Actor's receiveMessage will be called with a
-    WatchMessage and a list of those ready fileno's.
+       list of fileno's to watch for activity/availability (in
+       addition to the normal mailbox for the Actor).  If any of these
+       fileno's become ready, the Actor's receiveMessage will be
+       called with a WatchMessage and a list of those ready fileno's.
 
-    Support for watch capability is dependent on the system base and
-    hosting operating system.  ...
+       Support for watch capability is dependent on the system base
+       and hosting operating system.  ...
     """
     def __init__(self, filenos):
         self.filenos = filenos
@@ -612,17 +613,18 @@ class ActorSystem(object):
 
     def listen(self, timeout=None):
         """Waits for a message from any Actor.  The optional timeout argument
-        specifies the maximum amount of time to wait in fractional
-        seconds.  Returns None if no response is received in the
-        indicated time period.
+           specifies the maximum amount of time to wait in fractional
+           seconds.  Returns None if no response is received in the
+           indicated time period.
         """
         return self._systemBase.listen(timeout)
 
     def ask(self, actorAddr, msg, timeout=None):
         """Sends msg to the addressed Actor and waits for a response (from
-        *any* Actor).  The optional timeout argument specifies the
-        maximum amount of time to wait in fractional seconds.  Returns
-        None if no response is received in the indicated time period.
+           *any* Actor).  The optional timeout argument specifies the
+           maximum amount of time to wait in fractional seconds.
+           Returns None if no response is received in the indicated
+           time period.
         """
         if not isinstance(actorAddr, ActorAddress):
             raise ValueError(
