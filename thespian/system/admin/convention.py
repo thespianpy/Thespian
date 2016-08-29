@@ -532,8 +532,13 @@ class ConventioneerAdmin(GlobalNamesAdmin):
         if not envelope.message.sourceData and envelope.sender != self._conventionAddress:
             # Propagate source unload requests to all convention members
             for each in self._conventionMembers.values():
-                self._hysteresisSender.sendWithHysteresis(
-                    TransmitIntent(each.remoteAddress, envelope.message))
+                # Do not propagate if this is where the notification
+                # came from; prevents indefinite bouncing of this
+                # message as long as the convention structure is a
+                # DAG.
+                if each.remoteAddress != envelope.sender:
+                    self._hysteresisSender.sendWithHysteresis(
+                        TransmitIntent(each.remoteAddress, envelope.message))
         super(ConventioneerAdmin, self).h_ValidateSource(envelope)
         return False  # might have sent with hysteresis, so break out to local _run
 
