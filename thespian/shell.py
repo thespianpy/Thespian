@@ -11,6 +11,14 @@ import sys, os
 sys.path.insert(0, os.getcwd())
 from thespian.actors import *
 from thespian.system.messages.status import *
+import time
+
+
+class SimpleSourceAuthority(ActorTypeDispatcher):
+    def receiveMsg_str(self, msg, sender):
+        self.registerSourceAuthority()
+    def receiveMsg_ValidateSource(self, msg, sender):
+        self.send(sender, ValidatedSource(msg.sourceHash, msg.sourceData))
 
 
 class ThespianShell(cmd.Cmd):
@@ -264,16 +272,56 @@ Alternatively, if the first optional argument contains a colon, that is assumed 
             print ('Not able to determine a valid Actor Address from command-line arguments.')
 
 
+    def do_use_simple_source_authority(self, arg):
+        """Starts a simple source authority, if possible.  The source
+           authority is specified from the Thespian Shell sources; if
+           the admin was not started from the Thespian Shell then it
+           will be unable to instantiate the source authority actor.
+
+           The source authority started will automatically accept any
+           loaded zipfile.  This is a security risk if the actor
+           system is externally accessible.  See
+           http://thespianpy.com/using.html#sec-6-9-2 for more details.
+        """
+        actorSys = self.system or ActorSystem()
+        try:
+            actorSys.tell(
+                actorSys.createActor(SimpleSourceAuthority),
+                'register')
+        except:
+            print('***ERROR starting source authority')
+            traceback.print_exc(limit=3)
+
+
     def do_create_testActor(self, arg):
-        "Creates a Test Actor"
-        import StringIO, zipfile
-        zipdata = StringIO.StringIO()
-        zf = zipfile.ZipFile(zipdata, 'a')
+        """Creates a Test Actor.  The actor created is first uploaded as a
+           source.  The source is specified as a plain zipfile:
+
+           * if an incompatible source authority is already in use,
+             this source will not be accepted, and an actor cannot
+             be created
+
+           * if no source authority is in use, the source load will
+             be ignored and the actor cannot be created
+             ("InvalidActorSourceHash").
+
+           * If the ActorSystem was created from the shell itself,
+             then the "start_simple_sourceauthority" command can be
+             used to start and register a source authority.  See the
+             description of that command for more details, risks,
+             and restrictions.
+
+        """
+        from io import BytesIO
+        from zipfile import ZipFile
+        zipdata = BytesIO()
+        zf = ZipFile(zipdata, 'a')
         zf.writestr('t.py', test_actor_source)
         zf.close()
-        loadf = StringIO.StringIO(zipdata.getvalue())
         actorSys = self.system or ActorSystem()
-        loadf_hash = actorSys.loadActorSource(loadf)
+        readzip = BytesIO(zipdata.getvalue())
+        loadf_hash = actorSys.loadActorSource(readzip)
+        time.sleep(0.1) # Allow source authority to authorize the load
         try:
             na = actorSys.createActor('t.TestActor', sourceHash = loadf_hash)
         except:
