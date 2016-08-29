@@ -236,7 +236,9 @@ class TransmitIntent(PauseWithBackoff):
     def delay(self):
         now = datetime.now()
         if getattr(self, '_awaitingTXSlot', False):
-            return max(timedelta(seconds=0), self._quitTime - now)
+            if now > self._quitTime:
+                return timedelta(seconds=0)
+            return max(timedelta(milliseconds=10), (self._quitTime - now) / 2)
         return max(timedelta(seconds=0),
                    min(self._quitTime - now,
                        getattr(self, '_retryTime', self._quitTime) - now,
