@@ -22,6 +22,14 @@ in the local System.
 import time
 from thespian.actors import *
 from thespian.test import *
+from datetime import timedelta
+
+
+ASK_WAIT = timedelta(seconds=15)
+dead_routing_wait = lambda: inTestDelay(timedelta(milliseconds=125))
+actor_exit_wait = lambda: inTestDelay(timedelta(milliseconds=50))
+actor_create_wait = lambda: inTestDelay(timedelta(milliseconds=750))
+
 
 class DLHandler(Actor):
     def receiveMessage(self, msg, sender):
@@ -64,43 +72,43 @@ class TestFuncDeadLettering(object):
 
     def checkNewDLCount(self, asys, handlerAddress, oldCount):
         #asys = ActorSystem()
-        cnt = asys.ask(handlerAddress, 'Count', 0.5)
+        cnt = asys.ask(handlerAddress, 'Count', ASK_WAIT)
         retries = 30
         while cnt <= oldCount and retries:
             retries -= 1
-            time.sleep(0.025)
-            cnt = asys.ask(handlerAddress, 'Count', 0.5)
+            dead_routing_wait()
+            cnt = asys.ask(handlerAddress, 'Count', ASK_WAIT)
         assert cnt > oldCount
         return cnt
 
     def test01_registerDeadLetter(self, asys):
         unstable_test(asys, 'multiprocUDPBase')
         handler = asys.createActor(DLHandler)
-        assert 0 == asys.ask(handler, 'Count', 0.5)
+        assert 0 == asys.ask(handler, 'Count', ASK_WAIT)
         asys.tell(handler, 'Start')
-        assert 0 == asys.ask(handler, 'Count', 0.5)
+        assert 0 == asys.ask(handler, 'Count', ASK_WAIT)
         asys.tell(handler, 'Stop')
-        assert 0 == asys.ask(handler, 'Count', 0.5)
+        assert 0 == asys.ask(handler, 'Count', ASK_WAIT)
 
     def test11_registerDeadLetterSubActor(self, asys):
         unstable_test(asys, 'multiprocUDPBase')
         handler = asys.createActor(DLParent)
-        assert 0 == asys.ask(handler, 'Count', 0.5)
+        assert 0 == asys.ask(handler, 'Count', ASK_WAIT)
         asys.tell(handler, 'Start')
-        assert 0 == asys.ask(handler, 'Count', 0.5)
+        assert 0 == asys.ask(handler, 'Count', ASK_WAIT)
         asys.tell(handler, 'Stop')
-        assert 0 == asys.ask(handler, 'Count', 0.5)
+        assert 0 == asys.ask(handler, 'Count', ASK_WAIT)
 
     def test02_GetDeadLetter(self, asys):
         unstable_test(asys, 'multiprocUDPBase')
         handler = asys.createActor(DLHandler)
-        assert 0 == asys.ask(handler, 'Count', 0.5)
+        assert 0 == asys.ask(handler, 'Count', ASK_WAIT)
         asys.tell(handler, 'Start')
         cnt = self.checkNewDLCount(asys, handler, -1)
 
         pawn = asys.createActor(DLHandler)
         asys.tell(pawn, ActorExitRequest())
-        time.sleep(0.025)
+        actor_exit_wait()
 
         asys.tell(pawn, 'hello')
         cnt = self.checkNewDLCount(asys, handler, cnt)
@@ -108,23 +116,24 @@ class TestFuncDeadLettering(object):
         cnt = self.checkNewDLCount(asys, handler, cnt)
 
         asys.tell(handler, 'Stop')
-        time.sleep(0.025)
+        actor_exit_wait()
 
         asys.tell(pawn, 'another')
-        assert cnt == asys.ask(handler, 'Count', 0.5)
+        assert cnt == asys.ask(handler, 'Count', ASK_WAIT)
         asys.tell(pawn, 'and another')
-        assert cnt == asys.ask(handler, 'Count', 0.5)
+        assert cnt == asys.ask(handler, 'Count', ASK_WAIT)
 
     def test12_GetDeadLetterSubActor(self, asys):
         unstable_test(asys, 'multiprocUDPBase')
         handler = asys.createActor(DLParent)
-        assert 0 == asys.ask(handler, 'Count', 0.5)
+        r = asys.ask(handler, 'Count', ASK_WAIT)
+        assert 0 == r
         asys.tell(handler, 'Start')
         cnt = self.checkNewDLCount(asys, handler, -1)
 
         pawn = asys.createActor(DLParent)
         asys.tell(pawn, 'exit please')
-        time.sleep(0.25)
+        actor_create_wait()
 
         asys.tell(pawn, 'hello')
         cnt = self.checkNewDLCount(asys, handler, cnt)
@@ -132,17 +141,19 @@ class TestFuncDeadLettering(object):
         cnt = self.checkNewDLCount(asys, handler, cnt)
 
         asys.tell(handler, 'Stop')
-        time.sleep(0.025)
+        actor_exit_wait()
 
         asys.tell(pawn, 'another')
-        assert cnt == asys.ask(handler, 'Count', 0.5)
+        r = asys.ask(handler, 'Count', ASK_WAIT)
+        assert cnt == r
         asys.tell(pawn, 'and another')
-        assert cnt == asys.ask(handler, 'Count', 0.5)
+        r = asys.ask(handler, 'Count', ASK_WAIT)
+        assert cnt == r
 
     def test03_DLRegisterOnlyOnce(self, asys):
         unstable_test(asys, 'multiprocUDPBase')
         handler = asys.createActor(DLHandler)
-        assert 0 == asys.ask(handler, 'Count', 0.5)
+        assert 0 == asys.ask(handler, 'Count', ASK_WAIT)
         asys.tell(handler, 'Start')
         cnt = self.checkNewDLCount(asys, handler, -1)
 
@@ -174,7 +185,7 @@ class TestFuncDeadLettering(object):
     def test13_DLRegisterOnlyOnce(self, asys):
         unstable_test(asys, 'multiprocUDPBase')
         handler = asys.createActor(DLParent)
-        assert 0 == asys.ask(handler, 'Count', 0.5)
+        assert 0 == asys.ask(handler, 'Count', ASK_WAIT)
         asys.tell(handler, 'Start')
         cnt = self.checkNewDLCount(asys, handler, -1)
 
@@ -206,7 +217,7 @@ class TestFuncDeadLettering(object):
     def test04_DLMultipleHandlers(self, asys):
         unstable_test(asys, 'multiprocUDPBase')
         handler = asys.createActor(DLHandler)
-        assert 0 == asys.ask(handler, 'Count', 0.5)
+        assert 0 == asys.ask(handler, 'Count', ASK_WAIT)
         asys.tell(handler, 'Start')
         cnt = self.checkNewDLCount(asys, handler, -1)
 
@@ -223,60 +234,60 @@ class TestFuncDeadLettering(object):
         asys.tell(handler2, 'Start')
         time.sleep(0.025)
 
-        assert cnt == asys.ask(handler, 'Count', 0.5)
-        assert 0 == asys.ask(handler2, 'Count', 0.5)
+        assert cnt == asys.ask(handler, 'Count', ASK_WAIT)
+        assert 0 == asys.ask(handler2, 'Count', ASK_WAIT)
         cnt2 = self.checkNewDLCount(asys, handler2, -1)
 
         asys.tell(pawn, 'another')
         cnt2 = self.checkNewDLCount(asys, handler2, cnt2)
-        assert cnt == asys.ask(handler, 'Count', 0.5)
+        assert cnt == asys.ask(handler, 'Count', ASK_WAIT)
         asys.tell(pawn, 'and another')
         cnt2 = self.checkNewDLCount(asys, handler2, cnt2)
-        assert cnt == asys.ask(handler, 'Count', 0.5)
+        assert cnt == asys.ask(handler, 'Count', ASK_WAIT)
 
         asys.tell(handler, 'Stop')  # no effect
         time.sleep(0.025)
 
         asys.tell(pawn, 'more messages')
         cnt2 = self.checkNewDLCount(asys, handler2, cnt2)
-        assert cnt == asys.ask(handler, 'Count', 0.5)
+        assert cnt == asys.ask(handler, 'Count', ASK_WAIT)
 
         asys.tell(pawn, 'more messages again')
         cnt2 = self.checkNewDLCount(asys, handler2, cnt2)
-        assert cnt == asys.ask(handler, 'Count', 0.5)
+        assert cnt == asys.ask(handler, 'Count', ASK_WAIT)
 
         asys.tell(handler2, 'Stop')
         time.sleep(0.025)
-        assert cnt == asys.ask(handler, 'Count', 0.5)
-        assert cnt2 == asys.ask(handler2, 'Count', 0.5)
+        assert cnt == asys.ask(handler, 'Count', ASK_WAIT)
+        assert cnt2 == asys.ask(handler2, 'Count', ASK_WAIT)
 
         asys.tell(pawn, 'more messages repeated')
         time.sleep(0.025)
-        assert cnt == asys.ask(handler, 'Count', 0.5)
-        assert cnt2 == asys.ask(handler2, 'Count', 0.5)
+        assert cnt == asys.ask(handler, 'Count', ASK_WAIT)
+        assert cnt2 == asys.ask(handler2, 'Count', ASK_WAIT)
 
         asys.tell(pawn, 'more messages again repeated')
         time.sleep(0.025)
-        assert cnt == asys.ask(handler, 'Count', 0.5)
-        assert cnt2 == asys.ask(handler2, 'Count', 0.5)
+        assert cnt == asys.ask(handler, 'Count', ASK_WAIT)
+        assert cnt2 == asys.ask(handler2, 'Count', ASK_WAIT)
 
         asys.tell(handler, 'Start')
         time.sleep(0.025)
-        assert cnt == asys.ask(handler, 'Count', 0.5)
-        assert cnt2 == asys.ask(handler2, 'Count', 0.5)
+        assert cnt == asys.ask(handler, 'Count', ASK_WAIT)
+        assert cnt2 == asys.ask(handler2, 'Count', ASK_WAIT)
 
         asys.tell(pawn, 'more messages repeated reprised')
         cnt = self.checkNewDLCount(asys, handler, cnt)
-        assert cnt2 == asys.ask(handler2, 'Count', 0.5)
+        assert cnt2 == asys.ask(handler2, 'Count', ASK_WAIT)
 
         asys.tell(pawn, 'more messages again repeated reprised')
         cnt = self.checkNewDLCount(asys, handler, cnt)
-        assert cnt2 == asys.ask(handler2, 'Count', 0.5)
+        assert cnt2 == asys.ask(handler2, 'Count', ASK_WAIT)
 
     def test14_DLMultipleHandlers(self, asys):
         unstable_test(asys, 'multiprocUDPBase')
         handler = asys.createActor(DLParent)
-        assert 0 == asys.ask(handler, 'Count', 0.5)
+        assert 0 == asys.ask(handler, 'Count', ASK_WAIT)
         asys.tell(handler, 'Start')
         cnt = self.checkNewDLCount(asys, handler, -1)
 
@@ -293,65 +304,65 @@ class TestFuncDeadLettering(object):
         asys.tell(handler2, 'Start')
         time.sleep(0.025)
 
-        assert cnt == asys.ask(handler, 'Count', 0.5)
-        assert 0 == asys.ask(handler2, 'Count', 0.5)
+        assert cnt == asys.ask(handler, 'Count', ASK_WAIT)
+        assert 0 == asys.ask(handler2, 'Count', ASK_WAIT)
         cnt2 = self.checkNewDLCount(asys, handler2, -1)
 
         asys.tell(pawn, 'another')
         cnt2 = self.checkNewDLCount(asys, handler2, cnt2)
-        assert cnt == asys.ask(handler, 'Count', 0.5)
+        assert cnt == asys.ask(handler, 'Count', ASK_WAIT)
         asys.tell(pawn, 'and another')
         cnt2 = self.checkNewDLCount(asys, handler2, cnt2)
-        assert cnt == asys.ask(handler, 'Count', 0.5)
+        assert cnt == asys.ask(handler, 'Count', ASK_WAIT)
 
         asys.tell(handler, 'Stop')  # no effect
         time.sleep(0.025)
 
         asys.tell(pawn, 'more messages')
         cnt2 = self.checkNewDLCount(asys, handler2, cnt2)
-        assert cnt == asys.ask(handler, 'Count', 0.5)
+        assert cnt == asys.ask(handler, 'Count', ASK_WAIT)
 
         asys.tell(pawn, 'more messages again')
         cnt2 = self.checkNewDLCount(asys, handler2, cnt2)
-        assert cnt == asys.ask(handler, 'Count', 0.5)
+        assert cnt == asys.ask(handler, 'Count', ASK_WAIT)
 
         asys.tell(handler2, 'Stop')
         time.sleep(0.025)
-        assert cnt == asys.ask(handler, 'Count', 0.5)
-        assert cnt2 == asys.ask(handler2, 'Count', 0.5)
+        assert cnt == asys.ask(handler, 'Count', ASK_WAIT)
+        assert cnt2 == asys.ask(handler2, 'Count', ASK_WAIT)
 
         asys.tell(pawn, 'more messages repeated')
         time.sleep(0.025)
-        assert cnt == asys.ask(handler, 'Count', 0.5)
-        assert cnt2 == asys.ask(handler2, 'Count', 0.5)
+        assert cnt == asys.ask(handler, 'Count', ASK_WAIT)
+        assert cnt2 == asys.ask(handler2, 'Count', ASK_WAIT)
 
         asys.tell(pawn, 'more messages again repeated')
         time.sleep(0.025)
-        assert cnt == asys.ask(handler, 'Count', 0.5)
-        assert cnt2 == asys.ask(handler2, 'Count', 0.5)
+        assert cnt == asys.ask(handler, 'Count', ASK_WAIT)
+        assert cnt2 == asys.ask(handler2, 'Count', ASK_WAIT)
 
         asys.tell(handler, 'Start')
         time.sleep(0.025)
-        assert cnt == asys.ask(handler, 'Count', 0.5)
-        assert cnt2 == asys.ask(handler2, 'Count', 0.5)
+        assert cnt == asys.ask(handler, 'Count', ASK_WAIT)
+        assert cnt2 == asys.ask(handler2, 'Count', ASK_WAIT)
 
         asys.tell(pawn, 'more messages repeated reprised')
         cnt = self.checkNewDLCount(asys, handler, cnt)
-        assert cnt2 == asys.ask(handler2, 'Count', 0.5)
+        assert cnt2 == asys.ask(handler2, 'Count', ASK_WAIT)
 
         asys.tell(pawn, 'more messages again repeated reprised')
         cnt = self.checkNewDLCount(asys, handler, cnt)
-        assert cnt2 == asys.ask(handler2, 'Count', 0.5)
+        assert cnt2 == asys.ask(handler2, 'Count', ASK_WAIT)
 
     def test05_DLAutoRemoval(self, asys):
         unstable_test(asys, 'multiprocUDPBase')
         handler = asys.createActor(DLHandler)
-        assert 0 == asys.ask(handler, 'Count', 0.5)
+        assert 0 == asys.ask(handler, 'Count', ASK_WAIT)
         asys.tell(handler, 'Start')
         handler2 = asys.createActor(DLHandler)
         asys.tell(handler2, 'Start')
-        assert 0 == asys.ask(handler, 'Count', 0.5)
-        assert 0 == asys.ask(handler2, 'Count', 0.5)
+        assert 0 == asys.ask(handler, 'Count', ASK_WAIT)
+        assert 0 == asys.ask(handler2, 'Count', ASK_WAIT)
 
         # Create actor and kill it so messages to it it will be dead-letter routed.
 
@@ -365,30 +376,30 @@ class TestFuncDeadLettering(object):
         cnt2 = 0
         asys.tell(pawn, 'hello')
         cnt2 = self.checkNewDLCount(asys, handler2, cnt2)
-        assert cnt == asys.ask(handler, 'Count', 0.5)
+        assert cnt == asys.ask(handler, 'Count', ASK_WAIT)
 
         # Again, to ensure no round-robining is occurring
 
         asys.tell(pawn, 'hi')
         cnt2 = self.checkNewDLCount(asys, handler2, cnt2)
-        assert cnt == asys.ask(handler, 'Count', 0.5)
+        assert cnt == asys.ask(handler, 'Count', ASK_WAIT)
 
 
         # Now remove dead letter handler; ensure dead letters are dropped
 
         asys.tell(handler2, ActorExitRequest())
         time.sleep(0.025)
-        assert 0 == asys.ask(handler, 'Count', 0.5)
+        assert 0 == asys.ask(handler, 'Count', ASK_WAIT)
 
         asys.tell(pawn, 'another')
         time.sleep(0.025)
-        assert 0 == asys.ask(handler, 'Count', 0.5)
+        assert 0 == asys.ask(handler, 'Count', ASK_WAIT)
 
         # Tell first dead letter handler to re-register
 
         asys.tell(handler, 'Start')
         # n.b. tell or ask might create temporary actor, so can't assume startnum == 0
-        cnt = asys.ask(handler, 'Count', 0.5)
+        cnt = asys.ask(handler, 'Count', ASK_WAIT)
 
         # Verify first dead letter handler is getting dead letters again
 
@@ -398,13 +409,13 @@ class TestFuncDeadLettering(object):
     def test15_DLAutoRemoval(self, asys):
         unstable_test(asys, 'multiprocUDPBase')
         handler = asys.createActor(DLParent)
-        assert 0 == asys.ask(handler, 'Count', 0.5)
+        assert 0 == asys.ask(handler, 'Count', ASK_WAIT)
         asys.tell(handler, 'Start')
         handler2 = asys.createActor(DLParent)
         asys.tell(handler2, 'Start')
         time.sleep(0.15)
-        assert 0 == asys.ask(handler, 'Count', 0.5)
-        assert 0 == asys.ask(handler2, 'Count', 0.5)
+        assert 0 == asys.ask(handler, 'Count', ASK_WAIT)
+        assert 0 == asys.ask(handler2, 'Count', ASK_WAIT)
 
         # Create actor and kill it so messages to it it will be dead-letter routed.
 
@@ -418,31 +429,31 @@ class TestFuncDeadLettering(object):
         cnt2 = 0
         asys.tell(pawn, 'hello')
         cnt2 = self.checkNewDLCount(asys, handler2, cnt2)
-        assert cnt == asys.ask(handler, 'Count', 0.5)
+        assert cnt == asys.ask(handler, 'Count', ASK_WAIT)
 
         # Again, to ensure no round-robining is occurring
 
         asys.tell(pawn, 'hi')
         cnt2 = self.checkNewDLCount(asys, handler2, cnt2)
-        assert cnt == asys.ask(handler, 'Count', 0.5)
+        assert cnt == asys.ask(handler, 'Count', ASK_WAIT)
 
 
         # Now remove dead letter handler; ensure dead letters are dropped
 
         asys.tell(handler2, ActorExitRequest())
         time.sleep(0.025)
-        assert 0 == asys.ask(handler, 'Count', 0.5)
+        assert 0 == asys.ask(handler, 'Count', ASK_WAIT)
 
         asys.tell(pawn, 'another')
         time.sleep(0.025)
-        assert 0 == asys.ask(handler, 'Count', 0.5)
+        assert 0 == asys.ask(handler, 'Count', ASK_WAIT)
 
         # Tell first dead letter handler to re-register
 
         asys.tell(handler, 'Start')
         time.sleep(0.15)
         # n.b. tell or ask might create temporary actor, so can't assume startnum == 0
-        cnt = asys.ask(handler, 'Count', 0.5)
+        cnt = asys.ask(handler, 'Count', ASK_WAIT)
 
         # Verify first dead letter handler is getting dead letters again
 
