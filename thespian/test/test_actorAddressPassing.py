@@ -1,6 +1,9 @@
 import random
 from thespian.actors import *
 from thespian.test import *
+from datetime import timedelta
+
+ASK_WAIT = timedelta(seconds=5)
 
 
 class RoutedMsg:
@@ -65,10 +68,10 @@ class targetTests:
         tgt1 = asys.createActor(Target)
         tgt2 = asys.createActor(Target)
         assert tgt1 != tgt2
-        assert asys.ask(tgt1, 'hello', 0.25) == 'TGT %s got hello'%tgt1
-        assert asys.ask(tgt2, 'hello', 0.25) == 'TGT %s got hello'%tgt2
-        assert asys.ask(tgt1, 'bye',   0.25) == 'TGT %s got bye'%tgt1
-        assert asys.ask(tgt2, "c'ya",  0.25) == "TGT %s got c'ya"%tgt2
+        assert asys.ask(tgt1, 'hello', ASK_WAIT) == 'TGT %s got hello'%tgt1
+        assert asys.ask(tgt2, 'hello', ASK_WAIT) == 'TGT %s got hello'%tgt2
+        assert asys.ask(tgt1, 'bye',   ASK_WAIT) == 'TGT %s got bye'%tgt1
+        assert asys.ask(tgt2, "c'ya",  ASK_WAIT) == "TGT %s got c'ya"%tgt2
 
     def test102_TargetActorsRouting(self, asys):
         # Check that Target Actor will handle the RoutedMsg correctly
@@ -77,7 +80,7 @@ class targetTests:
         tgt2 = asys.createActor(Target)
         assert tgt1 != tgt2
         msg = RoutedMsg([tgt2])
-        assert asys.ask(tgt1, msg, 0.25).response == \
+        assert asys.ask(tgt1, msg, ASK_WAIT).response == \
             [ (tgt1, 'passed along with 0 left'),
               (tgt2, 'Ended chain'),
             ]
@@ -91,19 +94,19 @@ class targetTests:
         assert tgt1 != tgt2
 
         msg = RoutedMsg([tgt2])
-        assert asys.ask(tgt1, msg, 0.25).response == \
+        assert asys.ask(tgt1, msg, ASK_WAIT).response == \
             [ (tgt1, 'passed along with 0 left'),
               (tgt2, 'Ended chain'),
             ]
 
         msg2 = RoutedMsg([tgt1])
-        assert asys.ask(tgt2, msg2, 0.25).response == \
+        assert asys.ask(tgt2, msg2, ASK_WAIT).response == \
             [ (tgt2, 'passed along with 0 left'),
               (tgt1, 'Ended chain'),
             ]
 
         msg3 = RoutedMsg([tgt2])
-        assert asys.ask(tgt1, msg3, 0.25).response == \
+        assert asys.ask(tgt1, msg3, ASK_WAIT).response == \
             [ (tgt1, 'passed along with 0 left'),
               (tgt2, 'Ended chain'),
             ]
@@ -116,7 +119,7 @@ class targetTests:
         assert tgt1 != tgt2
 
         msg = RoutedMsg([tgt2, tgt1, tgt2, tgt1][::-1])
-        assert asys.ask(tgt1, msg, 0.25).response == \
+        assert asys.ask(tgt1, msg, ASK_WAIT).response == \
             [ (tgt1, 'passed along with 3 left'),
               (tgt2, 'passed along with 2 left'),
               (tgt1, 'passed along with 1 left'),
@@ -131,7 +134,7 @@ class targetTests:
         assert tgt1 != tgt2
 
         msg = RoutedMsg([tgt2, tgt2, tgt2, tgt1][::-1])
-        assert asys.ask(tgt1, msg, 0.25).response == \
+        assert asys.ask(tgt1, msg, ASK_WAIT).response == \
             [ (tgt1, 'passed along with 3 left'),
               (tgt2, 'passed along with 2 left'),
               (tgt2, 'passed along with 1 left'),
@@ -148,10 +151,10 @@ class generatorTests:
         gen1 = asys.createActor(Generator)
         gen2 = asys.createActor(Generator)
         assert gen1 != gen2
-        assert asys.ask(gen1, 'hello', 0.25) == 'GEN %s got hello'%gen1
-        assert asys.ask(gen2, 'hello', 0.25) == 'GEN %s got hello'%gen2
-        assert asys.ask(gen1, 'bye',   0.25) == 'GEN %s got bye'%gen1
-        assert asys.ask(gen2, "c'ya",  0.25) == "GEN %s got c'ya"%gen2
+        assert asys.ask(gen1, 'hello', ASK_WAIT) == 'GEN %s got hello'%gen1
+        assert asys.ask(gen2, 'hello', ASK_WAIT) == 'GEN %s got hello'%gen2
+        assert asys.ask(gen1, 'bye',   ASK_WAIT) == 'GEN %s got bye'%gen1
+        assert asys.ask(gen2, "c'ya",  ASK_WAIT) == "GEN %s got c'ya"%gen2
         
     def test202_GeneratorActorsRoutingToSelf(self, asys):
         # Check that Generator Actors can handle routing messages,
@@ -163,7 +166,7 @@ class generatorTests:
         assert tgt1 != tgt2
 
         msg = RoutedMsg([tgt2, tgt2, tgt2, tgt1][::-1])
-        assert asys.ask(tgt1, msg, 0.25).response == \
+        assert asys.ask(tgt1, msg, ASK_WAIT).response == \
             [ (tgt1, 'passed along with 3 left'),
             (tgt2, 'passed along with 2 left'),
               (tgt2, 'passed along with 1 left'),
@@ -175,18 +178,18 @@ class generatorTests:
         # Verify a Generator can create a Target and pass messages to
         # that target.
         gen1 = asys.createActor(Generator)
-        tgt1 = asys.ask(gen1, 'Generate', 0.25)
+        tgt1 = asys.ask(gen1, 'Generate', ASK_WAIT)
         assert tgt1 is not None
         assert gen1 != tgt1
-        assert asys.ask(tgt1, 'hello', 0.25) == 'TGT %s got hello'%tgt1
-        assert asys.ask(gen1, 'hello', 0.25) == 'TGT %s got hello'%tgt1
+        assert asys.ask(tgt1, 'hello', ASK_WAIT) == 'TGT %s got hello'%tgt1
+        assert asys.ask(gen1, 'hello', ASK_WAIT) == 'TGT %s got hello'%tgt1
 
     def test204_GeneratorCreateTargets(self, asys):
         # Verify multiple Generators and created Targets can pass and are unique.
         gen1 = asys.createActor(Generator)
         gen2 = asys.createActor(Generator)
-        tgt1 = asys.ask(gen1, 'Generate', 0.25)
-        tgt2 = asys.ask(gen2, 'Generate', 0.25)
+        tgt1 = asys.ask(gen1, 'Generate', ASK_WAIT)
+        tgt2 = asys.ask(gen2, 'Generate', ASK_WAIT)
         assert tgt1 is not None
         assert tgt2 is not None
         assert gen1 != gen2
@@ -195,19 +198,19 @@ class generatorTests:
         assert gen2 != tgt1
         assert gen2 != tgt2
         assert tgt1 != tgt2
-        assert asys.ask(tgt1, 'hello', 0.25) == 'TGT %s got hello'%tgt1
-        assert asys.ask(gen1, 'hello', 0.25) == 'TGT %s got hello'%tgt1
-        assert asys.ask(tgt2, 'howdy', 0.25) == 'TGT %s got howdy'%tgt2
-        assert asys.ask(gen2, 'howdy', 0.25) == 'TGT %s got howdy'%tgt2
+        assert asys.ask(tgt1, 'hello', ASK_WAIT) == 'TGT %s got hello'%tgt1
+        assert asys.ask(gen1, 'hello', ASK_WAIT) == 'TGT %s got hello'%tgt1
+        assert asys.ask(tgt2, 'howdy', ASK_WAIT) == 'TGT %s got howdy'%tgt2
+        assert asys.ask(gen2, 'howdy', ASK_WAIT) == 'TGT %s got howdy'%tgt2
 
     def test205_GeneratorCreateTargets(self, asys):
         # Verify RoutedMsg between multiple Generators and Targets
         gen1 = asys.createActor(Generator)
         gen2 = asys.createActor(Generator)
-        tgt1 = asys.ask(gen1, 'Generate', 0.25)
-        tgt2 = asys.ask(gen2, 'Generate', 0.25)
+        tgt1 = asys.ask(gen1, 'Generate', ASK_WAIT)
+        tgt2 = asys.ask(gen2, 'Generate', ASK_WAIT)
         msg = RoutedMsg([gen1,tgt2,gen2,tgt2,tgt1,gen1][::-1])
-        assert asys.ask(tgt1, msg, 0.25).response == \
+        assert asys.ask(tgt1, msg, ASK_WAIT).response == \
             [ (tgt1, 'passed along with 5 left'),
               (gen1, 'passed along with 4 left'),
               (tgt2, 'passed along with 3 left'),
