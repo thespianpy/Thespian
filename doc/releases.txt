@@ -10,6 +10,8 @@ Table of Contents
 ─────────────────
 
 3.x
+.. 3.1
+..... 3.1.0 <2016-08-29 Mon>
 .. 3.0
 ..... 3.0.4 <2016-08-12 Fri>
 ..... 3.0.3 <2016-08-11 Thu>
@@ -61,6 +63,66 @@ not change the API.
 
 3.x
 ═══
+
+3.1
+───
+
+3.1.0 <2016-08-29 Mon>
+╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+
+  ‣ API and Public Changes
+
+    ‣ Adds the ability to allow specification of a "Process Startup
+      Method" capability when starting Actor Systems to select the
+      process creation technique for new Actors: "spawn", "fork", or
+      "forkserver".
+
+    ‣ Updates the thespianShell.py utility to add Python3 compatibility
+      and a simple Source Authority for accepting test actor loadable
+      sources.
+
+  ‣ Behavioral Fixes
+
+    ‣ Actors which create multiple internal threads are now supported.
+      Thespian will still create Actors as separate processes if using a
+      "multiproc…" system base, but if those Actors internal create
+      threads (directly or through the use of a library), those threads
+      will no longer cause failures or deadlocks when calling
+      `self.send()' or `logging'.
+
+    ‣ Adds a small timeout period for TCP transport outbound connection
+      initiation to accomodate busy or noisy networks.
+
+    ‣ Fixes a system shutdown completion failure management bug that
+      formerly caused some Actors to never receive shutdown requests.
+
+    ‣ Adds timeouts to MultiprocessQueueBase transmits (matching
+      functionality of the multiprocTCPBase and multiprocUDPBase) to
+      avoid indefinite hangs on errors or blocks.
+
+  ‣ Internal Bugfixes
+
+    ‣ Ensures that source unloaded notifications are not reciprocally
+      sent between actor systems that would result in indefinitely
+      repeated notifications.
+
+    ‣ Sets an upper limit on individual socket receive calls in the TCP
+      transport to prevent starvation.  This is only a limit in
+      individual receives; the overall packet size can be larger than
+      the recieve and it will be reconstructed on the receiving side.
+
+    ‣ Retries more frequently in the TCP transport if waiting on an
+      outbound transmit slot.
+
+    ‣ If the TCP transport encounters a connection reset while sending
+      an ACK, this event is simply logged instead of throwing an
+      exception.
+
+    ‣ Various test updates for parameterizing the various allowed time
+      durations during the test.
+
+    ‣ Miscellaneous internal formatting and code cleanup.
+
 
 3.0
 ───

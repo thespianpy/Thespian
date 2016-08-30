@@ -2802,6 +2802,21 @@ Table of Contents
   *Admin Address*: /read-only/ the address for the Admin queue. This is an
                    arbitrary string value; the default is 'ThespianQ'.
 
+  *Process Startup Method*: /optional/ specifies the multiprocessing
+                            process startup method (see
+                            `multiprocessing.get_context()').  Supported
+                            values are "fork" and "spawn".  The "spawn"
+                            method is generally slower because it creates
+                            each new process from scratch, but it provides
+                            better independence and isolation.  The "fork"
+                            method is faster but can inherit memory and
+                            other resources from the parent, and it is
+                            only available under Unix.  Note that the
+                            other multi-process bases support the
+                            multiprocessing "forkserver" method, but this
+                            multiprocQueueBase does not support the
+                            "forkserver" method.
+
 
 8.4 multiprocTCPBase
 ────────────────────
@@ -2904,6 +2919,20 @@ Table of Contents
                               numbered file descriptors passed in the
                               `ThespianWatch' object.
 
+  *Process Startup Method*: /optional/ specifies the multiprocessing
+                            process startup method (see
+                            `multiprocessing.get_context()').  Supported
+                            values are "fork", "forkserver", and "spawn".
+                            The "spawn" method is generally slower because
+                            it creates each new process from scratch, but
+                            it provides better independence and isolation.
+                            The "fork" method is faster but can inherit
+                            memory and other resources from the parent,
+                            and it is only available under Unix.  The
+                            "forkserver" performance is between the other
+                            two, but closer to the performance of the
+                            "spawn" method.
+
 
 8.5 multiprocUDPBase
 ────────────────────
@@ -2954,6 +2983,20 @@ Table of Contents
                              Admin.  See the description of the same
                              capability in the multiprocTCPBase for more
                              details.
+
+  *Process Startup Method*: /optional/ specifies the multiprocessing
+                            process startup method (see
+                            `multiprocessing.get_context()').  Supported
+                            values are "fork", "forkserver", and "spawn".
+                            The "spawn" method is generally slower because
+                            it creates each new process from scratch, but
+                            it provides better independence and isolation.
+                            The "fork" method is faster but can inherit
+                            memory and other resources from the parent,
+                            and it is only available under Unix.  The
+                            "forkserver" performance is between the other
+                            two, but closer to the performance of the
+                            "spawn" method.
 
 
 9 Deploying Actor-based Projects
