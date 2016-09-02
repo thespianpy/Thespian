@@ -32,7 +32,7 @@ Table of Contents
 1 Home
 ══════
 
-  			 Introducing Thespian
+  			Introducing: Thespian
 
   Thespian is a Python library providing a framework for developing
   concurrent, distributed, fault tolerant applications.
@@ -106,7 +106,7 @@ Table of Contents
 
   ┌────
   │ $ python
-  │ >>> from thespian import *
+  │ >>> from thespian.actors import *
   │ >>> ActorSystem("multiprocTCPBase")
   └────
 
@@ -233,19 +233,21 @@ Table of Contents
 3.1 Thespian Documentation
 ──────────────────────────
 
-  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-   TXT    PDF    HTML                                                                                                                                  
-  ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-   [TXT]  [PDF]  [Using Thespian] is the main documentation reference for developers  writing and implementing Actor-based applications with Thespian. 
-   [TXT]  [PDF]  [Thespian Developer's Notes] provides documentation for developers working on Thespian itself.                                        
-   [TXT]  [PDF]  Release History is maintained in the [Thespian Release Notes].                                                                        
-   [TXT]  [PDF]  An [In Depth Introduction to Thespian].                                                                                               
-  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   TXT    PDF    HTML    Description                                                                                                                           
+  ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+   [TXT]  [PDF]  [HTML]  [Using Thespian] is the main documentation reference for developers  writing and implementing Actor-based applications with Thespian. 
+   [TXT]  [PDF]  [HTML]  [Thespian Developer's Notes] provides documentation for developers working on Thespian itself.                                        
+   [TXT]  [PDF]  [HTML]  Release History is maintained in the [Thespian Release Notes].                                                                        
+   [TXT]  [PDF]  [HTML]  An [In Depth Introduction to Thespian].                                                                                               
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 
   [TXT] file:using.txt
 
   [PDF] file:using.pdf
+
+  [HTML] file:using.html
 
   [Using Thespian] file:using.html
 
@@ -253,17 +255,23 @@ Table of Contents
 
   [PDF] file:developer.pdf
 
+  [HTML] file:developer.html
+
   [Thespian Developer's Notes] file:developer.html
 
   [TXT] file:releases.txt
 
   [PDF] file:releases.pdf
 
+  [HTML] file:releases.org
+
   [Thespian Release Notes] file:releases.org
 
   [TXT] file:in_depth.txt
 
   [PDF] file:in_depth.pdf
+
+  [HTML] file:in_depth.html
 
   [In Depth Introduction to Thespian] file:in_depth.html
 

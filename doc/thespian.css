@@ -18,3 +18,13 @@ pre span.comment {color:#b22222}
 .title {background-color:#80b0f0}
 
 body { font:16px/1.385 arial,helvetica,clean,sans-serif; }
+
+.bannerheader {
+    font-size: 180%;
+    font-weight: bold;
+    margin:auto;
+    width:70%;
+    #border: 3px solid #80b0f0;
+    padding: 10px;
+    text-align: center;
+}
