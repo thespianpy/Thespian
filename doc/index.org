@@ -82,7 +82,7 @@ Start a default Thespian Actor System on the current host system:
 
 #+BEGIN_EXAMPLE
 $ python
->>> from thespian import *
+>>> from thespian.actors import *
 >>> ActorSystem("multiprocTCPBase")
 #+END_EXAMPLE
 
