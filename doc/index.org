@@ -1,4 +1,4 @@
-#+TITLE: [[http://thespianpy.com][@@html:<img src="thesplogo2.png" alt="Thespian" width="50%" display="inline" />@@]] Python Actors
+#+TITLE: [[http://thespianpy.com][@@html:<img src="thesplogo2.png" alt="Thespian" width="50%" style="inline" />@@]] Python Actors
 #+AUTHOR: Kevin Quick <kquick@godaddy.com>
 #+SETUPFILE: theme.setup
 #+HTML_HEAD: <link href="thespian.css" rel="stylesheet" type="text/css"/>
