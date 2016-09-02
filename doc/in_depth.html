@@ -423,7 +423,7 @@ the code and resulting system state:
 </p>
 
 <ul class="org-ul">
-<li><a href="#coderef-baseclass"class="coderef" onmouseover="CodeHighlightOn(this, 'coderef-baseclass');" onmouseout="CodeHighlightOff(this, 'coderef-baseclass');">Line 3</a> shows how the Hello class subclasses the standard
+<li><a href="#coderef-baseclass" class="coderef" onmouseover="CodeHighlightOn(this, 'coderef-baseclass');" onmouseout="CodeHighlightOff(this, 'coderef-baseclass');">Line 3</a> shows how the Hello class subclasses the standard
 <code>Actor</code> baseclass provided by the <code>thespian</code> import.  The <code>Actor</code>
 baseclass provides methods for all of the actions that Actor might
 take that would interact with other Actors or the Actor System
@@ -433,7 +433,7 @@ itself (see the <i>Using Thespian</i> documentation for more details).
 
 
 <ul class="org-ul">
-<li><a href="#coderef-receiveMessage"class="coderef" onmouseover="CodeHighlightOn(this, 'coderef-receiveMessage');" onmouseout="CodeHighlightOff(this, 'coderef-receiveMessage');">Line 4</a> is the main entry point into any Actor.  It
+<li><a href="#coderef-receiveMessage" class="coderef" onmouseover="CodeHighlightOn(this, 'coderef-receiveMessage');" onmouseout="CodeHighlightOff(this, 'coderef-receiveMessage');">Line 4</a> is the main entry point into any Actor.  It
 is invoked (by the Actor System) to deliver a new message to the
 current Actor to be processed.
 
@@ -456,7 +456,7 @@ only a single message at a time.
 </p>
 </li>
 
-<li><a href="#coderef-send"class="coderef" onmouseover="CodeHighlightOn(this, 'coderef-send');" onmouseout="CodeHighlightOff(this, 'coderef-send');">Line 5</a> shows how an Actor sends a message.  Just the message
+<li><a href="#coderef-send" class="coderef" onmouseover="CodeHighlightOn(this, 'coderef-send');" onmouseout="CodeHighlightOff(this, 'coderef-send');">Line 5</a> shows how an Actor sends a message.  Just the message
 and the target Actor's Address are needed.  In this case, the
 response message is sent back to the same Actor that generated the
 incoming message.
@@ -479,7 +479,7 @@ Actors from the external world.
 </p>
 
 <ul class="org-ul">
-<li><a href="#coderef-startActorSystem"class="coderef" onmouseover="CodeHighlightOn(this, 'coderef-startActorSystem');" onmouseout="CodeHighlightOff(this, 'coderef-startActorSystem');">Line 8</a> actually performs two actions.  The first
+<li><a href="#coderef-startActorSystem" class="coderef" onmouseover="CodeHighlightOn(this, 'coderef-startActorSystem');" onmouseout="CodeHighlightOff(this, 'coderef-startActorSystem');">Line 8</a> actually performs two actions.  The first
 portion of the line gets a reference to a running Actor System,
 starting one up if one is not already running.
 
@@ -494,7 +494,7 @@ Address.
 
 
 <ul class="org-ul">
-<li><a href="#coderef-ask"class="coderef" onmouseover="CodeHighlightOn(this, 'coderef-ask');" onmouseout="CodeHighlightOff(this, 'coderef-ask');">Line 9</a> then calls the <code>ask()</code> method on the Actor System to
+<li><a href="#coderef-ask" class="coderef" onmouseover="CodeHighlightOn(this, 'coderef-ask');" onmouseout="CodeHighlightOff(this, 'coderef-ask');">Line 9</a> then calls the <code>ask()</code> method on the Actor System to
 send a message to an Actor within that system and wait for a
 response message.  In this case it sends a text query as the
 message, but as discussed previously that message is immaterial:
@@ -688,18 +688,18 @@ Goodbye
 <p>
 In the <code>hellogoodbye</code> example, the Hello Actor does not send a
 message directly back to the sender, but instead passes the sender's
-address to another Actor that it creates on the fly (in <a href="#coderef-createGoodbye"class="coderef" onmouseover="CodeHighlightOn(this, 'coderef-createGoodbye');" onmouseout="CodeHighlightOff(this, 'coderef-createGoodbye');">line
+address to another Actor that it creates on the fly (in <a href="#coderef-createGoodbye" class="coderef" onmouseover="CodeHighlightOn(this, 'coderef-createGoodbye');" onmouseout="CodeHighlightOff(this, 'coderef-createGoodbye');">line
 6</a>).  The second Actor (World) receives a tuple which
 is the combination of the original sender's address and the first
-part of the message (created in <a href="#coderef-messageTuple"class="coderef" onmouseover="CodeHighlightOn(this, 'coderef-messageTuple');" onmouseout="CodeHighlightOff(this, 'coderef-messageTuple');">line 7</a>).  The World
+part of the message (created in <a href="#coderef-messageTuple" class="coderef" onmouseover="CodeHighlightOn(this, 'coderef-messageTuple');" onmouseout="CodeHighlightOff(this, 'coderef-messageTuple');">line 7</a>).  The World
 Actor updates the message and then sends the resulting message to
-the original sender (<a href="#coderef-sendOriginalSender"class="coderef" onmouseover="CodeHighlightOn(this, 'coderef-sendOriginalSender');" onmouseout="CodeHighlightOff(this, 'coderef-sendOriginalSender');">line 14</a>).
+the original sender (<a href="#coderef-sendOriginalSender" class="coderef" onmouseover="CodeHighlightOn(this, 'coderef-sendOriginalSender');" onmouseout="CodeHighlightOff(this, 'coderef-sendOriginalSender');">line 14</a>).
 </p>
 
 <p>
 The main code (outside the Actor System) has also created another
 Actor (the Goodbye Actor).  The message printed to the console in
-<a href="#coderef-print"class="coderef" onmouseover="CodeHighlightOn(this, 'coderef-print');" onmouseout="CodeHighlightOff(this, 'coderef-print');">line 24</a> is the result of calling both the Hello and the Goodbye
+<a href="#coderef-print" class="coderef" onmouseover="CodeHighlightOn(this, 'coderef-print');" onmouseout="CodeHighlightOff(this, 'coderef-print');">line 24</a> is the result of calling both the Hello and the Goodbye
 Actors (and indirectly the World Actor).
 </p>
 
@@ -777,7 +777,7 @@ allow the Actor to perform shutdown activities.  Once the
 <code>receiveMessage()</code> returns from handling the <code>ActorExitRequest</code>, the
 Actor System will destroy the Actor.  If the Actor does not need to
 do any operations prior to being destroyed, it is free to ignore the
-<code>ActorExitRequest</code> message, but the if statement in <a href="#coderef-messageIsTuple"class="coderef" onmouseover="CodeHighlightOn(this, 'coderef-messageIsTuple');" onmouseout="CodeHighlightOff(this, 'coderef-messageIsTuple');">line
+<code>ActorExitRequest</code> message, but the if statement in <a href="#coderef-messageIsTuple" class="coderef" onmouseover="CodeHighlightOn(this, 'coderef-messageIsTuple');" onmouseout="CodeHighlightOff(this, 'coderef-messageIsTuple');">line
 12</a> ensures that when the World Actor receives the
 <code>ActorExitRequest</code> it does not try to interpret it as the greeting
 message it expected from the Hello Actor.
@@ -787,7 +787,7 @@ message it expected from the Hello Actor.
 Whenever an Actor exits, the Actor that initially created it will be
 notified via a <code>ChildActorExited</code> message.  This message is
 generated by the Actor System and specifies the address of the Actor
-which exited.  This is why there is also an if statement in <a href="#coderef-messageCheck"class="coderef" onmouseover="CodeHighlightOn(this, 'coderef-messageCheck');" onmouseout="CodeHighlightOff(this, 'coderef-messageCheck');">line
+which exited.  This is why there is also an if statement in <a href="#coderef-messageCheck" class="coderef" onmouseover="CodeHighlightOn(this, 'coderef-messageCheck');" onmouseout="CodeHighlightOff(this, 'coderef-messageCheck');">line
 5</a> above: when the World Actor exits the Hello Actor
 should not create another World Actor and send it a message&#x2014;this
 would result in an infinite loop!
@@ -890,7 +890,7 @@ provide the level of concurrency usually desired at production time.
 
 <p>
 To demonstrate the use of different ActorSystem bases, the Actor
-System <code>shutdown()</code> method call in <a href="#coderef-actorSysShutdown"class="coderef" onmouseover="CodeHighlightOn(this, 'coderef-actorSysShutdown');" onmouseout="CodeHighlightOff(this, 'coderef-actorSysShutdown');">line 25</a> of
+System <code>shutdown()</code> method call in <a href="#coderef-actorSysShutdown" class="coderef" onmouseover="CodeHighlightOn(this, 'coderef-actorSysShutdown');" onmouseout="CodeHighlightOff(this, 'coderef-actorSysShutdown');">line 25</a> of
 <a href="#hellogoodbye.py">hellogoodbye.py</a> above can be commented out, and different bases can
 be specified on the command line.  In the following example the
 "<code>multiprocTCPBase</code>" is used; this system base implements Actors with
@@ -969,7 +969,7 @@ facility configuration).
 Each time the above tests are run, a new set of Hello, World, and
 Goodbye Actors are created.  Feel free to play around, and when you
 want all of them to be deleted, simply uncomment the Actor System
-<code>shutdown()</code> call in <a href="#coderef-actorSysShutdown"class="coderef" onmouseover="CodeHighlightOn(this, 'coderef-actorSysShutdown');" onmouseout="CodeHighlightOff(this, 'coderef-actorSysShutdown');">line 25</a> above and run it one
+<code>shutdown()</code> call in <a href="#coderef-actorSysShutdown" class="coderef" onmouseover="CodeHighlightOn(this, 'coderef-actorSysShutdown');" onmouseout="CodeHighlightOff(this, 'coderef-actorSysShutdown');">line 25</a> above and run it one
 last time: although new Actors are created each time, each run will
 automatically connect to the existing Admin for that system base, so
 shutting down that Admin will stop all Actors in that Actor System.
@@ -1055,7 +1055,7 @@ Hello, universe!
 </pre>
 
 <p>
-However, modifying <a href="#coderef-ActorSystemSpec"class="coderef" onmouseover="CodeHighlightOn(this, 'coderef-ActorSystemSpec');" onmouseout="CodeHighlightOff(this, 'coderef-ActorSystemSpec');">Line 8</a> to pass "multiprocTCPBase"
+However, modifying <a href="#coderef-ActorSystemSpec" class="coderef" onmouseover="CodeHighlightOn(this, 'coderef-ActorSystemSpec');" onmouseout="CodeHighlightOff(this, 'coderef-ActorSystemSpec');">Line 8</a> to pass "multiprocTCPBase"
 as the argument to <code>ActorSystem()</code> results in the following:
 </p>
 
@@ -1071,9 +1071,9 @@ Hello, world!
 
 <p>
 Note that although the code was updated and the application was run
-again, that the ActorSystem call in <a href="#coderef-baseclass"class="coderef" onmouseover="CodeHighlightOn(this, 'coderef-baseclass');" onmouseout="CodeHighlightOff(this, 'coderef-baseclass');">line 3</a> re-connected to
+again, that the ActorSystem call in <a href="#coderef-baseclass" class="coderef" onmouseover="CodeHighlightOn(this, 'coderef-baseclass');" onmouseout="CodeHighlightOff(this, 'coderef-baseclass');">line 3</a> re-connected to
 the existing Admin.  Even though the previous run had stopped the
-Hello Actor itself (via the exit request in <a href="#coderef-nomorehello"class="coderef" onmouseover="CodeHighlightOn(this, 'coderef-nomorehello');" onmouseout="CodeHighlightOff(this, 'coderef-nomorehello');">line 10</a>, the
+Hello Actor itself (via the exit request in <a href="#coderef-nomorehello" class="coderef" onmouseover="CodeHighlightOn(this, 'coderef-nomorehello');" onmouseout="CodeHighlightOff(this, 'coderef-nomorehello');">line 10</a>, the
 code used to start the new instance of the Hello Actor was still the
 original code that the Admin process inherited when it was first
 started up.
@@ -1172,7 +1172,7 @@ INFO:root:Hello got: ChildActorExited:ActorAddr-(TCP|12.34.56.78:47034)
 </pre>
 
 <p>
-The logging statement on <a href="#coderef-loghello"class="coderef" onmouseover="CodeHighlightOn(this, 'coderef-loghello');" onmouseout="CodeHighlightOff(this, 'coderef-loghello');">line 6</a> has generated the INFO
+The logging statement on <a href="#coderef-loghello" class="coderef" onmouseover="CodeHighlightOn(this, 'coderef-loghello');" onmouseout="CodeHighlightOff(this, 'coderef-loghello');">line 6</a> has generated the INFO
 statements (except for the first which came from the Thespian
 ActorSystem itself) in the output above because the default logging
 configuration is to write to the console.
@@ -1234,8 +1234,8 @@ To customize the logging (for example, to write to a file called
 </div>
 
 <p>
-In <a href="#coderef-loginit"class="coderef" onmouseover="CodeHighlightOn(this, 'coderef-loginit');" onmouseout="CodeHighlightOff(this, 'coderef-loginit');">line 36</a> above, the <code>logDefs</code> argument specifies the logging
-configuration defined at <a href="#coderef-logdef"class="coderef" onmouseover="CodeHighlightOn(this, 'coderef-logdef');" onmouseout="CodeHighlightOff(this, 'coderef-logdef');">line 22</a>.  Running this version of the code yields the following:
+In <a href="#coderef-loginit" class="coderef" onmouseover="CodeHighlightOn(this, 'coderef-loginit');" onmouseout="CodeHighlightOff(this, 'coderef-loginit');">line 36</a> above, the <code>logDefs</code> argument specifies the logging
+configuration defined at <a href="#coderef-logdef" class="coderef" onmouseover="CodeHighlightOn(this, 'coderef-logdef');" onmouseout="CodeHighlightOff(this, 'coderef-logdef');">line 22</a>.  Running this version of the code yields the following:
 </p>
 
 <pre class="example">
@@ -1557,7 +1557,7 @@ The <code>DBUpdate</code> Actor above must be able to access a database to run
 properly; if the current host node does not have network access to
 that database then the Actor should be run on another host that does
 have access to the database.  The <code>actorSystemCapabilityCheck()</code> in
-<a href="#coderef-capcheck"class="coderef" onmouseover="CodeHighlightOn(this, 'coderef-capcheck');" onmouseout="CodeHighlightOff(this, 'coderef-capcheck');">line 7</a> checks the <code>capabilities</code> argument (which is a
+<a href="#coderef-capcheck" class="coderef" onmouseover="CodeHighlightOn(this, 'coderef-capcheck');" onmouseout="CodeHighlightOff(this, 'coderef-capcheck');">line 7</a> checks the <code>capabilities</code> argument (which is a
 dictionary provided by the current Actor System) to see if the needed
 capabilities are there.  The <code>actorSystemCapabilityCheck()</code> method
 returns <code>True</code> if the current capabilities are valid for it to be
@@ -1566,7 +1566,7 @@ Actor cannot run in this Actor System.
 </p>
 
 <p>
-There is also a <code>requirements</code> argument in <a href="#coderef-capcheck"class="coderef" onmouseover="CodeHighlightOn(this, 'coderef-capcheck');" onmouseout="CodeHighlightOff(this, 'coderef-capcheck');">line 7</a> that the
+There is also a <code>requirements</code> argument in <a href="#coderef-capcheck" class="coderef" onmouseover="CodeHighlightOn(this, 'coderef-capcheck');" onmouseout="CodeHighlightOff(this, 'coderef-capcheck');">line 7</a> that the
 Actor can check: the <code>self.createActor()</code> method can be called with an
 optional requirements dictionary that lets the creating Actor pass
 requirements to the Actor it is wishing to create.
@@ -1641,15 +1641,15 @@ each host node in our environment:
 </p>
 
 <dl class="org-dl">
-<dt> <a href="#coderef-conventionSpec"class="coderef" onmouseover="CodeHighlightOn(this, 'coderef-conventionSpec');" onmouseout="CodeHighlightOff(this, 'coderef-conventionSpec');">Line 4</a> </dt><dd>All systems specify the IP address of the
+<dt> <a href="#coderef-conventionSpec" class="coderef" onmouseover="CodeHighlightOn(this, 'coderef-conventionSpec');" onmouseout="CodeHighlightOff(this, 'coderef-conventionSpec');">Line 4</a> </dt><dd>All systems specify the IP address of the
 Convention Leader as a standard capability
 </dd>
-<dt> <a href="#coderef-dbAccessSet"class="coderef" onmouseover="CodeHighlightOn(this, 'coderef-dbAccessSet');" onmouseout="CodeHighlightOff(this, 'coderef-dbAccessSet');">Line 9</a> </dt><dd>Each system checks to see if it can access
+<dt> <a href="#coderef-dbAccessSet" class="coderef" onmouseover="CodeHighlightOn(this, 'coderef-dbAccessSet');" onmouseout="CodeHighlightOff(this, 'coderef-dbAccessSet');">Line 9</a> </dt><dd>Each system checks to see if it can access
 the database successfully and sets another capability if it
 can.  This capability is the same capability that the DBUpdate
 Actor above requires to be able to run.
 </dd>
-<dt> <a href="#coderef-startupActorSys"class="coderef" onmouseover="CodeHighlightOn(this, 'coderef-startupActorSys');" onmouseout="CodeHighlightOff(this, 'coderef-startupActorSys');">Line 13</a> </dt><dd>Each system starts the Actor System with
+<dt> <a href="#coderef-startupActorSys" class="coderef" onmouseover="CodeHighlightOn(this, 'coderef-startupActorSys');" onmouseout="CodeHighlightOff(this, 'coderef-startupActorSys');">Line 13</a> </dt><dd>Each system starts the Actor System with
 the specified set of capabilities.  The Actor Systems will join
 the Convention run by the Actor System at the specified address
 and report their capabilities to each other.
@@ -1880,8 +1880,8 @@ sdist</code> or something similar.
 </p>
 
 <p>
-The zipfile is loaded into the currently running Actor System in <a href="#coderef-loadSource"class="coderef" onmouseover="CodeHighlightOn(this, 'coderef-loadSource');" onmouseout="CodeHighlightOff(this, 'coderef-loadSource');">line
-17</a> and then the creation of the Actor in <a href="#coderef-hashCreate"class="coderef" onmouseover="CodeHighlightOn(this, 'coderef-hashCreate');" onmouseout="CodeHighlightOff(this, 'coderef-hashCreate');">line 19</a>
+The zipfile is loaded into the currently running Actor System in <a href="#coderef-loadSource" class="coderef" onmouseover="CodeHighlightOn(this, 'coderef-loadSource');" onmouseout="CodeHighlightOff(this, 'coderef-loadSource');">line
+17</a> and then the creation of the Actor in <a href="#coderef-hashCreate" class="coderef" onmouseover="CodeHighlightOn(this, 'coderef-hashCreate');" onmouseout="CodeHighlightOff(this, 'coderef-hashCreate');">line 19</a>
 uses the hash value obtained from loading the source to specify which
 source the Actor should be created from.  Note also that the Actor to
 be created is referred to by name instead of by reference, and that
