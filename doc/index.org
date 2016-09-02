@@ -198,13 +198,13 @@ utilization document.
 
 ** Thespian Documentation
 
-  | TXT | PDF | HTML                                                                                                                                |
-  |-----+-----+-------------------------------------------------------------------------------------------------------------------------------------|
-  | [[file:using.txt][TXT]] | [[file:using.pdf][PDF]] | [[file:using.html][Using Thespian]] is the main documentation reference for developers  writing and implementing Actor-based applications with Thespian. |
-  | [[file:developer.txt][TXT]] | [[file:developer.pdf][PDF]] | [[file:developer.html][Thespian Developer's Notes]] provides documentation for developers working on Thespian itself.                                        |
-  | [[file:releases.txt][TXT]] | [[file:releases.pdf][PDF]] | Release History is maintained in the [[file:releases.org][Thespian Release Notes]].                                                                        |
-  | [[file:in_depth.txt][TXT]] | [[file:in_depth.pdf][PDF]] | An [[file:in_depth.html][In Depth Introduction to Thespian]].                                                                                               |
-  |-----+-----+-------------------------------------------------------------------------------------------------------------------------------------|
+  | TXT | PDF | HTML | Description                                                                                                                         |
+  |-----+-----+------+-------------------------------------------------------------------------------------------------------------------------------------|
+  | [[file:using.txt][TXT]] | [[file:using.pdf][PDF]] | [[file:using.html][HTML]] | [[file:using.html][Using Thespian]] is the main documentation reference for developers  writing and implementing Actor-based applications with Thespian. |
+  | [[file:developer.txt][TXT]] | [[file:developer.pdf][PDF]] | [[file:developer.html][HTML]] | [[file:developer.html][Thespian Developer's Notes]] provides documentation for developers working on Thespian itself.                                        |
+  | [[file:releases.txt][TXT]] | [[file:releases.pdf][PDF]] | [[file:releases.org][HTML]] | Release History is maintained in the [[file:releases.org][Thespian Release Notes]].                                                                        |
+  | [[file:in_depth.txt][TXT]] | [[file:in_depth.pdf][PDF]] | [[file:in_depth.html][HTML]] | An [[file:in_depth.html][In Depth Introduction to Thespian]].                                                                                               |
+  |-----+-----+------+-------------------------------------------------------------------------------------------------------------------------------------|
 
 
 ** Background and Related Efforts
