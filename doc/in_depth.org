@@ -614,7 +614,7 @@ kquick 5595 5594  0 21:51 pts/86  00:00:00 logger ActorAddr-(TCP|10.56.10.5:5186
   return to our original ~hello.py~ sample:
 
 #+CAPTION: hello.py:
-#+NAME: hello.py
+#+NAME: hello2.py
 #+BEGIN_SRC python -n -r -l "#(ref:%s)" :file hello.py :tangle code/hello.py
 from thespian.actors import *
 
