@@ -14,7 +14,7 @@
 * Home
 
 #+BEGIN_CENTER
-@@html:<div class="bannerheader">@@Introducing: Thespian@@html:</div>@@
+@@html:<span class="bannerheader">@@Introducing: Thespian@@html:</span>@@
 #+END_CENTER
 
 Thespian is a Python library providing a framework for developing
