@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
 <title>Thespian Actors User's Guide</title>
-<!-- 2016-07-04 Mon 23:11 -->
+<!-- 2016-08-29 Mon 16:59 -->
 <meta  http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta  name="generator" content="Org-mode" />
 <meta  name="author" content="Kevin Quick &lt;kquick@godaddy.com&gt;" />
@@ -4030,9 +4030,23 @@ The multiprocQueueBase uses the following <a href="#sec-4-10">ActorSystem Capabi
 <dt> <b>Admin Address</b> </dt><dd><i>read-only</i> the address for the Admin queue. This is an
 arbitrary string value; the default is 'ThespianQ'.
 </dd>
+
+<dt> <b>Process Startup Method</b> </dt><dd><i>optional</i> specifies the
+multiprocessing process startup method (see
+<code>multiprocessing.get_context()</code>).  Supported values are "fork"
+and "spawn".  The "spawn" method is generally slower because it
+creates each new process from scratch, but it provides better
+independence and isolation.  The "fork" method is faster but
+can inherit memory and other resources from the parent, and it
+is only available under Unix.  Note that the other
+multi-process bases support the multiprocessing "forkserver"
+method, but this multiprocQueueBase does not support the
+"forkserver" method.
+</dd>
 </dl>
 </div>
 </div>
+
 
 <div id="outline-container-sec-8-4" class="outline-3">
 <h3 id="sec-8-4"><span class="section-number-3">8.4</span> multiprocTCPBase</h3>
@@ -4156,10 +4170,21 @@ method and be called back later when input is available on any
 of the numbered file descriptors passed in the <code>ThespianWatch</code>
 object.
 </dd>
+
+<dt> <b>Process Startup Method</b> </dt><dd><i>optional</i> specifies the
+multiprocessing process startup method (see
+<code>multiprocessing.get_context()</code>).  Supported values are "fork",
+"forkserver", and "spawn".  The "spawn" method is generally
+slower because it creates each new process from scratch, but it
+provides better independence and isolation.  The "fork" method
+is faster but can inherit memory and other resources from the
+parent, and it is only available under Unix.    The "forkserver"
+performance is between the other two, but closer to the
+performance of the "spawn" method.
+</dd>
 </dl>
 </div>
 </div>
-
 
 
 <div id="outline-container-sec-8-5" class="outline-3">
@@ -4231,10 +4256,23 @@ If not specified, the default Admin Port of 1029 is used.
 leader's Admin.  See the description of the same capability in the
 <a href="#sec-8-4">multiprocTCPBase</a> for more details.
 </dd>
+
+<dt> <b>Process Startup Method</b> </dt><dd><i>optional</i> specifies the
+multiprocessing process startup method (see
+<code>multiprocessing.get_context()</code>).  Supported values are "fork",
+"forkserver", and "spawn".  The "spawn" method is generally
+slower because it creates each new process from scratch, but it
+provides better independence and isolation.  The "fork" method
+is faster but can inherit memory and other resources from the
+parent, and it is only available under Unix.  The "forkserver"
+performance is between the other two, but closer to the
+performance of the "spawn" method.
+</dd>
 </dl>
 </div>
 </div>
 </div>
+
 
 <div id="outline-container-sec-9" class="outline-2">
 <h2 id="sec-9"><span class="section-number-2">9</span> Deploying Actor-based Projects</h2>
@@ -4382,7 +4420,7 @@ difference will remain unaddressed.
 </div></div>
 <div id="postamble" class="status">
 <p class="author">Author: Kevin Quick &lt;kquick@godaddy.com&gt;</p>
-<p class="date">Created: 2016-07-04 Mon 23:11</p>
+<p class="date">Created: 2016-08-29 Mon 16:59</p>
 <p class="creator"><a href="http://www.gnu.org/software/emacs/">Emacs</a> 24.5.2 (<a href="http://orgmode.org">Org</a> mode 8.2.10)</p>
 <p class="validation"><a href="http://validator.w3.org/check?uri=referer">Validate</a></p>
 </div>
