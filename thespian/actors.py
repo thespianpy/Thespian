@@ -105,6 +105,8 @@ class ActorAddress(object):
 
     def __ne__(self, o): return not self.__eq__(o)
 
+    __hash__ = None
+
 
 class Actor(object):
     '''This is the Actor encapsulation itself.  The receiveMessage()
