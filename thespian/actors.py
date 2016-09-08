@@ -460,6 +460,7 @@ class ValidateSource(ActorSystemMessage):
     def __init__(self, sourceHash, sourceData, sourceInfo=None):
         self.sourceHash = sourceHash
         self.sourceData = sourceData
+        self.sourceInfo = sourceInfo
 
     def __eq__(self, o):
         return isinstance(o, ValidateSource) and \
