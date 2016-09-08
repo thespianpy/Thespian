@@ -8,24 +8,34 @@ from thespian.system.utilis import thesplog
 
 ASK_WAIT = datetime.timedelta(seconds=15)
 
-
 def threaded(count):
+    """This is the main body of each thread.  It will generate a `count`
+       number of log messages (which will cause actor transmits to the
+       logger) and then exit.
+    """
     try:
-        thesplog('threaded with %s', count)
         time.sleep(1)
         for x in range(count):
-            thesplog('threaded number %s of %s', x, count)
             logging.debug('Msg %s of %s', x, count)
-            time.sleep(0.01)
-        thesplog('done with %s', count)
+            time.sleep(0.0001)
         time.sleep(1)
         logging.debug('Done')
-        thesplog('gone')
     except Exception as ex:
         thesplog('Failed threading because: %s', ex)
+        logging.exception('Failed threading')
 
 
 class Weaver(ActorTypeDispatcher):
+    """This is the main actor that will create a number of threads, then
+       wait for the threads to complete.
+
+       Note that this actor blocks while waiting for all the thread
+       activity, so it is not available to provide actor receive
+       functionality during this time.  If enough threads are started,
+       there can be a very large number of transmits (exceeding
+       internal overflow thresholds) unless the multi-threading works
+       properly to allow those transmits to be sent.
+    """
 
     def receiveMsg_int(self, intmsg, sender):
         threads = []
@@ -50,7 +60,6 @@ class Weaver(ActorTypeDispatcher):
         self.send(sender, 'done')
 
 
-
 class TestFuncThreadedActor(object):
     def testCreateActorSystem(self, asys): pass
 
@@ -64,3 +73,8 @@ class TestFuncThreadedActor(object):
         r = asys.ask(weaver, 10, ASK_WAIT)
         assert r == 'done'
 
+@pytest.mark.parametrize('num_threads', [1,10,30,100])
+def test_threads(asys, num_threads):
+        weaver = asys.createActor(Weaver)
+        r = asys.ask(weaver, num_threads, ASK_WAIT)
+        assert r == 'done'
