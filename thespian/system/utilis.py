@@ -269,14 +269,19 @@ def partition(testPred, inp_iterable, output_type=list):
 def fmap(func, obj):
     if isinstance(obj, tuple):
         return tuple(map(functools.partial(fmap, func), obj))
-    iterableitems =  isinstance(obj, list)
+    iterableitems =  isinstance(obj, (list, dict))
     if not iterableitems:
         try:
-            iterableitems = isinstance(obj, (filter, map, zip))
+            iterableitems = isinstance(obj, (filter, map, zip, range))
         except TypeError:
+            # Python2 doesn't have objects like the above.  The
+            # corresponding operations just result in lists which is
+            # already covered.
             pass
     if iterableitems:
-        return map(functools.partial(fmap, func), obj)
+        if hasattr(obj, 'items'):
+            return dict(map(functools.partial(fmap, func), obj.items()))
+        return list(map(functools.partial(fmap, func), obj))
     if hasattr(obj, 'fmap'):
         return obj.fmap(func)
     return func(obj)
