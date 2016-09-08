@@ -63,8 +63,8 @@ class asyncTransportBase(object):
     def __init__(self, *args, **kw):
         super(asyncTransportBase, self).__init__(*args, **kw)
         self._aTB_numPendingTransmits = 0  # counts recursion and in-progress
-        self._aTB_processing = False       # limits to a single operation
         self._aTB_lock = threading.Lock()  # protects the following:
+        self._aTB_processing = False       # limits to a single operation
         self._aTB_queuedPendingTransmits = deque()
 
 
@@ -224,6 +224,14 @@ class asyncTransportBase(object):
                      level = logging.WARNING)
 
 
+    def _exclusively_processing(self):
+        with self._aTB_lock:
+            if self._aTB_processing:
+                return False  # Another thread is processing, not exclusive
+            self._aTB_processing = True
+            return True  # This thread is exclusively holding the processing mutex
+
+
     def _schedulePreparedIntent(self, transmitIntent):
         # If there's nothing to send, that's implicit success
         if not transmitIntent.serMsg:
@@ -235,21 +243,15 @@ class asyncTransportBase(object):
             if not queued:
                 return
 
-        if not is_main_thread():
-            if queued:
-                # Wakeup main thread: there is something to do
-                self.interrupt_wait()
-            return
-
-        # OK, this can be sent now, so go ahead and get it sent out
         if not self._canSendNow():
             if not self._aTB_processing:  # recursion protection
-                self._aTB_processing = True
-                self._drain_tx_queue_if_needed(transmitIntent.delay())
-                self._aTB_processing = False
-            return
+                if self._exclusively_processing():
+                    self._drain_tx_queue_if_needed(transmitIntent.delay())
+                    self._aTB_processing = False
+                return
 
-        self._aTB_processing = True
+        if not self._exclusively_processing():
+            return
 
         try:
             # Queue transmits until there is one still pending; at that
