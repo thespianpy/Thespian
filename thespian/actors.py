@@ -609,8 +609,8 @@ class ActorSystem(object):
         """
         if not isinstance(actorAddr, ActorAddress):
             raise ValueError(
-                "Actor `tell' address is not a valid ActorAddress: " +
-                type(actorAddr))
+                "Actor `tell' address \"%s\" is not a valid ActorAddress: %s" %
+                (str(actorAddr), str(type(actorAddr))))
         self._systemBase.tell(actorAddr, msg)
 
     def listen(self, timeout=None):
