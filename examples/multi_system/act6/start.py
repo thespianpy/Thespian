@@ -15,9 +15,11 @@ class SimpleSourceAuthority(Actor):
         if msg is True:
             self.registerSourceAuthority()
         if isinstance(msg, ValidateSource):
-            self.send(sender, ValidatedSource(msg.sourceHash,
-                                              msg.sourceData,
-                                              msg.sourceInfo))
+            self.send(sender,
+                      ValidatedSource(msg.sourceHash,
+                                      msg.sourceData,
+                                      # Thespian pre 3.2.0 has no sourceInfo
+                                      getattr(msg, 'sourceInfo', None)))
 
 
 asys = ActorSystem('multiprocTCPBase', capabilities)

@@ -523,7 +523,8 @@ class ConventioneerAdmin(GlobalNamesAdmin):
         if envelope.message.isValid():
             self._sources[sourceHash] = ValidSource(sourceHash,
                                                     envelope.message.sourceData,
-                                                    envelope.message.sourceInfo)
+                                                    getattr(envelope.message,
+                                                            'sourceInfo', None))
             for each in pending:
                 self.h_PendingActor(each)
         else:

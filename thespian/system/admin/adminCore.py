@@ -381,7 +381,7 @@ class AdminCore(systemCommonBase):
                                        getattr(envelope.message, 'sourceInfo', None))
         thesplog('Source hash %s (%s) validated by Source Authority; now available.',
                  envelope.message.sourceHash,
-                 envelope.message.sourceInfo)
+                 getattr(envelope.message, 'sourceInfo', '-'))
 
     def _loadValidatedActorSource(self, sourceHash, sourceZip, sourceInfo):
         # Validate the source file; this doesn't actually utilize the
