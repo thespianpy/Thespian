@@ -9,6 +9,13 @@ from thespian.system.transport import TransmitIntent
 from thespian.system.sourceLoader import SourceHashFinder
 
 
+class ValidSource(object):
+    def __init__(self, srchash, zipsrc, srcinfo):
+        self.srcHash = srchash
+        self.zipsrc  = zipsrc
+        self.srcInfo = srcinfo
+
+
 class AdminCore(systemCommonBase):
 
     def __init__(self, transport, address, capabilities,
@@ -31,7 +38,7 @@ class AdminCore(systemCommonBase):
         self._nannying = AssocList()  # child actorAddress -> parent Address
         self._deadLetterHandler = None
         self._sources = {}  # Index is sourcehash, value is requestor
-                            # ActorAddress or zipsrc (when validated)
+                            # ActorAddress or ValidSource (when validated)
         self._sourceAuthority = None
 
 
@@ -114,7 +121,7 @@ class AdminCore(systemCommonBase):
                                      inShutdown=self.isShuttingDown())
         resp.setDeadLetterHandler(self._deadLetterHandler)
         self._updateStatusResponse(resp)
-        resp.setLoadedSources(list(self._sources.keys()))
+        resp.setLoadedSources(self._sources)
         resp.sourceAuthority = self._sourceAuthority
         return resp
 
@@ -233,11 +240,16 @@ class AdminCore(systemCommonBase):
             return True
 
         sourceHash = envelope.message.sourceHash
-        if sourceHash and sourceHash not in self._sources:
-            self._sendPendingActorResponse(
-                envelope, None,
-                errorCode=PendingActorResponse.ERROR_Invalid_SourceHash)
-            return True
+        if sourceHash:
+            if sourceHash not in self._sources:
+                self._sendPendingActorResponse(envelope, None,
+                                               errorCode = PendingActorResponse.ERROR_Invalid_SourceHash)
+                return True
+            if not isinstance(self._sources[sourceHash], ValidSource):
+                thesplog('sourceHash %s is not valid (yet)', sourceHash)
+                self._sendPendingActorResponse(envelope, None,
+                                               errorCode = PendingActorResponse.ERROR_Invalid_SourceHash)
+                return True
 
         # Note, both Admin and remote requester will have a local
         # child address for the child (with a different instanceNumber
@@ -347,7 +359,10 @@ class AdminCore(systemCommonBase):
             return
         if sourceHash in self._sources:
             logging.getLogger('Thespian')\
-                   .info('Source hash %s already loaded', sourceHash)
+                   .info('Source hash %s (%s) already loaded', sourceHash,
+                         self._sources[sourceHash].srcInfo
+                         if isinstance(self._sources[sourceHash], ValidSource)
+                         else '<pending>')
             return
         if self._sourceAuthority:
             self._send_intent(TransmitIntent(self._sourceAuthority,
@@ -362,11 +377,13 @@ class AdminCore(systemCommonBase):
 
     def h_ValidatedSource(self, envelope):
         self._loadValidatedActorSource(envelope.message.sourceHash,
-                                       envelope.message.sourceZip)
-        thesplog('Source hash %s validated by Source Authority; now available.',
-                 envelope.message.sourceHash)
+                                       envelope.message.sourceZip,
+                                       getattr(envelope.message, 'sourceInfo', None))
+        thesplog('Source hash %s (%s) validated by Source Authority; now available.',
+                 envelope.message.sourceHash,
+                 envelope.message.sourceInfo)
 
-    def _loadValidatedActorSource(self, sourceHash, sourceZip):
+    def _loadValidatedActorSource(self, sourceHash, sourceZip, sourceInfo):
         # Validate the source file; this doesn't actually utilize the
         # sourceZip, but it ensures that the sourceZip isn't garbage
         # before registering it as active source.
@@ -374,8 +391,8 @@ class AdminCore(systemCommonBase):
             f = SourceHashFinder(sourceHash, lambda v: v, sourceZip)
             namelist = f.getZipNames()
             logging.getLogger('Thespian').info(
-                'Validated source hash %s, %s modules (%s)',
-                sourceHash, len(namelist),
+                'Validated source hash %s - %s, %s modules (%s)',
+                sourceHash, sourceInfo, len(namelist),
                 ', '.join(namelist if len(namelist) < 10 else
                           namelist[:9] + ['...']))
         except Exception as ex:
@@ -385,7 +402,7 @@ class AdminCore(systemCommonBase):
             return
 
         # Store this registered source
-        self._sources[sourceHash] = sourceZip
+        self._sources[sourceHash] = ValidSource(sourceHash, sourceZip, str(sourceInfo))
 
     def unloadActorSource(self, sourceHash):
         if sourceHash in self._sources:

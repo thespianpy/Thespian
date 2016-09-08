@@ -5,6 +5,7 @@ from thespian.system.utilis import (thesplog, ExpiryTime, checkActorCapabilities
                                     actualActorClass)
 from thespian.system.logdirector import LogAggregator
 from thespian.system.admin.globalNames import GlobalNamesAdmin
+from thespian.system.admin.adminCore import ValidSource
 from thespian.system.transport import TransmitIntent, SendStatus
 from thespian.system.messages.admin import PendingActorResponse
 from thespian.system.messages.convention import *
@@ -506,10 +507,12 @@ class ConventioneerAdmin(GlobalNamesAdmin):
 
     def h_SourceHashTransferRequest(self, envelope):
         sourceHash = envelope.message.sourceHash
+        src = self._sources.get(sourceHash, None)
         self._send_intent(
             TransmitIntent(envelope.sender,
                            SourceHashTransferReply(sourceHash,
-                                                   self._sources.get(sourceHash, None))))
+                                                   src and src.zipsrc,
+                                                   src and src.srcInfo)))
         return True
 
 
@@ -518,7 +521,9 @@ class ConventioneerAdmin(GlobalNamesAdmin):
         pending = self._pendingSources[sourceHash]
         del self._pendingSources[sourceHash]
         if envelope.message.isValid():
-            self._sources[sourceHash] = envelope.message.sourceData
+            self._sources[sourceHash] = ValidSource(sourceHash,
+                                                    envelope.message.sourceData,
+                                                    envelope.message.sourceInfo)
             for each in pending:
                 self.h_PendingActor(each)
         else:

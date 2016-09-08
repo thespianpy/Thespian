@@ -308,10 +308,15 @@ class systemBase(object):
             d = f.read()
             import hashlib
             hval = hashlib.md5(d).hexdigest()
-            self.transport.scheduleTransmit(None,
-                                            TransmitIntent(self.adminAddr,
-                                                           ValidateSource(hval, d),
-                                                           onError = self._loadReqFailed))
+            self.transport.scheduleTransmit(
+                None,
+                TransmitIntent(self.adminAddr,
+                               ValidateSource(hval, d,
+                                              getattr(f, 'name',
+                                                      str(fname)
+                                                      if hasattr(fname, 'read')
+                                                      else fname)),
+                               onError = self._loadReqFailed))
             while not loadLimit.expired():
                 if not self.transport.run(TransmitOnly, loadLimit.remaining()):
                     break  # all transmits completed

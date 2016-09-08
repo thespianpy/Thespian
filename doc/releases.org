@@ -16,6 +16,13 @@ version changes indicate incompatible changes, minor versions indicate
 added functionality that is backwards compatible, and bugfix changes
 do not change the API.
 
+* Upcoming
+
+  * Added sourceInfo argument to ValidateSource; allows informational
+    tag to be associated with a loadable source for logging and status
+    information.
+
+
 
 * 3.x
 

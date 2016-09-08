@@ -56,8 +56,9 @@ class SourceHashTransferReply(ActorSystemMessage):
        indication if the sourceHash is unknown.  A sourceData response
        has a simple fletcher32 checksum to provide a basic integrity
        check on the receiving end."""
-    def __init__(self, sourceHash, sourceData=None):
+    def __init__(self, sourceHash, sourceData=None, sourceInfo=None):
         self.sourceHash = sourceHash
+        self.sourceInfo = sourceInfo
         self.sourceData = sourceData # None/False indicates not-found
         if sourceData:
             self.sourceSum = self._fletcher32(sourceData)

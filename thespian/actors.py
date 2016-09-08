@@ -457,7 +457,7 @@ class ValidateSource(ActorSystemMessage):
     """Provides loadActorSource input that should be validated (and
        possibly decrypted).
     """
-    def __init__(self, sourceHash, sourceData):
+    def __init__(self, sourceHash, sourceData, sourceInfo=None):
         self.sourceHash = sourceHash
         self.sourceData = sourceData
 
@@ -472,9 +472,10 @@ class ValidatedSource(ActorSystemMessage):
     """The response to the ValidateSource providing the validated source
        code to enable.
     """
-    def __init__(self, sourceHash, sourceZip):
+    def __init__(self, sourceHash, sourceZip, sourceInfo=None):
         self.sourceHash = sourceHash
-        self.sourceZip = sourceZip
+        self.sourceZip  = sourceZip
+        self.sourceInfo = sourceInfo
 
     def __eq__(self, o):
         return isinstance(o, ValidatedSource) and \

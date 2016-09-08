@@ -56,7 +56,7 @@ class Thespian_SystemStatus(_Common_StatusResp):
         self.globalActors           = {}
         self.inShutdown             = inShutdown
         self.sourceAuthority        = None
-        self.loadedSources          = []
+        self.loadedSources          = []  # array of (hash, infostr)
     def addDeadLetter(self, deadAddress): self.deadLetterAddresses.append(deadAddress)
     def setConventionLeaderAddress(self, addr): self.conventionLeader = addr
     def addConventioneer(self, memberAddress, validTime):
@@ -65,7 +65,10 @@ class Thespian_SystemStatus(_Common_StatusResp):
     def addGlobalActor(self, name, address): self.globalActors[name] = address
     def setDeadLetterHandler(self, address): self.deadLetterHandler = address
     def setNotifyHandlers(self, addresses): self.notifyAddresses = addresses
-    def setLoadedSources(self, sourceHashes): self.loadedSources = sourceHashes
+    def setLoadedSources(self, sourceHashes):
+        self.loadedSources = list(map(lambda K: (sourceHashes[K].srcHash,
+                                                 sourceHashes[K].srcInfo),
+                                      sourceHashes))
 
 
 # Likewise the management of each Actor should support the following diagnostics
@@ -143,7 +146,7 @@ def formatStatus(response, showAddress=str, tofd=None):
         tofd.write('  |Source Authority: %s\n'%(showAddress(response.sourceAuthority)))
         tofd.write('  |Loaded Sources [%d]:\n'%len(response.loadedSources))
         for S in response.loadedSources:
-            tofd.write('    %s\n'%(str(S)))
+            tofd.write('    %s  "%s"\n'%S)
         tofd.write('  |Global Actors [%d]:\n'%len(response.globalActors))
         for N in response.globalActors:
             tofd.write('    %s: %s\n'%(N, showAddress(response.globalActors[N])))

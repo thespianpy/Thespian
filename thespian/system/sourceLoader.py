@@ -399,7 +399,7 @@ def loadModuleFromHashSource(sourceHash, sources, modName, modClass):
             return _loadModuleFromVerifiedHashSource(metapath, modName, modClass)
 
     edata = sources[sourceHash]
-    f = SourceHashFinder(sourceHash, lambda v: v, edata)
+    f = SourceHashFinder(sourceHash, lambda v: v, getattr(edata, 'zipsrc', edata))
     sys.meta_path.insert(0, f)
     return _loadModuleFromVerifiedHashSource(f, modName, modClass)
 
