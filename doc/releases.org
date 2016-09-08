@@ -7,7 +7,7 @@
 #+LATEX_HEADER: \product{Thespian}
 #+LATEX_HEADER: \component{Python Actor System}
 #+LATEX_HEADER: \doctype{Release Notes}
-#+LATEX_HEADER: \docrev{3.1.1}{2016 Sep 8}
+#+LATEX_HEADER: \docrev{3.2.0}{2016 Sep 8}
 #+LATEX_HEADER: \docid{TheDoc-06}
 #+OPTIONS: ^:nil num:nil
 
@@ -16,15 +16,22 @@ version changes indicate incompatible changes, minor versions indicate
 added functionality that is backwards compatible, and bugfix changes
 do not change the API.
 
-* Upcoming
+* 3.x
+
+** 3.2
+
+*** 3.2.0 <2016-09-08 Thu>
 
   * Added sourceInfo argument to ValidateSource; allows informational
     tag to be associated with a loadable source for logging and status
-    information.
+    information.  Thespian will automatically attempt to identify the
+    filename for the ~ActorSystem.loadSource()~ operation and provide
+    that on status requests.
 
+  * Updated handling for multithreaded Actors to allow any thread to
+    ~self.send()~ messages (or generate logging output); receiving
+    messages still occurs only on the main thread.
 
-
-* 3.x
 
 ** 3.1
 
