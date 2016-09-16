@@ -2057,7 +2057,8 @@ actorSys = ActorSystem(systemBase = None,
       independence between loaded source modules and prevents
       interference between them, but it means that the pickled object
       will have a different source hash on the target side than on the
-      sender side.
+      sender side.  The object should be encoded in a more
+      conventional format (e.g. JSON).
 
 *** Security Considerations
 
