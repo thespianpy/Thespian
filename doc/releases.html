@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
 <title>Thespian Release Notes</title>
-<!-- 2016-09-08 Thu 16:08 -->
+<!-- 2016-09-16 Fri 09:41 -->
 <meta  http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta  name="generator" content="Org-mode" />
 <meta  name="author" content="Kevin Quick &lt;kquick@godaddy.com&gt;" />
@@ -159,8 +159,9 @@ for the JavaScript code in this tag.
 <ul>
 <li><a href="#sec-1-1">3.2</a>
 <ul>
-<li><a href="#sec-1-1-1">3.2.1 <span class="timestamp-wrapper"><span class="timestamp">&lt;2016-09-08 Thu&gt;</span></span></a></li>
-<li><a href="#sec-1-1-2">3.2.0 <span class="timestamp-wrapper"><span class="timestamp">&lt;2016-09-08 Thu&gt;</span></span></a></li>
+<li><a href="#sec-1-1-1">3.2.2 <span class="timestamp-wrapper"><span class="timestamp">&lt;2016-09-15 Thu&gt;</span></span></a></li>
+<li><a href="#sec-1-1-2">3.2.1 <span class="timestamp-wrapper"><span class="timestamp">&lt;2016-09-08 Thu&gt;</span></span></a></li>
+<li><a href="#sec-1-1-3">3.2.0 <span class="timestamp-wrapper"><span class="timestamp">&lt;2016-09-08 Thu&gt;</span></span></a></li>
 </ul>
 </li>
 <li><a href="#sec-1-2">3.1</a>
@@ -250,8 +251,75 @@ do not change the API.
 <h3 id="sec-1-1">3.2</h3>
 <div class="outline-text-3" id="text-1-1">
 </div><div id="outline-container-sec-1-1-1" class="outline-4">
-<h4 id="sec-1-1-1">3.2.1 <span class="timestamp-wrapper"><span class="timestamp">&lt;2016-09-08 Thu&gt;</span></span></h4>
+<h4 id="sec-1-1-1">3.2.2 <span class="timestamp-wrapper"><span class="timestamp">&lt;2016-09-15 Thu&gt;</span></span></h4>
 <div class="outline-text-4" id="text-1-1-1">
+<ul class="org-ul">
+<li>Suppressed notification of pre-registered remotes on
+<code>preRegisterRemoteSystem()</code> call; notification is now only
+delivered when the remote actually confirms convention
+registration.
+</li>
+
+<li>Fixed convention notification remote admin address value (in some
+scenarios this delivered the convention message itself rather than
+the remote address).
+</li>
+
+<li>Enhanced notification tests.
+</li>
+
+<li>Actors with multiple threads that initiate large numbers of sends
+from the alternate threads but which do not receive many messages
+to invoke the main thread encountered significant backlog or flow
+suppression in those threads.  This release modifies the transmit
+logic to be invokeable by any thread (but only one thread at a
+time) to avoid this situation.  The message receiving and
+invocation of the actor's <code>receiveMessage()</code> method still occurs
+only on the primary thread.  No change in Actor implementation is
+indicated, and this should generally improve the functionality of
+any multi-threaded Actors.
+
+<p>
+Note that the use of Thespian Actors suggests that Actors rather
+than threads should be used for parallelism; this support is
+designed for Actors which import libraries where those libraries
+internally create multiple threads (e.g. kazoo).
+</p>
+</li>
+
+<li>Modified recent async transport base changes to ensure that the
+maximum number of message sends are performed at any point in
+time.  The previous release introduced a degradation wherein a
+single send could block the processing of other, independent
+message sends for a period of time; messages were still delivered
+but often not in a timely manner.
+</li>
+
+<li>Enhanced the thespianShell utility's simple source authority to
+propagate available <code>sourceInfo</code> field for loadable sources.
+</li>
+
+<li>Fixed a missing import error when resolving race conditions where
+multiple globalName actor requests resulted in multiple actors
+being created.
+</li>
+
+<li>Minimized traceback line-number offsets in loaded sources from an
+offset of 3 to an offset of 1 line number.
+</li>
+
+<li>Documentation updates, including a warning about the inability to
+exchange objects between different loaded sources unless
+conventionally serialized (see <a href="using.html">Source Loading Issues</a>).
+</li>
+</ul>
+</div>
+</div>
+
+
+<div id="outline-container-sec-1-1-2" class="outline-4">
+<h4 id="sec-1-1-2">3.2.1 <span class="timestamp-wrapper"><span class="timestamp">&lt;2016-09-08 Thu&gt;</span></span></h4>
+<div class="outline-text-4" id="text-1-1-2">
 <ul class="org-ul">
 <li>Added backward compatibility support for interacting with
 pre-3.2.0 Thespian instances without the sourceInfo argument.
@@ -261,9 +329,9 @@ pre-3.2.0 Thespian instances without the sourceInfo argument.
 </div>
 
 
-<div id="outline-container-sec-1-1-2" class="outline-4">
-<h4 id="sec-1-1-2">3.2.0 <span class="timestamp-wrapper"><span class="timestamp">&lt;2016-09-08 Thu&gt;</span></span></h4>
-<div class="outline-text-4" id="text-1-1-2">
+<div id="outline-container-sec-1-1-3" class="outline-4">
+<h4 id="sec-1-1-3">3.2.0 <span class="timestamp-wrapper"><span class="timestamp">&lt;2016-09-08 Thu&gt;</span></span></h4>
+<div class="outline-text-4" id="text-1-1-3">
 <ul class="org-ul">
 <li>Added sourceInfo argument to ValidateSource; allows informational
 tag to be associated with a loadable source for logging and status
@@ -1340,7 +1408,7 @@ The 1.x Release series was developed and used internally by GoDaddy
 </div>
 <div id="postamble" class="status">
 <p class="author">Author: Kevin Quick &lt;kquick@godaddy.com&gt;</p>
-<p class="date">Created: 2016-09-08 Thu 16:08</p>
+<p class="date">Created: 2016-09-16 Fri 09:41</p>
 <p class="creator"><a href="http://www.gnu.org/software/emacs/">Emacs</a> 24.5.2 (<a href="http://orgmode.org">Org</a> mode 8.2.10)</p>
 <p class="validation"><a href="http://validator.w3.org/check?uri=referer">Validate</a></p>
 </div>

@@ -1337,7 +1337,7 @@ Table of Contents
 
   This method can be called to register or de-register this Actor for
   handling system registration events from other ActorSystems (see Other
-  Actor Systems) via `ActorSystemConventionUpdate' messages.
+  Actor Systems) via ActorSystemConventionUpdate messages.
 
 
 5.8 registerSourceAuthority
@@ -2185,6 +2185,16 @@ Table of Contents
 
   4. Loaded sources should expect that `__file__' or other internals can
      be set to None.
+
+  5. It is not possible to send a pickled message between sources, even
+     if that message is imported from the same file/module in both
+     loaded sources.  This is because each loaded source (and all of its
+     top level symbols) are internally prefixed with the hash of the
+     source they are contained in; this helps preserve independence
+     between loaded source modules and prevents interference between
+     them, but it means that the pickled object will have a different
+     source hash on the target side than on the sender side.  The object
+     should be encoded in a more conventional format (e.g. JSON).
 
 
 6.9.2 Security Considerations

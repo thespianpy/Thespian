@@ -11,6 +11,7 @@ Table of Contents
 
 3.x
 .. 3.2
+..... 3.2.2 <2016-09-15 Thu>
 ..... 3.2.1 <2016-09-08 Thu>
 ..... 3.2.0 <2016-09-08 Thu>
 .. 3.1
@@ -70,6 +71,60 @@ not change the API.
 
 3.2
 ───
+
+3.2.2 <2016-09-15 Thu>
+╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+
+  ‣ Suppressed notification of pre-registered remotes on
+    `preRegisterRemoteSystem()' call; notification is now only delivered
+    when the remote actually confirms convention registration.
+
+  ‣ Fixed convention notification remote admin address value (in some
+    scenarios this delivered the convention message itself rather than
+    the remote address).
+
+  ‣ Enhanced notification tests.
+
+  ‣ Actors with multiple threads that initiate large numbers of sends
+    from the alternate threads but which do not receive many messages to
+    invoke the main thread encountered significant backlog or flow
+    suppression in those threads.  This release modifies the transmit
+    logic to be invokeable by any thread (but only one thread at a time)
+    to avoid this situation.  The message receiving and invocation of
+    the actor's `receiveMessage()' method still occurs only on the
+    primary thread.  No change in Actor implementation is indicated, and
+    this should generally improve the functionality of any
+    multi-threaded Actors.
+
+    Note that the use of Thespian Actors suggests that Actors rather
+    than threads should be used for parallelism; this support is
+    designed for Actors which import libraries where those libraries
+    internally create multiple threads (e.g. kazoo).
+
+  ‣ Modified recent async transport base changes to ensure that the
+    maximum number of message sends are performed at any point in time.
+    The previous release introduced a degradation wherein a single send
+    could block the processing of other, independent message sends for a
+    period of time; messages were still delivered but often not in a
+    timely manner.
+
+  ‣ Enhanced the thespianShell utility's simple source authority to
+    propagate available `sourceInfo' field for loadable sources.
+
+  ‣ Fixed a missing import error when resolving race conditions where
+    multiple globalName actor requests resulted in multiple actors being
+    created.
+
+  ‣ Minimized traceback line-number offsets in loaded sources from an
+    offset of 3 to an offset of 1 line number.
+
+  ‣ Documentation updates, including a warning about the inability to
+    exchange objects between different loaded sources unless
+    conventionally serialized (see [Source Loading Issues]).
+
+
+  [Source Loading Issues] file:using.org::*Source Loading Issues
+
 
 3.2.1 <2016-09-08 Thu>
 ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌

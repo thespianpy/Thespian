@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
 <title>Thespian Actors User's Guide</title>
-<!-- 2016-09-02 Fri 08:56 -->
+<!-- 2016-09-16 Fri 09:41 -->
 <meta  http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta  name="generator" content="Org-mode" />
 <meta  name="author" content="Kevin Quick &lt;kquick@godaddy.com&gt;" />
@@ -2030,7 +2030,7 @@ handling Dead Letters.
 <p>
 This method can be called to register or de-register this Actor for
 handling system registration events from other ActorSystems (see
-<a href="#sec-4-11">Other Actor Systems</a>) via <code>ActorSystemConventionUpdate</code> messages.
+<a href="#sec-4-11">Other Actor Systems</a>) via <a href="#sec-7-7">ActorSystemConventionUpdate</a> messages.
 </p>
 </div>
 </div>
@@ -3178,6 +3178,18 @@ will be loaded via <code>loadActorSource()</code>.
 
 <li>Loaded sources should expect that <code>__file__</code> or other internals
 can be set to None.
+</li>
+
+<li>It is not possible to send a pickled message between sources,
+even if that message is imported from the same file/module in
+both loaded sources.  This is because each loaded source (and
+all of its top level symbols) are internally prefixed with the
+hash of the source they are contained in; this helps preserve
+independence between loaded source modules and prevents
+interference between them, but it means that the pickled object
+will have a different source hash on the target side than on the
+sender side.  The object should be encoded in a more
+conventional format (e.g. JSON).
 </li>
 </ol>
 </div>
@@ -4420,7 +4432,7 @@ difference will remain unaddressed.
 </div></div>
 <div id="postamble" class="status">
 <p class="author">Author: Kevin Quick &lt;kquick@godaddy.com&gt;</p>
-<p class="date">Created: 2016-09-02 Fri 08:56</p>
+<p class="date">Created: 2016-09-16 Fri 09:41</p>
 <p class="creator"><a href="http://www.gnu.org/software/emacs/">Emacs</a> 24.5.2 (<a href="http://orgmode.org">Org</a> mode 8.2.10)</p>
 <p class="validation"><a href="http://validator.w3.org/check?uri=referer">Validate</a></p>
 </div>
