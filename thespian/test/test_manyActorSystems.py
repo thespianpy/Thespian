@@ -425,10 +425,9 @@ class Notified(Actor):
             self.notifications = []
             self.notifyOnSystemRegistrationChanges(True)
         elif isinstance(msg, ActorSystemConventionUpdate):
-            self.notifications.append('%s %s'%(('IN' if msg._added else 'OUT'),
-                                               str(msg._remoteAdminAddress)))
+            self.notifications.append(msg)
         elif msg == 'notifications':
-            self.send(sender, '&'.join(self.notifications))
+            self.send(sender, self.notifications)
 
 
 class TestFuncConventionWatcher(object):
@@ -465,12 +464,16 @@ class TestFuncConventionWatcher(object):
             # Verify all anticipated registrations actually occurred.
 
             for X in range(300):
-                registrations = asys.ask(watcher, 'notifications', 1).split('&')
+                registrations = asys.ask(watcher, 'notifications', 1)
                 print(registrations)
                 if 4 == len(registrations):
                     break
                 sleep(0.01)  # wait for more registrations to complete
             assert 4 == len(registrations)
+            for each in registrations:
+                assert each.remoteAdded
+                assert isinstance(each.remoteAdminAddress, ActorAddress)
+                assert isinstance(each.remoteCapabilities, dict)
 
             # Now ask an ActorSystem to exit
 
@@ -480,14 +483,87 @@ class TestFuncConventionWatcher(object):
             # Verify that the convention deregistration occurred
 
             for X in range(30):
-                registrations2 = asys.ask(watcher, 'notifications', 1).split('&')
+                registrations2 = asys.ask(watcher, 'notifications', 1)
                 if 5 == len(registrations2):
                     break
                 sleep(0.01)  # wait for Hoth system to exit and deregister
             assert 5 == len(registrations2)
+            for each in registrations:
+                assert isinstance(each.remoteAdminAddress, ActorAddress)
+                assert isinstance(each.remoteCapabilities, dict)
+            assert 4 == sum([{True:1, False:0}[R.remoteAdded]
+                             for R in registrations])
 
-            outs = [X for X in registrations2 if X.startswith('OUT')]
-            assert 1 == len(outs)
+        finally:
+            if dagobah: dagobah.shutdown()
+            if hoth: hoth.shutdown()
+            if endor: endor.shutdown()
+            if naboo: naboo.shutdown()
+
+
+    def testNotificationsUponRegistration(self, asys):
+        actor_system_unsupported(asys, 'simpleSystemBase', 'multiprocQueueBase')
+        if 'TXOnly' in asys.base_name:
+            pytest.xfail('In pre-registered convention, convention registrations are not functional at present')
+
+        asys.updateCapability('Jedi Council', True)
+
+        watcher = asys.createActor(Notified)
+
+        # Now start each of the secondary ActorSystems; their
+        # registration should be noted by the Actor registered for
+        # such notifications.
+
+        dagobah = similar_asys(asys, in_convention=not asys.txonly,
+                               start_wait=False,
+                               capabilities = { 'Swamp': True })
+        hoth = similar_asys(asys, in_convention=not asys.txonly,
+                            start_wait=False,
+                            capabilities = { 'Snow': True })
+        endor = similar_asys(asys, in_convention=not asys.txonly,
+                             start_wait=False,
+                             capabilities = { 'Trees': True })
+        naboo = similar_asys(asys, in_convention=not asys.txonly,
+                             start_wait=True,  # only need to wait for the last one
+                             capabilities = { 'Ocean': True })
+        sleep(0.10)  # wait for systems to start
+
+        asys.tell(watcher, 'register')
+        sleep(0.10)  # wait for watcher to register
+
+        try:
+            # Verify all anticipated registrations actually occurred.
+
+            for X in range(300):
+                registrations = asys.ask(watcher, 'notifications', 1)
+                print(registrations)
+                if 4 == len(registrations):
+                    break
+                sleep(0.01)  # wait for more registrations to complete
+            assert 4 == len(registrations)
+            for each in registrations:
+                assert each.remoteAdded
+                assert isinstance(each.remoteAdminAddress, ActorAddress)
+                assert isinstance(each.remoteCapabilities, dict)
+
+            # Now ask an ActorSystem to exit
+
+            hoth.shutdown()
+            hoth = None
+
+            # Verify that the convention deregistration occurred
+
+            for X in range(30):
+                registrations2 = asys.ask(watcher, 'notifications', 1)
+                if 5 == len(registrations2):
+                    break
+                sleep(0.01)  # wait for Hoth system to exit and deregister
+            assert 5 == len(registrations2)
+            for each in registrations:
+                assert isinstance(each.remoteAdminAddress, ActorAddress)
+                assert isinstance(each.remoteCapabilities, dict)
+            assert 4 == sum([{True:1, False:0}[R.remoteAdded]
+                             for R in registrations])
 
         finally:
             if dagobah: dagobah.shutdown()
@@ -526,12 +602,16 @@ class TestFuncConventionDeregistration(object):
             # Verify all anticipated registrations actually occurred.
 
             for X in range(50):
-                registrations = asys.ask(watcher, 'notifications', 1).split('&')
+                registrations = asys.ask(watcher, 'notifications', 1)
                 print(registrations)
                 if 2 == len(registrations):
                     break
                 sleep(0.01)    # wait for systems to startup and register
             assert 2 == len(registrations)
+            for each in registrations:
+                assert each.remoteAdded
+                assert isinstance(each.remoteAdminAddress, ActorAddress)
+                assert isinstance(each.remoteCapabilities, dict)
 
             # Now there are 3 actor Systems:
             #    Jedi Council (convention leader)
@@ -568,15 +648,17 @@ class TestFuncConventionDeregistration(object):
             # Verify that the convention deregistration occurred
 
             for X in range(60):
-                registrations2 = asys.ask(watcher, 'notifications', 1).split('&')
+                registrations2 = asys.ask(watcher, 'notifications', 1)
                 print(str(registrations2))
                 if 3 == len(registrations2):
                     break
                 sleep(0.01)  # wait for Endor system to exit and deregister
             assert 3 == len(registrations2)
-
-            outs = [X for X in registrations2 if X.startswith('OUT')]
-            assert 1 == len(outs)
+            for each in registrations:
+                assert isinstance(each.remoteAdminAddress, ActorAddress)
+                assert isinstance(each.remoteCapabilities, dict)
+            assert 2 == sum([{True:1, False:0}[R.remoteAdded]
+                             for R in registrations])
 
             # Verify that destroying the Endor system shutdown all Actors within it
             r = asys.ask(yoda, 'Training Completed?', 2)
