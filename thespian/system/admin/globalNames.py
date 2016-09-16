@@ -1,4 +1,5 @@
 import logging
+from thespian.actors import ActorExitRequest
 from thespian.system.admin.adminCore import AdminCore
 from thespian.system.transport import TransmitIntent
 from thespian.system.messages.admin import PendingActorResponse
