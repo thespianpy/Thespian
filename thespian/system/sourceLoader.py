@@ -118,11 +118,16 @@ def find_future_end(s, startpos):
 
 def py3_source_converter(s):
     end_future = find_future_end(s, 0)
-    return (s[:end_future] + b'''
-import builtins
-builtins.__import__ = __hashimporter__
-''' +
-            s[end_future:] + b'\n')
+    # The following will introduce an off-by-one error in stack traces
+    # due to the added line.  A simple insertion is difficult because
+    # semicolons are not always the same as whitespace (e.g. "foo = 1;
+    # class Foo:\n" will not have the right indentation for the class
+    # definition.  A more refined approach could be used here, but the
+    # following is simple enough to accept the off-by-one error.
+    return b';'.join(filter(None, [s[:end_future].rstrip(),
+                                   b'import builtins',
+                                   b'builtins.__import__ = __hashimporter__',
+                                   b'\n' + s[end_future:]])) + b'\n'
 
 
 class ImportRePackage(ast.NodeTransformer):
