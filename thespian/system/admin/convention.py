@@ -673,7 +673,7 @@ class ConventioneerAdmin(GlobalNamesAdmin):
                 for member in self._conventionMembers.values():
                     self._send_intent(
                         TransmitIntent(envelope.sender,
-                                       ActorSystemConventionUpdate(member,
+                                       ActorSystemConventionUpdate(member.remoteAddress,
                                                                    member.remoteCapabilities,
                                                                    True)))
         else:
