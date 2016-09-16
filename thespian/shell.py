@@ -18,7 +18,9 @@ class SimpleSourceAuthority(ActorTypeDispatcher):
     def receiveMsg_str(self, msg, sender):
         self.registerSourceAuthority()
     def receiveMsg_ValidateSource(self, msg, sender):
-        self.send(sender, ValidatedSource(msg.sourceHash, msg.sourceData))
+        self.send(sender, ValidatedSource(msg.sourceHash,
+                                          msg.sourceData,
+                                          msg.sourceInfo))
 
 
 class ThespianShell(cmd.Cmd):
