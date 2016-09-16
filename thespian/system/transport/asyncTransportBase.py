@@ -63,6 +63,7 @@ class asyncTransportBase(object):
     def __init__(self, *args, **kw):
         super(asyncTransportBase, self).__init__(*args, **kw)
         self._aTB_numPendingTransmits = 0  # counts recursion and in-progress
+        self._aTB_running_tx_queued = False  # True when processing TX callbacks; prevents recursion
         self._aTB_lock = threading.Lock()  # protects the following:
         self._aTB_processing = False       # limits to a single operation
         self._aTB_queuedPendingTransmits = deque()
@@ -91,11 +92,21 @@ class asyncTransportBase(object):
 
         # If in the context of an initiated transmit, do not process
         # timeouts or do more scheduling because that could recurse
-        # indefinitely.
-        if self._aTB_processing:
-            return  # do not recurse
-        self._runQueued()
-
+        # indefinitely.  In addition, ensure that this is not part of
+        # a callback chain that has looped back around here, which
+        # also represents recursion.  All those entry points will
+        # re-check for additional work and initiated the work at that
+        # point.
+        if not self._aTB_running_tx_queued:
+            self._aTB_running_tx_queued = True
+            try:
+                # If _canSendNow does not ensure self._aTB_processing
+                # is not set, that will need to be added here.
+                while self._canSendNow():
+                    if not self._runQueued():
+                        break
+            finally:
+                self._aTB_running_tx_queued = False
 
     def _runQueued(self):
         v, e = self._complete_expired_intents()
@@ -236,8 +247,8 @@ class asyncTransportBase(object):
             return
 
         if not isinstance(transmitIntent.message, Thespian__UpdateWork):
-            queued = self._queue_tx(transmitIntent)
-            if not queued:
+            if not self._queue_tx(transmitIntent):
+                # TX overflow, intent discarded, no further work needed here
                 return
 
         if not self._canSendNow():
@@ -245,7 +256,7 @@ class asyncTransportBase(object):
                 if self._exclusively_processing():
                     self._drain_tx_queue_if_needed(transmitIntent.delay())
                     self._aTB_processing = False
-                return
+            return
 
         if not self._exclusively_processing():
             return
@@ -254,8 +265,8 @@ class asyncTransportBase(object):
             # Queue transmits until there is one still pending; at that
             # point exit because the completion of that transmit will
             # resume consuming the queue.
-            while True:
-                if not self._runQueued() or self._aTB_numPendingTransmits:
+            while MAX_PENDING_TRANSMITS > self._aTB_numPendingTransmits:
+                if not self._runQueued():
                     # Before exiting, ensure that if the main thread
                     # is waiting for input on select() that it is
                     # awakened in case it needs to monitor new
