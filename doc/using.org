@@ -1227,7 +1227,7 @@ class MyActor(Actor):
 
   This method can be called to register or de-register this Actor for
   handling system registration events from other ActorSystems (see
-  [[*Other Actor Systems][Other Actor Systems]]) via ~ActorSystemConventionUpdate~ messages.
+  [[*Other Actor Systems][Other Actor Systems]]) via [[*ActorSystemConventionUpdate][ActorSystemConventionUpdate]] messages.
 
 ** registerSourceAuthority
 
