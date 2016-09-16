@@ -256,6 +256,12 @@ class asyncTransportBase(object):
             # resume consuming the queue.
             while True:
                 if not self._runQueued() or self._aTB_numPendingTransmits:
+                    # Before exiting, ensure that if the main thread
+                    # is waiting for input on select() that it is
+                    # awakened in case it needs to monitor new
+                    # transmit sockets.
+                    if not is_main_thread():
+                        self.interrupt_wait()
                     break
         finally:
             self._aTB_processing = False
