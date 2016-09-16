@@ -1,12 +1,13 @@
-"""This module provides a base class for transports to children that
-are asynchronously created.  It handles issues related to
-ActorLocalAddress resolution."""
+"""This module provides a base class for transports that provide
+asynchronous (non-blocking) transmit and receive functionality.
+"""
 
 
-from thespian.system.transport import TransmitOnly, SendStatus, Thespian__UpdateWork
+from thespian.system.transport import (TransmitOnly, SendStatus,
+                                       Thespian__UpdateWork)
 from thespian.system.utilis import thesplog, partition
 import logging
-from thespian.system.addressManager import ActorLocalAddress, CannotPickleAddress
+from thespian.system.addressManager import CannotPickleAddress
 from collections import deque
 import threading
 from datetime import datetime
@@ -32,7 +33,7 @@ else:
 # transmits are immediately failed instead of being queued.
 
 MAX_PENDING_TRANSMITS = 20
-MAX_QUEUED_TRANSMITS  = 950
+MAX_QUEUED_TRANSMITS = 950
 QUEUE_TRANSMIT_UNBLOCK_THRESHOLD = 780
 DROP_TRANSMITS_LEVEL = MAX_QUEUED_TRANSMITS + 100
 
@@ -54,7 +55,6 @@ class asyncTransportBase(object):
        threshold.
     """
 
-
     # Expects from subclass:
     #   self.serializer         - serializer callable that returns serialized form
     #                             of intent that should be sent (stored in .serMsg)
@@ -71,9 +71,10 @@ class asyncTransportBase(object):
     def setAddressManager(self, addrManager):
         self._addressMgr = addrManager
 
-
     def _updateStatusResponse(self, resp):
-        "Called to update a Thespian_SystemStatus or Thespian_ActorStatus with common information"
+        """Called to update a Thespian_SystemStatus or Thespian_ActorStatus
+           with common information
+        """
         with self._aTB_lock:
             for each in self._aTB_queuedPendingTransmits:
                 resp.addPendingMessage(self.myAddress,
@@ -84,7 +85,6 @@ class asyncTransportBase(object):
     def _canSendNow(self):
         return (MAX_PENDING_TRANSMITS > self._aTB_numPendingTransmits and
                 not self._aTB_processing)
-
 
     def _async_txdone(self, _TXresult, _TXIntent):
         self._aTB_numPendingTransmits -= 1
@@ -98,9 +98,9 @@ class asyncTransportBase(object):
 
 
     def _runQueued(self):
-        v,e = self._complete_expired_intents()
+        v, e = self._complete_expired_intents()
         while e:
-            v,e = self._complete_expired_intents()
+            v, e = self._complete_expired_intents()
         # If something is queued, submit it to the lower level for transmission
         if not v:
             return False  # nothing queued up to be transmitted
@@ -108,7 +108,6 @@ class asyncTransportBase(object):
             nextTransmit = self._aTB_queuedPendingTransmits.popleft()
         self._submitTransmit(nextTransmit)
         return True
-
 
     def scheduleTransmit(self, addressManager, transmitIntent):
 
@@ -132,12 +131,13 @@ class asyncTransportBase(object):
 
         if addressManager:
             # Verify the target address is useable
-            targetAddr, txmsg = addressManager.prepMessageSend(transmitIntent.targetAddr,
-                                                               transmitIntent.message)
+            targetAddr, txmsg = addressManager.prepMessageSend(
+                transmitIntent.targetAddr,
+                transmitIntent.message)
             try:
                 isDead = txmsg == SendStatus.DeadTarget
             except Exception:
-                # txmsg may have an __eq__ that threw an exception on comparison
+                # txmsg may have an __eq__ that caused an exception
                 isDead = False
             if isDead:
                 # Address Manager has indicated that these messages
@@ -148,8 +148,8 @@ class asyncTransportBase(object):
                 # code indicates here that the transmit was
                 # "successful" to allow normal cleanup but to avoid
                 # recursive error generation.
-                thesplog('Faking transmit result Sent for %s because target is dead',
-                         transmitIntent, level = logging.WARNING)
+                thesplog('Faking dead target transmit result Sent for %s',
+                         transmitIntent, level=logging.WARNING)
                 transmitIntent.tx_done(SendStatus.Sent)
                 return
 
@@ -167,7 +167,6 @@ class asyncTransportBase(object):
 
         transmitIntent.serMsg = self.serializer(transmitIntent)
         self._schedulePreparedIntent(transmitIntent)
-
 
     def _qtx(self, transmitIntent):
         with self._aTB_lock:
@@ -196,11 +195,11 @@ class asyncTransportBase(object):
         return rlen, bool(expiredTX)
 
     def _check_tx_queue_length(self):
-        while self._complete_expired_intents(): pass
+        while self._complete_expired_intents():
+            pass
         with self._aTB_lock:
             validTX, expiredTX = partition(lambda i: i.expired(),
                                            self._aTB_queuedPendingTransmits)
-
 
     def _drain_tx_queue_if_needed(self, max_delay=None):
         v, _ = self._complete_expired_intents()
@@ -213,7 +212,7 @@ class asyncTransportBase(object):
                      ' (%s > %s, drain-to %s)',
                      v, MAX_QUEUED_TRANSMITS,
                      QUEUE_TRANSMIT_UNBLOCK_THRESHOLD,
-                     level = logging.WARNING)
+                     level=logging.WARNING)
             finish_time = datetime.now() + max_delay if max_delay else None
             while v > QUEUE_TRANSMIT_UNBLOCK_THRESHOLD and \
                   finish_time > datetime.now():
@@ -221,16 +220,14 @@ class asyncTransportBase(object):
                 v, _ = self._complete_expired_intents()
             thesplog('Exited tx-only mode after draining excessive queue (%s)',
                      len(self._aTB_queuedPendingTransmits),
-                     level = logging.WARNING)
-
+                     level=logging.WARNING)
 
     def _exclusively_processing(self):
         with self._aTB_lock:
             if self._aTB_processing:
                 return False  # Another thread is processing, not exclusive
             self._aTB_processing = True
-            return True  # This thread is exclusively holding the processing mutex
-
+            return True  # This thread exclusively holds the processing mutex
 
     def _schedulePreparedIntent(self, transmitIntent):
         # If there's nothing to send, that's implicit success
@@ -263,14 +260,13 @@ class asyncTransportBase(object):
         finally:
             self._aTB_processing = False
 
-
     def _submitTransmit(self, transmitIntent):
         self._aTB_numPendingTransmits += 1
         transmitIntent.addCallback(self._async_txdone, self._async_txdone)
 
-        thesplog('actualTransmit of %s', transmitIntent.identify(), level=logging.DEBUG)
+        thesplog('actualTransmit of %s', transmitIntent.identify(),
+                 level=logging.DEBUG)
         self._scheduleTransmitActual(transmitIntent)
-
 
     def deadAddress(self, addressManager, childAddr):
         # Go through pending transmits and update any to this child to
