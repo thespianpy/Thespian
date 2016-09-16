@@ -2049,6 +2049,16 @@ actorSys = ActorSystem(systemBase = None,
    4. Loaded sources should expect that ~__file__~ or other internals
       can be set to None.
 
+   5. It is not possible to send a pickled message between sources,
+      even if that message is imported from the same file/module in
+      both loaded sources.  This is because each loaded source (and
+      all of its top level symbols) are internally prefixed with the
+      hash of the source they are contained in; this helps preserve
+      independence between loaded source modules and prevents
+      interference between them, but it means that the pickled object
+      will have a different source hash on the target side than on the
+      sender side.
+
 *** Security Considerations
 
   When ~loadActorSource()~ is not used, the source for all
