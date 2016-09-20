@@ -125,3 +125,8 @@ if __name__ == "__main__":
 #  * Change the inputs array to add more or less
 #  * Change the troupe parameters to specify different minimum and maximum numbers.
 #  * Try more inputs than there are troupe members
+#  * Change the system base:
+#     * multiprocTCPBase
+#     * multiprocUDPBase
+#     * multiprocQueuebase
+#     * simpleSystemBase  (note: not parallel, no speedups)
