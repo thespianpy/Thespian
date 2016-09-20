@@ -1,0 +1,18 @@
+* Troupe example
+
+This example shows how the use of the Actor Troupe to run multiple
+Actors can help to parallelize longer-running actor operations.
+
+The ~fibactor.py~ file contains a simple actor that performs "work" by
+computing fibonacci numbers of varying sizes inefficiently.  It also
+contains an Actor Troupe specification, which is essentially the same
+actor but with the ~@troupe()~ decorator.
+
+When run as a simple application, the ~fibactor.py~ will show timing
+outputs from troupe and non-troupe implementations; the source is
+commented and designed to be readable and modified for
+experimentation.
+
+#+BEGIN_EXAMPLE
+$ python examples/fibtroupe/fibactor.py
+#+END_EXAMPLE
