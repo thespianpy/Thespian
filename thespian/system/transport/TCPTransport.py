@@ -940,7 +940,7 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
             # could be negative.
             delay = max(0, timePeriodSeconds(min(delays))) if delays else None
 
-            if not hasattr(self, '_aborting_run') and not xmitOnly:
+            if not xmitOnly:
                 wrecv.extend([self.socket.fileno()])
             else:
                 # Windows does not support calling select with three
@@ -1026,7 +1026,7 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
                 # n.b. ignore this if trying to quiesce; may have had
                 # to supply this fd to avoid calling select with three
                 # empty lists.
-                if each == self.socket.fileno() and not hasattr(self, '_aborting_run') and not xmitOnly:
+                if each == self.socket.fileno() and not xmitOnly:
                     self._acceptNewIncoming()
                     continue
                 # Get idleSockets before checking incoming and
