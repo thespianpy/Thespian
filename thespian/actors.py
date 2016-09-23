@@ -4,10 +4,10 @@ transport independence.
 
 For more details, see http://thespianpy.com
 
-Thespian Generation 3.1
+Thespian Generation 3.3
 """
 
-ThespianGeneration = (3, 1)
+ThespianGeneration = (3, 3)
 
 
 class ActorSystemException(Exception):
