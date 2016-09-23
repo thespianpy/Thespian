@@ -375,13 +375,12 @@ class LocalConventionState(object):
         if cmr:
 
             # Send exited notification to conventionNotificationHandler (if any)
-            if self.isConventionLeader():
-                for each in self._conventionNotificationHandlers:
-                    rmsgs.append(
-                        TransmitIntent(each,
-                                       ActorSystemConventionUpdate(cmr.remoteAddress,
-                                                                   cmr.remoteCapabilities,
-                                                                   False)))  # errors ignored
+            for each in self._conventionNotificationHandlers:
+                rmsgs.append(
+                    TransmitIntent(each,
+                                   ActorSystemConventionUpdate(cmr.remoteAddress,
+                                                               cmr.remoteCapabilities,
+                                                               False)))  # errors ignored
 
             # If the remote ActorSystem shutdown gracefully (i.e. sent
             # a Convention Deregistration) then it should not be
