@@ -542,7 +542,7 @@ class ConventioneerAdmin(GlobalNamesAdmin):
         # transport with a stop at the next needed convention
         # registration period to re-register.
         try:
-            while not self.isShuttingDown():
+            while not getattr(self, 'shutdown_completed', False):
                 delay = min(self._cstate.convention_inattention_delay(),
                             ExpiryTime(None) if self._hysteresisSender.delay.expired() else
                             self._hysteresisSender.delay

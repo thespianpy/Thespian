@@ -197,6 +197,7 @@ class AdminCore(systemCommonBase):
         self._send_intent(TransmitIntent(self._exiting,
                                          SystemShutdownCompleted()))
         thesplog('---- shutdown completed', level=logging.INFO)
+        self.shutdown_completed = True
 
 
     def h_ChildActorExited(self, envelope):
