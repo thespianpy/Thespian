@@ -8,6 +8,7 @@ import traceback
 import logging
 import datetime
 import sys, os
+import pprint
 sys.path.insert(0, os.getcwd())
 from thespian.actors import *
 from thespian.system.messages.status import *
@@ -353,7 +354,12 @@ Alternatively, if the first optional argument contains a colon, that is assumed 
             anum, addr, msg = actorAddrAndMsg
             try:
                 r = (self.system or ActorSystem()).ask(addr, msg, 10)
-                print ('Response: %s'%(r or '<None... timed out>'))
+                try:
+                    rpretty = pprint.pformat(r)
+                except Exception as ex:
+                    rpretty = str(r)
+                print('Response %s: %s'%(type(rpretty),
+                                         (rpretty or '<None... timed out>')))
             except:
                 print ('***ERROR asking Actor #%d (%s)'%(anum, str(addr)))
                 traceback.print_exc(limit=3)
