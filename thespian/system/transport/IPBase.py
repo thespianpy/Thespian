@@ -58,6 +58,9 @@ class ThisSystem(object):
                 return True
         return False
 
+    def add_local_addr(self, newaddr):
+        if newaddr not in self._myAddresses:
+            self._myAddresses.append(newaddr)
 
     @staticmethod
     def _localAddr(addr): return addr in _localAddresses
@@ -118,6 +121,7 @@ class IPActorAddress(object):
                 pass
             if not baseaddr or thisSystem._localAddr(baseaddr): # (baseaddr == '127.0.0.1' and not thisSystem._localAddr(remoteAddr[0])):
                 raise RuntimeError('Unable to determine valid external socket address.')
+            thisSystem.add_local_addr(baseaddr)
         res = socket.getaddrinfo(baseaddr, port, af, socktype, proto,
                                  socket.AI_PASSIVE if baseaddr is None and not external else 0)
         af, socktype, proto, canonname, sa = res[0]
