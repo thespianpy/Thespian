@@ -799,7 +799,13 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
         if not intent.ackbuf.isDone():
             # Continue waiting for ACK
             return True
-        ackmsg, intent.extraRead = intent.ackbuf.completed()
+        compl = intent.ackbuf.completed()
+        if not compl:
+            # ACK/NAK was corrupted; retry.
+            intent.backoffPause(True)
+            intent.stage = self._XMITStepRetry
+            return self._nextTransmitStep(intent)
+        ackmsg, intent.extraRead = compl
         if isControlMessage(ackmsg):
             intent.result = SendStatus.Sent if ackmsg == ackPacket \
                             else SendStatus.BadPacket
