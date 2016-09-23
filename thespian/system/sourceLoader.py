@@ -350,7 +350,7 @@ class SourceHashFinder(FinderBase):
     def getZipDirectory(self):
         return self._getFromZipFile(lambda z: z.infolist())
     def withZipElementSource(self, elementname, onSrcFunc):
-        return self._getFromZipFile(lambda z: onSrcFunc(z.open(elementname, 'rU').read()))
+        return self._getFromZipFile(lambda z: onSrcFunc(z.open(elementname, 'r').read()))
     def find_spec(self, fullname, path=None, target=None):
         try:
             return self.find_module(fullname, path)
