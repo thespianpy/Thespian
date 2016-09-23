@@ -30,11 +30,12 @@ class PreRegistration(object):
 
 
 class ConventionMemberData(object):
-    def __init__(self, address, capabilities):
+    def __init__(self, address, capabilities, preRegOnly=False):
         self.remoteAddress      = address
         self.remoteCapabilities = capabilities
         self.hasRemoteActors    = []  # (localParent, remoteActor) addresses created remotely
         #self.lastMessaged       = None # datetime of access; use with CONVENTION_HYSTERESIS_PERIOD
+        self.preRegOnly = preRegOnly
 
         # preRegistered is not None if the ConventionRegister has the
         # preRegister flag set.  This indicates a call from
@@ -57,9 +58,10 @@ class ConventionMemberData(object):
         if entry not in self.hasRemoteActors:
             self.hasRemoteActors.append(entry)
 
-    def refresh(self, remoteCapabilities):
+    def refresh(self, remoteCapabilities, preReg=False):
         self.remoteCapabilities = remoteCapabilities
         self._reset_valid_timer()
+        self.preRegOnly = preReg
         if self.preRegistered:
             self.preRegistered.refresh()
 
@@ -179,8 +181,11 @@ class ConventioneerAdmin(GlobalNamesAdmin):
         self._sCBStats.inc('Admin Handle Convention Registration')
         # Registrant may re-register if changing capabilities
         registrant = envelope.message.adminAddress
+        regmsg = envelope.message
+        prereg = getattr(regmsg, 'preRegister', False)  # getattr used; see definition
         thesplog('Got Convention registration from %s (%s) (new? %s)',
-                 registrant, 'first time' if envelope.message.firstTime else 're-registering',
+                 registrant,
+                 'first time' if regmsg.firstTime else 're-registering',
                  not self._conventionMembers.find(registrant),
                  level=logging.INFO)
         if registrant == self.myAddress:
@@ -191,7 +196,7 @@ class ConventioneerAdmin(GlobalNamesAdmin):
                      registrant,
                      level=logging.WARNING)
             return True
-        if envelope.message.firstTime:
+        if regmsg.firstTime or prereg:
             # erase knowledge of actors associated with potential
             # former instance of this system
             self._remoteSystemCleanup(registrant)
@@ -199,21 +204,24 @@ class ConventioneerAdmin(GlobalNamesAdmin):
             self._conventionLeaderIsGone = False
         existing = self._conventionMembers.find(registrant)
         if existing:
-            existing.refresh(envelope.message.capabilities)
+            existingPreReg = existing.preRegOnly
+            existing.refresh(regmsg.capabilities, prereg)
         else:
             newmember = ConventionMemberData(registrant,
-                                             envelope.message.capabilities)
-            if getattr(envelope.message, 'preRegister', False):  # getattr used; see definition
-                newmember.preRegistered = PreRegistration()  # will attempt registration immediately
+                                             regmsg.capabilities,
+                                             prereg)
+            if prereg:
+                # Need to attempt registration immediately
+                newmember.preRegistered = PreRegistration()
             self._conventionMembers.add(registrant, newmember)
 
         if self.isConventionLeader():
-            if not existing:
+            if not existing or existingPreReg:
                 for each in self._conventionNotificationHandlers:
                     self._send_intent(
                         TransmitIntent(each,
                                        ActorSystemConventionUpdate(registrant,
-                                                                   envelope.message.capabilities,
+                                                                   regmsg.capabilities,
                                                                    True)))  # errors ignored
 
                 # If we are the Convention Leader, this would be the point to
@@ -226,7 +234,7 @@ class ConventioneerAdmin(GlobalNamesAdmin):
                                    ConventionRegister(self.myAddress,
                                                       self.capabilities,
                                                       # first time in, then must be first time out
-                                                      envelope.message.firstTime)))
+                                                      regmsg.firstTime)))
 
         return True
 
