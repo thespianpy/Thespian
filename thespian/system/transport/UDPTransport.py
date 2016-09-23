@@ -222,6 +222,10 @@ class UDPTransport(asyncTransportBase, wakeupTransportBase):
                         thesplog('Error during select: %s', se)
                         return None
                     continue
+                except ValueError:
+                    # self.run_time can expire between the while test
+                    # and the use in the select statement.
+                    continue
 
                 if [] == sresp:
                     if [] == _ign1 and [] == _ign2:
