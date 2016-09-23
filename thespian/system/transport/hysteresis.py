@@ -1,6 +1,6 @@
 from thespian.system.utilis import ExpiryTime, partition
 from thespian.system.transport import SendStatus
-from datetime import timedelta #, datetime
+from datetime import timedelta
 
 
 HYSTERESIS_MIN_PERIOD  = timedelta(milliseconds=250)
@@ -43,66 +43,79 @@ class HysteresisDelaySender(object):
         self._sender                = actual_sender
         self._hysteresis_until      = ExpiryTime(timedelta(seconds=0))
         self._hysteresis_queue      = []
-        self._duplicate_queue       = []
         self._current_hysteresis    = None  # timedelta
         self._hysteresis_min_period = hysteresis_min_period
         self._hysteresis_max_period = hysteresis_max_period
         self._hysteresis_rate       = hysteresis_rate
+
     @property
-    def delay(self): return self._hysteresis_until
+    def delay(self):
+        return self._hysteresis_until
+
+    def _has_hysteresis(self):
+        return (self._current_hysteresis is not None and
+                self._current_hysteresis >= self._hysteresis_min_period)
+
+    def _increase_hysteresis(self):
+        self._current_hysteresis = min(
+            (self._current_hysteresis * self._hysteresis_rate)
+            if self._has_hysteresis() else self._hysteresis_min_period,
+            self._hysteresis_max_period)
+
+    def _decrease_hysteresis(self):
+        self._current_hysteresis = (
+            (self._current_hysteresis / self._hysteresis_rate)
+            if self._has_hysteresis() else None)
+
+    def _update_remaining_hysteresis_period(self, reset=False):
+        if not self._current_hysteresis:
+            self._hysteresis_until = ExpiryTime(timedelta(seconds=0))
+        else:
+            if reset or not self._hysteresis_until:
+                self._hysteresis_until = ExpiryTime(self._current_hysteresis)
+            else:
+                self._hysteresis_until = ExpiryTime(
+                    self._current_hysteresis -
+                    self._hysteresis_until.remaining())
+
     def checkSends(self):
         if self.delay.expired():
-            hsends = self._hysteresis_queue
-            self._hysteresis_queue = []
-            self._current_hysteresis = (
-                None
-                if (self._current_hysteresis is None or
-                    self._current_hysteresis < self._hysteresis_min_period) else
-                self._current_hysteresis / self._hysteresis_rate)
-            self._hysteresis_until = ExpiryTime(self._current_hysteresis
-                                                if self._current_hysteresis else
-                                                timedelta(seconds=0))
-            for intent in hsends:
+            self._decrease_hysteresis()
+            self._update_remaining_hysteresis_period(reset=True)
+            for intent in self._keepIf(lambda M: False):
                 self._sender(intent)
+
     def sendWithHysteresis(self, intent):
         if self._hysteresis_until.expired():
             self._current_hysteresis = self._hysteresis_min_period
             self._sender(intent)
         else:
             dups = self._keepIf(lambda M: (M.targetAddr != intent.targetAddr or
-                                                 type(M.message) != type(intent.message)))
+                                           type(M.message) != type(intent.message)))
             # The dups are duplicate sends to the new intent's target; complete them when
             # the actual message is finally sent with the same result
             if dups:
                 intent.addCallback(self._dupSentGood(dups), self._dupSentFail(dups))
             self._hysteresis_queue.append(intent)
-            self._current_hysteresis = min(
-                (self._hysteresis_min_period
-                 if (self._current_hysteresis is None or
-                     self._current_hysteresis < self._hysteresis_min_period) else
-                 self._current_hysteresis * self._hysteresis_rate),
-                self._hysteresis_max_period)
-        self._hysteresis_until = ExpiryTime(
-            timedelta(seconds=0)
-            if not self._current_hysteresis else
-            (self._current_hysteresis -
-             (timedelta(seconds=0)
-              if not self._hysteresis_until else
-              self._hysteresis_until.remaining())))
+            self._increase_hysteresis()
+        self._update_remaining_hysteresis_period()
+
     def cancelSends(self, remoteAddr):
-        cancels = self._keepIf(lambda M: M.targetAddr != remoteAddr)
-        for each in cancels:
+        for each in self._keepIf(lambda M: M.targetAddr != remoteAddr):
             each.tx_done(SendStatus.Failed)
+
     def _keepIf(self, keepFunc):
         requeues, removes = partition(keepFunc, self._hysteresis_queue)
         self._hysteresis_queue = requeues
         return removes
+
     @staticmethod
     def _dupSentGood(dups):
         def _finishDups(result, finishedIntent):
             for each in dups:
                 each.tx_done(result)
         return _finishDups
+
     @staticmethod
     def _dupSentFail(dups):
         def _finishDups(result, finishedIntent):
