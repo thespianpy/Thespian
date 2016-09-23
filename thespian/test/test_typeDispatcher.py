@@ -1,8 +1,10 @@
 import pytest
 import logging
 import time, datetime
+import re
 from thespian.test import *
 from thespian.actors import *
+from thespian.system.utilis import fmap
 from datetime import timedelta
 
 
@@ -88,8 +90,17 @@ class TestFuncTypeDispatching(object):
             assert resp is None
         else:
             while resp and expected:
-                assert resp in expected
-                del expected[expected.index(resp)]
+                for n,e in enumerate(expected):
+                    if hasattr(e, 'search'):
+                        if e.search(resp):
+                            break
+                    else:
+                        if e == resp:
+                            break
+                else:
+                    assert False, 'Expected "%s" not found in: %s'%(
+                        resp, fmap(str, expected))
+                del expected[n]
                 resp = asys.listen(0.1)
             assert len(expected) == 0
 
@@ -120,7 +131,9 @@ class TestFuncTypeDispatching(object):
     def testMiddleInt(self, asys, middle):
         import sys
         tname = 'class' if sys.version_info >= (3,0,0) else 'type'
-        self.verifyExpectedResponses(asys, middle, 9, ["didn't recognize: <%s 'int'>"%tname])
+        self.verifyExpectedResponses(
+            asys, middle, 9,
+            [re.compile("didn't recognize: <%s 'int'(| at 0x[0-9a-f]+)>"%tname)])
 
     def testMiddleMsg1(self, asys, middle):
         self.verifyExpectedResponses(asys, middle, Message1(), ["got m1"])
@@ -173,10 +186,15 @@ class TestFuncTypeDispatching(object):
         self.verifyExpectedResponses(asys, bottom, StrangeMessage2(), None)
 
     def testMiddleStrangeSubclass(self, asys, middle):
-        self.verifyExpectedResponses(asys, middle, StrangeMessage1(), ["middle got #3"])
+        self.verifyExpectedResponses(asys, middle,
+                                     StrangeMessage1(), ["middle got #3"])
 
     def testMiddleUnrecognized(self, asys, middle):
-        self.verifyExpectedResponses(asys, middle, StrangeMessage2(), ["didn't recognize: <class 'thespian.test.test_typeDispatcher.StrangeMessage2'>"])
+        self.verifyExpectedResponses(
+            asys, middle, StrangeMessage2(),
+            [re.compile("didn't recognize: <class "
+                        "'thespian.test.test_typeDispatcher.StrangeMessage2'"
+                        "(| at 0x[0-9a-f]+)>")])
 
     def testTopStrangeSubclass(self, asys, top):
         self.verifyExpectedResponses(asys, top, StrangeMessage1(),
@@ -184,7 +202,9 @@ class TestFuncTypeDispatching(object):
                                       "middle got #3"])
 
     def testTopUnrecognized(self, asys, top):
-        self.verifyExpectedResponses(asys, top, StrangeMessage2(),
-                                     ["didn't recognize: <class "
-                                      "'thespian.test.test_typeDispatcher.StrangeMessage2'>"])
+        self.verifyExpectedResponses(
+            asys, top, StrangeMessage2(),
+            [re.compile("didn't recognize: <class "
+                        "'thespian.test.test_typeDispatcher.StrangeMessage2'"
+                        "(| at 0x[0-9a-f]+)>")])
 
