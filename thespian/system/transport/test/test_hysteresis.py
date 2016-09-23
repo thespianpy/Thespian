@@ -1,4 +1,4 @@
-from thespian.system.admin.convention import HysteresisDelaySender
+from thespian.system.transport.hysteresis import HysteresisDelaySender
 from thespian.system.transport import TransmitIntent, SendStatus
 from datetime import datetime, timedelta
 from time import sleep
