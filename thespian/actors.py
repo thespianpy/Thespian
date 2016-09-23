@@ -321,6 +321,13 @@ class ActorSystemConventionUpdate(ActorSystemMessage):
 
     def __ne__(self, o): return not self.__eq__(o)
 
+    def __str__(self):
+        return ('ActorSystemConventionUpdate(remoteAdminAddress=%s'
+                ', remoteAdded=%s, remoteCapabilities=%s' %
+                (str(self.remoteAdminAddress),
+                 str(self.remoteAdded),
+                 str(self.remoteCapabilities)))
+
 
 class ActorExitRequest(ActorSystemMessage):
     """This message should be sent to an Actor to request that it be
