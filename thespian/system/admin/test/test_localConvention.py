@@ -151,6 +151,89 @@ def test_prereg_reg(solo_lcs1, solo_lcs2):
     assert [] == lcs2.check_convention()
 
 
+def test_notification_management(solo_lcs1, solo_lcs2):
+    lcs1, lcs2 = solo_lcs1, solo_lcs2
+
+    notifyAddr = ActorAddress('notify')
+    verify_io(lcs1.add_notification_handler(notifyAddr),
+              [])
+
+    # Re-registration does nothing
+    verify_io(lcs1.add_notification_handler(notifyAddr),
+              [])
+
+    # Registering a another handler is fine
+    notifyAddr2 = ActorAddress('notify2')
+    verify_io(lcs1.add_notification_handler(notifyAddr2),
+              [])
+
+    # Re-registration still does nothing
+    verify_io(lcs1.add_notification_handler(notifyAddr),
+              [])
+
+    # De-registration
+    lcs1.remove_notification_handler(notifyAddr)
+
+    # Re-registration now adds it back
+    verify_io(lcs1.add_notification_handler(notifyAddr),
+              [])
+
+    # Multiple de-registration is ok
+    lcs1.remove_notification_handler(notifyAddr)
+    lcs1.remove_notification_handler(notifyAddr)
+
+    # Re-registration now adds it back again
+    verify_io(lcs1.add_notification_handler(notifyAddr),
+              [])
+
+
+def test_notification_management_with_registrations(lcs1, lcs2):
+
+    # Setup both in the registered condition
+    notifyAddr = test_reg_with_notifications(lcs1, lcs2)
+
+    # Re-registration does nothing
+    verify_io(lcs1.add_notification_handler(notifyAddr),
+              [])
+
+    # Registering a another handler is fine
+    notifyAddr2 = ActorAddress('notify2')
+
+    notify_of_lcs2 = ActorSystemConventionUpdate(lcs2.myAddress,
+                                                 lcs2.capabilities,
+                                                 added=True)
+
+    verify_io(lcs1.add_notification_handler(notifyAddr2),
+              [ (ActorSystemConventionUpdate,
+                 lambda r, a: (r == notify_of_lcs2 and
+                               a == notifyAddr2)),
+              ])
+
+    # Re-registration still does nothing
+    verify_io(lcs1.add_notification_handler(notifyAddr),
+              [])
+
+    # De-registration
+    lcs1.remove_notification_handler(notifyAddr)
+
+    # Re-registration now adds it back
+    verify_io(lcs1.add_notification_handler(notifyAddr),
+              [ (ActorSystemConventionUpdate,
+                 lambda r, a: (r == notify_of_lcs2 and
+                               a == notifyAddr)),
+              ])
+
+    # Multiple de-registration is ok
+    lcs1.remove_notification_handler(notifyAddr)
+    lcs1.remove_notification_handler(notifyAddr)
+
+    # Re-registration now adds it back again
+    verify_io(lcs1.add_notification_handler(notifyAddr),
+              [ (ActorSystemConventionUpdate,
+                 lambda r, a: (r == notify_of_lcs2 and
+                               a == notifyAddr)),
+              ])
+
 def test_prereg_reg_with_notifications(solo_lcs1, solo_lcs2):
     lcs1, lcs2 = solo_lcs1, solo_lcs2
 

@@ -277,6 +277,7 @@ class LocalConventionState(object):
                                                                M.remoteCapabilities,
                                                                True))
                     for M in self._conventionMembers.values()]
+        return []
 
     def remove_notification_handler(self, addr):
         self._conventionNotificationHandlers = [
