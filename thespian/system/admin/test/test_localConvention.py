@@ -5,11 +5,17 @@ from thespian.system.admin.convention import (LocalConventionState, LostRemote,
                                               HysteresisSend, HysteresisCancel,
                                               CONVENTION_REREGISTRATION_PERIOD,
                                               CONVENTION_REGISTRATION_MISS_MAX)
-from thespian.system.utilis import fmap
+from thespian.system.utilis import fmap, StatsManager
 from thespian.system.logdirector import LogAggregator
-from unittest.mock import Mock, patch
+try:
+    from unittest.mock import patch
+except ImportError:
+    try:
+        from mock import patch
+    except ImportError:
+        patch = None
 from datetime import datetime, timedelta
-from pytest import fixture
+from pytest import fixture, mark
 
 
 @fixture
@@ -18,7 +24,7 @@ def lcs1():
                                 {'Admin Port': 1,
                                  'Convention Address.IPv4': ActorAddress(1),
                                  'popsicle': 'cold'},
-                                Mock(name='stats'),
+                                StatsManager(),
                                lambda x: ActorAddress(1))
     # Activate the system
     verify_io(ret.setup_convention(), [])
@@ -31,7 +37,7 @@ def lcs2():
                                 {'Admin Port': 2,
                                  'Convention Address.IPv4': ActorAddress(1),
                                  'apple pie': 'hot'},
-                                Mock(name='stats'),
+                                StatsManager(),
                                lambda x: ActorAddress(1))
     ret._expected_setup_convreg = ConventionRegister(ActorAddress(2),
                                                      ret.capabilities,
@@ -55,7 +61,8 @@ def solo_lcs1():
     # environments.
     ret = LocalConventionState(ActorAddress(1),
                                 {'Admin Port': 1, 'popsicle': 'cold'},
-                                Mock(name='stats'), lambda x: None)
+                                StatsManager(),
+                               lambda x: None)
     # Activate the system
     assert [] == ret.setup_convention()
     return ret
@@ -67,8 +74,9 @@ def solo_lcs2():
     # for use with pre-registration (e.g. to simulate TXOnly
     # environments.
     ret = LocalConventionState(ActorAddress(2),
-                                {'Admin Port': 2, 'apple pie': 'hot'},
-                                Mock(name='stats'), lambda x: None)
+                               {'Admin Port': 2, 'apple pie': 'hot'},
+                               StatsManager(),
+                               lambda x: None)
     # Activate the system
     assert [] == ret.setup_convention()
     return ret
@@ -370,6 +378,7 @@ def test_reg_with_multiple_notifications(lcs1, lcs2):
               ])
 
 
+@mark.skipif(not patch, reason='requires mock patch')
 def test_reg_dereg_rereg_with_delay_and_updates(lcs1, lcs2):
 
     # Setup both in the registered condition
