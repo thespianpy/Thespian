@@ -124,8 +124,13 @@ class IPActorAddress(object):
         self.sockname = sa
         self.bindname = ('',sa[1]) if external else sa
     def __eq__(self, o):
-        return self.af == o.af and self.socktype == o.socktype and self.proto == o.proto and \
-            thisSystem.cmpIP2Tuple(self.af, self.socktype, self.proto, self.sockname, o.sockname)
+        return self.af == o.af and self.socktype == o.socktype and \
+            self.proto == o.proto and \
+            thisSystem.cmpIP2Tuple(self.af,
+                                   self.socktype,
+                                   self.proto,
+                                   self.sockname,
+                                   o.sockname)
     def __ne__(self, o): return not self.__eq__(o)
     def __hash__(self): return hash((self.socketArgs, self.connectArgs))
     def __str__(self):
