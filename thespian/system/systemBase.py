@@ -361,5 +361,9 @@ class systemBase(object):
                                      preRegister=True))
 
     def deRegisterRemoteSystem(self, remoteAddress):
-        self.send(self.adminAddr,
-                  ConventionDeRegister(self.transport.getAddressFromString(remoteAddress)))
+        self.send(
+            self.adminAddr,
+            ConventionDeRegister(
+                remoteAddress
+                if isinstance(remoteAddress, ActorAddress) else
+                self.transport.getAddressFromString(remoteAddress)))

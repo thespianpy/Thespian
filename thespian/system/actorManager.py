@@ -439,5 +439,7 @@ class ActorManager(systemCommonBase):
         self._send_intent(
             TransmitIntent(self._adminAddr,
                            ConventionDeRegister(
+                               remoteAddress
+                               if isinstance(remoteAddress, ActorAddress) else
                                self.transport.getAddressFromString(remoteAddress),
                                preRegistered=True)))

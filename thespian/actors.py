@@ -276,6 +276,13 @@ class Actor(object):
            call.  This removed state is not enforced: if the remote
            system initiates connectivity with the local system after
            this call then it will be re-entered into the Convention.
+
+           The remoteAddress may either be a raw address appropriate
+           to the transport time (as supplied to the
+           `preRegisterRemoteSystem()` call) or the ActorAddress of
+           the remote Administrator (as obtained from the
+           ActorSystemConventionUpdate message, for example).
+
         """
         self._myRef.deRegisterRemoteSystem(remoteAddress)
 
