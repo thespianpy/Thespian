@@ -124,19 +124,13 @@ class TestFuncRegistration(object):
         # full set of remote capabilities.
         notes = asys.ask(notifications, 'get', MAX_ASK_DELAY)
         print('notes:',fmap(str, notes))
-        assert len(notes) == 2  # one is the 127.0.0.1 prereg, one is
-                                # the actual reg with the actual
-                                # address
+        assert len(notes) == 1
         for each in notes:
             assert isinstance(each.remoteAdminAddress, ActorAddress)
-            if '127.0.0.1' in str(each.remoteAdminAddress):
-                assert 'moo' in each.remoteCapabilities
-                assert each.remoteCapabilities['moo']
-            else:
-                # Actual registration should have actual capabilities
-                assert 'barn' in each.remoteCapabilities
-                assert each.remoteCapabilities['barn'] == 'oats'
-                assert 'Thespian Version' in each.remoteCapabilities
+            # Actual registration should have actual capabilities
+            assert 'barn' in each.remoteCapabilities
+            assert each.remoteCapabilities['barn'] == 'oats'
+            assert 'Thespian Version' in each.remoteCapabilities
             assert each.remoteAdded
 
         horse = asys.createActor(Horse)
@@ -156,28 +150,20 @@ class TestFuncRegistration(object):
 
         notes = asys.ask(notifications, 'get', MAX_ASK_DELAY)
         print(fmap(repr, notes))
-        assert len(notes) == 2  # one is the 127.0.0.1 prereg, one is
-                                # the actual reg with the actual
-                                # address
+        assert len(notes) == 1
         for each in notes:
             print(':: %s @ %s : %s' %
                   (each.remoteAdded,
                    str(each.remoteAdminAddress),
                    str(each.remoteCapabilities)))
             assert isinstance(each.remoteAdminAddress, ActorAddress)
-            if '127.0.0.1' in str(each.remoteAdminAddress):
-                assert 'moo' in each.remoteCapabilities
-                assert each.remoteCapabilities['moo']
-                # Not a member because it was actively removed
-                assert not each.remoteAdded
-            else:
-                # Actual registration should have actual capabilities
-                assert 'barn' in each.remoteCapabilities
-                assert each.remoteCapabilities['barn'] == 'oats'
-                assert 'Thespian Version' in each.remoteCapabilities
-                # Still a member because it is distinct from the added
-                # version
-                assert each.remoteAdded
+            # Actual registration should have actual capabilities
+            assert 'barn' in each.remoteCapabilities
+            assert each.remoteCapabilities['barn'] == 'oats'
+            assert 'Thespian Version' in each.remoteCapabilities
+            # Still a member because it is distinct from the added
+            # version
+            assert not each.remoteAdded
 
 
     def test_RegistrationNotificationWithActorAddress(self, asys, asys2):
