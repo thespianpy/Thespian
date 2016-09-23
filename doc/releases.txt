@@ -10,6 +10,8 @@ Table of Contents
 ─────────────────
 
 3.x
+.. 3.3
+..... 3.3.0 <2016-09-15 Thu>
 .. 3.2
 ..... 3.2.2 <2016-09-15 Thu>
 ..... 3.2.1 <2016-09-08 Thu>
@@ -68,6 +70,52 @@ not change the API.
 
 3.x
 ═══
+
+3.3
+───
+
+3.3.0 <2016-09-15 Thu>
+╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+
+  ‣ Allow `deRegisterRemoteSystem()' to be called with the remote admin
+    `ActorAddress' object (as would be provided via convention
+    notification) as an alternative to the raw remote address format.
+
+  ‣ Enhanced the thespianShell "ask" command to pretty-print the
+    responses (if possible).
+
+  ‣ Thespian is now compatible with Python 3.6
+    ‣ Removed the "universal newline" loaded source open flag that is no
+      longer supported for `ZipFile.open()' in Python 3.6.
+    ‣ Updated tests to account for address information now included in
+      default `str' forms of objects.
+
+  ‣ Internal improvements in convention support for more reliable
+    convention membership and notification.
+
+    ‣ When a remote pre-registration is performed, there is no
+      notification until the convention attendee completes the checkin.
+
+    ‣ Better matching of loopback addresses with the "external"
+      address(es) of the current system to recognize this system.
+
+    ‣ Better connection establishment for pre-registered remote
+      convention members with local tx-only admin routing.
+
+    ‣ Allow more communication with remote convention members on
+      shutdown for a faster and more complete cleanup and exit.
+
+  ‣ Internal improvements and bugfixes in the TCP transmit.
+
+    ‣ Enable TCP transport retransmits if ack/nak packet is corrupted.
+
+    ‣ Avoid non-progress select() scenarios that could result in periods
+      of high CPU utilization.
+
+    ‣ Better handling of cleanup operations when shutting down.
+
+  ‣ Fixed handling for a race condition on timeout in the UDP transport.
+
 
 3.2
 ───

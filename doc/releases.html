@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
 <title>Thespian Release Notes</title>
-<!-- 2016-09-16 Fri 09:41 -->
+<!-- 2016-09-23 Fri 15:07 -->
 <meta  http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta  name="generator" content="Org-mode" />
 <meta  name="author" content="Kevin Quick &lt;kquick@godaddy.com&gt;" />
@@ -157,26 +157,31 @@ for the JavaScript code in this tag.
 <ul>
 <li><a href="#sec-1">3.x</a>
 <ul>
-<li><a href="#sec-1-1">3.2</a>
+<li><a href="#sec-1-1">3.3</a>
 <ul>
-<li><a href="#sec-1-1-1">3.2.2 <span class="timestamp-wrapper"><span class="timestamp">&lt;2016-09-15 Thu&gt;</span></span></a></li>
-<li><a href="#sec-1-1-2">3.2.1 <span class="timestamp-wrapper"><span class="timestamp">&lt;2016-09-08 Thu&gt;</span></span></a></li>
-<li><a href="#sec-1-1-3">3.2.0 <span class="timestamp-wrapper"><span class="timestamp">&lt;2016-09-08 Thu&gt;</span></span></a></li>
+<li><a href="#sec-1-1-1">3.3.0 <span class="timestamp-wrapper"><span class="timestamp">&lt;2016-09-15 Thu&gt;</span></span></a></li>
 </ul>
 </li>
-<li><a href="#sec-1-2">3.1</a>
+<li><a href="#sec-1-2">3.2</a>
 <ul>
-<li><a href="#sec-1-2-1">3.1.1 <span class="timestamp-wrapper"><span class="timestamp">&lt;2016-09-08 Thu&gt;</span></span></a></li>
-<li><a href="#sec-1-2-2">3.1.0 <span class="timestamp-wrapper"><span class="timestamp">&lt;2016-08-29 Mon&gt;</span></span></a></li>
+<li><a href="#sec-1-2-1">3.2.2 <span class="timestamp-wrapper"><span class="timestamp">&lt;2016-09-15 Thu&gt;</span></span></a></li>
+<li><a href="#sec-1-2-2">3.2.1 <span class="timestamp-wrapper"><span class="timestamp">&lt;2016-09-08 Thu&gt;</span></span></a></li>
+<li><a href="#sec-1-2-3">3.2.0 <span class="timestamp-wrapper"><span class="timestamp">&lt;2016-09-08 Thu&gt;</span></span></a></li>
 </ul>
 </li>
-<li><a href="#sec-1-3">3.0</a>
+<li><a href="#sec-1-3">3.1</a>
 <ul>
-<li><a href="#sec-1-3-1">3.0.4 <span class="timestamp-wrapper"><span class="timestamp">&lt;2016-08-12 Fri&gt;</span></span></a></li>
-<li><a href="#sec-1-3-2">3.0.3 <span class="timestamp-wrapper"><span class="timestamp">&lt;2016-08-11 Thu&gt;</span></span></a></li>
-<li><a href="#sec-1-3-3">3.0.2 <span class="timestamp-wrapper"><span class="timestamp">&lt;2016-07-29 Fri&gt;</span></span></a></li>
-<li><a href="#sec-1-3-4">3.0.1 <span class="timestamp-wrapper"><span class="timestamp">&lt;2016-07-26 Tue&gt;</span></span></a></li>
-<li><a href="#sec-1-3-5">3.0.0 <span class="timestamp-wrapper"><span class="timestamp">&lt;2016-07-04 Mon&gt;</span></span></a></li>
+<li><a href="#sec-1-3-1">3.1.1 <span class="timestamp-wrapper"><span class="timestamp">&lt;2016-09-08 Thu&gt;</span></span></a></li>
+<li><a href="#sec-1-3-2">3.1.0 <span class="timestamp-wrapper"><span class="timestamp">&lt;2016-08-29 Mon&gt;</span></span></a></li>
+</ul>
+</li>
+<li><a href="#sec-1-4">3.0</a>
+<ul>
+<li><a href="#sec-1-4-1">3.0.4 <span class="timestamp-wrapper"><span class="timestamp">&lt;2016-08-12 Fri&gt;</span></span></a></li>
+<li><a href="#sec-1-4-2">3.0.3 <span class="timestamp-wrapper"><span class="timestamp">&lt;2016-08-11 Thu&gt;</span></span></a></li>
+<li><a href="#sec-1-4-3">3.0.2 <span class="timestamp-wrapper"><span class="timestamp">&lt;2016-07-29 Fri&gt;</span></span></a></li>
+<li><a href="#sec-1-4-4">3.0.1 <span class="timestamp-wrapper"><span class="timestamp">&lt;2016-07-26 Tue&gt;</span></span></a></li>
+<li><a href="#sec-1-4-5">3.0.0 <span class="timestamp-wrapper"><span class="timestamp">&lt;2016-07-04 Mon&gt;</span></span></a></li>
 </ul>
 </li>
 </ul>
@@ -248,11 +253,83 @@ do not change the API.
 <h2 id="sec-1">3.x</h2>
 <div class="outline-text-2" id="text-1">
 </div><div id="outline-container-sec-1-1" class="outline-3">
-<h3 id="sec-1-1">3.2</h3>
+<h3 id="sec-1-1">3.3</h3>
 <div class="outline-text-3" id="text-1-1">
 </div><div id="outline-container-sec-1-1-1" class="outline-4">
-<h4 id="sec-1-1-1">3.2.2 <span class="timestamp-wrapper"><span class="timestamp">&lt;2016-09-15 Thu&gt;</span></span></h4>
+<h4 id="sec-1-1-1">3.3.0 <span class="timestamp-wrapper"><span class="timestamp">&lt;2016-09-15 Thu&gt;</span></span></h4>
 <div class="outline-text-4" id="text-1-1-1">
+<ul class="org-ul">
+<li>Allow <code>deRegisterRemoteSystem()</code> to be called with the remote
+admin <code>ActorAddress</code> object (as would be provided via convention
+notification) as an alternative to the raw remote address format.
+</li>
+
+<li>Enhanced the thespianShell "ask" command to pretty-print the
+responses (if possible).
+</li>
+
+<li>Thespian is now compatible with Python 3.6
+<ul class="org-ul">
+<li>Removed the "universal newline" loaded source open flag that is
+no longer supported for <code>ZipFile.open()</code> in Python 3.6.
+</li>
+<li>Updated tests to account for address information now included in
+default <code>str</code> forms of objects.
+</li>
+</ul>
+</li>
+
+<li>Internal improvements in convention support for more reliable
+convention membership and notification.
+
+<ul class="org-ul">
+<li>When a remote pre-registration is performed, there is no
+notification until the convention attendee completes the
+checkin.
+</li>
+
+<li>Better matching of loopback addresses with the "external"
+address(es) of the current system to recognize this system.
+</li>
+
+<li>Better connection establishment for pre-registered remote
+convention members with local tx-only admin routing.
+</li>
+
+<li>Allow more communication with remote convention members on
+shutdown for a faster and more complete cleanup and exit.
+</li>
+</ul>
+</li>
+
+<li>Internal improvements and bugfixes in the TCP transmit.
+
+<ul class="org-ul">
+<li>Enable TCP transport retransmits if ack/nak packet is corrupted.
+</li>
+
+<li>Avoid non-progress select() scenarios that could result in
+periods of high CPU utilization.
+</li>
+
+<li>Better handling of cleanup operations when shutting down.
+</li>
+</ul>
+</li>
+
+<li>Fixed handling for a race condition on timeout in the UDP transport.
+</li>
+</ul>
+</div>
+</div>
+</div>
+
+<div id="outline-container-sec-1-2" class="outline-3">
+<h3 id="sec-1-2">3.2</h3>
+<div class="outline-text-3" id="text-1-2">
+</div><div id="outline-container-sec-1-2-1" class="outline-4">
+<h4 id="sec-1-2-1">3.2.2 <span class="timestamp-wrapper"><span class="timestamp">&lt;2016-09-15 Thu&gt;</span></span></h4>
+<div class="outline-text-4" id="text-1-2-1">
 <ul class="org-ul">
 <li>Suppressed notification of pre-registered remotes on
 <code>preRegisterRemoteSystem()</code> call; notification is now only
@@ -317,9 +394,9 @@ conventionally serialized (see <a href="using.html">Source Loading Issues</a>).
 </div>
 
 
-<div id="outline-container-sec-1-1-2" class="outline-4">
-<h4 id="sec-1-1-2">3.2.1 <span class="timestamp-wrapper"><span class="timestamp">&lt;2016-09-08 Thu&gt;</span></span></h4>
-<div class="outline-text-4" id="text-1-1-2">
+<div id="outline-container-sec-1-2-2" class="outline-4">
+<h4 id="sec-1-2-2">3.2.1 <span class="timestamp-wrapper"><span class="timestamp">&lt;2016-09-08 Thu&gt;</span></span></h4>
+<div class="outline-text-4" id="text-1-2-2">
 <ul class="org-ul">
 <li>Added backward compatibility support for interacting with
 pre-3.2.0 Thespian instances without the sourceInfo argument.
@@ -329,9 +406,9 @@ pre-3.2.0 Thespian instances without the sourceInfo argument.
 </div>
 
 
-<div id="outline-container-sec-1-1-3" class="outline-4">
-<h4 id="sec-1-1-3">3.2.0 <span class="timestamp-wrapper"><span class="timestamp">&lt;2016-09-08 Thu&gt;</span></span></h4>
-<div class="outline-text-4" id="text-1-1-3">
+<div id="outline-container-sec-1-2-3" class="outline-4">
+<h4 id="sec-1-2-3">3.2.0 <span class="timestamp-wrapper"><span class="timestamp">&lt;2016-09-08 Thu&gt;</span></span></h4>
+<div class="outline-text-4" id="text-1-2-3">
 <ul class="org-ul">
 <li>Added sourceInfo argument to ValidateSource; allows informational
 tag to be associated with a loadable source for logging and status
@@ -350,12 +427,12 @@ messages still occurs only on the main thread.
 </div>
 
 
-<div id="outline-container-sec-1-2" class="outline-3">
-<h3 id="sec-1-2">3.1</h3>
-<div class="outline-text-3" id="text-1-2">
-</div><div id="outline-container-sec-1-2-1" class="outline-4">
-<h4 id="sec-1-2-1">3.1.1 <span class="timestamp-wrapper"><span class="timestamp">&lt;2016-09-08 Thu&gt;</span></span></h4>
-<div class="outline-text-4" id="text-1-2-1">
+<div id="outline-container-sec-1-3" class="outline-3">
+<h3 id="sec-1-3">3.1</h3>
+<div class="outline-text-3" id="text-1-3">
+</div><div id="outline-container-sec-1-3-1" class="outline-4">
+<h4 id="sec-1-3-1">3.1.1 <span class="timestamp-wrapper"><span class="timestamp">&lt;2016-09-08 Thu&gt;</span></span></h4>
+<div class="outline-text-4" id="text-1-3-1">
 <ul class="org-ul">
 <li>Better TCPTransport handling of connection attempts.
 </li>
@@ -373,9 +450,9 @@ exception failure.
 </div>
 </div>
 
-<div id="outline-container-sec-1-2-2" class="outline-4">
-<h4 id="sec-1-2-2">3.1.0 <span class="timestamp-wrapper"><span class="timestamp">&lt;2016-08-29 Mon&gt;</span></span></h4>
-<div class="outline-text-4" id="text-1-2-2">
+<div id="outline-container-sec-1-3-2" class="outline-4">
+<h4 id="sec-1-3-2">3.1.0 <span class="timestamp-wrapper"><span class="timestamp">&lt;2016-08-29 Mon&gt;</span></span></h4>
+<div class="outline-text-4" id="text-1-3-2">
 <ul class="org-ul">
 <li>API and Public Changes
 
@@ -456,12 +533,12 @@ durations during the test.
 </div>
 
 
-<div id="outline-container-sec-1-3" class="outline-3">
-<h3 id="sec-1-3">3.0</h3>
-<div class="outline-text-3" id="text-1-3">
-</div><div id="outline-container-sec-1-3-1" class="outline-4">
-<h4 id="sec-1-3-1">3.0.4 <span class="timestamp-wrapper"><span class="timestamp">&lt;2016-08-12 Fri&gt;</span></span></h4>
-<div class="outline-text-4" id="text-1-3-1">
+<div id="outline-container-sec-1-4" class="outline-3">
+<h3 id="sec-1-4">3.0</h3>
+<div class="outline-text-3" id="text-1-4">
+</div><div id="outline-container-sec-1-4-1" class="outline-4">
+<h4 id="sec-1-4-1">3.0.4 <span class="timestamp-wrapper"><span class="timestamp">&lt;2016-08-12 Fri&gt;</span></span></h4>
+<div class="outline-text-4" id="text-1-4-1">
 <ul class="org-ul">
 <li>Fix for initialization hardening in previous release.
 </li>
@@ -476,9 +553,9 @@ remote fetch of large sources.
 </div>
 </div>
 
-<div id="outline-container-sec-1-3-2" class="outline-4">
-<h4 id="sec-1-3-2">3.0.3 <span class="timestamp-wrapper"><span class="timestamp">&lt;2016-08-11 Thu&gt;</span></span></h4>
-<div class="outline-text-4" id="text-1-3-2">
+<div id="outline-container-sec-1-4-2" class="outline-4">
+<h4 id="sec-1-4-2">3.0.3 <span class="timestamp-wrapper"><span class="timestamp">&lt;2016-08-11 Thu&gt;</span></span></h4>
+<div class="outline-text-4" id="text-1-4-2">
 <ul class="org-ul">
 <li>Hardened initialization for environments where the fqdn, hostname,
 or dns lookup could cause gaierror exceptions.
@@ -494,9 +571,9 @@ or dns lookup could cause gaierror exceptions.
 </div>
 
 
-<div id="outline-container-sec-1-3-3" class="outline-4">
-<h4 id="sec-1-3-3">3.0.2 <span class="timestamp-wrapper"><span class="timestamp">&lt;2016-07-29 Fri&gt;</span></span></h4>
-<div class="outline-text-4" id="text-1-3-3">
+<div id="outline-container-sec-1-4-3" class="outline-4">
+<h4 id="sec-1-4-3">3.0.2 <span class="timestamp-wrapper"><span class="timestamp">&lt;2016-07-29 Fri&gt;</span></span></h4>
+<div class="outline-text-4" id="text-1-4-3">
 <ul class="org-ul">
 <li>More updates to tests for timing issues and adding idempotency of
 assert statements because pytest may re-execute them.
@@ -515,9 +592,9 @@ replicate all builtins.
 </div>
 </div>
 
-<div id="outline-container-sec-1-3-4" class="outline-4">
-<h4 id="sec-1-3-4">3.0.1 <span class="timestamp-wrapper"><span class="timestamp">&lt;2016-07-26 Tue&gt;</span></span></h4>
-<div class="outline-text-4" id="text-1-3-4">
+<div id="outline-container-sec-1-4-4" class="outline-4">
+<h4 id="sec-1-4-4">3.0.1 <span class="timestamp-wrapper"><span class="timestamp">&lt;2016-07-26 Tue&gt;</span></span></h4>
+<div class="outline-text-4" id="text-1-4-4">
 <ul class="org-ul">
 <li>Internal updates to tests for selection of available network ports
 for each test's admin address.
@@ -549,9 +626,9 @@ sourceload module is needed instead of per file.
 </div>
 
 
-<div id="outline-container-sec-1-3-5" class="outline-4">
-<h4 id="sec-1-3-5">3.0.0 <span class="timestamp-wrapper"><span class="timestamp">&lt;2016-07-04 Mon&gt;</span></span></h4>
-<div class="outline-text-4" id="text-1-3-5">
+<div id="outline-container-sec-1-4-5" class="outline-4">
+<h4 id="sec-1-4-5">3.0.0 <span class="timestamp-wrapper"><span class="timestamp">&lt;2016-07-04 Mon&gt;</span></span></h4>
+<div class="outline-text-4" id="text-1-4-5">
 <ul class="org-ul">
 <li>Actor Addresses are not hashable.  Previously they were
 incorrectly marked as hashable, but they may be updated internally
@@ -1408,7 +1485,7 @@ The 1.x Release series was developed and used internally by GoDaddy
 </div>
 <div id="postamble" class="status">
 <p class="author">Author: Kevin Quick &lt;kquick@godaddy.com&gt;</p>
-<p class="date">Created: 2016-09-16 Fri 09:41</p>
+<p class="date">Created: 2016-09-23 Fri 15:07</p>
 <p class="creator"><a href="http://www.gnu.org/software/emacs/">Emacs</a> 24.5.2 (<a href="http://orgmode.org">Org</a> mode 8.2.10)</p>
 <p class="validation"><a href="http://validator.w3.org/check?uri=referer">Validate</a></p>
 </div>

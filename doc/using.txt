@@ -1622,9 +1622,12 @@ Table of Contents
   │      self.preRegisterRemoteSystem(self, remoteSystemAddress)
   └────
 
-  The `remoteSystemAddress' parameter is specified in the same manner as
-  for the `preRegisterRemoteSystem()' and is usually the same value that
-  was originall passed to the latter method.
+  The `remoteSystemAddress' parameter may be specified in the same
+  manner as for the `preRegisterRemoteSystem()' and is usually the same
+  value that was originally passed to the latter method.  The
+  `remoteSystemAddress' parameter may also be an actual ActorAddress
+  (e.g. the same address that would be provided in the
+  ActorSystemConventionUpdate messages).
 
 
 5.15 ActorTypeDispatcher
