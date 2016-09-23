@@ -171,13 +171,6 @@ def test_prereg_reg_with_notifications(solo_lcs1, solo_lcs2):
                 (ConventionRegister,
                  lambda r,a: (r == lcs1_to_2_convreg_first and
                               a == lcs2.myAddress)),
-                (ActorSystemConventionUpdate,
-                 lambda r, a: (
-                     r == ActorSystemConventionUpdate(
-                         lcs2.myAddress,
-                         {'Admin Port': lcs2.capabilities['Admin Port']},
-                         added=True) and
-                     a == notifyAddr)),
               ])
 
     # lcs2 gets the ConventionRegister generated above, and responds
@@ -195,13 +188,14 @@ def test_prereg_reg_with_notifications(solo_lcs1, solo_lcs2):
                                                    a == lcs1.myAddress)),
               ])
 
-    # lcs1 gets full ConventionRegister from lcs2
+    # lcs1 gets full ConventionRegister from lcs2.  This should also
+    # cause an update notification with the full specification.
     verify_io(lcs1.got_convention_register(lcs2_to_1_convreg),
               [ (ActorSystemConventionUpdate,
                  lambda r, a: (
                      r == ActorSystemConventionUpdate(
                          lcs2.myAddress,
-                         {'Admin Port': lcs2.capabilities['Admin Port']},
+                         lcs2.capabilities,
                          added=True) and
                      a == notifyAddr)),
               ])

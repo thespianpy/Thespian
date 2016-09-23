@@ -256,6 +256,8 @@ class LocalConventionState(object):
                                    ConventionRegister(self.myAddress,
                                                       self.capabilities,
                                                       first)))
+
+            if (not existing and not prereg) or (existing and existingPreReg):
                 rmsgs.extend(self._notifications_of(
                     ActorSystemConventionUpdate(registrant,
                                                 regmsg.capabilities,
