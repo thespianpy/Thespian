@@ -466,7 +466,17 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
            "Admin Routing" scenarios when the remote is shutdown or
            de-registered to allow the transport to cleanup (e.g. close
            open sockets, etc.).
+
+           This does *not* do anything to remote TXOnly sockets: those
+           connections were initiated by the remote and should
+           therefore be dropped by the remote.  Dropping those
+           connections at this point would be harmful, especially
+           because this is typically called when first reconnecting to
+           the remote.
         """
+        if isinstance(rmtaddr.addressDetails, TXOnlyAdminTCPv4ActorAddress):
+            return
+
         if hasattr(self, '_openSockets'):
             opskey = opsKey(rmtaddr)
             if opskey in self._openSockets:
