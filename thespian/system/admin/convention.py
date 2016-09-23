@@ -126,7 +126,7 @@ class LocalConventionState(object):
         return self._capabilities
 
     def updateStatusResponse(self, resp):
-        resp.setConventionLeaderAddress(self._conventionAddress)
+        resp.setConventionLeaderAddress(self.conventionLeaderAddr)
         resp.setConventionRegisterTime(self._conventionRegistration)
         for each in self._conventionMembers.values():
             resp.addConventioneer(each.remoteAddress, each.registryValid)
@@ -137,12 +137,12 @@ class LocalConventionState(object):
         return getattr(self, '_conventionLeaderIsGone', False)
 
     @property
-    def conventionLeader(self):
+    def conventionLeaderAddr(self):
         return self._conventionAddress
 
     def isConventionLeader(self):
-        return self.conventionLeader is None or \
-            self.conventionLeader == self.myAddress
+        return self.conventionLeaderAddr is None or \
+            self.conventionLeaderAddr == self.myAddress
 
     def capabilities_have_changed(self, new_capabilities):
         self._capabilities = new_capabilities
@@ -150,25 +150,25 @@ class LocalConventionState(object):
 
     def setup_convention(self):
         rmsgs = []
-        if not self._conventionAddress:
+        if not self.conventionLeaderAddr:
             self._conventionAddress = self._getConventionAddr(self.capabilities)
-            if self._conventionAddress == self.myAddress:
+            if self.conventionLeaderAddr == self.myAddress:
                 self._conventionAddress = None
         leader_is_gone = getattr(self, '_conventionLeaderIsGone', True)
-        if self._conventionAddress:
+        if self.conventionLeaderAddr:
             thesplog('Admin registering with Convention @ %s (%s)',
-                     self._conventionAddress,
+                     self.conventionLeaderAddr,
                      'first time' if leader_is_gone else 're-registering',
                      level=logging.INFO, primary=True)
             self._conventionRegistration = ExpiryTime(CONVENTION_REREGISTRATION_PERIOD)
             rmsgs.append(
-                HysteresisSend(self._conventionAddress,
+                HysteresisSend(self.conventionLeaderAddr,
                                ConventionRegister(self.myAddress,
                                                   self.capabilities,
                                                   leader_is_gone),
                                onSuccess = self._setupConventionCBGood,
                                onError = self._setupConventionCBError))
-            rmsgs.append(LogAggregator(self.conventionLeader))
+            rmsgs.append(LogAggregator(self.conventionLeaderAddr))
         return rmsgs
 
     def _setupConventionCBGood(self, result, finishedIntent):
@@ -228,7 +228,7 @@ class LocalConventionState(object):
             # former instance of this system
             existing = False
             rmsgs.extend(self._remote_system_cleanup(registrant))
-        if registrant == self._conventionAddress:
+        if registrant == self.conventionLeaderAddr:
             self._conventionLeaderIsGone = False
         #existing = self._conventionMembers.find(registrant)
         if existing:
@@ -303,11 +303,11 @@ class LocalConventionState(object):
                                 TransmitIntent(addr,
                                                ConventionDeRegister(self.myAddress)),
         ]
-        if self.conventionLeader:
+        if self.conventionLeaderAddr:
             thesplog('Admin de-registering with Convention @ %s',
-                     str(self.conventionLeader),
+                     str(self.conventionLeaderAddr),
                      level=logging.INFO, primary=True)
-            return gen_ops(self.conventionLeader)
+            return gen_ops(self.conventionLeaderAddr)
         return join(fmap(gen_ops,
                          [M.remoteAddress
                           for M in self._conventionMembers.values()]))
@@ -329,7 +329,7 @@ class LocalConventionState(object):
             self._conventionRegistration = ExpiryTime(CONVENTION_REREGISTRATION_PERIOD)
         else:
             # Re-register with the Convention if it's time
-            if self._conventionAddress and self._conventionRegistration.expired():
+            if self.conventionLeaderAddr and self._conventionRegistration.expired():
                 rmsgs.extend(self.setup_convention())
 
         for member in self._conventionMembers.values():
@@ -406,7 +406,7 @@ class LocalConventionState(object):
                 # be updated with new settings.
                 cmr.registryValid = ExpiryTime(None)
 
-        if registrant == self._conventionAddress:
+        if registrant == self.conventionLeaderAddr:
             # Convention Leader has exited.  Do NOT set
             # conventionAddress to None.  It might speed up shutdown
             # of this ActorSystem because it won't try to de-register
@@ -447,7 +447,7 @@ class LocalConventionState(object):
                     'No known ActorSystems can handle a %s for %s',
                     childClass, envelope.message.forActor)
             # Let the Convention Leader try to find an appropriate ActorSystem
-            bestC = self.conventionLeader
+            bestC = self.conventionLeaderAddr
         else:
             # distribute equally amongst candidates
             C = [(K.remoteAddress, len(K.hasRemoteActors))
@@ -601,7 +601,7 @@ class ConventioneerAdmin(GlobalNamesAdmin):
 
     def h_ValidateSource(self, envelope):
         if not envelope.message.sourceData and \
-           envelope.sender != self._cstate.conventionLeader:
+           envelope.sender != self._cstate.conventionLeaderAddr:
             # Propagate source unload requests to all convention members
             self._performIO(
                 self._cstate.send_to_all_members(
@@ -619,7 +619,7 @@ class ConventioneerAdmin(GlobalNamesAdmin):
         allowed = self.capabilities.get('AllowRemoteActorSources', 'yes')
         return allowed.lower() == 'yes' or \
             (allowed == 'LeaderOnly' and
-             pendingActorEnvelope.sender == self._conventionAddress)
+             pendingActorEnvelope.sender == self.conventionLeaderAddr)
 
 
     # ---- Remote Actor interactions ----------------------------------------------
