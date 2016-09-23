@@ -171,6 +171,7 @@ def asys(request):
     if request.param.startswith('multiprocTCP') or \
        request.param.startswith('multiprocUDP'):
         caps['Admin Port'] = get_free_admin_port()
+        caps['Convention Address.IPv4'] = '', caps['Admin Port']
     if request.param.endswith('-AdminRouting'):
         caps['Admin Routing'] = True
     if request.param.endswith('-AdminRoutingTXOnly'):

@@ -27,7 +27,7 @@ def lcs1():
                                 StatsManager(),
                                lambda x: ActorAddress(1))
     # Activate the system
-    verify_io(ret.setup_convention(), [])
+    verify_io(ret.setup_convention(activation=True), [])
     return ret
 
 
@@ -44,7 +44,7 @@ def lcs2():
                                                      firstTime=True,
                                                      preRegister=False)
     # Activate the system
-    verify_io(ret.setup_convention(),
+    verify_io(ret.setup_convention(activation=True),
               [ (ConventionRegister,
                  lambda r,a: (r == ret._expected_setup_convreg and
                               a == ActorAddress(1))),
@@ -137,15 +137,18 @@ def test_prereg_reg(solo_lcs1, solo_lcs2):
                  lambda r,a: (r == lcs2_to_1_convreg and a == lcs1.myAddress)),
               ])
 
-    # lcs1 gets full ConventionRegister from lcs2
-    assert [] == lcs1.got_convention_register(lcs2_to_1_convreg)
+    # lcs1 gets full ConventionRegister from lcs2.  This should also
+    # cause an update notification with the full specification.
+    verify_io(lcs1.got_convention_register(lcs2_to_1_convreg),
+              [ (ConventionRegister,
+                 lambda r,a: (r == lcs1_to_2_convreg and
+                              a == lcs2.myAddress)),
+              ])
 
-    # Additional registration events are ignored
-    assert [] == lcs2.got_convention_register(lcs1_to_2_convreg)
-    assert [] == lcs1.got_convention_register(lcs2_to_1_convreg)
-    assert [] == lcs2.got_convention_register(lcs1_to_2_convreg)
-    assert [] == lcs1.got_convention_register(lcs2_to_1_convreg)
+    verify_normal_notification_updates(lcs1, lcs2)
 
+    assert [] == lcs1.check_convention()
+    assert [] == lcs2.check_convention()
 
 
 def test_prereg_reg_with_notifications(solo_lcs1, solo_lcs2):
@@ -199,7 +202,10 @@ def test_prereg_reg_with_notifications(solo_lcs1, solo_lcs2):
     # lcs1 gets full ConventionRegister from lcs2.  This should also
     # cause an update notification with the full specification.
     verify_io(lcs1.got_convention_register(lcs2_to_1_convreg),
-              [ (ActorSystemConventionUpdate,
+              [ (ConventionRegister,
+                 lambda r,a: (r == lcs1_to_2_convreg and
+                              a == lcs2.myAddress)),
+                (ActorSystemConventionUpdate,
                  lambda r, a: (
                      r == ActorSystemConventionUpdate(
                          lcs2.myAddress,
@@ -208,11 +214,154 @@ def test_prereg_reg_with_notifications(solo_lcs1, solo_lcs2):
                      a == notifyAddr)),
               ])
 
-    # Additional registration events are ignored
-    assert [] == lcs2.got_convention_register(lcs1_to_2_convreg)
-    assert [] == lcs1.got_convention_register(lcs2_to_1_convreg)
-    assert [] == lcs2.got_convention_register(lcs1_to_2_convreg)
-    assert [] == lcs1.got_convention_register(lcs2_to_1_convreg)
+    verify_normal_notification_updates(lcs1, lcs2)
+
+
+def test_multi_prereg_reg_with_notifications(solo_lcs1, solo_lcs2):
+    lcs1, lcs2 = solo_lcs1, solo_lcs2
+
+    notifyAddr = ActorAddress('notify')
+
+    lcs1.add_notification_handler(notifyAddr)
+
+    lcs1_prereg_2_convreg = ConventionRegister(
+        lcs2.myAddress,
+        {'Admin Port': lcs2.capabilities['Admin Port']},
+        firstTime=False,
+        preRegister=True)
+    lcs1_to_2_convreg_first = ConventionRegister(lcs1.myAddress,
+                                                 lcs1.capabilities,
+                                                 firstTime=True,
+                                                 preRegister=False)
+    lcs2_to_1_convreg = ConventionRegister(lcs2.myAddress,
+                                           lcs2.capabilities,
+                                           firstTime=False,
+                                           preRegister=False)
+    lcs1_to_2_convreg = ConventionRegister(lcs1.myAddress,
+                                           lcs1.capabilities,
+                                           firstTime=False,
+                                           preRegister=False)
+
+    verify_io(lcs1.got_convention_register(lcs1_prereg_2_convreg),
+              [ (LostRemote, None),
+                (HysteresisCancel, None),
+                (ConventionRegister,
+                 lambda r,a: (r == lcs1_to_2_convreg_first and
+                              a == lcs2.myAddress)),
+              ])
+
+    # Another prereg should have no effect because the previous is in progress
+    verify_io(lcs1.got_convention_register(lcs1_prereg_2_convreg),
+              [
+                #   (LostRemote, None),
+                # (HysteresisCancel, None),
+                # (ConventionRegister,
+                #  lambda r,a: (r == lcs1_to_2_convreg_first and
+                #               a == lcs2.myAddress)),
+              ])
+
+    # lcs2 gets the ConventionRegister generated above, and responds
+    # with actual info of its own.  If the other side is indicating
+    # firstTime, that means it has no previous knowledge; this side
+    # should not also set firstTime or that will bounce back and forth
+    # indefinitely.  Note that this side will perform a transport
+    # reset (LostRemote and HysteresisCancel); the TCPTransport may
+    # ignore the transport reset for TXOnly addresses.
+
+    verify_io(lcs2.got_convention_register(lcs1_to_2_convreg_first),
+              [ (LostRemote, None),
+                (HysteresisCancel, None),
+                (ConventionRegister, lambda r, a: (r == lcs2_to_1_convreg and
+                                                   a == lcs1.myAddress)),
+              ])
+
+    # lcs1 gets full ConventionRegister from lcs2.  This should also
+    # cause an update notification with the full specification.
+    verify_io(lcs1.got_convention_register(lcs2_to_1_convreg),
+              [ (ConventionRegister,
+                 lambda r,a: (r == lcs1_to_2_convreg and
+                              a == lcs2.myAddress)),
+                (ActorSystemConventionUpdate,
+                 lambda r, a: (
+                     r == ActorSystemConventionUpdate(
+                         lcs2.myAddress,
+                         lcs2.capabilities,
+                         added=True) and
+                     a == notifyAddr)),
+              ])
+
+    verify_normal_notification_updates(lcs1, lcs2)
+
+
+def test_prereg_reg_prereg_with_notifications(solo_lcs1, solo_lcs2):
+    lcs1, lcs2 = solo_lcs1, solo_lcs2
+
+    notifyAddr = ActorAddress('notify')
+
+    lcs1.add_notification_handler(notifyAddr)
+
+    lcs1_prereg_2_convreg = ConventionRegister(
+        lcs2.myAddress,
+        {'Admin Port': lcs2.capabilities['Admin Port']},
+        firstTime=False,
+        preRegister=True)
+    lcs1_to_2_convreg_first = ConventionRegister(lcs1.myAddress,
+                                                 lcs1.capabilities,
+                                                 firstTime=True,
+                                                 preRegister=False)
+    lcs2_to_1_convreg = ConventionRegister(lcs2.myAddress,
+                                           lcs2.capabilities,
+                                           firstTime=False,
+                                           preRegister=False)
+    lcs1_to_2_convreg = ConventionRegister(lcs1.myAddress,
+                                           lcs1.capabilities,
+                                           firstTime=False,
+                                           preRegister=False)
+
+    verify_io(lcs1.got_convention_register(lcs1_prereg_2_convreg),
+              [ (LostRemote, None),
+                (HysteresisCancel, None),
+                (ConventionRegister,
+                 lambda r,a: (r == lcs1_to_2_convreg_first and
+                              a == lcs2.myAddress)),
+              ])
+
+    # lcs2 gets the ConventionRegister generated above, and responds
+    # with actual info of its own.  If the other side is indicating
+    # firstTime, that means it has no previous knowledge; this side
+    # should not also set firstTime or that will bounce back and forth
+    # indefinitely.  Note that this side will perform a transport
+    # reset (LostRemote and HysteresisCancel); the TCPTransport may
+    # ignore the transport reset for TXOnly addresses.
+
+    verify_io(lcs2.got_convention_register(lcs1_to_2_convreg_first),
+              [ (LostRemote, None),
+                (HysteresisCancel, None),
+                (ConventionRegister, lambda r, a: (r == lcs2_to_1_convreg and
+                                                   a == lcs1.myAddress)),
+              ])
+
+    # lcs1 gets full ConventionRegister from lcs2.  lcs1 as
+    # ConventionLeader sends back its registration (not a first-time
+    # registration) as it normally would, and also generates an update
+    # notification with the full specification.
+    verify_io(lcs1.got_convention_register(lcs2_to_1_convreg),
+              [ (ConventionRegister,
+                 lambda r,a: (r == lcs1_to_2_convreg and
+                              a == lcs2.myAddress)),
+                (ActorSystemConventionUpdate,
+                 lambda r, a: (
+                     r == ActorSystemConventionUpdate(
+                         lcs2.myAddress,
+                         lcs2.capabilities,
+                         added=True) and
+                     a == notifyAddr)),
+              ])
+
+    verify_normal_notification_updates(lcs1, lcs2)
+
+    # Another prereg has no effect because it is already registered
+    verify_io(lcs1.got_convention_register(lcs1_prereg_2_convreg), [])
 
 
 def test_reg_with_notifications(lcs1, lcs2):
@@ -251,16 +400,65 @@ def test_reg_with_notifications(lcs1, lcs2):
 
     verify_io(lcs2.got_convention_register(lcs1_to_2_convreg_first), [])
 
-    # Additional registration events are ignored
-    assert [] == lcs2.got_convention_register(lcs1_to_2_convreg)
-    assert [] == lcs1.got_convention_register(lcs2_to_1_convreg)
-    assert [] == lcs2.got_convention_register(lcs1_to_2_convreg)
-    assert [] == lcs1.got_convention_register(lcs2_to_1_convreg)
+    # Non-convention leader generates periodic registrations to the
+    # leader (i.e. keepalive) and the leader responds accordingly.
+
+    verify_io(lcs1.got_convention_register(lcs2_to_1_convreg),
+              [ (ConventionRegister,
+                 lambda r, a: (r == lcs1_to_2_convreg and
+                               a == lcs2.myAddress)),
+              ])
+    verify_io(lcs2.got_convention_register(lcs1_to_2_convreg), [])
+    verify_io(lcs1.got_convention_register(lcs2_to_1_convreg),
+              [ (ConventionRegister,
+                 lambda r, a: (r == lcs1_to_2_convreg and
+                               a == lcs2.myAddress)),
+              ])
+    verify_io(lcs2.got_convention_register(lcs1_to_2_convreg), [])
+
+    # Convention check shows all is in order and nothing needs to be done
 
     assert [] == lcs1.check_convention()
     assert [] == lcs2.check_convention()
 
     return notifyAddr  # used by callers
+
+
+def test_check_before_activate_with_notifications(lcs1, lcs2):
+    ret = LocalConventionState(ActorAddress(1),
+                                {'Admin Port': 1,
+                                 'Convention Address.IPv4': ActorAddress(1),
+                                 'popsicle': 'cold'},
+                                StatsManager(),
+                               lambda x: ActorAddress(1))
+    # Activate the system
+    verify_io(ret.setup_convention(), [])
+
+    notifyAddr = ActorAddress('notify')
+
+    lcs1.add_notification_handler(notifyAddr)
+
+    ret = LocalConventionState(ActorAddress(2),
+                                {'Admin Port': 2,
+                                 'Convention Address.IPv4': ActorAddress(1),
+                                 'apple pie': 'hot'},
+                                StatsManager(),
+                               lambda x: ActorAddress(1))
+    ret._expected_setup_convreg = ConventionRegister(ActorAddress(2),
+                                                     ret.capabilities,
+                                                     firstTime=True,
+                                                     preRegister=False)
+
+    verify_io(ret.check_convention(), [])
+
+    # Activate the system
+    verify_io(ret.setup_convention(),
+              [ (ConventionRegister,
+                 lambda r,a: (r == ret._expected_setup_convreg and
+                              a == ActorAddress(1))),
+                (LogAggregator, None),
+              ])
+
 
 
 def test_reg_dereg_with_notifications(lcs1, lcs2):
@@ -354,11 +552,23 @@ def test_reg_with_multiple_notifications(lcs1, lcs2):
 
     verify_io(lcs2.got_convention_register(lcs1_to_2_convreg_first), [])
 
-    # Additional registration events are ignored
-    assert [] == lcs2.got_convention_register(lcs1_to_2_convreg)
-    assert [] == lcs1.got_convention_register(lcs2_to_1_convreg)
-    assert [] == lcs2.got_convention_register(lcs1_to_2_convreg)
-    assert [] == lcs1.got_convention_register(lcs2_to_1_convreg)
+    # Non-convention leader generates periodic registrations to the
+    # leader (i.e. keepalive) and the leader responds accordingly.
+
+    verify_io(lcs1.got_convention_register(lcs2_to_1_convreg),
+              [ (ConventionRegister,
+                 lambda r, a: (r == lcs1_to_2_convreg and
+                               a == lcs2.myAddress)),
+              ])
+    verify_io(lcs2.got_convention_register(lcs1_to_2_convreg), [])
+    verify_io(lcs1.got_convention_register(lcs2_to_1_convreg),
+              [ (ConventionRegister,
+                 lambda r, a: (r == lcs1_to_2_convreg and
+                               a == lcs2.myAddress)),
+              ])
+    verify_io(lcs2.got_convention_register(lcs1_to_2_convreg), [])
+
+    # De-registration
 
     lcs2_to_1_convdereg = ConventionDeRegister(lcs2.myAddress,
                                                preRegistered=False)
@@ -443,9 +653,37 @@ def test_reg_dereg_rereg_with_delay_and_updates(lcs1, lcs2):
     test_reg_with_notifications(lcs1, lcs2)
 
 
+def verify_normal_notification_updates(lcs1, lcs2):
+
+    # Convention member generates periodic registrations to the leader
+    # (i.e. keepalive) and the leader responds accordingly.
+
+    lcs2_to_1_convreg = ConventionRegister(lcs2.myAddress,
+                                           lcs2.capabilities,
+                                           firstTime=False,
+                                           preRegister=False)
+    lcs1_to_2_convreg = ConventionRegister(lcs1.myAddress,
+                                           lcs1.capabilities,
+                                           firstTime=False,
+                                           preRegister=False)
+
+    verify_io(lcs1.got_convention_register(lcs2_to_1_convreg),
+              [ (ConventionRegister,
+                 lambda r, a: (r == lcs1_to_2_convreg and
+                               a == lcs2.myAddress)),
+              ])
+    verify_io(lcs2.got_convention_register(lcs1_to_2_convreg), [])
+    verify_io(lcs1.got_convention_register(lcs2_to_1_convreg),
+              [ (ConventionRegister,
+                 lambda r, a: (r == lcs1_to_2_convreg and
+                               a == lcs2.myAddress)),
+              ])
+    verify_io(lcs2.got_convention_register(lcs1_to_2_convreg), [])
+
+    
 def verify_io(iolist, expected, any_order=False, echo=True):
     if echo:
-        print(fmap(str, iolist))
+        print("%s:: %s"%(len(iolist),'\n    '.join(fmap(str, iolist))))
     expected_type = [E[0] for E in expected]
     for each in iolist:
         if not expected:
