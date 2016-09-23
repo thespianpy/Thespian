@@ -252,6 +252,11 @@ def _append(iterable, value):
     iterable.append(value)
     return iterable
 
+
+def join(iterable_of_iterables):
+    return foldl(lambda a, b: a + b, iterable_of_iterables, [])
+
+
 def partition(testPred, inp_iterable, output_type=list):
     """Splits an iterable (e.g. list) into a tuple of two lists (or other
        output_type): the first output iterable contains the elements
