@@ -721,7 +721,7 @@ class ConventioneerAdmin(GlobalNamesAdmin):
             self._performIO(
                 self._cstate.add_notification_handler(envelope.sender))
         else:
-            self._removeNotificationHandler(envelope.sender)
+            self._cstate.remove_notification_handler(envelope.sender)
         return True
 
 
