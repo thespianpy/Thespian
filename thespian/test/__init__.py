@@ -129,7 +129,7 @@ class ActorSystemTestCase(unittest.TestCase, LocallyManagedActorSystem):
 
 testAdminPort = None
 
-def get_free_admin_port():
+def get_free_admin_port_random():
     global testAdminPort
     if testAdminPort is None:
         import random
@@ -137,6 +137,23 @@ def get_free_admin_port():
     else:
         testAdminPort = testAdminPort + 1
     return testAdminPort
+
+def get_free_admin_port():
+    import socket
+    import random
+    for tries in range(100):
+        port = random.randint(5000, 60000)
+        try:
+            socket.socket(socket.AF_INET,
+                          socket.SOCK_STREAM,
+                          socket.IPPROTO_TCP).bind(('',port))
+            socket.socket(socket.AF_INET,
+                          socket.SOCK_DGRAM,
+                          socket.IPPROTO_UDP).bind(('',port))
+            return port
+        except Exception:
+            pass
+    return get_free_admin_port_random()
 
 
 @pytest.fixture(params=['simpleSystemBase',
