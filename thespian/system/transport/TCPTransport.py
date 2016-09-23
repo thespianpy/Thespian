@@ -949,7 +949,9 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
                 # completed but unrealized) here, and ensure the main
                 # listener does not accept any listens below.
                 if not wrecv and not wsend:
-                    wrecv.extend([self.socket.fileno()])
+                    if not hasattr(self, 'dummySock'):
+                        self.dummySock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
+                    wrecv.extend([self.dummySock.fileno()])
 
             if self._watches:
                 wrecv.extend(self._watches)
