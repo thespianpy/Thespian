@@ -354,11 +354,11 @@ class systemBase(object):
     # Actors that involve themselves in topology
 
     def preRegisterRemoteSystem(self, remoteAddress, remoteCapabilities):
-        # how do we synthesize the remote Address?  via the capabilities?
         self.send(self.adminAddr,
-                  ConventionRegister(self.transport.getAddressFromString(remoteAddress),
-                                     remoteCapabilities,
-                                     preRegister=True))
+                  ConventionRegister(
+                      self.transport.getAddressFromString(remoteAddress),
+                      remoteCapabilities,
+                      preRegister=True))
 
     def deRegisterRemoteSystem(self, remoteAddress):
         self.send(

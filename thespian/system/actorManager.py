@@ -425,14 +425,14 @@ class ActorManager(systemCommonBase):
     # Actors that involve themselves in topology
 
     def preRegisterRemoteSystem(self, remoteAddress, remoteCapabilities):
-        # how do we synthesize the remote Address?  via the capabilities?
         from thespian.system.messages.convention import ConventionRegister
         self._send_intent(
-            TransmitIntent(self._adminAddr,
-                           ConventionRegister(
-                               self.transport.getAddressFromString(remoteAddress),
-                               remoteCapabilities,
-                               preRegister=True)))
+            TransmitIntent(
+                self._adminAddr,
+                ConventionRegister(
+                    self.transport.getAddressFromString(remoteAddress),
+                    remoteCapabilities,
+                    preRegister=True)))
 
     def deRegisterRemoteSystem(self, remoteAddress):
         from thespian.system.messages.convention import ConventionDeRegister
