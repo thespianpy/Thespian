@@ -6,7 +6,7 @@ import threading
 from thespian.system.utilis import thesplog
 
 
-ASK_WAIT = datetime.timedelta(seconds=15)
+ASK_WAIT = datetime.timedelta(seconds=20)
 
 def threaded(count):
     """This is the main body of each thread.  It will generate a `count`
