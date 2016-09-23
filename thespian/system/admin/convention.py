@@ -366,9 +366,9 @@ class LocalConventionState(object):
            previous connection information.
 
         """
-        thesplog('Convention cleanup or deregistration for %s (new? %s)',
+        thesplog('Convention cleanup or deregistration for %s (known? %s)',
                  registrant,
-                 not self._conventionMembers.find(registrant),
+                 bool(self._conventionMembers.find(registrant)),
                  level=logging.INFO)
         rmsgs = [LostRemote(registrant)]
         cmr = self._conventionMembers.find(registrant)
