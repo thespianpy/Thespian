@@ -10,7 +10,7 @@ import multiprocessing
 import traceback
 from thespian.system.utilis import setProcName, thesplog_control
 from thespian.system.messages.multiproc import *
-from thespian.system.transport import TransmitIntent
+from thespian.system.transport import TransmitIntent, Thespian__UpdateWork
 
 
 # ----------------------------------------------------------------------
@@ -71,6 +71,9 @@ def startupASLogger(addrOfStarter, logEndpoint, logDefs,
     while True:
         try:
             r = transport.run(None)
+            if isinstance(r, Thespian__UpdateWork):
+                self._send_intent(TransmitIntent(self.myAddress, r))
+                continue
             logrecord = r.message
             if isinstance(logrecord, LoggerExitRequest):
                 logging.info('ActorSystem Logging Shutdown')
