@@ -72,7 +72,7 @@ def startupASLogger(addrOfStarter, logEndpoint, logDefs,
         try:
             r = transport.run(None)
             if isinstance(r, Thespian__UpdateWork):
-                self._send_intent(TransmitIntent(self.myAddress, r))
+                transport.scheduleTransmit(TransmitIntent(transport.myAddress, r))
                 continue
             logrecord = r.message
             if isinstance(logrecord, LoggerExitRequest):
