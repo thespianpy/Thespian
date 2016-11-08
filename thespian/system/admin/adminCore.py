@@ -40,6 +40,7 @@ class AdminCore(systemCommonBase):
         self._sources = {}  # Index is sourcehash, value is requestor
                             # ActorAddress or ValidSource (when validated)
         self._sourceAuthority = None
+        self._sourceNotifications = []  # array of notification addresses
 
 
     def _activate(self):
@@ -205,6 +206,8 @@ class AdminCore(systemCommonBase):
 
 
     def _handleChildExited(self, childAddress):
+        self._sourceNotifications = list(filter(lambda a: a != childAddress,
+                                                self._sourceNotifications))
         parentAddr = self._nannying.find(childAddress)
         if parentAddr:
             self._nannying.rmv(childAddress)
@@ -351,6 +354,22 @@ class AdminCore(systemCommonBase):
         self._sourceAuthority = envelope.message.authorityAddress
 
 
+    def h_NotifyOnSourceAvailability(self, envelope):
+        address = envelope.message.notificationAddress
+        enable = envelope.message.enable
+        all_except = list(filter(lambda a: a != address, self._sourceNotifications))
+        if enable:
+            self._sourceNotifications = all_except + [address]
+            for each in self._sources:
+                if hasattr(self._sources[each], 'srcHash'):
+                    self._send_intent(
+                        TransmitIntent(address,
+                                       LoadedSource(self._sources[each].srcHash,
+                                                    self._sources[each].srcInfo)))
+        else:
+            self._sourceNotifications = all_except
+
+
     def h_ValidateSource(self, envelope):
         sourceHash = envelope.message.sourceHash
         if not envelope.message.sourceData:
@@ -405,8 +424,18 @@ class AdminCore(systemCommonBase):
         # Store this registered source
         self._sources[sourceHash] = ValidSource(sourceHash, sourceZip, str(sourceInfo))
 
+        msg = LoadedSource(self._sources[sourceHash].srcHash,
+                           self._sources[sourceHash].srcInfo)
+        for each in self._sourceNotifications:
+            self._send_intent(TransmitIntent(each, msg))
+
+
     def unloadActorSource(self, sourceHash):
         if sourceHash in self._sources:
+            msg = UnloadedSource(self._sources[sourceHash].srcHash,
+                                 self._sources[sourceHash].srcInfo)
+            for each in self._sourceNotifications:
+                self._send_intent(TransmitIntent(each, msg))
             del self._sources[sourceHash]
         for pnum, metapath in enumerate(sys.meta_path):
             if getattr(metapath, 'srcHash', None) == sourceHash:

@@ -245,6 +245,12 @@ class Actor(object):
         """
         return self._myRef.unloadActorSource(sourceHash)
 
+    def notifyOnSourceAvailability(self, enable=True):
+        """Registers this Actor with the ActorSystem as a recipient of
+           LoadedSource and UnloadedSource notification messages.
+        """
+        self._myRef.notifyOnSourceAvailability(self.myAddress, enable)
+
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     # Most actors will not use the below, but they can be used
     # to influence the Convention membership for Thespian
@@ -327,6 +333,47 @@ class ActorSystemConventionUpdate(ActorSystemMessage):
                 (str(self.remoteAdminAddress),
                  str(self.remoteAdded),
                  str(self.remoteCapabilities)))
+
+
+class _SourceChangeNotification(ActorSystemMessage):
+    """This is the base class for messages delivered to actors that have
+       registered for notification of loaded changes via the
+       notifyOnSourceAvailability call.  This message is not delivered
+       directly; one of the subclasses (LoadedSource or
+       UnloadedSource) is delivered to the notification registree.
+    """
+    def __init__(self, sourceHash, sourceInfo):
+        self.sourceHash = sourceHash
+        self.sourceInfo = sourceInfo
+
+    def __eq__(self, o):
+        return str(self) == str(o)
+
+    def __ne__(self, o):
+        return not self.__eq__(o)
+
+
+class LoadedSource(_SourceChangeNotification):
+    """This message is delivered to actors that have registered for
+       notification of loaded changes via the
+       notifyOnSourceAvailability call.  This message is sent when a
+       new source is loaded and useable for creating actors.
+    """
+    def __str__(self):
+        return ('LoadedSource(sourceHash=%s, sourceInfo=%s)' %
+                (str(self.sourceHash), str(self.sourceInfo)))
+
+
+class UnloadedSource(_SourceChangeNotification):
+    """This message is delivered to actors that have registered for
+       notification of loaded changes via the
+       notifyOnSourceAvailability call.  This message is sent when an
+       existing source has been unloaded and is no longer useable for
+       creating actors.
+    """
+    def __str__(self):
+        return ('UnloadedSource(sourceHash=%s, sourceInfo=%s)' %
+                (str(self.sourceHash), str(self.sourceInfo)))
 
 
 class ActorExitRequest(ActorSystemMessage):

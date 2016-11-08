@@ -140,3 +140,12 @@ class RegisterSourceAuthority(ActorSystemMessage):
     "Sent to an ActorSystem to specify an Actor that will act as a Source Authority"
     def __init__(self, authorityAddress):
         self.authorityAddress = authorityAddress
+
+
+class NotifyOnSourceAvailability(ActorSystemMessage):
+    """Sent to an ActorSystem to specify an Actor that wants notifications
+       of source loads and unloads
+    """
+    def __init__(self, notificationAddress, enable):
+        self.notificationAddress = notificationAddress
+        self.enable = enable

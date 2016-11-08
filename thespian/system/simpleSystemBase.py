@@ -89,6 +89,9 @@ class ActorRef:
     def registerSourceAuthority(self, address):
         self._system._systemBase.registerSourceAuthority(address)
 
+    def notifyOnSourceAvailability(self, address, enable):
+        self._system._systemBase.registerSourceNotifications(address, enable)
+
     def updateCapability(self, capabilityName, capabilityValue):
         self._system.updateCapability(capabilityName, capabilityValue)
 
@@ -230,6 +233,7 @@ class ActorSystemBase:
                             # that time
         self._sources = {}  # key = sourcehash, value = encrypted zipfile data
         self._sourceAuthority = None  # ActorAddress of Source Authority
+        self._sourceNotifications = [] # list of actor addresses to notify of loads
         asys = self._newRefAndActor(system, system.systemAddress,
                                     system.systemAddress,
                                     External)
@@ -373,6 +377,8 @@ class ActorSystemBase:
             if self._globalNames[gn] == ps.toActor:
                 del self._globalNames[gn]
                 break
+        self._sourceNotifications = list(filter(lambda N: N != ps.toActor,
+                                                self._sourceNotifications))
         tgt._system._systemBase.actor_send(
             self.actorRegistry[self.system.systemAddress.actorAddressString].address,
             tgt.parent,
@@ -544,6 +550,17 @@ class ActorSystemBase:
         self._sourceAuthority = address
 
 
+    def registerSourceNotifications(self, address, enable):
+        all_except = list(filter(lambda a: a != address, self._sourceNotifications))
+        if enable:
+            self._sourceNotifications = all_except + [address]
+            for each_hash in self._sources:
+                self.actor_send(self.system.systemAddress,
+                                address,
+                                LoadedSource(each_hash, ''))  # no info available
+        else:
+            self._sourceNotifications = all_except
+
     def loadActorSource(self, fname):
         import hashlib
         f = fname if hasattr(fname, 'read') else open(fname, 'rb')
@@ -581,10 +598,21 @@ class ActorSystemBase:
         # Store this registered source
         self._sources[sourceHash] = sourceZip
 
+        # Generate notifications
+        for each_target in self._sourceNotifications:
+            self.actor_send(self.system.systemAddress, each_target,
+                            LoadedSource(sourceHash, ''))  # no info available
+
 
     def unloadActorSource(self, sourceHash):
         if sourceHash in self._sources:
             del self._sources[sourceHash]
+
+            # Generate notifications
+            for each_target in self._sourceNotifications:
+                self.actor_send(self.system.systemAddress, each_target,
+                                UnloadedSource(sourceHash, ''))  # no info available
+
         for pnum, metapath in enumerate(sys.meta_path):
             if getattr(metapath, 'srcHash', None) == sourceHash:
                 rmmods = [M for M in sys.modules

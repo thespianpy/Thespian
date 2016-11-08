@@ -302,6 +302,36 @@ class SimpleSourceAuthority(ActorTypeDispatcher):
         self.send(sender, ValidatedSource(msg.sourceHash, msg.sourceData))
 
 
+class LoadWatcher(ActorTypeDispatcher):
+    def receiveMsg_str(self, msg, sender):
+        if msg == 'go':
+            self.sources_yes = []
+            self.sources_no = []
+            self.notifyOnSourceAvailability(True)
+        elif msg == 'stop':
+            self.notifyOnSourceAvailability(False)
+        elif msg == 'what is loaded?':
+            self.send(sender, ', '.join(['%s=Yes'%H for H in self.sources_yes] +
+                                        ['%s=No'%H for H in self.sources_no]))
+    def receiveMsg_LoadedSource(self, loadmsg, sender):
+        self.sources_no = list(filter(lambda h: h != loadmsg.sourceHash,
+                                      self.sources_no))
+        # Allow multiple "loads" to show multiple times
+        self.sources_yes.append(loadmsg.sourceHash)
+        # n.b. the print validates the presence but not the value of
+        # loadmsg.sourceInfo
+        print('Notification of load of %s (%s)' % (loadmsg.sourceHash,
+                                                   loadmsg.sourceInfo))
+    def receiveMsg_UnloadedSource(self, unloadmsg, sender):
+        self.sources_yes = list(filter(lambda h: h != unloadmsg.sourceHash,
+                                      self.sources_yes))
+        # Allow multiple unloads to show multiple times
+        self.sources_no.append(unloadmsg.sourceHash)
+        # n.b. the print validates the presence but not the value of
+        # loadmsg.sourceInfo
+        print('Notification of unload of %s (%s)' % (unloadmsg.sourceHash,
+                                                     unloadmsg.sourceInfo))
+
 @pytest.fixture(scope='class')
 def source_zips(request):
     tmpdir = tempfile.mkdtemp()
@@ -499,6 +529,12 @@ class TestFuncLoadSource(object):
         asys.tell(asys.createActor(SimpleSourceAuthority), 'go')
         sourceauthority_reg_wait() # wait for source authorities to register
 
+    def _registerLoadNotifications(self, asys):
+        watcher = asys.createActor(LoadWatcher)
+        asys.tell(watcher, 'go')
+        sourceauthority_reg_wait() # wait for start and registration of load watcher
+        return watcher
+
     def test00_systemsRunnable(self, asys):
         pass
 
@@ -536,11 +572,124 @@ class TestFuncLoadSource(object):
         r = asys.ask(foo, 'good one', ask_wait)
         assert 'GOT: good one' == r
 
+    def _verifyHashNotification(self, asys, loadnotify, srchash, loaded=True):
+        srchash_loaded = '%s=%s' % (srchash, 'Yes' if loaded else 'No')
+        for tries in range(5):
+            r = asys.ask(loadnotify, 'what is loaded?', ask_wait)
+            print(srchash,'loaded:',r)
+            if r and srchash_loaded in r:
+                break
+            time.sleep(0.005)
+        else:
+            assert 'No source load notification of %s' % srchash == r
+        x = r.find(srchash_loaded)
+        # Verify only one load notification was received
+        assert -1 == r[x+len(srchash_loaded):].find(srchash_loaded)
+
+    def test02_verifyNotificationNotAvailableOnActorSystemItself(self, asys):
+        assert not hasattr(asys, 'notifyOnSourceAvailability')
+
+    def test02_verifyNotificationAndMainActorCreateWhenLoaded(self, asys, source_zips):
+        thesplog('tt1 %s', asys.port_num)
+        tmpdir, foozipFname, foozipEncFile, dogzipFname, dogzipEncFile = source_zips
+        self._registerSA(asys)
+        loadnotify = self._registerLoadNotifications(asys)
+        srchash = self._loadFooSource(asys, source_zips)
+        self._verifyHashNotification(asys, loadnotify, srchash)
+        foo = asys.createActor('foo.FooActor', sourceHash=srchash)
+        r = asys.ask(foo, 'good one', ask_wait)
+        assert 'GOT: good one' == r
+
+    def test02_verifyNotificationMultipleAndMainActorCreateWhenLoaded(self, asys, source_zips):
+        thesplog('tt1 %s', asys.port_num)
+        tmpdir, foozipFname, foozipEncFile, dogzipFname, dogzipEncFile = source_zips
+        self._registerSA(asys)
+        loadnotify = self._registerLoadNotifications(asys)
+        srchash = self._loadFooSource(asys, source_zips)
+        self._verifyHashNotification(asys, loadnotify, srchash)
+        foo = asys.createActor('foo.FooActor', sourceHash=srchash)
+        loadnotify2 = self._registerLoadNotifications(asys)
+        self._verifyHashNotification(asys, loadnotify2, srchash)
+        r = asys.ask(foo, 'good one', ask_wait)
+        assert 'GOT: good one' == r
+
+    def test02_verifyNotificationOfLoadedOnRegistration(self, asys, source_zips):
+        thesplog('tt1 %s', asys.port_num)
+        tmpdir, foozipFname, foozipEncFile, dogzipFname, dogzipEncFile = source_zips
+        self._registerSA(asys)
+        srchash = self._loadFooSource(asys, source_zips)
+        loadnotify = self._registerLoadNotifications(asys)
+        self._verifyHashNotification(asys, loadnotify, srchash)
+        foo = asys.createActor('foo.FooActor', sourceHash=srchash)
+        r = asys.ask(foo, 'good one', ask_wait)
+        assert 'GOT: good one' == r
+
     def test02_verifyNoSourceAuthorityIgnoresLoad(self, asys, source_zips):
         thesplog('tt2 %s', asys.port_num)
         tmpdir, foozipFname, foozipEncFile, dogzipFname, dogzipEncFile = source_zips
         srchash = self._loadFooSource(asys, source_zips)
         raises(InvalidActorSourceHash, asys.createActor, 'foo.FooActor', sourceHash=srchash)
+
+    def test02_verifyNotificationNotSentWithNoSourceAuthority(self, asys, source_zips):
+        tmpdir, foozipFname, foozipEncFile, dogzipFname, dogzipEncFile = source_zips
+        loadnotify = self._registerLoadNotifications(asys)
+        srchash = self._loadFooSource(asys, source_zips)
+        r = asys.ask(loadnotify, 'what is loaded?', ask_wait)
+        assert r == ''
+
+
+    def test02_verifyNotificationStopDoesNotNotify(self, asys, source_zips):
+        thesplog('tt1 %s', asys.port_num)
+        tmpdir, foozipFname, foozipEncFile, dogzipFname, dogzipEncFile = source_zips
+        self._registerSA(asys)
+        loadnotify = self._registerLoadNotifications(asys)
+        asys.tell(loadnotify, 'stop')
+        sourceload_wait()
+        srchash = self._loadFooSource(asys, source_zips)
+        sourceload_wait()
+        srchash_loaded = '%s=Yes' % srchash
+        for tries in range(3):
+            r = asys.ask(loadnotify, 'what is loaded?', ask_wait)
+            print(srchash,'loaded:',r)
+            assert srchash_loaded not in r
+            time.sleep(0.005)
+        # No notification, but srchash still useable
+        foo = asys.createActor('foo.FooActor', sourceHash=srchash)
+        r = asys.ask(foo, 'good one', ask_wait)
+        assert 'GOT: good one' == r
+
+    def test02_verifyNotificationKillDoesNotBreakNotify(self, asys, source_zips):
+        thesplog('tt1 %s', asys.port_num)
+        tmpdir, foozipFname, foozipEncFile, dogzipFname, dogzipEncFile = source_zips
+        self._registerSA(asys)
+        loadnotify = self._registerLoadNotifications(asys)
+        asys.tell(loadnotify, ActorExitRequest())
+        sourceload_wait()
+        srchash = self._loadFooSource(asys, source_zips)
+        sourceload_wait()
+        r = asys.ask(loadnotify, 'what is loaded?', timedelta(milliseconds=300))
+        assert r is None
+        # No notification, but srchash still useable
+        foo = asys.createActor('foo.FooActor', sourceHash=srchash)
+        r = asys.ask(foo, 'good one', ask_wait)
+        assert 'GOT: good one' == r
+
+    def test02_verifyNotificationOfMultipleKillOneDoesNotBreakNotify(self, asys, source_zips):
+        thesplog('tt1 %s', asys.port_num)
+        tmpdir, foozipFname, foozipEncFile, dogzipFname, dogzipEncFile = source_zips
+        self._registerSA(asys)
+        loadnotify1 = self._registerLoadNotifications(asys)
+        loadnotify2 = self._registerLoadNotifications(asys)
+        asys.tell(loadnotify1, ActorExitRequest())
+        sourceload_wait()
+        srchash = self._loadFooSource(asys, source_zips)
+        sourceload_wait()
+        r = asys.ask(loadnotify1, 'what is loaded?', timedelta(milliseconds=300))
+        assert r is None
+        self._verifyHashNotification(asys, loadnotify2, srchash)
+        foo = asys.createActor('foo.FooActor', sourceHash=srchash)
+        r = asys.ask(foo, 'good one', ask_wait)
+        assert 'GOT: good one' == r
 
     def test02_verifySubActorAvailableWhenLoaded(self, asys, source_zips):
         thesplog('tt3 %s', asys.port_num)
@@ -731,6 +880,46 @@ class TestFuncLoadSource(object):
         r = asys.ask(dog, 'bark', ask_wait)
         assert 'Woof! bark' == r
 
+    def test04_verifyNotificationOfMultipleSeparateModulesLoaded(self, asys, source_zips):
+        thesplog('ttf %s', asys.port_num)
+        tmpdir, foozipFname, foozipEncFile, dogzipFname, dogzipEncFile = source_zips
+        self._registerSA(asys)
+        loadnotify = self._registerLoadNotifications(asys)
+        srchash2 = asys.loadActorSource(dogzipFname)
+        srchash = self._loadFooSource(asys, source_zips)
+        assert srchash2 is not None
+        sourceload_wait() # allow time for validation of source by source authority
+        self._verifyHashNotification(asys, loadnotify, srchash)
+        self._verifyHashNotification(asys, loadnotify, srchash2)
+        foo = asys.createActor('foo.FooActor', sourceHash=srchash)
+        dog = asys.createActor('dog.DogActor', sourceHash=srchash2)
+        r = asys.ask(foo, 'good one', ask_wait)
+        assert 'GOT: good one' == r
+        r = asys.ask(foo, ('discard', 'great'))
+        assert 'And MOO: great' == r
+        r = asys.ask(dog, 'bark', ask_wait)
+        assert 'Woof! bark' == r
+
+    def test04_verifyNotificationOfMultipleSeparateModulesLoadedPreAndPostRegistration(self, asys, source_zips):
+        thesplog('ttf %s', asys.port_num)
+        tmpdir, foozipFname, foozipEncFile, dogzipFname, dogzipEncFile = source_zips
+        self._registerSA(asys)
+        loadnotify = self._registerLoadNotifications(asys)
+        srchash2 = asys.loadActorSource(dogzipFname)
+        assert srchash2 is not None
+        self._verifyHashNotification(asys, loadnotify, srchash2)
+        srchash = self._loadFooSource(asys, source_zips)
+        sourceload_wait() # allow time for validation of source by source authority
+        self._verifyHashNotification(asys, loadnotify, srchash)
+        foo = asys.createActor('foo.FooActor', sourceHash=srchash)
+        dog = asys.createActor('dog.DogActor', sourceHash=srchash2)
+        r = asys.ask(foo, 'good one', ask_wait)
+        assert 'GOT: good one' == r
+        r = asys.ask(foo, ('discard', 'great'))
+        assert 'And MOO: great' == r
+        r = asys.ask(dog, 'bark', ask_wait)
+        assert 'Woof! bark' == r
+
     def test04_verifyMultipleSeparateModulesRequireCorrectSourceHashOnCreate(self, asys, source_zips):
         thesplog('ttg %s', asys.port_num)
         tmpdir, foozipFname, foozipEncFile, dogzipFname, dogzipEncFile = source_zips
@@ -780,6 +969,32 @@ class TestFuncLoadSource(object):
         r = asys.ask(dogActor, [foozipFname, 'barn.cow.moo.MooActor', 'tock'],
                      5)
         assert r == 'And MOO: Bark! tock'
+
+
+    def test04_verifyNotificationOfMultipleSeparateModulesUnLoaded(self, asys, source_zips):
+        thesplog('ttf %s', asys.port_num)
+        tmpdir, foozipFname, foozipEncFile, dogzipFname, dogzipEncFile = source_zips
+        self._registerSA(asys)
+        loadnotify = self._registerLoadNotifications(asys)
+        srchash2 = asys.loadActorSource(dogzipFname)
+        assert srchash2 is not None
+        self._verifyHashNotification(asys, loadnotify, srchash2)
+        srchash = self._loadFooSource(asys, source_zips)
+        sourceload_wait() # allow time for validation of source by source authority
+        self._verifyHashNotification(asys, loadnotify, srchash)
+        asys.unloadActorSource(srchash2)
+        self._verifyHashNotification(asys, loadnotify, srchash2, False)
+        self._verifyHashNotification(asys, loadnotify, srchash)
+        srchash3 = asys.loadActorSource(dogzipFname)
+        # n.b. srchash2 and srchash3 are probably equal, so cannot verify srchash2
+        self._verifyHashNotification(asys, loadnotify, srchash)
+        self._verifyHashNotification(asys, loadnotify, srchash3)
+        asys.unloadActorSource(srchash)
+        self._verifyHashNotification(asys, loadnotify, srchash, False)
+        self._verifyHashNotification(asys, loadnotify, srchash3)
+        asys.unloadActorSource(srchash3)
+        self._verifyHashNotification(asys, loadnotify, srchash, False)
+        self._verifyHashNotification(asys, loadnotify, srchash3, False)
 
 
     def test04_circular_import_references(self, asys, source_zips):

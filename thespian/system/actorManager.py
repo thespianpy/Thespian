@@ -241,7 +241,12 @@ class ActorManager(systemCommonBase):
 
     def _sayGoodbye(self):
         self._send_intent(
-            TransmitIntent(self._parentAddr, ChildActorExited(self.transport.myAddress)))
+            TransmitIntent(self._adminAddr,
+                           NotifyOnSourceAvailability(self.transport.myAddress,
+                                                      False)))
+        self._send_intent(
+            TransmitIntent(self._parentAddr,
+                           ChildActorExited(self.transport.myAddress)))
 
 
     def _childInaccessible(self, childAddress, exitRequestIntent):
@@ -396,6 +401,12 @@ class ActorManager(systemCommonBase):
     def registerSourceAuthority(self, address):
         self._send_intent(
             TransmitIntent(self._adminAddr, RegisterSourceAuthority(address)))
+
+
+    def notifyOnSourceAvailability(self, watcherAddress, enable):
+        self._send_intent(
+            TransmitIntent(self._adminAddr,
+                           NotifyOnSourceAvailability(watcherAddress, enable)))
 
 
     def loadActorSource(self, fname):
