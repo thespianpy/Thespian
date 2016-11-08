@@ -271,7 +271,7 @@ class ActorSystemBase:
             del self._wakeUps[each]
 
 
-    def _runSends(self, timeout=None):
+    def _runSends(self, timeout=None, stop_on_available=False):
         numsends = 0
         endtime = ((datetime.now() + toTimeDeltaOrNone(timeout))
                    if timeout else None)
@@ -282,6 +282,11 @@ class ActorSystemBase:
                     raise RuntimeError('Too many sends')
                 self._realizeWakeups()
                 self._runSingleSend(self._pendingSends.pop(0))
+                if stop_on_available and \
+                   any([not isInternalActorSystemMessage(M)
+                        for M in getattr(stop_on_available.instance,
+                                         'responses', [])]):
+                    return
             if not endtime:
                 return
             now = datetime.now()
@@ -498,8 +503,8 @@ class ActorSystemBase:
         # check remaining time between Actor calls and return if the
         # timeout period has been exceeded, but that still wouldn't
         # allow interruption of blocked Actors.
-        self._runSends(timeout)
         sender = self.actorRegistry['System:ExternalRequester']
+        self._runSends(timeout, stop_on_available=sender)
         while getattr(sender.instance, 'responses', None):
             response = sender.instance.responses.pop(0)
             if isInternalActorSystemMessage(response): continue
