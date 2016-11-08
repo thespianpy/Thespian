@@ -10,6 +10,8 @@ Table of Contents
 ─────────────────
 
 3.x
+.. 3.4
+..... 3.4.0 <2016-11-07 Mon>
 .. 3.3
 ..... 3.3.0 <2016-09-15 Thu>
 .. 3.2
@@ -70,6 +72,62 @@ not change the API.
 
 3.x
 ═══
+
+3.4
+───
+
+3.4.0 <2016-11-07 Mon>
+╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+
+  ‣ Added `notifyOnSourceAvailability()' call for an Actor to register
+    to receive `LoadedSource' objects indicating that a new source file
+    has been loaded and is ready to be used, and `UnloadedSource'
+    objects when a source has been unloaded.  This can be used to write
+    a "source manager" that can take specific actions when these trigger
+    messages indicate changes in the loaded sources for the current
+    actor system.
+
+  ‣ Updated Actor System `ask()' and `listen()' calls to return as soon
+    as a response is available.  Previously the calls did not return
+    until the delay period had expired.
+
+  ‣ Updated convention management with a full analysis of different
+    scenarios (in the design-routing document) and corresponding tests,
+    with updates to the convention management code as revealed by these
+    tests.  This fixes various behaviors, including an issue introduced
+    in the previous release that would prevent a TxOnly admin from
+    updating remote nodes and therefore causing the remote to enter a
+    partially-disconnected state after about 22 minutes.  These changes
+    introduce significant stability and behavior imprlements for
+    conventions.
+
+  ‣ Add `.details' to `PoisonMessage' for additional information ([Issue
+    22]).
+
+  ‣ Adds supported Actor Troupe functionality ([Issue 2]).
+
+  ‣ Fixed logging error ([Issue 23]) introduced in 3.3.0.
+
+  ‣ Updated packaging to include documentation and top-level files
+    including the readme, license, and contributor's agreement ([Issue
+    25]).
+
+  ‣ Internal cleanups and re-arrangement, including introduction of a
+    more efficient internal timer.
+
+  ‣ Update TCP transport to use more efficient timer, handle socket
+    shutdown corner cases (e.g. no socket created yet or already
+    removed).
+
+
+  [Issue 22] https://github.com/godaddy/Thespian/issues/22
+
+  [Issue 2] https://github.com/godaddy/Thespian/issues/2
+
+  [Issue 23] https://github.com/godaddy/Thespian/issues/23
+
+  [Issue 25] https://github.com/godaddy/Thespian/issues/25
+
 
 3.3
 ───
@@ -229,7 +287,7 @@ not change the API.
 
     ‣ Actors which create multiple internal threads are now supported.
       Thespian will still create Actors as separate processes if using a
-      "multiproc…" system base, but if those Actors internal create
+      "multiproc…"  system base, but if those Actors internal create
       threads (directly or through the use of a library), those threads
       will no longer cause failures or deadlocks when calling
       `self.send()' or `logging'.

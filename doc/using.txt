@@ -60,13 +60,15 @@ Table of Contents
 .. 5.8 registerSourceAuthority
 .. 5.9 loadActorSource
 .. 5.10 unloadActorSource
-.. 5.11 actorSystemCapabilityCheck
-..... 5.11.1 requireCapability decorator
-.. 5.12 updateCapability
-.. 5.13 preRegisterRemoteSystem
-.. 5.14 deRegisterRemoteSystem
-.. 5.15 ActorTypeDispatcher
-..... 5.15.1 Type Handling Deferral
+.. 5.11 notifyOnSourceAvailability
+.. 5.12 actorSystemCapabilityCheck
+..... 5.12.1 requireCapability decorator
+.. 5.13 updateCapability
+.. 5.14 preRegisterRemoteSystem
+.. 5.15 deRegisterRemoteSystem
+.. 5.16 ActorTypeDispatcher
+..... 5.16.1 Type Handling Deferral
+.. 5.17 Actor Troupe Support
 6 ActorSystem API
 .. 6.1 Exceptions
 .. 6.2 ActorSystem
@@ -100,10 +102,14 @@ Table of Contents
 ..... 7.8.1 Attributes
 .. 7.9 ValidatedSource
 ..... 7.9.1 Attributes
-.. 7.10 Thespian_StatusReq
+.. 7.10 LoadedSource
 ..... 7.10.1 Attributes
-.. 7.11 Thespian_SystemStatus
-.. 7.12 Thespian_ActorStatus
+.. 7.11 UnloadedSource
+..... 7.11.1 Attributes
+.. 7.12 Thespian_StatusReq
+..... 7.12.1 Attributes
+.. 7.13 Thespian_SystemStatus
+.. 7.14 Thespian_ActorStatus
 8 ActorSystem Implementations
 .. 8.1 Common Capabilities
 .. 8.2 simpleSystemBase
@@ -845,13 +851,12 @@ Table of Contents
     asynchronously to any other message being handled by a member of the
     Troupe.
 
-  ‣ All members of the Troupe are local to each other (i.e. exist under
-    the same ActorSystem).
-
   The Actor Troupe allows for scalability and parallelization of
   individual Actor functionality.  Conversely, the use of a single Actor
   (instead of a Troupe) ensures single-threaded, synchronous handling of
   messages for that Actor.
+
+  See Actor Troupe Support for more details.
 
 
 4.10 ActorSystem Capabilities
@@ -1282,6 +1287,25 @@ Table of Contents
      current process after the ActorSystem process is started up will
      not be visible to the latter.
 
+     This is also especially surprising when modifying the
+     implementation of the Actor and retrying; the new code will not
+     seem to be running, and indeed it is not because the previous
+     version of the code is still existing in the running Admin.  The
+     Admin must be stopped and restarted as part of the new code
+     implementation to have that new implementation available to it.
+
+  3. Creating an actor inside the main `.py' file run from the command
+     line and specifying the class object does not work because the
+     module to which the class is assigned is "__main__", which cannot
+     be resolved by the Admin.  There are two solutions:
+
+     1. Place the Actor in a different file and import it explicitly
+        from that file (which therefore correctly idenfifies that file
+        as the module context for the Actor).
+
+     2. Create a loadable module instead and reference the actor by a
+        name/import-path string.
+
 
 5.4 send
 ────────
@@ -1395,7 +1419,26 @@ Table of Contents
   section for more details.
 
 
-5.11 actorSystemCapabilityCheck
+5.11 notifyOnSourceAvailability
+───────────────────────────────
+
+  ┌────
+  │     self.notifyOnSourceAvailability(self, enable=True)
+  └────
+
+  This method can be called to register or de-register (based on the
+  `enable' argument) this Actor for being informed of loaded or unloaded
+  source loads.  Load notifications are delivered via the LoadedSource
+  message and source unloads generate UnloadedSource messages to the
+  notification registrant.
+
+  Registration is with the local actor system only, and notifications
+  are only for loads and unloads of available sources in the local
+  system; remote registration and corresponding notifications are
+  available, but are not triggered by local load or unload events.
+
+
+5.12 actorSystemCapabilityCheck
 ───────────────────────────────
 
   ┌────
@@ -1428,7 +1471,7 @@ Table of Contents
   message.
 
 
-5.11.1 requireCapability decorator
+5.12.1 requireCapability decorator
 ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 
   To facilitate easy specification of requirements, there is a
@@ -1523,7 +1566,7 @@ Table of Contents
   └────
 
 
-5.12 updateCapability
+5.13 updateCapability
 ─────────────────────
 
   The `updateCapability()' method is used update the capabilities of the
@@ -1556,7 +1599,7 @@ Table of Contents
   a Thespian_StatusReq to the ActorSystem.
 
 
-5.13 preRegisterRemoteSystem
+5.14 preRegisterRemoteSystem
 ────────────────────────────
 
   The `preRegisterRemoteSystem()' method is used to inform the local
@@ -1602,7 +1645,7 @@ Table of Contents
   communications.
 
 
-5.14 deRegisterRemoteSystem
+5.15 deRegisterRemoteSystem
 ───────────────────────────
 
   The `deRegisterRemoteSystem()' method is used to unregister a
@@ -1630,7 +1673,7 @@ Table of Contents
   ActorSystemConventionUpdate messages).
 
 
-5.15 ActorTypeDispatcher
+5.16 ActorTypeDispatcher
 ────────────────────────
 
   An alternative base class for creating Actors is the
@@ -1745,7 +1788,7 @@ Table of Contents
   └────
 
 
-5.15.1 Type Handling Deferral
+5.16.1 Type Handling Deferral
 ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 
   In a normal Python subclass, it is possible for a method in the
@@ -1810,6 +1853,41 @@ Table of Contents
   │ Got a message
   │ >>>
   └────
+
+
+5.17 Actor Troupe Support
+─────────────────────────
+
+  The use of Actor Troupes is supported by importing the
+  `thespian.troupe' file and adding a `@troupe()' decorator to the Actor
+  definition.  This decorator turns a regular Actor into a dynamic Actor
+  Troupe, where multiple Actors are spun up on-demand to handle
+  messages.
+
+  This pattern is especially useful for situations where multiple
+  requests are received and processing individual requests may take some
+  time to perform.
+
+  ┌────
+  │ from thespian.troupe import troupe
+  │ 
+  │ @troupe()
+  │ class MyActor(Actor):
+  │    ...
+  └────
+
+
+  The optional arguments to the troupe decorator are:
+
+  ‣ `max_count' is the maximum number of actors in the troupe
+    (defaulting to 10).
+
+  ‣ `idle_count' is the default number of actors in the troupe when
+    idle. As work is received, the number of actors will grow up to the
+    max_count, but when there is no more work, the number of actors will
+    shrink back down to this number.  Note that there may be fewer than
+    this number of actors present: actors are only created if work is
+    received and there are no idle actors to handle that work.
 
 
 6 ActorSystem API
@@ -2358,6 +2436,10 @@ Table of Contents
   ‣ `.poisonMessage' is the original message causing the target Actor
     failures.
 
+  ‣ `.details' may provide additional details (as a string) regarding
+    the failure that caused the poison message return (e.g. the
+    exception stack trace).
+
 
 7.2 WakeupMessage
 ─────────────────
@@ -2548,7 +2630,61 @@ Table of Contents
     form of the originally provided source.
 
 
-7.10 Thespian_StatusReq
+7.10 LoadedSource
+─────────────────
+
+  The `LoadedSource' object is delivered to an Actor that has registered
+  to be notified on changes in the loaded sources available in the local
+  ActorSystem.  This message is generated by the ActorSystem itself.
+
+  This message indicates that the associated source module has been
+  loaded successfully and is now available for creating new actors.
+  This message is delivered to each notifyOnSourceAvailability
+  registered notification target on the _local_ system when the source
+  has been loaded on that system; remote loads will cause corresponding
+  notifications to registrants on those systems at such time as the
+  loaded source is provided to that remote system.
+
+  This message is also delivered for each loaded source that is present
+  at the time of the registration (via the `notifyOnSourceAvailability'
+  system call).
+
+
+7.10.1 Attributes
+╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+
+  ‣ `.sourceHash' – The hash value of the source that has been loaded
+    and successfully registered.
+
+  ‣ `.sourceInfo' – The text information field associated with the
+    loaded source.  This should be treated as informational; there is no
+    specific format or content dictated.
+
+
+7.11 UnloadedSource
+───────────────────
+
+  The `UnloadedSource' object is delivered to an Actor that has
+  registered to be notified on changes in the loaded sources available
+  in the local ActorSystem.  This message is generated by the
+  ActorSystem itself.
+
+  This message indicates that the associated source module has been
+  unloaded and is therefore unavailable for creating new actors.
+
+
+7.11.1 Attributes
+╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+
+  ‣ `.sourceHash' – The hash value of the source that has been unloaded
+    and de-registered.
+
+  ‣ `.sourceInfo' – The text information field associated with the
+    unloaded source.  This should be treated as informational; there is
+    no specific format or content dictated.
+
+
+7.12 Thespian_StatusReq
 ───────────────────────
 
   The `Thespian_StatusReq' object can be sent to any Actor (or to the
@@ -2563,13 +2699,13 @@ Table of Contents
   ActorSystem.
 
 
-7.10.1 Attributes
+7.12.1 Attributes
 ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 
   The `Thespian_StatusReq' object has no attributes.
 
 
-7.11 Thespian_SystemStatus
+7.13 Thespian_SystemStatus
 ──────────────────────────
 
   The `Thespian_SystemStatus' object is returned by the ActorSystem with
@@ -2578,7 +2714,7 @@ Table of Contents
   specific fields or values in this message is not recommended.
 
 
-7.12 Thespian_ActorStatus
+7.14 Thespian_ActorStatus
 ─────────────────────────
 
   The `Thespian_ActorStatus' object is returned by the ActorSystem with
