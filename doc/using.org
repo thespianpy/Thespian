@@ -1179,6 +1179,25 @@ class MyActor(Actor):
      current process after the ActorSystem process is started up will
      not be visible to the latter.
 
+     This is also especially surprising when modifying the implementation
+     of the Actor and retrying; the new code will not seem to be running,
+     and indeed it is not because the previous version of the code is still
+     existing in the running Admin.  The Admin must be stopped and restarted
+     as part of the new code implementation to have that new implementation
+     available to it.
+
+  1. Creating an actor inside the main ~.py~ file run from the command
+     line and specifying the class object does not work because the
+     module to which the class is assigned is "__main__", which cannot
+     be resolved by the Admin.  There are two solutions:
+
+       1. Place the Actor in a different file and import it explicitly
+          from that file (which therefore correctly idenfifies that
+          file as the module context for the Actor).
+
+       1. Create a loadable module instead and reference the actor by
+          a name/import-path string.
+
 ** send
 
 #+begin_src python
