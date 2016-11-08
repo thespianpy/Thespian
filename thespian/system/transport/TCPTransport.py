@@ -11,8 +11,6 @@ even between processes on separate systems.
 
 """
 
-DEFAULT_ADMIN_PORT = 1900
-
 
 # n.b. The core of this is very similar to asyncore/asynchat.
 # Unfortunately, those modules are deprecated in Python 3.4 in favor
@@ -86,7 +84,8 @@ from thespian.system.timing import timePeriodSeconds, ExpirationTimer
 from thespian.actors import *
 from thespian.system.transport import *
 from thespian.system.transport.IPBase import TCPv4ActorAddress
-from thespian.system.transport.streamBuffer import (toSendBuffer, ReceiveBuffer,
+from thespian.system.transport.streamBuffer import (toSendBuffer,
+                                                    ReceiveBuffer,
                                                     ackMsg, ackPacket,
                                                     ackDataErrMsg,
                                                     isControlMessage)
@@ -97,25 +96,36 @@ from thespian.system.addressManager import ActorLocalAddress
 import socket
 import select
 from datetime import datetime, timedelta
-#import json
 import pickle
 import errno
 from contextlib import closing
 
 
+DEFAULT_ADMIN_PORT = 1900
+
 
 serializer = pickle
-# json cannot be used because Messages are often structures, which cannot be converted to JSON.
+# json cannot be used because Messages are often structures, which
+# cannot be converted to JSON.
 
-LISTEN_DEPTH=100  # max # of listens to sign up for at a time
-MAX_INCOMING_SOCKET_PERIOD=timedelta(minutes=7)  # max time to hold open an incoming socket
+# max # of listens to sign up for at a time
+LISTEN_DEPTH = 100
+
+# max time to hold open an incoming socket
+MAX_INCOMING_SOCKET_PERIOD = timedelta(minutes=7)
+
 MAX_CONSECUTIVE_READ_FAILURES = 20
-MAX_IDLE_SOCKET_PERIOD=timedelta(minutes=20) # close idle sockets after this amount of time
-REUSE_SOCKETS = True  # if true, keep sockets open for multiple messages
+
+# close idle sockets after this amount of time
+MAX_IDLE_SOCKET_PERIOD = timedelta(minutes=20)
+
+# if true, keep sockets open for multiple messages
+REUSE_SOCKETS = True
 
 
 class TCPEndpoint(TransportInit__Base):
     def __init__(self, *args): self.args = args
+
     @property
     def addrInst(self): return self.args[0]
 
@@ -135,28 +145,41 @@ class TCPIncoming_Common(PauseWithBackoff):
     def __init__(self, rmtAddr, baseSock, rcvBuf=None):
         super(TCPIncoming_Common, self).__init__()
         self._openSock = baseSock
-        self._rmtAddr  = rmtAddr # may be None until a message is rcvd
-                                 # with identification
+        # _rmtAddr may be None until a message is rcvd with
+        # identification
+        self._rmtAddr = rmtAddr
         self._rData = rcvBuf or ReceiveBuffer(serializer.loads)
         self._expires = datetime.now() + MAX_INCOMING_SOCKET_PERIOD
         self.failCount = 0
+
     @property
-    def socket(self): return self._openSock
+    def socket(self):
+        return self._openSock
+
     @property
-    def fromAddress(self): return self._rmtAddr
+    def fromAddress(self):
+        return self._rmtAddr
+
     @fromAddress.setter
-    def fromAddress(self, newAddr): self._rmtAddr = newAddr
+    def fromAddress(self, newAddr):
+        self._rmtAddr = newAddr
+
     def delay(self):
         now = datetime.now()
         # n.b. include _pauseUntil from PauseWithBackoff
         return max(timedelta(seconds=0),
                    min(self._expires - now,
                        getattr(self, '_pauseUntil', self._expires) - now))
+
     def addData(self, newData): self._rData.addMore(newData)
+
     def remainingSize(self): return self._rData.remainingAmount()
+
     def receivedAllData(self): return self._rData.isDone()
+
     @property
     def data(self): return self._rData.completed()
+
     def close(self):
         _safeSocketShutdown(self)
         self._openSock = None
@@ -171,7 +194,8 @@ class TCPIncoming(TCPIncoming_Common):
         self._openSock = None
 
 
-class TCPIncomingPersistent(TCPIncoming_Common): pass
+class TCPIncomingPersistent(TCPIncoming_Common):
+    pass
 
 
 class RoutedTCPv4ActorAddress(TCPv4ActorAddress):
@@ -179,8 +203,10 @@ class RoutedTCPv4ActorAddress(TCPv4ActorAddress):
         super(RoutedTCPv4ActorAddress, self).__init__(anIPAddr, anIPPort,
                                                       external=external)
         self.routing = [None, adminAddr] if txOnly else [adminAddr]
+
     def __str__(self):
-        return '~'.join(['(TCP|%s:%d'%self.sockname] + list(map(str,self.routing))) + ')'
+        return '~'.join(['(TCP|%s:%d' % self.sockname] +
+                        list(map(str, self.routing))) + ')'
 
 
 class TXOnlyAdminTCPv4ActorAddress(TCPv4ActorAddress):
@@ -191,7 +217,8 @@ class TXOnlyAdminTCPv4ActorAddress(TCPv4ActorAddress):
                                                            external=external)
         self.routing = [None]  # remotes must communicate via their local admin
 
-    def __str__(self): return '(TCP|%s:%d>)'%self.sockname
+    def __str__(self):
+        return '(TCP|%s:%d>)' % self.sockname
 
 
 class IdleSocket(object):
@@ -203,20 +230,27 @@ class IdleSocket(object):
         # address of an Actor/Admin: the one it listens on.
         # self.rmtAddr = rmtAddr
         self.validity = ExpirationTimer(MAX_IDLE_SOCKET_PERIOD, timenow)
+
     def update_time_now(self, timenow):
         self.validity.update_time_now(timenow)
+
     def expired(self):
         return self.validity.expired()
+
     def __str__(self):
-        return 'Idle-socket %s->%s (%s)'%(str(self.socket),
-                                          str(self.rmtaddr),
-                                          str(self.validity))
+        return 'Idle-socket %s->%s (%s)' % (str(self.socket),
+                                            str(self.rmtaddr),
+                                            str(self.validity))
+
     def shutdown(self, shtarg=socket.SHUT_RDWR):
         self.socket.shutdown(shtarg)
+
     def close(self):
         self.socket.close()
 
-def opsKey(addr): return addr.addressDetails
+
+def opsKey(addr):
+    return addr.addressDetails
 
 
 class TCPTransport(asyncTransportBase, wakeupTransportBase):
@@ -271,50 +305,51 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
             self.myAddress = ActorAddress(TXOnlyAdminTCPv4ActorAddress(
                 templateAddr.addressDetails.connectArgs[0][0],
                 self.socket.getsockname()[1],
-                external = True))
+                external=True))
         elif adminRouting:
             self.myAddress = ActorAddress(RoutedTCPv4ActorAddress(
                 templateAddr.addressDetails.connectArgs[0][0],
                 self.socket.getsockname()[1],
                 self._adminAddr,
-                txOnly = self.txOnly,
-                external = True))
+                txOnly=self.txOnly,
+                external=True))
         else:
             self.myAddress = ActorAddress(TCPv4ActorAddress(
                 templateAddr.addressDetails.connectArgs[0][0],
                 self.socket.getsockname()[1],
-                external = True))
+                external=True))
         self._transmitIntents = {}  # key = fd, value = tx intent
         self._waitingTransmits = []  # list of intents without sockets
         self._incomingSockets = {}  # key = fd, value = TCP Incoming
         self._incomingEnvelopes = []
         self._watches = []
         if REUSE_SOCKETS:
-            self._openSockets = {}  # key = opsKey(remote listen address), value=IdleSocket
-
+            # key = opsKey(remote listen address), value=IdleSocket
+            self._openSockets = {}
 
     def __del__(self):
         _safeSocketShutdown(getattr(self, 'socket', None))
 
-
     def protectedFileNumList(self):
         return (list(self._transmitIntents.keys()) +
-                list(filter(None, map(self._socketFile, self._waitingTransmits))) +
+                list(filter(None, map(self._socketFile,
+                                      self._waitingTransmits))) +
                 list(self._incomingSockets.keys()) + [self.socket.fileno()])
-
 
     def childResetFileNumList(self):
         return self.protectedFileNumList()
 
-
     @staticmethod
     def getAdminAddr(capabilities):
         return ActorAddress(
-            (TXOnlyAdminTCPv4ActorAddress if capabilities.get('Outbound Only', False) else TCPv4ActorAddress)
+            (TXOnlyAdminTCPv4ActorAddress
+             if capabilities.get('Outbound Only', False) else
+             TCPv4ActorAddress)
             (None, capabilities.get('Admin Port', DEFAULT_ADMIN_PORT),
-             external = (TCPTransport.getConventionAddress(capabilities) or
-                         ('', capabilities.get('Admin Port', DEFAULT_ADMIN_PORT)) or
-                         True)))
+             external=(TCPTransport.getConventionAddress(capabilities) or
+                       ('', capabilities.get('Admin Port',
+                                             DEFAULT_ADMIN_PORT)) or
+                       True)))
 
     @staticmethod
     def getAddressFromString(addrspec, adminRouting=False):
@@ -322,10 +357,12 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
             addrparts = addrspec
         else:
             addrparts = addrspec.split(':')
-        addrtype = RoutedTCPv4ActorAddress if adminRouting else TCPv4ActorAddress
-        return ActorAddress(addrtype(addrparts[0],
-                                     addrparts[1] if addrparts[1:] else DEFAULT_ADMIN_PORT,
-                                     external=True))
+        addrtype = (RoutedTCPv4ActorAddress if adminRouting else
+                    TCPv4ActorAddress)
+        return ActorAddress(
+            addrtype(addrparts[0],
+                     addrparts[1] if addrparts[1:] else DEFAULT_ADMIN_PORT,
+                     external=True))
 
     @staticmethod
     def getConventionAddress(capabilities):
@@ -339,22 +376,29 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
                      level=logging.ERROR)
             raise InvalidActorAddress(convAddr, str(ex))
 
-
     def _updateStatusResponse(self, resp):
-        "Called to update a Thespian_SystemStatus or Thespian_ActorStatus with common information"
+        """Called to update a Thespian_SystemStatus or Thespian_ActorStatus
+           with common information
+        """
         timenow = datetime.now()
         for each in self._transmitIntents.values():
-            resp.addPendingMessage(self.myAddress, each.targetAddr, str(each.message))
+            resp.addPendingMessage(self.myAddress,
+                                   each.targetAddr,
+                                   str(each.message))
         for each in self._waitingTransmits:
-            resp.addPendingMessage(self.myAddress, each.targetAddr, str(each.message))
+            resp.addPendingMessage(self.myAddress,
+                                   each.targetAddr,
+                                   str(each.message))
         for each in self._incomingEnvelopes:
-            resp.addReceivedMessage(each.sender, self.myAddress, str(each.message))
+            resp.addReceivedMessage(each.sender,
+                                    self.myAddress,
+                                    str(each.message))
         asyncTransportBase._updateStatusResponse(self, resp)
         wakeupTransportBase._updateStatusResponse(self, resp)
-        for num,each in enumerate(self._openSockets.values()):
+        for num, each in enumerate(self._openSockets.values()):
             each.update_time_now(timenow)
-            resp.addKeyVal('sock#%d-fd%d'%(num, each.socket.fileno()), str(each))
-
+            resp.addKeyVal('sock#%d-fd%d' % (num, each.socket.fileno()),
+                           str(each))
 
     @staticmethod
     def probeAdmin(addr):
@@ -374,11 +418,11 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
             except socket.error as ex:
                 if err_bind_inuse(ex.errno):
                     return True
-                # Some other error... not sure if that means an admin is running or not.
+                # Some other error... not sure if that means an admin
+                # is running or not.
                 return False  # assume not
         finally:
             ss.close()
-
 
     def prepEndpoint(self, assignedLocalAddr, capabilities):
         """In the parent, prepare to establish a new communications endpoint
@@ -392,16 +436,18 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
         if isinstance(assignedLocalAddr.addressDetails, ActorLocalAddress):
             a1, a2 = assignedLocalAddr.addressDetails.addressInstanceNum, None
         else:
-            a1, a2 = None, assignedLocalAddr  # assumed to be an actual TCPActorAddress-based address (e.g. admin)
+            # assumed to be an actual TCPActorAddress-based address
+            # (e.g. admin)
+            a1, a2 = None, assignedLocalAddr
         return TCPEndpoint(a1, a2,
                            self.myAddress,
                            self._adminAddr,
-                           capabilities.get('Admin Routing', False) or capabilities.get('Outbound Only', False),
+                           capabilities.get('Admin Routing', False) or
+                           capabilities.get('Outbound Only', False),
                            capabilities.get('Outbound Only', False))
 
     def connectEndpoint(self, endPoint):
         pass
-
 
     def deadAddress(self, addressManager, childAddr):
         canceli, continuei = partition(lambda i: i[1].targetAddr == childAddr,
@@ -454,7 +500,7 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
         if hasattr(self, '_openSockets'):
             opskey = opsKey(rmtaddr)
             if opskey in self._openSockets:
-                _safeSocketShutdown(self._openSockets[opskey].socket)
+                _safeSocketShutdown(self._openSockets[opskey])
                 del self._openSockets[opskey]
         for each in [i for i in self._transmitIntents
                      if self._transmitIntents[i].targetAddr == rmtaddr]:
@@ -462,7 +508,6 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
         for each in [i for i in self._incomingSockets
                      if self._incomingSockets[i].fromAddress == rmtaddr]:
             self._cancel_fd_ops(each)
-
 
     def _cancel_fd_ops(self, errfileno):
         if errfileno == self.socket.fileno():
@@ -492,18 +537,17 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
         for each in closed_openSocks:
             del self._openSockets[each]
 
-
     def interrupt_wait(self):
         # Now generate a spurious connection to break out of the
         # select.select loop.  This is especially useful if a signal
         # handler caused a message to be sent to myself: get the
         # select loop to wakeup and process the message.
-        with closing(socket.socket(*self.myAddress.addressDetails.socketArgs)) as ts:
+        with closing(socket.socket(*self.myAddress
+                                   .addressDetails.socketArgs)) as ts:
             try:
                 ts.connect(*self.myAddress.addressDetails.connectArgs)
             except Exception:
                 pass
-
 
     def _scheduleTransmitActual(self, intent):
         if intent.targetAddr == self.myAddress:
@@ -512,7 +556,8 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
             if not isinstance(intent.message, ForwardMessage):
                 self.interrupt_wait()
             return self._finishIntent(intent)
-        if isinstance(intent.targetAddr.addressDetails, RoutedTCPv4ActorAddress):
+        if isinstance(intent.targetAddr.addressDetails,
+                      RoutedTCPv4ActorAddress):
             if not isinstance(intent.message, ForwardMessage):
                 routing = [A or self._adminAddr
                            for A in intent.targetAddr.addressDetails.routing]
@@ -568,18 +613,20 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
             if hasattr(self, '_openSockets'):
                 extraRead = getattr(intent, 'extraRead', None)
                 if extraRead:
-                    incoming = TCPIncomingPersistent(intent.targetAddr, intent.socket)
+                    incoming = TCPIncomingPersistent(intent.targetAddr,
+                                                     intent.socket)
                     incoming.addData(extraRead)
                     pendingIncoming = self._addedDataToIncoming(incoming)
                     if pendingIncoming:
-                        self._incomingSockets[pendingIncoming.socket.fileno()] = \
-                            pendingIncoming
+                        self._incomingSockets[
+                            pendingIncoming.socket.fileno()] = pendingIncoming
                 else:
                     if status == SendStatus.Sent:
                         opskey = opsKey(intent.targetAddr)
                         _safeSocketShutdown(self._openSockets.get(opskey, None))
                         self._openSockets[opskey] = IdleSocket(intent.socket,
-                                                               intent.targetAddr, timenow)
+                                                               intent.targetAddr,
+                                                               timenow)
                         # No need to restart a pending transmit for
                         # this target here; the main loop will check
                         # the waitingIntents and find/start the next one
@@ -588,8 +635,9 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
                         _safeSocketShutdown(intent)
                         # Here waiting intents need to be re-queued
                         # since otherwise they won't run until timeout
-                        runnable, waiting = partition(lambda I: I.targetAddr == intent.targetAddr,
-                                                      self._waitingTransmits)
+                        runnable, waiting = partition(
+                            lambda I: I.targetAddr == intent.targetAddr,
+                            self._waitingTransmits)
                         self._waitingTransmits = waiting
                         for R in runnable:
                             if status == SendStatus.DeadTarget:
@@ -611,17 +659,19 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
         # been completed.  If fileno is -1, this means check if there is
         # time remaining still on this intent
         if self._socketFile(intent) == fileno or \
-           (fileno == -1 and intent.timeToRetry(hasattr(self, '_openSockets') and
-                                                opsKey(intent.targetAddr) in self._openSockets)):
+           (fileno == -1 and
+            intent.timeToRetry(hasattr(self, '_openSockets') and
+                               opsKey(intent.targetAddr) in self._openSockets)):
             if closed:
                 intent.stage = self._XMITStepRetry
             return self._nextTransmitStep(intent)
         if intent.expired():
             # Transmit timed out (consider this permanent)
-            thesplog('Transmit attempt from %s to %s timed out, returning PoisonPacket',
+            thesplog('Transmit attempt from %s to %s timed out'
+                     ', returning PoisonPacket',
                      self.myAddress, intent.targetAddr, level=logging.WARNING)
-            #self._incomingEnvelopes.append(ReceiveEnvelope(intent.targetAddr,
-            #                                               PoisonPacket(intent.message)))
+            # self._incomingEnvelopes.append(ReceiveEnvelope(intent.targetAddr,
+            #                                                PoisonPacket(intent.message)))
             # Stop attempting this transmit
             return self._finishIntent(intent, SendStatus.Failed)
         # Continue to attempt this transmit
@@ -630,9 +680,11 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
         return True
 
     def _nextTransmitStep(self, intent):
-        # Return of True means keep waiting on this Transmit Intent; False means it is done
+        # Return of True means keep waiting on this Transmit Intent;
+        # False means it is done
         try:
-            return getattr(self, '_next_XMIT_%s'%intent.stage, '_unknown_XMIT_step')(intent)
+            return getattr(self, '_next_XMIT_%s' % intent.stage,
+                           '_unknown_XMIT_step')(intent)
         except Exception as ex:
             import traceback
             thesplog('xmit UNcaught exception %s; aborting intent.\n%s',
@@ -661,42 +713,48 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
             # If there is an active or pending Intent for this target,
             # just queue this one (by returning True)
             if any(T for T in self._transmitIntents.values()
-                if T.targetAddr == intent.targetAddr and hasattr(T, 'socket')):
+                   if T.targetAddr == intent.targetAddr and
+                   hasattr(T, 'socket')):
                 intent.awaitingTXSlot()
                 return True
             # Fall through to get a new Socket for this intent
-        if isinstance(intent.targetAddr.addressDetails, TXOnlyAdminTCPv4ActorAddress) and \
+        if isinstance(intent.targetAddr.addressDetails,
+                      TXOnlyAdminTCPv4ActorAddress) and \
            intent.targetAddr != self._adminAddr:
-            # Cannot initiate outbound connection to this remote Admin; wait for
-            # incoming connection instead.
+            # Cannot initiate outbound connection to this remote
+            # Admin; wait for incoming connection instead.
             intent.backoffPause(True)  # KWQ... not really
             intent.stage = self._XMITStepRetry
             return self._nextTransmitStep(intent)
-        intent.socket = socket.socket(*intent.targetAddr.addressDetails.socketArgs)
+        intent.socket = socket.socket(*intent.targetAddr
+                                             .addressDetails.socketArgs)
         intent.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         intent.socket.setblocking(0)
-        # Disable Nagle to transmit headers and acks asap; our sends are usually small
+        # Disable Nagle to transmit headers and acks asap; our sends
+        # are usually small
         intent.socket.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
 
         try:
-            intent.socket.connect(*intent.targetAddr.addressDetails.connectArgs)
+            intent.socket.connect(*intent.targetAddr
+                                         .addressDetails.connectArgs)
             intent.socket.setblocking(0)
         except socket.error as err:
             # EINPROGRESS means non-blocking socket connect is in progress...
             if not err_inprogress(err.errno):
-                thesplog('Socket connect failure %s to %s on %s (returning %s)',
+                thesplog('Socket connect failure %s to %s on %s'
+                         ' (returning %s)',
                          err, intent.targetAddr, intent.socket,
                          intent.completionCallback,
                          level=logging.WARNING)
                 return self._finishIntent(intent,
-                                          SendStatus.DeadTarget \
-                                          if err_conn_refused(err) \
+                                          SendStatus.DeadTarget
+                                          if err_conn_refused(err)
                                           else SendStatus.Failed)
         except Exception as ex:
             thesplog('Unexpected TCP socket connect exception: %s', ex,
                      level=logging.ERROR)
             return self._finishIntent(intent, SendStatus.BadPacket)
-        intent.stage = self._XMITStepSendData # When connect completes
+        intent.stage = self._XMITStepSendData  # When connect completes
         intent.amtSent = 0
         return True
 
@@ -706,8 +764,8 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
             intent.stage = self._XMITStepRetry
             return self._nextTransmitStep(intent)
         try:
-            #intent.socket.sendall(intent.serMsg)
-            intent.amtSent += intent.socket.send(intent.serMsg[intent.amtSent:])
+            intent.amtSent += intent.socket.send(
+                intent.serMsg[intent.amtSent:])
         except socket.error as err:
             if err_send_inprogress(err.errno):
                 intent.backoffPause(True)
@@ -726,11 +784,13 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
             return self._nextTransmitStep(intent)
         except Exception:
             import traceback
-            thesplog('Error sending: %s', traceback.format_exc(), level=logging.ERROR)
+            thesplog('Error sending: %s', traceback.format_exc(),
+                     level=logging.ERROR)
             intent.stage = self._XMITStepRetry
             return self._nextTransmitStep(intent)
         if intent.amtSent >= len(intent.serMsg):
-            intent.stage = self._XMITStepShutdownWrite  # After data is sent, stop transmit
+            # After data is sent, stop transmit
+            intent.stage = self._XMITStepShutdownWrite
         return True
 
     def _next_XMIT_3(self, intent):
@@ -758,16 +818,20 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
                 intent.backoffPause(True)
                 return True
             if err_recv_connreset(err):
-                thesplog('Remote %s closed connection before ack received at %s for %s',
-                         str(intent.targetAddr), str(self.myAddress), intent.identify(),
+                thesplog('Remote %s closed connection before ack received'
+                         ' at %s for %s',
+                         str(intent.targetAddr), str(self.myAddress),
+                         intent.identify(),
                          level=logging.WARNING)
             else:
-                thesplog('Socket Error waiting for transmit ack from %s to %s: %s',
+                thesplog('Socket Error waiting for transmit ack from'
+                         ' %s to %s: %s',
                          str(intent.targetAddr), str(self.myAddress), err,
                          level=logging.ERROR, exc_info=True)
             rcv = ''  # Remote closed connection
         except Exception as err:
-            thesplog('General error waiting for transmit ack from %s to %s: %s',
+            thesplog('General error waiting for transmit ack from'
+                     ' %s to %s: %s',
                      str(intent.targetAddr), str(self.myAddress), err,
                      level=logging.ERROR, exc_info=True)
             rcv = ''  # Remote closed connection
@@ -802,9 +866,12 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
                                                            intent.socket,
                                                            intent.ackbuf),
                                      True):
-            # intent.ackbuf.completed() said ackmsg was a full receive packet, but
-            # _addedDataToIncoming disagreed.  This should NEVER HAPPEN.
-            thesplog('<<< Should never happen: not full receive while waiting for ACK. Aborting socket.',
+            # intent.ackbuf.completed() said ackmsg was a full receive
+            # packet, but _addedDataToIncoming disagreed.  This should
+            # NEVER HAPPEN.
+            thesplog('<<< Should never happen: '
+                     'not full receive while waiting for ACK.'
+                     ' Aborting socket.',
                      level=logging.CRITICAL)
             intent.ackbuf = ReceiveBuffer(serializer.loads)
             intent.backoffPause(True)
@@ -822,13 +889,13 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
         if hasattr(intent, 'socket'):
             _safeSocketShutdown(intent)
             delattr(intent, 'socket')
-        if hasattr(intent, 'ackbuf'): delattr(intent, 'ackbuf')
+        if hasattr(intent, 'ackbuf'):
+            delattr(intent, 'ackbuf')
         if intent.retry():
             intent.stage = self._XMITStepSendConnect
             # stage just set won't be executed until retry delay times out
             return True
         return self._finishIntent(intent, SendStatus.Failed)
-
 
     def _processIntents(self, filedesc, closed=False):
         if filedesc in self._transmitIntents:
@@ -863,26 +930,24 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
                 else:
                     self._waitingTransmits.append(intent)
 
-
     @staticmethod
     def _waitForSendable(sendIntent):
         return sendIntent.stage != TCPTransport._XMITStepWaitForAck
 
-
     @staticmethod
     def _socketFile(sendOrRecv):
-        return sendOrRecv.socket.fileno() if getattr(sendOrRecv, 'socket', None) else None
-
+        return sendOrRecv.socket.fileno() \
+            if getattr(sendOrRecv, 'socket', None) else None
 
     def set_watch(self, watchlist):
         self._watches = watchlist
-
 
     def _runWithExpiry(self, incomingHandler):
         xmitOnly = incomingHandler == TransmitOnly or \
                    isinstance(incomingHandler, TransmitOnly)
 
-        if hasattr(self, '_aborting_run'): delattr(self, '_aborting_run')
+        if hasattr(self, '_aborting_run'):
+            delattr(self, '_aborting_run')
 
         while not self.run_time.expired() and \
               (not hasattr(self, '_aborting_run') or
@@ -901,27 +966,31 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
                     if not incomingHandler(rEnv):
                         return None
 
-            wsend, wrecv = fmap(TCPTransport._socketFile,
-                                partition(TCPTransport._waitForSendable,
-                                          filter(lambda T: not T.backoffPause(),
-                                                 self._transmitIntents.values())))
+            wsend, wrecv = fmap(
+                TCPTransport._socketFile,
+                partition(TCPTransport._waitForSendable,
+                          filter(lambda T: not T.backoffPause(),
+                                 self._transmitIntents.values())))
 
-            wrecv = [ s for s in wrecv if s ]
-            wsend = [ s for s in wsend if s ]
-            wrecv.extend([ I for I in self._incomingSockets if I and
-                                   not self._incomingSockets[I].backoffPause()])
+            wrecv = list(filter(None, wrecv))
+            wsend = list(filter(None, wsend))
+            wrecv.extend(list(
+                filter(lambda I: not self._incomingSockets[I].backoffPause(),
+                       filter(None, self._incomingSockets))))
+
             if hasattr(self, '_openSockets'):
                 wrecv.extend(list(map(lambda s: s.socket.fileno(),
                                       self._openSockets.values())))
 
-
-            delays = list([R for R in [self.run_time.remaining()] +
-                           [self._transmitIntents[T].delay() for T in self._transmitIntents] +
-                           [W.delay() for W in self._waitingTransmits] +
-                           [self._incomingSockets[I].delay() for I in self._incomingSockets]
-                           if R is not None])
-            # n.b. if a long period of time has elapsed (e.g. laptop sleeping) then delays
-            # could be negative.
+            delays = list(filter(None,
+                                 [self.run_time.remaining()] +
+                                 [self._transmitIntents[T].delay()
+                                  for T in self._transmitIntents] +
+                                 [W.delay() for W in self._waitingTransmits] +
+                                 [self._incomingSockets[I].delay()
+                                  for I in self._incomingSockets]))
+            # n.b. if a long period of time has elapsed (e.g. laptop
+            # sleeping) then delays could be negative.
             delay = max(0, timePeriodSeconds(min(delays))) if delays else None
 
             if not xmitOnly:
@@ -934,7 +1003,9 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
                 # listener does not accept any listens below.
                 if not wrecv and not wsend:
                     if not hasattr(self, 'dummySock'):
-                        self.dummySock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
+                        self.dummySock = socket.socket(socket.AF_INET,
+                                                       socket.SOCK_DGRAM,
+                                                       socket.IPPROTO_UDP)
                     wrecv.extend([self.dummySock.fileno()])
 
             if self._watches:
@@ -942,7 +1013,8 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
 
             rrecv, rsend, rerr = [], [], []
             try:
-                rrecv, rsend, rerr = select.select(wrecv, wsend, set(wsend+wrecv), delay)
+                rrecv, rsend, rerr = select.select(wrecv, wsend,
+                                                   set(wsend+wrecv), delay)
             except ValueError as ex:
                 thesplog('ValueError on select(#%d: %s, #%d: %s, #%d: %s, %s)',
                          len(wrecv), wrecv, len(wsend), wsend,
@@ -951,7 +1023,8 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
                 raise
             except (OSError, select.error) as ex:
                 errnum = getattr(ex, 'errno', ex.args[0])
-                if err_select_retry(errnum): # errno.EINVAL is probably a change in descriptors
+                if err_select_retry(errnum):
+                    # probably a change in descriptors
                     thesplog('select retry on %s', ex, level=logging.ERROR)
                     continue
                 if err_bad_fileno(errnum):
@@ -994,12 +1067,12 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
                 else:
                     raise
 
-
             if rerr:
                 for errfileno in rerr:
                     self._cancel_fd_ops(errfileno)
 
-            origPendingSends = len(self._transmitIntents) + len(self._waitingTransmits)
+            origPendingSends = len(self._transmitIntents) + \
+                               len(self._waitingTransmits)
 
             # Handle newly sendable data
             for eachs in rsend:
@@ -1025,7 +1098,8 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
                     del self._incomingSockets[each]
                     incoming = self._handlePossibleIncoming(incoming, each)
                     if incoming:
-                        self._incomingSockets[incoming.socket.fileno()] = incoming
+                        self._incomingSockets[
+                            incoming.socket.fileno()] = incoming
                     continue
 
                 if self._processIntents(each):
@@ -1043,9 +1117,11 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
                         if each == idle.socket.fileno():
                             del self._openSockets[opsKey(rmtaddr)]
                             incoming = self._handlePossibleIncoming(
-                                TCPIncomingPersistent(rmtaddr, idle.socket), each)
+                                TCPIncomingPersistent(rmtaddr, idle.socket),
+                                each)
                             if incoming:
-                                self._incomingSockets[incoming.socket.fileno()] = incoming
+                                self._incomingSockets[
+                                    incoming.socket.fileno()] = incoming
                         elif idle.expired():
                             _safeSocketShutdown(idle)
                             del self._openSockets[opsKey(rmtaddr)]
@@ -1054,7 +1130,8 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
             self._processIntentTimeouts()
             rmvIncoming = []
             for I in self._incomingSockets:
-                newI = self._handlePossibleIncoming(self._incomingSockets[I], -1)
+                newI = self._handlePossibleIncoming(self._incomingSockets[I],
+                                                    -1)
                 if newI:
                     # newI will possibly be new incoming data, but
                     # it's going to use the same socket
@@ -1076,7 +1153,8 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
                     return None
                 continue
             if xmitOnly:
-                remXmits = len(self._transmitIntents) + len(self._waitingTransmits)
+                remXmits = len(self._transmitIntents) + \
+                           len(self._waitingTransmits)
                 if origPendingSends > remXmits or remXmits == 0:
                     return remXmits
 
@@ -1090,7 +1168,6 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
                         return None
 
         return None
-
 
     def _acceptNewIncoming(self):
         try:
@@ -1112,17 +1189,19 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
         # originating address and the TCPIncoming object will be
         # updated accordingly.
         self._incomingSockets[lsock.fileno()] = (
-            (TCPIncomingPersistent if hasattr(self, '_openSockets') else TCPIncoming)
+            (TCPIncomingPersistent
+             if hasattr(self, '_openSockets') else
+             TCPIncoming)
             (ActorAddress(None), lsock))
-
 
     def _handlePossibleIncoming(self, incomingSocket, fileno, closed=False):
         if closed:
             # Remote closed, so unconditionally drop this socket
             incomingSocket.close()
             return None
-        elif incomingSocket.socket and (incomingSocket.socket.fileno() == fileno or \
-                                      not incomingSocket.delay()):
+        elif incomingSocket.socket and \
+             (incomingSocket.socket.fileno() == fileno or
+              not incomingSocket.delay()):
             return self._handleReadableIncoming(incomingSocket)
         else:
             if not incomingSocket.delay():
@@ -1130,7 +1209,6 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
                 incomingSocket.close()
                 return None
             return incomingSocket
-
 
     def _finishIncoming(self, incomingSocket, fromRealAddr):
         # Only called if incomingSocket can continue to be used; if
@@ -1157,14 +1235,14 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
             incomingSocket.close()
         return None
 
-
     def _handleReadableIncoming(self, inc):
         try:
             rdata = inc.socket.recv(min(8192, inc.remainingSize()))
             inc.failCount = 0
         except socket.error as e:
             inc.failCount = getattr(inc, 'failCount', 0) + 1
-            if err_recv_inprogress(e.errno) and inc.failCount < MAX_CONSECUTIVE_READ_FAILURES:
+            if err_recv_inprogress(e.errno) and \
+               inc.failCount < MAX_CONSECUTIVE_READ_FAILURES:
                 inc.backoffPause(True)
                 return inc
             inc.close()
@@ -1180,7 +1258,6 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
         inc.addData(rdata)
         return self._addedDataToIncoming(inc)
 
-
     def _addedDataToIncoming(self, inc, skipFinish=False):
         if not inc.receivedAllData():
             # Continue running and monitoring this socket
@@ -1189,11 +1266,14 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
         try:
             rdata, extra = inc.data
             if isControlMessage(rdata):
-                raise ValueError('Error: received control message "%s"; expecting incoming data.'%(str(rdata)))
+                raise ValueError('Error: received control message'
+                                 ' "%s"; expecting incoming data.' %
+                                 (str(rdata)))
             rEnv = ReceiveEnvelope(*rdata)
         except Exception:
             import traceback
-            thesplog('OUCH!  Error deserializing received data: %s  (rdata="%s", extra="%s")',
+            thesplog('OUCH!  Error deserializing received data:'
+                     ' %s  (rdata="%s", extra="%s")',
                      traceback.format_exc(), rdata, extra)
             try:
                 inc.socket.send(ackDataErrMsg)
@@ -1215,32 +1295,35 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
             newinc = TCPIncomingPersistent(inc.fromAddress, inc.socket)
             newinc.addData(rdata)
             return self._addedDataToIncoming(newinc)
-        if not skipFinish: self._finishIncoming(inc, rEnv.sender)
+        if not skipFinish:
+            self._finishIncoming(inc, rEnv.sender)
         return None
-
 
     def _processReceivedEnvelope(self, envelope):
         if not isinstance(envelope.message, ForwardMessage):
             self._incomingEnvelopes.append(envelope)
             return
         if envelope.message.fwdTo == self.myAddress:
-            self._incomingEnvelopes.append(ReceiveEnvelope(envelope.message.fwdFrom,
-                                                           envelope.message.fwdMessage))
+            self._incomingEnvelopes.append(
+                ReceiveEnvelope(envelope.message.fwdFrom,
+                                envelope.message.fwdMessage))
             return
         # The ForwardMessage has not reached the final destination, so
         # update and target it at the next one.
-        if len(envelope.message.fwdTargets) < 1 and envelope.message.fwdTo != self.myAddress:
-            thesplog('Incorrectly received ForwardMessage destined for %s at %s via %s: %s',
+        if len(envelope.message.fwdTargets) < 1 and \
+           envelope.message.fwdTo != self.myAddress:
+            thesplog('Incorrectly received ForwardMessage destined for'
+                     ' %s at %s via %s: %s',
                      envelope.message.fwdTo, self.myAddress,
                      list(map(str, envelope.message.fwdTargets)),
                      envelope.message.fwdMessage,
                      level=logging.ERROR)
-            return  # discard  (TBD: send back as Poison? DeadLetter? Routing failure)
+            # discard  (TBD: send back as Poison? DeadLetter? Routing failure)
+            return
         nextTgt = envelope.message.fwdTargets[0]
         envelope.message.fwdTargets = envelope.message.fwdTargets[1:]
         self.scheduleTransmit(getattr(self, '_addressMgr', None),
                               TransmitIntent(nextTgt, envelope.message))
-
 
     def abort_run(self, drain=False):
         self._aborting_run = drain
