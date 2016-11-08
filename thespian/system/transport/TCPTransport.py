@@ -484,7 +484,7 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
         if hasattr(self, '_openSockets'):
             opskey = opsKey(rmtaddr)
             if opskey in self._openSockets:
-                _safeSocketShutdown(self._openSockets[opskey])
+                _safeSocketShutdown(self._openSockets[opskey].socket)
                 del self._openSockets[opskey]
         for each in [i for i in self._transmitIntents
                      if self._transmitIntents[i].targetAddr == rmtaddr]:
