@@ -130,6 +130,7 @@ class TestFuncPoisonMessage(object):
         if r:
             assert isinstance(r, PoisonMessage)
             assert r.poisonMessage == 3
+            assert 'Yucky number 3' in r.details
 
         r = asys.ask(counter, "Count?", ask_wait)
         assert r == 0
@@ -188,5 +189,6 @@ class TestFuncPoisonMessage(object):
         resp = asys.ask(dummy, 'Aside', ask_wait)
         assert isinstance(resp, PoisonMessage)
         assert resp.poisonMessage == 'Aside'
+        assert 'InvalidActorAddress' in resp.details
         r = asys.ask(dummy, 'hello', ask_wait)
         assert r == 'Greetings.'

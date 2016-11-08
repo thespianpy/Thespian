@@ -30,6 +30,7 @@ from thespian.system import isInternalActorSystemMessage
 from thespian.system.messages.status import *
 from thespian.system.sourceLoader import loadModuleFromHashSource, SourceHashFinder
 import time
+import traceback
 
 
 class ActorRef:
@@ -171,7 +172,7 @@ def actor_base_receive(actorInst, msg, sender):
             logging.getLogger('Thespian').warning('Actor "%s" double-draught of poison; discarding',
                                                   actorInst)
         else:
-            actorInst.send(sender, PoisonMessage(msg))
+            actorInst.send(sender, PoisonMessage(msg, traceback.format_exc()))
 
 
 class actorLogFilter(logging.Filter):
@@ -304,11 +305,15 @@ class ActorSystemBase:
 
     def _runSingleSend(self, ps):
         if ps.attempts > 4:
-            return  # discard message if PoisonMessage deliveries are also failing
+            # discard message if PoisonMessage deliveries are also
+            # failing
+            return
         elif ps.attempts > 2:
             if isinstance(ps.msg, PoisonMessage):
-                return # no recursion on Poison
-            rcvr, sndr, msg = ps.sender, ps.toActor, PoisonMessage(ps.msg)
+                return  # no recursion on Poison
+            rcvr, sndr, msg = ps.sender, ps.toActor, \
+                              PoisonMessage(ps.msg,
+                                            getattr(ps, 'fail_details', None))
         else:
             rcvr, sndr, msg = ps.toActor, ps.sender, ps.msg
 
@@ -357,6 +362,7 @@ class ActorSystemBase:
                 tgt.address, ps.attempts,
                 exc_info = True)
             ps.attempts += 1
+            ps.fail_details = traceback.format_exc()
             self._pendingSends.append(ps)
         else:
             if isinstance(ps.msg, ChildActorExited):

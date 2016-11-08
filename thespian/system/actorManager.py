@@ -186,7 +186,10 @@ class ActorManager(systemCommonBase):
                                       exc_info = True)
                         if not isinstance(msg, PoisonMessage):
                             self._send_intent(
-                                TransmitIntent(envelope.sender, PoisonMessage(msg)))
+                                TransmitIntent(
+                                    envelope.sender,
+                                    PoisonMessage(msg,
+                                                  traceback.format_exc())))
 
 
         if isinstance(msg, ActorExitRequest):

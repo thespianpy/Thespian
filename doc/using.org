@@ -2293,6 +2293,10 @@ class SimpleSourceAuthority(ActorTypeDispatcher):
    * ~.poisonMessage~ is the original message causing the target Actor
      failures.
 
+   * ~.details~ may provide additional details (as a string) regarding
+     the failure that caused the poison message return (e.g. the
+     exception stack trace).
+
 ** WakeupMessage
 
   The ~WakeupMessage~ is delivered to the Actor by the ActorSystem as

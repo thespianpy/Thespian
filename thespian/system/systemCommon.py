@@ -9,6 +9,7 @@ from thespian.system.messages.logcontrol import SetLogging
 from thespian.system.transport import *
 from thespian.system.utilis import fmap
 from itertools import chain
+import traceback
 
 # Assume a 2 KiB average packet size and a 100 Mb/s (12.5 MiB/s)
 # network link, the link could be saturated by transmitting N
@@ -188,8 +189,9 @@ class systemCommonBase(object):
             else:
                 if not isinstance(each.message, PoisonMessage):
                     self._receiveQueue.append(
-                        ReceiveEnvelope(self.myAddress,
-                                        PoisonMessage(each.message)))
+                        ReceiveEnvelope(
+                            self.myAddress,
+                            PoisonMessage(each.message, 'Child Aborted')))
                 self._sCBStats.inc('Actor.Message Send.Poison Return on Child Abort')
                 each.tx_done(SendStatus.Failed)
 
@@ -215,7 +217,10 @@ class systemCommonBase(object):
             thesplog('Declaring transmit of %s as Poison: %s', intent.identify(),
                      traceback.format_exc(), exc_info=True, level=logging.ERROR)
             if not isinstance(intent.message, PoisonMessage):
-                self._receiveQueue.append(ReceiveEnvelope(intent.targetAddr, PoisonMessage(intent.message)))
+                self._receiveQueue.append(
+                    ReceiveEnvelope(intent.targetAddr,
+                                    PoisonMessage(intent.message,
+                                                  traceback.format_exc())))
             self._sCBStats.inc('Actor.Message Send.Transmit Poison Rejection')
             intent.tx_done(SendStatus.Failed)
 

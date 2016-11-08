@@ -433,15 +433,23 @@ class ChildActorExited(ActorSystemMessage):
 class PoisonMessage(ActorSystemMessage):
     """Message wrapper used to return a message to the sender that has
        caused multiple failures in a recipient Actor."""
-    def __init__(self, poison):
+    def __init__(self, poison, details=None):
         self._poison = poison
+        self._details = details
 
     @property
     def poisonMessage(self):
         "Returns the actual message that poisoned the target Actor."
         return self._poison
 
-    def __str__(self): return 'Poison<%s>' % str(self.poisonMessage)
+    @property
+    def details(self):
+        return self._details
+
+    def __str__(self):
+        if self.details:
+            return 'Poison<%s>: %s' %(str(self.poisonMessage), str(self.details))
+        return 'Poison<%s>' % str(self.poisonMessage)
 
     def __eq__(self, o):
         return isinstance(o, PoisonMessage) and self._poison == o._poison
