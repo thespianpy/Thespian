@@ -271,5 +271,5 @@ class AssocList(object):
         return self._qa
     def fmap(self, func):
         map(func, self._qa)
-
-
+    def __len__(self):
+        return len(self._qa)
