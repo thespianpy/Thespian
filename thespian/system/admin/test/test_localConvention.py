@@ -145,6 +145,20 @@ def convdereg_lcs2(lcs2):
     return ConventionDeRegister(lcs2.myAddress, preRegistered=False)
 
 
+@fixture
+def conv1_notifyAddr(lcs1):
+    notifyAddr = ActorAddress('notify')
+    lcs1.add_notification_handler(notifyAddr)
+    return notifyAddr
+
+
+@fixture
+def update_lcs2_added(lcs2):
+    return ActorSystemConventionUpdate(lcs2.myAddress,
+                                       lcs2.capabilities,
+                                       added=True)
+
+
 ## ############################################################
 ## Tests
 ## ############################################################
@@ -199,6 +213,10 @@ def test_S2A_prereg_reg(solo_lcs1, solo_lcs2,
     assert [] == lcs2.check_convention()
 
 
+###
+### Notification Tests
+###
+
 def test_notification_management(solo_lcs1, solo_lcs2):
     lcs1, lcs2 = solo_lcs1, solo_lcs2
 
@@ -236,11 +254,13 @@ def test_notification_management(solo_lcs1, solo_lcs2):
 
 
 def test_notification_management_with_registrations(lcs1, lcs2, convreg1,
-                                                    convreg2, convreg2_first):
+                                                    convreg2, convreg2_first,
+                                                    conv1_notifyAddr, update_lcs2_added):
 
     # Setup both in the registered condition
     notifyAddr = test_reg_with_notifications(lcs1, lcs2, convreg1,
-                                             convreg2, convreg2_first)
+                                             convreg2, convreg2_first,
+                                             conv1_notifyAddr, update_lcs2_added)
 
 
     # Re-registration does nothing
@@ -420,19 +440,14 @@ def test_prereg_reg_prereg_with_notifications(solo_lcs1, solo_lcs2,
     verify_io(lcs1.got_convention_register(convreg2_prereg), [])
 
 
-def test_reg_with_notifications(lcs1, lcs2, convreg1, convreg2, convreg2_first):
-    notifyAddr = ActorAddress('notify')
-
-    lcs1.add_notification_handler(notifyAddr)
-
+def test_reg_with_notifications(lcs1, lcs2, convreg1, convreg2, convreg2_first,
+                                conv1_notifyAddr, update_lcs2_added):
+    # S1A
     verify_io(lcs1.got_convention_register(convreg2_first),
               [ (LostRemote, None),
                 (HysteresisCancel, None),
                 (ConventionRegister, Sends(convreg1) >= lcs2.myAddress),
-                (ActorSystemConventionUpdate,
-                 Sends(ActorSystemConventionUpdate(lcs2.myAddress,
-                                                   lcs2.capabilities,
-                                                   added=True)) >= notifyAddr),
+                (ActorSystemConventionUpdate, Sends(update_lcs2_added) >= conv1_notifyAddr),
               ])
 
     verify_io(lcs2.got_convention_register(convreg1), [])
@@ -454,7 +469,7 @@ def test_reg_with_notifications(lcs1, lcs2, convreg1, convreg2, convreg2_first):
     assert [] == lcs1.check_convention()
     assert [] == lcs2.check_convention()
 
-    return notifyAddr  # used by callers
+    return conv1_notifyAddr  # used by callers
 
 
 def test_check_before_activate_with_notifications(lcs1, lcs2, convreg2_first):
@@ -491,10 +506,11 @@ def test_check_before_activate_with_notifications(lcs1, lcs2, convreg2_first):
 
 def test_reg_dereg_with_notifications(lcs1, lcs2,
                                       convreg1, convreg2, convreg2_first,
-                                      convdereg_lcs2):
+                                      convdereg_lcs2,
+                                      conv1_notifyAddr, update_lcs2_added):
 
     # Setup both in the registered condition
-    notifyAddr = test_reg_with_notifications(lcs1, lcs2, convreg1, convreg2, convreg2_first)
+    notifyAddr = test_reg_with_notifications(lcs1, lcs2, convreg1, convreg2, convreg2_first, conv1_notifyAddr, update_lcs2_added)
 
     verify_io(lcs1.got_convention_deregister(convdereg_lcs2),
               [ (LostRemote, None),
@@ -509,10 +525,11 @@ def test_reg_dereg_with_notifications(lcs1, lcs2,
 def test_reg_dereg_rereg_with_notifications(lcs1, lcs2,
                                             convreg1,
                                             convreg2, convreg2_first,
-                                            convdereg_lcs2):
+                                            convdereg_lcs2,
+                                            conv1_notifyAddr, update_lcs2_added):
 
     # Setup both in the registered condition
-    notifyAddr = test_reg_with_notifications(lcs1, lcs2, convreg1, convreg2, convreg2_first)
+    notifyAddr = test_reg_with_notifications(lcs1, lcs2, convreg1, convreg2, convreg2_first, conv1_notifyAddr, update_lcs2_added)
 
     verify_io(lcs1.got_convention_deregister(convdereg_lcs2),
               [ (LostRemote, None),
@@ -523,7 +540,7 @@ def test_reg_dereg_rereg_with_notifications(lcs1, lcs2,
                 (HysteresisCancel, None),
               ])
 
-    test_reg_with_notifications(lcs1, lcs2, convreg1, convreg2, convreg2_first)
+    test_reg_with_notifications(lcs1, lcs2, convreg1, convreg2, convreg2_first, conv1_notifyAddr, update_lcs2_added)
 
 
 def test_reg_with_multiple_notifications(lcs1, lcs2,
@@ -586,10 +603,12 @@ def test_reg_with_multiple_notifications(lcs1, lcs2,
 @mark.skipif(not patch, reason='requires mock patch')
 def test_reg_dereg_rereg_with_delay_and_updates(lcs1, lcs2,
                                                 convreg1, convreg2, convreg2_first,
-                                                convdereg_lcs2):
+                                                convdereg_lcs2,
+                                                conv1_notifyAddr, update_lcs2_added):
 
+    # S1A:
     # Setup both in the registered condition
-    notifyAddr = test_reg_with_notifications(lcs1, lcs2, convreg1, convreg2, convreg2_first)
+    notifyAddr = test_reg_with_notifications(lcs1, lcs2, convreg1, convreg2, convreg2_first, conv1_notifyAddr, update_lcs2_added)
 
     # Now add some elapsed time and check update messages
 
@@ -618,7 +637,7 @@ def test_reg_dereg_rereg_with_delay_and_updates(lcs1, lcs2,
             (CONVENTION_REREGISTRATION_PERIOD *
              CONVENTION_REGISTRATION_MISS_MAX) +
             timedelta(seconds=1))
-        # Convention leader does not take action
+        # Convention leader indicates that it is no longer a member
         verify_io(lcs1.check_convention(),
                   [ (LostRemote, None),
                     (ActorSystemConventionUpdate, Sends(lcs2_exited_update) >= notifyAddr),
@@ -635,7 +654,7 @@ def test_reg_dereg_rereg_with_delay_and_updates(lcs1, lcs2,
                 (HysteresisCancel, None),
               ])
 
-    test_reg_with_notifications(lcs1, lcs2, convreg1, convreg2, convreg2_first)
+    test_reg_with_notifications(lcs1, lcs2, convreg1, convreg2, convreg2_first, conv1_notifyAddr, update_lcs2_added)
 
 
 ## ############################################################

@@ -115,57 +115,58 @@ No convention messages indicate pre-registration.
 
 TBD: where is first field used? 
 
-    | Sequence | Leader                                  | Remote                            |
-    |----------+-----------------------------------------+-----------------------------------|
-    | S1A      |                                         | <-- ConvReg                       |
-    |          | add rmt                                 |                                   |
-    | normal   | ConvReg (ack) -->                       |                                   |
-    | mode     |                                         | upd leader info                   |
-    |          |                                         | :                                 |
-    |          |                                         | <-- ConvReg                       |
-    |          | refresh rmt                             |                                   |
-    |          | ConvReg (ack) -->                       |                                   |
-    |          |                                         | upd leader info                   |
-    |----------+-----------------------------------------+-----------------------------------|
-    | S1B      |                                         | <-- ConvReg                       |
-    |          |                                         | :                                 |
-    | never    |                                         | <-- ConvReg                       |
-    | joins    |                                         | :                                 |
-    |          |                                         | S1A                               |
-    |----------+-----------------------------------------+-----------------------------------|
-    | S1C      |                                         | S1A                               |
-    |          |                                         | :                                 |
-    | loses    |                                         | <-- ConvReg                       |
-    | leader   |                                         | :                                 |
-    |          |                                         | <-- ConvReg                       |
-    |          |                                         | :                                 |
-    |          |                                         | [too many retries with no answer] |
-    |          |                                         | upd no leader connection          |
-    |          |                                         | :                                 |
-    |          |                                         | S1A/S1B                           |
-    |----------+-----------------------------------------+-----------------------------------|
-    | S1D      | S1A                                     |                                   |
-    |          | :                                       |                                   |
-    | leader   | [too much time, no ConvReg from remote] |                                   |
-    | loses    | remove remote                           |                                   |
-    | member   | :                                       |                                   |
-    |          |                                         | <-- ConvReg                       |
-    |          | S1A                                     |                                   |
-    |----------+-----------------------------------------+-----------------------------------|
-    | S1E      | S1A                                     |                                   |
-    |          | :                                       |                                   |
-    | active   |                                         | <-- ConvDeReg                     |
-    | member   | :                                       |                                   |
-    | exit     |                                         | <-- ConvReg                       |
-    |          | S1A                                     |                                   |
-    |----------+-----------------------------------------+-----------------------------------|
-    | S1F      | S1A                                     |                                   |
-    |          | :                                       |                                   |
-    | active   | ConvDeReg -->                           |                                   |
-    | leader   |                                         | :                                 |
-    | exit     |                                         | <-- ConvReg                       |
-    |          | S1A                                     |                                   |
-    |----------+-----------------------------------------+-----------------------------------|
+    | Sequence | Notifyee    | Leader                                  | Remote                            |
+    |----------+-------------+-----------------------------------------+-----------------------------------|
+    | S1A      |             |                                         | <-- ConvReg                       |
+    |          |             | add rmt                                 |                                   |
+    | normal   |             | ConvReg (ack) -->                       |                                   |
+    | mode     | ConvAdd <-- |                                         | upd leader info                   |
+    |          |             |                                         | :                                 |
+    |          |             |                                         | <-- ConvReg                       |
+    |          |             | refresh rmt                             |                                   |
+    |          |             | ConvReg (ack) -->                       |                                   |
+    |          |             |                                         | upd leader info                   |
+    |----------+-------------+-----------------------------------------+-----------------------------------|
+    | S1B      |             |                                         | <-- ConvReg                       |
+    |          |             |                                         | :                                 |
+    | never    |             |                                         | <-- ConvReg                       |
+    | joins    |             |                                         | :                                 |
+    |          |             |                                         | S1A                               |
+    |----------+-------------+-----------------------------------------+-----------------------------------|
+    | S1C      |             |                                         | S1A                               |
+    |          |             |                                         | :                                 |
+    | loses    |             |                                         | <-- ConvReg                       |
+    | leader   |             |                                         | :                                 |
+    |          |             |                                         | <-- ConvReg                       |
+    |          |             |                                         | :                                 |
+    |          |             |                                         | [too many retries with no answer] |
+    |          |             |                                         | upd no leader connection          |
+    |          |             |                                         | :                                 |
+    |          |             |                                         | S1A/S1B                           |
+    |----------+-------------+-----------------------------------------+-----------------------------------|
+    | S1D      |             | S1A                                     |                                   |
+    |          |             | :                                       |                                   |
+    | leader   |             | [too much time, no ConvReg from remote] |                                   |
+    | loses    | ConvRmv <-- | remove remote                           |                                   |
+    | member   |             | :                                       |                                   |
+    |          |             |                                         | <-- ConvReg                       |
+    |          |             | S1A                                     |                                   |
+    |----------+-------------+-----------------------------------------+-----------------------------------|
+    | S1E      |             | S1A                                     |                                   |
+    |          |             | :                                       |                                   |
+    | active   |             |                                         | <-- ConvDeReg                     |
+    | member   | ConvRmv <-- | remove remote                           |                                   |
+    | member   |             | :                                       |                                   |
+    | exit     |             |                                         | <-- ConvReg                       |
+    |          |             | S1A                                     |                                   |
+    |----------+-------------+-----------------------------------------+-----------------------------------|
+    | S1F      |             | S1A                                     |                                   |
+    |          |             | :                                       |                                   |
+    | active   |             | ConvDeReg -->                           |                                   |
+    | leader   | ConvRmv <-- |                                         | :                                 |
+    | exit     |             |                                         | <-- ConvReg                       |
+    |          |             | S1A                                     |                                   |
+    |----------+-------------+-----------------------------------------+-----------------------------------|
 
 
 *** Scenario 2
@@ -175,13 +176,13 @@ Convention Leader's address.  Remote system also periodically sends
 updates to the leader to confirm its continued membership in the
 convention.
 
-  | Sequence       | External              | Leader                              | Remote                            |
+  | Sequence       | External or Notifyee  | Leader                              | Remote                            |
   |----------------+-----------------------+-------------------------------------+-----------------------------------|
   | S2A            | ConvReg(prereg) -->   | add rmt / prereg-only               |                                   |
   | .1 ->          |                       | ConvReg -->                         |                                   |
   | normal         |                       |                                     | add/update leader                 |
   |                |                       |                                     | <-- ConvReg                       |
-  |                |                       | refresh rmt                         |                                   |
+  |                | ConvAdd <--           | refresh rmt                         |                                   |
   |                |                       |                                     | :                                 |
   |                |                       |                                     | <-- ConvReg                       |
   |                |                       | refresh rmt                         |                                   |
@@ -210,20 +211,20 @@ convention.
   | S2D            | S2A                   |                                     |                                   |
   |                |                       | :                                   | [like S2C above]                  |
   | leader         |                       | [no checkins in extended period]    |                                   |
-  | loses member   |                       | note as not member but still prereg |                                   |
+  | loses member   | ConvRmv <--           | note as not member but still prereg |                                   |
   |                |                       | S2A.1 / S2B.1                       |                                   |
   |----------------+-----------------------+-------------------------------------+-----------------------------------|
   | S2E            | S2A                   |                                     |                                   |
   |                | :                     |                                     |                                   |
   | active member  |                       |                                     | <-- ConvDeReg                     |
-  | exit           |                       | note as not member but still prereg |                                   |
+  | exit           | ConvRmv <--           | note as not member but still prereg |                                   |
   |                |                       | S2A.1 / S2B.1                       |                                   |
   |----------------+-----------------------+-------------------------------------+-----------------------------------|
   | S2F            | S2A                   |                                     |                                   |
   |                |                       | :                                   |                                   |
   | active leader  | ConvDeReg(prereg) --> |                                     |                                   |
   | exit           |                       | ConvDeReg -->                       |                                   |
-  |                |                       |                                     | upd no leader connection          |
+  |                | ConvRmv <--           |                                     | upd no leader connection          |
   |                |                       | not member, not prereg              | --idle--                          |
   |----------------+-----------------------+-------------------------------------+-----------------------------------|
   | S2G            | S2D                   |                                     |                                   |
