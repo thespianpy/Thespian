@@ -1,4 +1,5 @@
-"""The sourceLoader is used to handle the import capabilities for hash-identified loaded sources.
+"""The sourceLoader is used to handle the import capabilities for
+hash-identified loaded sources.
 
 Sources are loaded via the ActorSystem().loadSource(...) operation,
 verified by the SourceAuthority, then made available for creating
@@ -297,8 +298,11 @@ class HashRootLoader(LoaderBase):
 
 class SourceHashFinder(FinderBase):
     """This module finder looks in the specified hashedSource for the
-       indicated module to import and returns an appropriate HashLoader object if
-       the module is in that hashedSource.
+       indicated module to import and returns an appropriate
+       HashLoader object if the module is in that hashedSource.  This
+       finder replicates much of the zipimport functionality; the
+       replication is due to the need to prefix all imports with the
+       hashedSource identifier.
     """
     def __init__(self, srcHash, decryptor, enczfsrc):
         self.decryptor = decryptor
