@@ -144,6 +144,7 @@ noLogging = { 'version' : 1,
               'disable_existing_loggers': True,
               }
 
+testAdminPort = 59300
 
 def start_actor_system(name):
     caps = {}
