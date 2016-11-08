@@ -762,13 +762,12 @@ class ActorB(Actor):
      asynchronously to any other message being handled by a member of
      the Troupe.
 
-   * All members of the Troupe are local to each other (i.e. exist
-     under the same ActorSystem).
-
    The Actor Troupe allows for scalability and parallelization of
    individual Actor functionality.  Conversely, the use of a single
    Actor (instead of a Troupe) ensures single-threaded, synchronous
    handling of messages for that Actor.
+
+   See [[*Actor Troupe Support][Actor Troupe Support]] for more details.
 
 ** ActorSystem Capabilities
 
@@ -1718,6 +1717,42 @@ Got a public short message
 Got a message
 >>>
 #+END_EXAMPLE
+
+** Actor Troupe Support
+
+The use of [[*Actor Troupes][Actor Troupes]] is supported by importing the
+~thespian.troupe~ file and adding a ~@troupe()~ decorator to the Actor
+definition.   This decorator turns a regular Actor into a dynamic
+Actor Troupe, where multiple Actors are spun up on-demand to handle
+messages.
+
+This pattern is especially useful for situations where multiple
+requests are received and processing individual requests may take some
+time to perform.
+
+#+BEGIN_SRC python
+from thespian.troupe import troupe
+
+@troupe()
+class MyActor(Actor):
+   ...
+
+#+END_SRC
+
+
+The optional arguments to the troupe decorator are:
+
+   * ~max_count~ is the maximum number of actors in the troupe
+     (defaulting to 10).
+
+   * ~idle_count~ is the default number of actors in the troupe when
+     idle. As work is received, the number of actors will grow up to
+     the max_count, but when there is no more work, the number of
+     actors will shrink back down to this number.  Note that there may
+     be fewer than this number of actors present: actors are only
+     created if work is received and there are no idle actors to
+     handle that work.
+
 
 * ActorSystem API
 
