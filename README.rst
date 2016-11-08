@@ -18,4 +18,6 @@ Contacts:
 ChangeLog
 ---------
 
-  See the [Thespian Release Notes](http://thespianpy.com/releases.html).
+See the `Thespian Release Notes`_.
+
+.. _Thespian Release Notes: http://thespianpy.com/releases.html
