@@ -142,6 +142,8 @@ TBD: where is first field used?
     |          |             |                                         | [too many retries with no answer] |
     |          |             |                                         | upd no leader connection          |
     |          |             |                                         | :                                 |
+    |          |             |                                         | <-- ConvReg * N                   |
+    |          |             |                                         | :                                 |
     |          |             |                                         | S1A/S1B                           |
     |----------+-------------+-----------------------------------------+-----------------------------------|
     | S1D      |             | S1A                                     |                                   |
@@ -178,11 +180,12 @@ convention.
 
   | Sequence       | External or Notifyee  | Leader                              | Remote                            |
   |----------------+-----------------------+-------------------------------------+-----------------------------------|
-  | S2A            | ConvReg(prereg) -->   | add rmt / prereg-only               |                                   |
-  | .1 ->          |                       | ConvReg -->                         |                                   |
-  | normal         |                       |                                     | add/update leader                 |
-  |                |                       |                                     | <-- ConvReg                       |
+  | S2A  normal    | ConvReg(prereg) -->   | add rmt / prereg-only               |                                   |
+  | .1 ->          |                       | ConvInvite -->                      |                                   |
+  |                |                       |                                     | add/update leader                 |
+  | .2 ->          |                       |                                     | <-- ConvReg                       |
   |                | ConvAdd <--           | refresh rmt                         |                                   |
+  |                |                       | ConvReg(ack) -->                    |                                   |
   |                |                       |                                     | :                                 |
   |                |                       |                                     | <-- ConvReg                       |
   |                |                       | refresh rmt                         |                                   |
@@ -190,9 +193,9 @@ convention.
   |                |                       |                                     | upd leader info                   |
   |----------------+-----------------------+-------------------------------------+-----------------------------------|
   | S2B            | ConvReg(prereg) -->   | add rmt / prereg-only               |                                   |
-  | .2 ->          |                       | ConvReg -->                         |                                   |
+  | .2 ->          |                       | ConvInvite -->                      |                                   |
   | never joins    |                       | :                                   |                                   |
-  |                |                       | ConvReg -->                         |                                   |
+  |                |                       | ConvInvite -->                      |                                   |
   |                |                       | :                                   |                                   |
   |                |                       | *                                   |                                   |
   |                |                       | :                                   |                                   |
@@ -205,29 +208,48 @@ convention.
   |                |                       |                                     | <-- ConvReg                       |
   |                |                       |                                     | :                                 |
   |                |                       |                                     | [too many retries with no answer] |
-  |                |                       |                                     | upd no leader connection          |
+  |                |                       |                                     | upd no leader connection because  |
+  |                |                       |                                     | originally joined via invite      |
   |                |                       |                                     | --idle--                          |
+  |                |                       | :                                   |                                   |
+  |                |                       | ConvReg (ack) -->                   | ignored                           |
+  |                |                       | :                                   |                                   |
+  |                |                       | S2A                                 |                                   |
   |----------------+-----------------------+-------------------------------------+-----------------------------------|
   | S2D            | S2A                   |                                     |                                   |
-  |                |                       | :                                   | [like S2C above]                  |
+  |                |                       | :                                   |                                   |
   | leader         |                       | [no checkins in extended period]    |                                   |
   | loses member   | ConvRmv <--           | note as not member but still prereg |                                   |
-  |                |                       | S2A.1 / S2B.1                       |                                   |
+  |                |                       | :                                   |                                   |
+  |                |                       | ConvInvite -->                      |                                   |
+  |                |                       | :                                   |                                   |
+  |                |                       | *                                   |                                   |
+  |                |                       | :                                   |                                   |
+  |                |                       | S2A.1                               |                                   |
   |----------------+-----------------------+-------------------------------------+-----------------------------------|
   | S2E            | S2A                   |                                     |                                   |
   |                | :                     |                                     |                                   |
   | active member  |                       |                                     | <-- ConvDeReg                     |
   | exit           | ConvRmv <--           | note as not member but still prereg |                                   |
-  |                |                       | S2A.1 / S2B.1                       |                                   |
+  |                |                       | :                                   |                                   |
+  |                |                       | ConvInvite -->                      |                                   |
+  |                |                       | :                                   |                                   |
+  |                |                       | *                                   |                                   |
   |----------------+-----------------------+-------------------------------------+-----------------------------------|
-  | S2F            | S2A                   |                                     |                                   |
+  | S2F            |                       | S2E                                 |                                   |
+  | active member  |                       | :                                   |                                   |
+  | restart        |                       | S2A.1                               |                                   |
+  |----------------+-----------------------+-------------------------------------+-----------------------------------|
+  | S2G            | S2A                   |                                     |                                   |
   |                |                       | :                                   |                                   |
   | active leader  | ConvDeReg(prereg) --> |                                     |                                   |
   | exit           |                       | ConvDeReg -->                       |                                   |
   |                | ConvRmv <--           |                                     | upd no leader connection          |
   |                |                       | not member, not prereg              | --idle--                          |
+  |                | :                     |                                     |                                   |
+  |                | S2A                   |                                     |                                   |
   |----------------+-----------------------+-------------------------------------+-----------------------------------|
-  | S2G            | S2D                   |                                     |                                   |
+  | S2H            |                       | S2D                                 | S2C                               |
   |                |                       |                                     |                                   |
   | leader->member |                       |                                     |                                   |
   | socket closed  |                       |                                     |                                   |

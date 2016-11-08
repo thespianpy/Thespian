@@ -19,6 +19,15 @@ from datetime import timedelta
 CONVENTION_REREGISTRATION_PERIOD  = timedelta(minutes=7, seconds=22)
 CONVENTION_RESTART_PERIOD         = timedelta(minutes=3, seconds=22)
 CONVENTION_REGISTRATION_MISS_MAX  = 3  # # of missing convention registrations before death declared
+CONVENTION_REINVITE_ADJUSTMENT    = 1.1  # multiply by remote checkin expected time for new invite timeout period
+
+
+def convention_reinvite_adjustment(t):
+    try:
+        return t * CONVENTION_REINVITE_ADJUSTMENT
+    except TypeError:
+        # Python2 cannot multiply timedelta by a float, so take a longer route
+        return t + (t / int(1 / (CONVENTION_REINVITE_ADJUSTMENT % 1)))
 
 
 class PreRegistration(object):
@@ -59,6 +68,10 @@ class ConventionMemberData(object):
 
         self._reset_valid_timer()
 
+    @property
+    def permanentEntry(self):
+        return bool(self.preRegOnly or self.preRegistered)
+
     def createdActor(self, localParentAddress, newActorAddress):
         entry = localParentAddress, newActorAddress
         if entry not in self.hasRemoteActors:
@@ -67,7 +80,6 @@ class ConventionMemberData(object):
     def refresh(self, remoteCapabilities, preReg=False):
         self.remoteCapabilities = remoteCapabilities
         self._reset_valid_timer()
-        self.preRegOnly = preReg
         if self.preRegistered:
             self.preRegistered.refresh()
 
@@ -83,8 +95,10 @@ class ConventionMemberData(object):
                                         CONVENTION_REGISTRATION_MISS_MAX)
 
     def __str__(self):
-        return 'ActorSystem @ %s, registry valid for %s with %s' % (
+        return 'ActorSystem @ %s%s, registry valid for %s with %s' % (
             str(self.remoteAddress),
+            (' (prereg-only)' if self.preRegOnly else
+             (' (prereg)' if self.preRegistered else '')),
             str(self.registryValid),
             str(self.remoteCapabilities))
 
@@ -115,6 +129,7 @@ class LocalConventionState(object):
         self._conventionAddress = getConventionAddressFunc(capabilities)
         self._conventionRegistration = ExpiryTime(CONVENTION_REREGISTRATION_PERIOD)
         self._has_been_activated = False
+        self._invited = False  # entered convention as a result of an explicit invite
 
 
     @property
@@ -133,14 +148,20 @@ class LocalConventionState(object):
         resp.setNotifyHandlers(self._conventionNotificationHandlers)
 
     def active_in_convention(self):
-        return self.conventionLeaderAddr and \
-            not self._conventionMembers.find(self.conventionLeaderAddr)
+        # If this is the convention leader, it is automatically
+        # active, otherwise this convention member should have a
+        # convention leader and that leader should have an active
+        # entry in the _conventionMembers table (indicating it has
+        # updated this system with its information)
+        return bool(self.conventionLeaderAddr and
+                    self._conventionMembers.find(self.conventionLeaderAddr))
 
     @property
     def conventionLeaderAddr(self):
         return self._conventionAddress
 
     def isConventionLeader(self):
+        # Might also be the leader if self.conventionLeaderAddr is None
         return self.conventionLeaderAddr == self.myAddress
 
     def capabilities_have_changed(self, new_capabilities):
@@ -150,8 +171,12 @@ class LocalConventionState(object):
     def setup_convention(self, activation=False):
         self._has_been_activated |= activation
         rmsgs = []
-        self._conventionAddress = self._getConventionAddr(self.capabilities)
-        leader_is_gone = (self._conventionMembers.find(self.conventionLeaderAddr) is None) if self.conventionLeaderAddr else True
+        # If not specified in capabilities, don't override any invites
+        # that may have been received.
+        self._conventionAddress = self._getConventionAddr(self.capabilities) or \
+                                  self._conventionAddress
+        leader_is_gone = (self._conventionMembers.find(self.conventionLeaderAddr) is None) \
+                         if self.conventionLeaderAddr else True
         if not self.isConventionLeader() and self.conventionLeaderAddr:
             thesplog('Admin registering with Convention @ %s (%s)',
                      self.conventionLeaderAddr,
@@ -179,23 +204,23 @@ class LocalConventionState(object):
             self._conventionLeaderMissCount += 1
         else:
             self._conventionLeaderMissCount = 1
-        if self._conventionLeaderMissCount < CONVENTION_REGISTRATION_MISS_MAX:
-            thesplog('Admin cannot register with convention @ %s (miss %d): %s',
-                     finishedIntent.targetAddr,
-                     self._conventionLeaderMissCount,
-                     result, level=logging.WARNING, primary=True)
-        else:
-            thesplog('Admin convention registration lost @ %s (miss %d): %s',
-                     finishedIntent.targetAddr,
-                     self._conventionLeaderMissCount,
-                     result, level=logging.ERROR, primary=True)
+        thesplog('Admin cannot register with convention @ %s (miss %d): %s',
+                 finishedIntent.targetAddr,
+                 self._conventionLeaderMissCount,
+                 result, level=logging.WARNING, primary=True)
 
     def got_convention_invite(self, sender):
         self._conventionAddress = sender
+        self._invited = True
         return self.setup_convention()
 
     def got_convention_register(self, regmsg):
+        # Called when remote convention member has sent a ConventionRegister message
         self._sCBStats.inc('Admin Handle Convention Registration')
+        if self._invited and not self.conventionLeaderAddr:
+            # Lost connection to an invitation-only convention.
+            # Cannot join again until another invitation is received.
+            return []
         # Registrant may re-register if changing capabilities
         rmsgs = []
         registrant = regmsg.adminAddress
@@ -215,24 +240,32 @@ class LocalConventionState(object):
                      registrant,
                      level=logging.WARNING)
             return rmsgs
-        #if prereg or (regmsg.firstTime and not prereg):
-        if regmsg.firstTime or (prereg and not existing):
-            # erase knowledge of actors associated with potential
-            # former instance of this system
-            existing = False
-            rmsgs.extend(self._remote_system_cleanup(registrant))
-        if existing:
-            existingPreReg = existing.preRegOnly
-            existing.refresh(regmsg.capabilities, prereg)
-            self._conventionMembers.add(registrant, existing)
-        else:
+
+        existingPreReg = (
+            # existing.preRegOnly
+            # or existing.preRegistered
+            existing.permanentEntry
+        ) if existing else False
+        notify = (not existing or existing.preRegOnly) and not prereg
+
+        if regmsg.firstTime or not existing:
+            if existing:
+                existing = None
+                notify = not prereg
+                rmsgs.extend(self._remote_system_cleanup(registrant))
             newmember = ConventionMemberData(registrant,
                                              regmsg.capabilities,
                                              prereg)
-            if prereg:
-                # Need to attempt registration immediately
+            if prereg or existingPreReg:
                 newmember.preRegistered = PreRegistration()
             self._conventionMembers.add(registrant, newmember)
+        else:
+            existing.refresh(regmsg.capabilities, prereg or existingPreReg)
+            if not prereg:
+                existing.preRegOnly = False
+
+        if not self.isConventionLeader():
+            self._conventionRegistration = ExpiryTime(CONVENTION_REREGISTRATION_PERIOD)
 
         # Convention Members normally periodically initiate a
         # membership message, to which the leader confirms by
@@ -242,22 +275,20 @@ class LocalConventionState(object):
         # it doesn't yet have all the member information so the member
         # should respond.
         #if self.isConventionLeader() or prereg or regmsg.firstTime:
-        if self.isConventionLeader() or prereg or regmsg.firstTime or \
-           (existing and existing.preRegistered):
-            if not existing or not existing.preRegOnly: # or prereg:
-                first = prereg
-                # If we are the Convention Leader, this would be the point to
-                # inform all other registrants of the new registrant.  At
-                # present, there is no reciprocity here, so just update the
-                # new registrant with the leader's info.
-                rmsgs.append(
-                    TransmitIntent(registrant,
-                                   ConventionRegister(self.myAddress,
-                                                      self.capabilities,
-                                                      first)))
+        if prereg:
+            rmsgs.append(TransmitIntent(registrant, ConventionInvite()))
+        elif (self.isConventionLeader() or prereg or regmsg.firstTime or \
+           (existing and existing.permanentEntry)):
+            # If we are the Convention Leader, this would be the point to
+            # inform all other registrants of the new registrant.  At
+            # present, there is no reciprocity here, so just update the
+            # new registrant with the leader's info.
+            rmsgs.append(
+                TransmitIntent(registrant,
+                               ConventionRegister(self.myAddress,
+                                                  self.capabilities)))
 
-        if (existing and existingPreReg and not existing.preRegOnly) or \
-           (not existing and newmember and not prereg):
+        if notify:
             rmsgs.extend(self._notifications_of(
                 ActorSystemConventionUpdate(registrant,
                                             regmsg.capabilities,
@@ -293,24 +324,34 @@ class LocalConventionState(object):
             thesplog('Convention deregistration from %s is an invalid address; ignoring.',
                      remoteAdmin,
                      level=logging.WARNING)
+        rmsgs = []
         if getattr(deregmsg, 'preRegistered', False): # see definition for getattr use
             existing = self._conventionMembers.find(remoteAdmin)
             if existing:
                 existing.preRegistered = None
-        return self._remote_system_cleanup(remoteAdmin)
+                rmsgs.append(TransmitIntent(remoteAdmin, ConventionDeRegister(self.myAddress)))
+        return rmsgs + self._remote_system_cleanup(remoteAdmin)
 
     def got_system_shutdown(self):
+        return self.exit_convention()
+
+    def exit_convention(self):
+        self.invited = False
         gen_ops = lambda addr: [HysteresisCancel(addr),
                                 TransmitIntent(addr,
                                                ConventionDeRegister(self.myAddress)),
         ]
+        terminate = lambda a: [ self._remote_system_cleanup(a), gen_ops(a) ][-1]
         if self.conventionLeaderAddr and \
            self.conventionLeaderAddr != self.myAddress:
             thesplog('Admin de-registering with Convention @ %s',
                      str(self.conventionLeaderAddr),
                      level=logging.INFO, primary=True)
-            return gen_ops(self.conventionLeaderAddr)
-        return join(fmap(gen_ops,
+            # Cache convention leader address because it might get reset by terminate()
+            claddr = self.conventionLeaderAddr
+            terminate(self.conventionLeaderAddr)
+            return gen_ops(claddr)
+        return join(fmap(terminate,
                          [M.remoteAddress
                           for M in self._conventionMembers.values()
                           if M.remoteAddress != self.myAddress]))
@@ -320,10 +361,9 @@ class LocalConventionState(object):
         if not self._has_been_activated:
             return rmsgs
         if self.isConventionLeader() or not self.conventionLeaderAddr:
-            missing = []
-            for each in self._conventionMembers.values():
-                if each.registryValid.expired():
-                    missing.append(each)
+            missing = [ each
+                        for each in self._conventionMembers.values()
+                        if each.registryValid.expired() ]
             for each in missing:
                 thesplog('%s missed %d checkins (%s); assuming it has died',
                          str(each),
@@ -335,16 +375,29 @@ class LocalConventionState(object):
         else:
             # Re-register with the Convention if it's time
             if self.conventionLeaderAddr and self._conventionRegistration.expired():
-                rmsgs.extend(self.setup_convention())
+                if getattr(self, '_conventionLeaderMissCount', 0) >= \
+                   CONVENTION_REGISTRATION_MISS_MAX:
+                    thesplog('Admin convention registration lost @ %s (miss %d)',
+                             self.conventionLeaderAddr,
+                             self._conventionLeaderMissCount,
+                             level=logging.ERROR, primary=True)
+                    rmsgs.extend(self._remote_system_cleanup(self.conventionLeaderAddr))
+                    self._conventionLeaderMissCount = 0
+                else:
+                    rmsgs.extend(self.setup_convention())
 
         for member in self._conventionMembers.values():
             if member.preRegistered and \
                member.preRegistered.pingValid.expired() and \
                not member.preRegistered.pingPending:
                 member.preRegistered.pingPending = True
-                member.preRegistered.pingValid = ExpiryTime(CONVENTION_RESTART_PERIOD
-                                                            if member.registryValid.expired()
-                                                            else CONVENTION_REREGISTRATION_PERIOD)
+                # If remote misses a checkin, re-extend the
+                # invitation.  This also helps re-initiate a socket
+                # connection if a TxOnly socket has been lost.
+                member.preRegistered.pingValid = ExpiryTime(
+                    convention_reinvite_adjustment(CONVENTION_RESTART_PERIOD
+                                                   if member.registryValid.expired()
+                                                   else CONVENTION_REREGISTRATION_PERIOD))
                 rmsgs.append(HysteresisSend(
                     member.remoteAddress, ConventionInvite(),
                     onSuccess = self._preRegQueryNotPending,
@@ -372,43 +425,50 @@ class LocalConventionState(object):
                  level=logging.INFO)
         rmsgs = [LostRemote(registrant)]
         cmr = self._conventionMembers.find(registrant)
-        if cmr:
+        if not cmr or cmr.preRegOnly:
+            return []
 
-            # Send exited notification to conventionNotificationHandler (if any)
-            for each in self._conventionNotificationHandlers:
-                rmsgs.append(
-                    TransmitIntent(each,
-                                   ActorSystemConventionUpdate(cmr.remoteAddress,
-                                                               cmr.remoteCapabilities,
-                                                               False)))  # errors ignored
+        # Send exited notification to conventionNotificationHandler (if any)
+        for each in self._conventionNotificationHandlers:
+            rmsgs.append(
+                TransmitIntent(each,
+                               ActorSystemConventionUpdate(cmr.remoteAddress,
+                                                           cmr.remoteCapabilities,
+                                                           False)))  # errors ignored
 
-            # If the remote ActorSystem shutdown gracefully (i.e. sent
-            # a Convention Deregistration) then it should not be
-            # necessary to shutdown remote Actors (or notify of their
-            # shutdown) because the remote ActorSystem should already
-            # have caused this to occur.  However, it won't hurt, and
-            # it's necessary if the remote ActorSystem did not exit
-            # gracefully.
+        # If the remote ActorSystem shutdown gracefully (i.e. sent
+        # a Convention Deregistration) then it should not be
+        # necessary to shutdown remote Actors (or notify of their
+        # shutdown) because the remote ActorSystem should already
+        # have caused this to occur.  However, it won't hurt, and
+        # it's necessary if the remote ActorSystem did not exit
+        # gracefully.
 
-            for lpa, raa in cmr.hasRemoteActors:
-                # ignore errors:
-                rmsgs.append(TransmitIntent(lpa, ChildActorExited(raa)))
-                # n.b. at present, this means that the parent might
-                # get duplicate notifications of ChildActorExited; it
-                # is expected that Actors can handle this.
+        for lpa, raa in cmr.hasRemoteActors:
+            # ignore errors:
+            rmsgs.append(TransmitIntent(lpa, ChildActorExited(raa)))
+            # n.b. at present, this means that the parent might
+            # get duplicate notifications of ChildActorExited; it
+            # is expected that Actors can handle this.
 
-            # Remove remote system from conventionMembers
-            if not cmr.preRegistered:
-                self._conventionMembers.rmv(registrant)
-            else:
-                # This conventionMember needs to stay because the
-                # current system needs to continue issuing
-                # registration pings.  By setting the registryValid
-                # expiration to forever, this member won't re-time-out
-                # and will therefore be otherwise ignored... until it
-                # registers again at which point the membership will
-                # be updated with new settings.
-                cmr.registryValid = ExpiryTime(None)
+        # Remove remote system from conventionMembers
+        if not cmr.preRegistered:
+            if registrant == self.conventionLeaderAddr and self._invited:
+                self._conventionAddress = None
+                # Don't clear invited: once invited, that
+                # perpetually indicates this should be only a
+                # member and never a leader.
+            self._conventionMembers.rmv(registrant)
+        else:
+            # This conventionMember needs to stay because the
+            # current system needs to continue issuing
+            # registration pings.  By setting the registryValid
+            # expiration to forever, this member won't re-time-out
+            # and will therefore be otherwise ignored... until it
+            # registers again at which point the membership will
+            # be updated with new settings.
+            cmr.registryValid = ExpiryTime(None)
+            cmr.preRegOnly = True
 
         return rmsgs + [HysteresisCancel(registrant)]
 
@@ -505,19 +565,23 @@ class ConventioneerAdmin(GlobalNamesAdmin):
 
     def h_ConventionInvite(self, envelope):
         if self.isShuttingDown(): return
-        #self._performIO(self._cstate.got_convention_invite(envelope.sender))
+        self._performIO(self._cstate.got_convention_invite(envelope.sender))
+        return True
 
     def h_ConventionRegister(self, envelope):
         if self.isShuttingDown(): return
         self._performIO(self._cstate.got_convention_register(envelope.message))
+        return True
 
 
     def h_ConventionDeRegister(self, envelope):
         self._performIO(self._cstate.got_convention_deregister(envelope.message))
+        return True
 
     def h_SystemShutdown(self, envelope):
         self._performIO(self._cstate.got_system_shutdown())
         return super(ConventioneerAdmin, self).h_SystemShutdown(envelope)
+        return True
 
     def _performIO(self, iolist):
         for msg in iolist:
