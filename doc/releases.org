@@ -7,7 +7,7 @@
 #+LATEX_HEADER: \product{Thespian}
 #+LATEX_HEADER: \component{Python Actor System}
 #+LATEX_HEADER: \doctype{Release Notes}
-#+LATEX_HEADER: \docrev{3.3.0}{2016 Sep 23}
+#+LATEX_HEADER: \docrev{3.4.0}{2016 Nov 07}
 #+LATEX_HEADER: \docid{TheDoc-06}
 #+OPTIONS: ^:nil num:nil
 
@@ -17,6 +17,51 @@ added functionality that is backwards compatible, and bugfix changes
 do not change the API.
 
 * 3.x
+
+** 3.4
+
+*** 3.4.0 <2016-11-07 Mon>
+
+  * Added ~notifyOnSourceAvailability()~ call for an Actor to register
+    to receive ~LoadedSource~ objects indicating that a new source
+    file has been loaded and is ready to be used, and ~UnloadedSource~
+    objects when a source has been unloaded.  This can be used to
+    write a "source manager" that can take specific actions when these
+    trigger messages indicate changes in the loaded sources for the
+    current actor system.
+
+  * Updated Actor System ~ask()~ and ~listen()~ calls to return as
+    soon as a response is available.  Previously the calls did not
+    return until the delay period had expired.
+
+  * Updated convention management with a full analysis of different
+    scenarios (in the design-routing document) and corresponding
+    tests, with updates to the convention management code as revealed
+    by these tests.  This fixes various behaviors, including an issue
+    introduced in the previous release that would prevent a TxOnly
+    admin from updating remote nodes and therefore causing the remote
+    to enter a partially-disconnected state after about 22 minutes.
+    These changes introduce significant stability and behavior
+    imprlements for conventions.
+
+  * Add ~.details~ to ~PoisonMessage~ for additional information
+    ([[https://github.com/godaddy/Thespian/issues/22][Issue 22]]).
+
+  * Adds supported Actor Troupe functionality ([[https://github.com/godaddy/Thespian/issues/2][Issue 2]]).
+
+  * Fixed logging error ([[https://github.com/godaddy/Thespian/issues/23][Issue 23]]) introduced in 3.3.0.
+
+  * Updated packaging to include documentation and top-level files
+    including the readme, license, and contributor's agreement ([[https://github.com/godaddy/Thespian/issues/25][Issue
+    25]]).
+
+  * Internal cleanups and re-arrangement, including introduction of a
+    more efficient internal timer.
+
+  * Update TCP transport to use more efficient timer, handle socket
+    shutdown corner cases (e.g. no socket created yet or already
+    removed).
+
 
 ** 3.3
 
