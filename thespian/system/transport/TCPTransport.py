@@ -152,12 +152,13 @@ class TCPEndpoint(TransportInit__Base):
 
 
 def _safeSocketShutdown(sock):
-    try:
-        sock.shutdown(socket.SHUT_RDWR) # KWQ: all these should be protected!
-    except socket.error as ex:
-        if ex.errno != errno.ENOTCONN:
-            thesplog('Error during shutdown of socket %s: %s', sock, ex)
-    sock.close()
+    if sock:
+        try:
+            sock.shutdown(socket.SHUT_RDWR) # KWQ: all these should be protected!
+        except socket.error as ex:
+            if ex.errno != errno.ENOTCONN:
+                thesplog('Error during shutdown of socket %s: %s', sock, ex)
+        sock.close()
 
 
 class TCPIncoming_Common(PauseWithBackoff):
@@ -188,16 +189,16 @@ class TCPIncoming_Common(PauseWithBackoff):
     def data(self): return self._rData.completed()
     def close(self):
         s = self.socket
+        _safeSocketShutdown(s)
         if s:
-            _safeSocketShutdown(s)
             self._openSock = None
     def __str__(self): return 'TCPInc(%s)<%s>'%(str(self._rmtAddr), str(self._rData))
 
 class TCPIncoming(TCPIncoming_Common):
     def __del__(self):
         s = self._openSock
+        _safeSocketShutdown(s)
         if s:
-            _safeSocketShutdown(s)
             self._openSock = None
 
 class TCPIncomingPersistent(TCPIncoming_Common): pass
@@ -323,8 +324,7 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
 
 
     def __del__(self):
-        if hasattr(self, 'socket') and self.socket:
-            _safeSocketShutdown(self.socket)
+        _safeSocketShutdown(getattr(self, 'socket', None))
 
 
     def protectedFileNumList(self):
