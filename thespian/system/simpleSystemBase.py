@@ -19,7 +19,8 @@
 import logging, string, types, functools
 from datetime import datetime, timedelta
 from thespian.actors import *
-from thespian.system.utilis import actualActorClass, timePeriodSeconds, toTimeDeltaOrNone
+from thespian.system.utilis import actualActorClass
+from thespian.system.timing import timePeriodSeconds, toTimeDeltaOrNone
 try:
     from logging.config import dictConfig
 except ImportError:

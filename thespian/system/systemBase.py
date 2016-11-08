@@ -15,7 +15,8 @@ except ImportError:
 
 from thespian.actors import *
 from thespian.system import *
-from thespian.system.utilis import toTimeDeltaOrNone, thesplog, ExpiryTime
+from thespian.system.utilis import thesplog
+from thespian.system.timing import toTimeDeltaOrNone, ExpiryTime
 from thespian.system.messages.admin import *
 from thespian.system.messages.status import *
 from thespian.system.transport import *

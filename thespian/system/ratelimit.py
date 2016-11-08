@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 from time import sleep as delay
-from thespian.system.utilis import timePeriodSeconds
+from thespian.system.timing import timePeriodSeconds
 
 class RateThrottle(object):
     """This object is used to provide rate throttling for activities.  It

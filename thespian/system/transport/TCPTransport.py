@@ -81,8 +81,8 @@ DEFAULT_ADMIN_PORT = 1900
 
 
 import logging
-from thespian.system.utilis import (timePeriodSeconds, ExpiryTime, thesplog,
-                                    fmap, partition)
+from thespian.system.utilis import (thesplog, fmap, partition)
+from thespian.system.timing import timePeriodSeconds, ExpiryTime
 from thespian.actors import *
 from thespian.system.transport import *
 from thespian.system.transport.IPBase import TCPv4ActorAddress

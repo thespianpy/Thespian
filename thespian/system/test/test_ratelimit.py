@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 from time import sleep
 
 from thespian.system.ratelimit import RateThrottle
-from thespian.system.utilis import timePeriodSeconds
+from thespian.system.timing import timePeriodSeconds
 
 
 

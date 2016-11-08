@@ -16,7 +16,8 @@ even between processes on separate systems.
 
 
 import logging
-from thespian.system.utilis import ExpiryTime, thesplog
+from thespian.system.utilis import thesplog
+from thespian.system.timing import ExpiryTime
 from thespian.actors import *
 from thespian.system.transport import *
 from thespian.system.transport.IPBase import *

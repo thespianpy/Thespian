@@ -689,7 +689,7 @@ def test_reg_dereg_rereg_with_delay_and_updates(lcs1, lcs2):
         lcs2.capabilities,
         added=False)
 
-    with patch('thespian.system.utilis.datetime') as p_datetime:
+    with patch('thespian.system.timing.datetime') as p_datetime:
         p_datetime.now.return_value = (
             datetime.now() +
             CONVENTION_REREGISTRATION_PERIOD +
@@ -704,7 +704,7 @@ def test_reg_dereg_rereg_with_delay_and_updates(lcs1, lcs2):
                   ])
 
     # Too long
-    with patch('thespian.system.utilis.datetime') as p_datetime:
+    with patch('thespian.system.timing.datetime') as p_datetime:
         p_datetime.now.return_value = (
             datetime.now() +
             (CONVENTION_REREGISTRATION_PERIOD *

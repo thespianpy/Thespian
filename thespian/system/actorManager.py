@@ -14,7 +14,8 @@ from thespian.system.messages.status import Thespian_StatusReq, Thespian_ActorSt
 from thespian.system.messages import *
 from thespian.system.messages.convention import NotifyOnSystemRegistration
 from thespian.system.messages.logcontrol import SetLogging
-from thespian.system.utilis import ExpiryTime, actualActorClass
+from thespian.system.utilis import actualActorClass
+from thespian.system.timing import ExpiryTime
 from thespian.system.sourceLoader import loadModuleFromHashSource
 from datetime import timedelta
 from functools import partial

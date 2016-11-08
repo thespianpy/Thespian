@@ -1,10 +1,9 @@
 import logging
 from thespian.actors import *
-from thespian.system.utilis import (thesplog, ExpiryTime,
-                                    checkActorCapabilities,
-                                    foldl, join, fmap,
-                                    AssocList,
+from thespian.system.utilis import (thesplog, checkActorCapabilities,
+                                    foldl, join, fmap, AssocList,
                                     actualActorClass)
+from thespian.system.timing import ExpiryTime
 from thespian.system.logdirector import LogAggregator
 from thespian.system.admin.globalNames import GlobalNamesAdmin
 from thespian.system.admin.adminCore import ValidSource

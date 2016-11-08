@@ -11,7 +11,7 @@ from thespian.test import *
 import time
 from thespian.actors import *
 from datetime import timedelta
-from thespian.system.utilis import timePeriodSeconds
+from thespian.system.timing import timePeriodSeconds
 
 
 MAX_ASK_WAIT_PERIOD = timedelta(seconds=7)

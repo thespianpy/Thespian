@@ -1,6 +1,6 @@
 from thespian.system.transport import (TransmitIntent, SendStatus,
                                        MAX_TRANSMIT_RETRIES)
-from thespian.system.utilis import timePeriodSeconds
+from thespian.system.timing import timePeriodSeconds
 from datetime import datetime, timedelta
 try: from unittest.mock import patch
 except ImportError:

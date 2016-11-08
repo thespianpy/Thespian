@@ -3,7 +3,7 @@ implements support for wakeupAfter() timed messages."""
 
 
 from thespian.actors import *
-from thespian.system.utilis import ExpiryTime
+from thespian.system.timing import ExpiryTime
 from datetime import datetime
 from thespian.system.transport import *
 

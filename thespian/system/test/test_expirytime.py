@@ -1,4 +1,4 @@
-from thespian.system.utilis import ExpiryTime
+from thespian.system.timing import ExpiryTime
 from datetime import datetime, timedelta
 from time import sleep
 

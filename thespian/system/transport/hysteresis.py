@@ -1,4 +1,5 @@
-from thespian.system.utilis import ExpiryTime, partition
+from thespian.system.utilis import partition
+from thespian.system.timing import ExpiryTime
 from thespian.system.transport import SendStatus
 from datetime import timedelta
 

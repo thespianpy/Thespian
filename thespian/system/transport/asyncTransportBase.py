@@ -224,7 +224,7 @@ class asyncTransportBase(object):
                      v, MAX_QUEUED_TRANSMITS,
                      QUEUE_TRANSMIT_UNBLOCK_THRESHOLD,
                      level=logging.WARNING)
-            finish_time = datetime.now() + max_delay if max_delay else None
+            finish_time = (datetime.now() + max_delay) if max_delay else None
             while v > QUEUE_TRANSMIT_UNBLOCK_THRESHOLD and \
                   finish_time > datetime.now():
                 if 0 == self.run(TransmitOnly, finish_time - datetime.now()):
