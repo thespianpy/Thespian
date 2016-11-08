@@ -82,7 +82,7 @@ DEFAULT_ADMIN_PORT = 1900
 
 import logging
 from thespian.system.utilis import (thesplog, fmap, partition)
-from thespian.system.timing import timePeriodSeconds, ExpiryTime
+from thespian.system.timing import timePeriodSeconds, ExpirationTimer
 from thespian.actors import *
 from thespian.system.transport import *
 from thespian.system.transport.IPBase import TCPv4ActorAddress
@@ -224,14 +224,16 @@ class TXOnlyAdminTCPv4ActorAddress(TCPv4ActorAddress):
 
 
 class IdleSocket(object):
-    def __init__(self, socket, addr):
+    def __init__(self, socket, addr, timenow=None):
         self.socket = socket
         self.rmtaddr = addr
         # n.b. the remote may have bound an outbound connect socket to
         # a different address, but rmtAddr represents the primary
         # address of an Actor/Admin: the one it listens on.
         # self.rmtAddr = rmtAddr
-        self.validity = ExpiryTime(MAX_IDLE_SOCKET_PERIOD)
+        self.validity = ExpirationTimer(MAX_IDLE_SOCKET_PERIOD, timenow)
+    def update_time_now(self, timenow):
+        self.validity.update_time_now(timenow)
     def expired(self):
         return self.validity.expired()
     def __str__(self):
@@ -370,6 +372,7 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
 
     def _updateStatusResponse(self, resp):
         "Called to update a Thespian_SystemStatus or Thespian_ActorStatus with common information"
+        timenow = datetime.now()
         for each in self._transmitIntents.values():
             resp.addPendingMessage(self.myAddress, each.targetAddr, str(each.message))
         for each in self._waitingTransmits:
@@ -379,6 +382,7 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
         asyncTransportBase._updateStatusResponse(self, resp)
         wakeupTransportBase._updateStatusResponse(self, resp)
         for num,each in enumerate(self._openSockets.values()):
+            each.update_time_now(timenow)
             resp.addKeyVal('sock#%d-fd%d'%(num, each.socket.fileno()), str(each))
 
 
@@ -589,6 +593,7 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
                 self._waitingTransmits.append(intent)
 
     def _finishIntent(self, intent, status=SendStatus.Sent):
+        timenow = datetime.now()
         if hasattr(intent, 'socket'):
             if hasattr(self, '_openSockets'):
                 extraRead = getattr(intent, 'extraRead', None)
@@ -605,7 +610,7 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
                         if opskey in self._openSockets:
                             _safeSocketShutdown(self._openSockets[opskey].socket)
                         self._openSockets[opskey] = IdleSocket(intent.socket,
-                                                               intent.targetAddr)
+                                                               intent.targetAddr, timenow)
                         # No need to restart a pending transmit for
                         # this target here; the main loop will check
                         # the waitingIntents and find/start the next one
@@ -1162,13 +1167,14 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
         # Only called if incomingSocket can continue to be used; if
         # there was an error then incomingSocket should be closed and
         # released.
+        timenow = datetime.now()
         fromAddr = incomingSocket.fromAddress
         if fromAddr and isinstance(incomingSocket, TCPIncomingPersistent):
             opskey = opsKey(fromAddr)
             if opskey in self._openSockets:
 
                 _safeSocketShutdown(self._openSockets[opskey].socket)
-            self._openSockets[opskey] = IdleSocket(incomingSocket.socket, fromAddr)
+            self._openSockets[opskey] = IdleSocket(incomingSocket.socket, fromAddr, timenow)
             for T in self._transmitIntents.values():
                 if T.targetAddr == fromAddr and T.stage == self._XMITStepRetry:
                     T.retry(immediately=True)
