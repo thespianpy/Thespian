@@ -1,9 +1,9 @@
 include README.rst
 include LICENSE.txt
 include CONTRIBUTORS.txt
-recursive-include thespian
-recursive-include contrib
-recursive-include examples
+recursive-include thespian *.py *.txt
+recursive-include contrib *.py *.txt
+recursive-include examples *.py *.txt *.org *.sh
 include doc/design.org
 include doc/design-routing.org
 include doc/developer.org
