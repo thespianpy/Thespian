@@ -458,3 +458,7 @@ class ActorManager(systemCommonBase):
                                if isinstance(remoteAddress, ActorAddress) else
                                self.transport.getAddressFromString(remoteAddress),
                                preRegistered=True)))
+
+
+    def actorSystemShutdown(self):
+        self._send_intent(TransmitIntent(self._adminAddr, SystemShutdown()))

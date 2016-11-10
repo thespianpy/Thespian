@@ -293,6 +293,14 @@ class Actor(object):
         self._myRef.deRegisterRemoteSystem(remoteAddress)
 
 
+    def actorSystemShutdown(self):
+        """Allows an Actor to request the shutdown of the entire Actor System.
+           This is dangerous and fatal for the entire local actor
+           system; use with care.
+        """
+        self._myRef.actorSystemShutdown()
+
+
 class ActorSystemMessage(object):
     """Base class for all ActorSystem Messages for easier isinstance
        identification.

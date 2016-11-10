@@ -6,7 +6,6 @@ from thespian.actors import *
 from thespian.test import *
 import time
 from datetime import timedelta
-import multiprocessing
 
 
 ask_wait = timedelta(seconds=8)
@@ -32,6 +31,11 @@ class Parent(Actor):
         elif isinstance(msg, FwdMsg):
             tgt = msg.next(sender)
             self.send(tgt, msg)
+
+class SysStopper(Actor):
+    def receiveMessage(self, msg, sender):
+        if not isinstance(msg, ActorExitRequest):
+            self.actorSystemShutdown()
 
 
 class TestFuncSystemRestart(object):
@@ -62,18 +66,14 @@ class TestFuncSystemRestart(object):
             assert [parent1,parent,parent1] == r.pathdone
 
         finally:
-            pass
-
-            aS.shutdown()
+            aS.tell(aS.createActor(SysStopper), 'shut it down')
 
     def testConnectToStoppingActorSystem(self, asys):
         parent1 = asys.createActor(Parent)
         r = asys.ask(parent1, 'Hello', ask_wait)
         assert 'Hi' == r
         asys.tell(parent1, 'Sleep')  # Parent will prevent shutdown for a little while
-        p = multiprocessing.Process(target=stopAdmin, args=(asys,))
-
-        p.start()
+        asys.tell(asys.createActor(SysStopper), 'stop system')
 
         # Access system internals to make singleton "forget" about the
         # current ActorSystem.  This is done so that a new local
@@ -95,9 +95,4 @@ class TestFuncSystemRestart(object):
             pass  # this is expected, although it takes a while to get (10s)
         finally:
             pass
-            aS.shutdown()
-            p.join()
-
-
-def stopAdmin(actorsys):
-    actorsys.shutdown()
+            aS.tell(aS.createActor(SysStopper), 'shut it down')

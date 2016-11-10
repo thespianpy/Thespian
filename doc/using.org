@@ -1540,6 +1540,23 @@ class MyActor(Actor):
    (e.g. the same address that would be provided in the
    [[*ActorSystemConventionUpdate][ActorSystemConventionUpdate]] messages).
 
+** actorSystemShutdown
+
+   The ~actorSystemShutdown()~ method can be called by an actor to
+   shutdown the *entire* local Actor System, including all Actors
+   currently running under that system.  This method should not
+   normally be needed and is intended only for situations where the
+   local running system is being deactivated.
+
+   The shutdown operation will be initiated immediately:
+   ActorExitRequests will be sent to all locally running Actors.
+
+#+BEGIN_SRC python
+    self.actorSystemShutdown()
+#+END_SRC
+
+   Use this method with caution.
+
 ** ActorTypeDispatcher
 
 An alternative base class for creating Actors is the
