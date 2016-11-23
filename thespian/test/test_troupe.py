@@ -18,8 +18,22 @@ class Bee(Actor):
 @troupe()
 class Hive(Bee): pass
 
-testdata = [ (1, 'Fizz'), (2, 'Honey'),
-             (0.5, 'Flower'), (1.5, 'Pollen'),
+@troupe()
+class Colony(Bee):
+    def receiveMessage(self, msg, sender):
+        if isinstance(msg, tuple):
+            if not hasattr(self, 'hive'):
+                self.hive = self.createActor(Hive)
+                self.asker = []
+            self.asker.append(sender)
+            self.send(self.hive, msg)
+            self.troupe_work_in_progress = True
+        elif isinstance(msg, str):
+            self.send(self.asker.pop(), msg)
+            self.troupe_work_in_progress = bool(getattr(self, 'asker', False))
+
+testdata = [ (0.5, 'Fizz'), (1, 'Honey'),
+             (0.25, 'Flower'), (0.75, 'Pollen'),
 ]
 
 def useActorForTest(asys, bee):
@@ -36,12 +50,13 @@ def useActorForTest(asys, bee):
     assert not remaining
 
 def testSingleBee(asys):
-    bee = asys.createActor(Bee)
-    useActorForTest(asys, bee)
+    useActorForTest(asys, asys.createActor(Bee))
 
 def testHive(asys):
-    bee = asys.createActor(Hive)
-    useActorForTest(asys, bee)
+    useActorForTest(asys, asys.createActor(Hive))
+
+def testColony(asys):
+    useActorForTest(asys, asys.createActor(Colony))
 
 # ------------------------------------------------------------
 
@@ -91,9 +106,22 @@ class Bee(Actor):
             time.sleep(msg[0])
             self.send(sender, msg[1] + ' buzz')
 
-
 @troupe()
 class Hive(Bee): pass
+
+@troupe()
+class Colony(Bee):
+    def receiveMessage(self, msg, sender):
+        if isinstance(msg, tuple):
+            if not hasattr(self, 'hive'):
+                self.hive = self.createActor(Hive)
+                self.asker = []
+            self.asker.append(sender)
+            self.send(self.hive, msg)
+            self.troupe_work_in_progress = True
+        elif isinstance(msg, str):
+            self.send(self.asker.pop(), msg)
+            self.troupe_work_in_progress = bool(self.asker)
     ''')
     hivezip.close()
     request.addfinalizer(lambda d=tmpdir: os.path.exists(d) and shutil.rmtree(d))
@@ -111,5 +139,19 @@ def testLoadableHive(asys, source_zip):
     assert r == srchash
 
     bee = asys.createActor('forest.clearing.beehive.Hive',
+                           sourceHash = srchash)
+    useActorForTest(asys, bee)
+
+def testLoadableColony(asys, source_zip):
+    r = asys.ask(asys.createActor(SimpleSourceAuthority), 'go', max_ask_wait)
+    assert r == 'ok'
+    r = asys.ask(asys.createActor(LoadWatcher), 'go', max_ask_wait)
+    assert r == 'ok'
+
+    srchash = asys.loadActorSource(source_zip)
+    r = asys.listen(max_listen_wait)
+    assert r == srchash
+
+    bee = asys.createActor('forest.clearing.beehive.Colony',
                            sourceHash = srchash)
     useActorForTest(asys, bee)

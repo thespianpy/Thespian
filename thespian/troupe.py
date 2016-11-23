@@ -29,6 +29,32 @@ The optional arguments to the troupe decorator are:
                  work is received and there are no idle actors to
                  handle that work.
 
+The decorator usage above works very well for a simple worker actor
+that can perform all of the necessary work utilizing only the message
+sent to it; the actor can be turned into a troupe member with no
+change other than adding the decorator.
+
+However, an actor which must interact with other actors to process the
+work requires additional modifications to allow the troupe manager to
+know when the actor has finished performing the work.  A troupe member
+that has not fully performed the work and is exchanging messages with
+other actors to complete the work (or awaiting WakeupMessages) must
+set the "troupe_work_in_progress" attribute on self to True.  Once the
+work is completed by a subsequent message delivery, it should set this
+attribute to False, which will cause the troupe manager to be notified
+that the actor is ready for more work.
+
+Failure to set the "troupe_work_in_progress" attribute to True on a
+multi-step actor will result in either (a) the actor receiving more
+work before it has completed the previous work, or (b) the actor will
+be killed by the troupe manager before finishing the work because the
+manager believes the actor is finished.
+
+Failure to reset the "troup_work_in_progress" attribute to False will
+cause the troupe manager to never send any more work requests to the
+troupe actor, even if the latter is idle.  The troupe actor will also
+never be killed until the troupe manager itself is killed.
+
 """
 
 from thespian.actors import *
@@ -67,18 +93,26 @@ class _TroupeManager(object):
         if trouper_addr not in self._troupers:
             self._troupers.append(trouper_addr)
 
+
 def troupe(max_count=10, idle_count=2):
     def _troupe(actorClass):
         actorName = inspect.getmodule(actorClass).__name__ + '.' + actorClass.__name__
         def manageTroupe(self, message, sender):
-            if isinstance(message, ActorSystemMessage):
-                self._orig_receiveMessage(message, sender)
-                return
-            if isinstance(message, _TroupeWork):
-                self._orig_receiveMessage(message.message,
-                                          message.orig_sender)
-                self.send(sender, _TroupeMemberReady())
-                return
+            isTroupeWork = isinstance(message, _TroupeWork)
+            if isinstance(message, ActorSystemMessage) or \
+               isTroupeWork or getattr(self, '_is_a_troupe_worker', False):
+                was_in_progress = getattr(self, 'troupe_work_in_progress', False)
+                if isTroupeWork:
+                    self._is_a_troupe_worker = True
+                    r = self._orig_receiveMessage(message.message,
+                                                  message.orig_sender)
+                else:
+                    r = self._orig_receiveMessage(message, sender)
+                if (isTroupeWork or was_in_progress) and \
+                   not getattr(self, 'troupe_work_in_progress', False):
+                    self.send(sender, _TroupeMemberReady())
+                return r
+            # The following is only run for the primary/manager of the troupe
             if not hasattr(self, '_troupe_mgr'):
                 self._troupe_mgr = _TroupeManager(
                     self.__class__, idle_count, max_count)

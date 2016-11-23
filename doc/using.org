@@ -1770,6 +1770,36 @@ The optional arguments to the troupe decorator are:
      created if work is received and there are no idle actors to
      handle that work.
 
+The decorator usage above works very well for a simple worker actor
+that can perform all of the necessary work utilizing only the message
+sent to it; the actor can be turned into a troupe member with no
+change other than adding the decorator.
+
+However, an actor which must interact with other actors to process the
+work requires additional modifications to allow the troupe manager to
+know when the actor has finished performing the work.  A troupe member
+that has not fully performed the work and is exchanging messages with
+other actors to complete the work (or awaiting [[*Timer Messages][WakeupMessages]]) must
+set the ~troupe_work_in_progress~ attribute on self to ~True~.  Once the
+work is completed by a subsequent message delivery, it should set this
+attribute to ~False~, which will cause the troupe manager to be notified
+that the actor is ready for more work.
+
+   * Failure to set the ~troupe_work_in_progress~ attribute to ~True~
+     on a multi-step actor will result in either (a) the actor
+     receiving more work before it has completed the previous work, or
+     (b) the actor will be killed by the troupe manager before
+     finishing the work because the manager believes the actor is
+     finished.
+
+   * Failure to reset the ~troup_work_in_progress~ attribute to
+     ~False~ will cause the troupe manager to never send any more work
+     requests to the troupe actor, even if the latter is idle.  The
+     troupe actor will also never be killed until the troupe manager
+     itself is killed.
+
+Manipulating the ~troupe_work_in_progress~ member variable for
+non-troupe actors has no effect on their behavior and is safe to do.
 
 * ActorSystem API
 
