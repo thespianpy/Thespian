@@ -20,7 +20,7 @@ The optional arguments to the troupe decorator are:
 
    max_count -- the maximum number of actors in the troupe (default=10)
 
-   idle_count -- the default number of actors in the troupe when idle.
+   idle_count -- the number of actors in the troupe when idle (default=2).
                  As work is received, the number of actors will grow
                  up to the max_count, but when there is no more work,
                  the number of actors will shrink back down to this
