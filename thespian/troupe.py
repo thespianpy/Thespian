@@ -68,7 +68,8 @@ class _TroupeManager(object):
             self._troupers.append(trouper_addr)
 
 def troupe(max_count=10, idle_count=2):
-    def _troupe(actor):
+    def _troupe(actorClass):
+        actorName = inspect.getmodule(actorClass).__name__ + '.' + actorClass.__name__
         def manageTroupe(self, message, sender):
             if isinstance(message, ActorSystemMessage):
                 self._orig_receiveMessage(message, sender)
@@ -88,11 +89,11 @@ def troupe(max_count=10, idle_count=2):
                 for sendargs in self._troupe_mgr.new_work(message, sender):
                     if sendargs[0] is None:
                         sendargs = (
-                            self.createActor(self.__class__),
+                            self.createActor(actorName),
                             ) + sendargs[1:]
                         self._troupe_mgr.add_trouper(sendargs[0])
                     self.send(*sendargs)
-        actor._orig_receiveMessage = actor.receiveMessage
-        actor.receiveMessage = manageTroupe
-        return actor
+        actorClass._orig_receiveMessage = actorClass.receiveMessage
+        actorClass.receiveMessage = manageTroupe
+        return actorClass
     return _troupe
