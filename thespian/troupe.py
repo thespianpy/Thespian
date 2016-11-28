@@ -99,6 +99,14 @@ class _TroupeManager(object):
         self._idle_troupers.remove(A)
         # n.b. work held by an exited trouper must be recovered by the
         # dead letter handler
+    def status(self):
+        return 'Idle=%d, Max=%d, Troupers [%d, %d idle]: %s, Pending=%d' % (
+            self.idle_count, self.max_count,
+            len(self._troupers), len(self._idle_troupers),
+            ['%s%s' % (('I:' if A in self._idle_troupers else ''), str(A))
+             for A in self._troupers],
+            len(self._pending_work)
+        )
 
 
 def troupe(max_count=10, idle_count=2):
@@ -128,6 +136,8 @@ def troupe(max_count=10, idle_count=2):
             elif isinstance(message, _TroupeMemberReady):
                 for sendargs in self._troupe_mgr.is_ready(sender):
                     self.send(*sendargs)
+            elif message == 'troupe:status?':
+                self.send(sender, self._troupe_mgr.status())
             else:
                 for sendargs in self._troupe_mgr.new_work(message, sender):
                     if sendargs[0] is None:
