@@ -5,7 +5,7 @@ from thespian.actors import *
 from thespian.troupe import troupe
 
 
-max_listen_wait = datetime.timedelta(seconds=2.5)
+max_listen_wait = datetime.timedelta(seconds=4)
 max_ask_wait    = datetime.timedelta(seconds=2.5)
 
 class Bee(Actor):
@@ -32,22 +32,32 @@ class Colony(Bee):
             self.send(self.asker.pop(), msg)
             self.troupe_work_in_progress = bool(getattr(self, 'asker', False))
 
+# Ensure there are more test data elements than workers so that
+# some workers get multiple messages
 testdata = [ (0.5, 'Fizz'), (1, 'Honey'),
              (0.25, 'Flower'), (0.75, 'Pollen'),
-]
+] + ([ (0.005, 'Orchid'), (0.005, 'Rose'),
+       (0.005, 'Carnation'), (0.005, 'Lily'),
+       (0.005, 'Daffodil'), (0.005, 'Begonia'),
+       (0.005, 'Violet'), (0.005, 'Aster'),
+] * 3)
 
 def useActorForTest(asys, bee):
-    starttime = datetime.datetime.now()
-    for each in testdata:
-        asys.tell(bee, each)
-    remaining = testdata[:]
-    for readnum in range(len(testdata)):
-        rsp = asys.listen(max_listen_wait)
-        assert rsp
-        remaining = [R for R in remaining
-                     if not rsp.startswith(R[1])]
+    # Run multiple passes to allow workers to be reaped between passes
+    for X in range(2):
+        print(X)
+        starttime = datetime.datetime.now()
+        for each in testdata:
+            asys.tell(bee, each)
+        remaining = testdata[:]
+        for readnum in range(len(testdata)):
+            rsp = asys.listen(max_listen_wait)
+            assert rsp
+            print(str(rsp))
+            remaining = [R for R in remaining
+                         if not rsp.startswith(R[1])]
+        assert not remaining
     asys.tell(bee, ActorExitRequest())
-    assert not remaining
 
 def testSingleBee(asys):
     useActorForTest(asys, asys.createActor(Bee))

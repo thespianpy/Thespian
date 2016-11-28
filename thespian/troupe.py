@@ -61,12 +61,14 @@ from thespian.actors import *
 
 class _TroupeMemberReady(object): pass
 class _TroupeWork(object):
-    def __init__(self, message, orig_sender):
+    def __init__(self, message, orig_sender, troupe_mgr):
         self.message = message
         self.orig_sender = orig_sender
+        self.troupe_mgr = troupe_mgr
 
 class _TroupeManager(object):
-    def __init__(self, actorClass, idle_count, max_count):
+    def __init__(self, actorClass, mgr_addr, idle_count, max_count):
+        self.mgr_addr = mgr_addr
         self.idle_count = idle_count
         self.max_count = max_count
         self._troupers = []
@@ -82,7 +84,7 @@ class _TroupeManager(object):
         self._idle_troupers.append(troupe_member)
         return []
     def new_work(self, msg, sender):
-        work = _TroupeWork(msg, sender)
+        work = _TroupeWork(msg, sender, self.mgr_addr)
         if self._idle_troupers:
             return [(self._idle_troupers.pop(), work)]
         if len(self._troupers) < self.max_count:
@@ -103,19 +105,19 @@ def troupe(max_count=10, idle_count=2):
                isTroupeWork or getattr(self, '_is_a_troupe_worker', False):
                 was_in_progress = getattr(self, 'troupe_work_in_progress', False)
                 if isTroupeWork:
-                    self._is_a_troupe_worker = True
+                    self._is_a_troupe_worker = message.troupe_mgr
                     r = self._orig_receiveMessage(message.message,
                                                   message.orig_sender)
                 else:
                     r = self._orig_receiveMessage(message, sender)
                 if (isTroupeWork or was_in_progress) and \
                    not getattr(self, 'troupe_work_in_progress', False):
-                    self.send(sender, _TroupeMemberReady())
+                    self.send(self._is_a_troupe_worker, _TroupeMemberReady())
                 return r
             # The following is only run for the primary/manager of the troupe
             if not hasattr(self, '_troupe_mgr'):
                 self._troupe_mgr = _TroupeManager(
-                    self.__class__, idle_count, max_count)
+                    self.__class__, self.myAddress, idle_count, max_count)
             if isinstance(message, _TroupeMemberReady):
                 for sendargs in self._troupe_mgr.is_ready(sender):
                     self.send(*sendargs)
