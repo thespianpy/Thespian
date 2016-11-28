@@ -94,6 +94,11 @@ class _TroupeManager(object):
     def add_trouper(self, trouper_addr):
         if trouper_addr not in self._troupers:
             self._troupers.append(trouper_addr)
+    def worker_exited(self, trouper_addr):
+        self._troupers.remove(A)
+        self._idle_troupers.remove(A)
+        # n.b. work held by an exited trouper must be recovered by the
+        # dead letter handler
 
 
 def troupe(max_count=10, idle_count=2):
@@ -118,7 +123,9 @@ def troupe(max_count=10, idle_count=2):
             if not hasattr(self, '_troupe_mgr'):
                 self._troupe_mgr = _TroupeManager(
                     self.__class__, self.myAddress, idle_count, max_count)
-            if isinstance(message, _TroupeMemberReady):
+            if isinstance(message, ChildActorExited):
+                self._troupe_mgr.worker_exited(message.childAddress)
+            elif isinstance(message, _TroupeMemberReady):
                 for sendargs in self._troupe_mgr.is_ready(sender):
                     self.send(*sendargs)
             else:
