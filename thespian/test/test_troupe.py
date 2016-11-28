@@ -19,18 +19,17 @@ class Bee(Actor):
 class Hive(Bee): pass
 
 @troupe()
-class Colony(Bee):
-    def receiveMessage(self, msg, sender):
-        if isinstance(msg, tuple):
-            if not hasattr(self, 'hive'):
-                self.hive = self.createActor(Hive)
-                self.asker = []
-            self.asker.append(sender)
-            self.send(self.hive, msg)
-            self.troupe_work_in_progress = True
-        elif isinstance(msg, str):
-            self.send(self.asker.pop(), msg)
-            self.troupe_work_in_progress = bool(getattr(self, 'asker', False))
+class Colony(ActorTypeDispatcher):
+    def receiveMsg_tuple(self, msg, sender):
+        if not hasattr(self, 'hive'):
+            self.hive = self.createActor(Hive)
+            self.asker = []
+        self.asker.append(sender)
+        self.send(self.hive, msg)
+        self.troupe_work_in_progress = True
+    def receiveMsg_str(self, msg, sender):
+        self.send(self.asker.pop(), msg)
+        self.troupe_work_in_progress = bool(getattr(self, 'asker', False))
 
 # Ensure there are more test data elements than workers so that
 # some workers get multiple messages
