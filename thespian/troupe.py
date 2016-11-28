@@ -57,14 +57,25 @@ never be killed until the troupe manager itself is killed.
 
 """
 
-from thespian.actors import *
+from thespian.actors import (ActorSystemMessage, ActorExitRequest,
+                             ChildActorExited)
+import inspect
 
-class _TroupeMemberReady(object): pass
+
+class _TroupeMemberReady(object):
+    pass
+
+
 class _TroupeWork(object):
     def __init__(self, message, orig_sender, troupe_mgr):
         self.message = message
         self.orig_sender = orig_sender
         self.troupe_mgr = troupe_mgr
+
+    def __str__(self):
+        return '_TroupeWork(from=%s, msg=%s)' % \
+            (self.orig_sender, self.message)
+
 
 class _TroupeManager(object):
     def __init__(self, actorClass, mgr_addr, idle_count, max_count):
@@ -74,6 +85,7 @@ class _TroupeManager(object):
         self._troupers = []
         self._idle_troupers = []
         self._pending_work = []
+
     def is_ready(self, troupe_member):
         if self._pending_work:
             return [(troupe_member, self._pending_work.pop(0))]
@@ -83,6 +95,7 @@ class _TroupeManager(object):
             return [(troupe_member, ActorExitRequest())]
         self._idle_troupers.append(troupe_member)
         return []
+
     def new_work(self, msg, sender):
         work = _TroupeWork(msg, sender, self.mgr_addr)
         if self._idle_troupers:
@@ -91,14 +104,17 @@ class _TroupeManager(object):
             return [(None, work)]
         self._pending_work.append(work)
         return []
+
     def add_trouper(self, trouper_addr):
         if trouper_addr not in self._troupers:
             self._troupers.append(trouper_addr)
+
     def worker_exited(self, trouper_addr):
-        self._troupers.remove(A)
-        self._idle_troupers.remove(A)
+        self._troupers.remove(trouper_addr)
+        self._idle_troupers.remove(trouper_addr)
         # n.b. work held by an exited trouper must be recovered by the
         # dead letter handler
+
     def status(self):
         return 'Idle=%d, Max=%d, Troupers [%d, %d idle]: %s, Pending=%d' % (
             self.idle_count, self.max_count,
@@ -111,19 +127,21 @@ class _TroupeManager(object):
 
 def troupe(max_count=10, idle_count=2):
     def _troupe(actorClass):
-        actorName = inspect.getmodule(actorClass).__name__ + '.' + actorClass.__name__
+        actorName = '.'.join((inspect.getmodule(actorClass).__name__,
+                              actorClass.__name__))
+
         def manageTroupe(self, message, sender):
             isTroupeWork = isinstance(message, _TroupeWork)
             if isinstance(message, ActorSystemMessage) or \
                isTroupeWork or getattr(self, '_is_a_troupe_worker', False):
-                was_in_progress = getattr(self, 'troupe_work_in_progress', False)
+                was_in_prog = getattr(self, 'troupe_work_in_progress', False)
                 if isTroupeWork:
                     self._is_a_troupe_worker = message.troupe_mgr
                     r = self._orig_receiveMessage(message.message,
                                                   message.orig_sender)
                 else:
                     r = self._orig_receiveMessage(message, sender)
-                if (isTroupeWork or was_in_progress) and \
+                if (isTroupeWork or was_in_prog) and \
                    not getattr(self, 'troupe_work_in_progress', False):
                     self.send(self._is_a_troupe_worker, _TroupeMemberReady())
                 return r
