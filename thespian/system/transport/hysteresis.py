@@ -112,12 +112,15 @@ class HysteresisDelaySender(object):
             self._current_hysteresis = self._hysteresis_min_period
             self._sender(intent)
         else:
-            dups = self._keepIf(lambda M: (M.targetAddr != intent.targetAddr or
-                                           type(M.message) != type(intent.message)))
-            # The dups are duplicate sends to the new intent's target; complete them when
-            # the actual message is finally sent with the same result
+            dups = self._keepIf(lambda M:
+                                (M.targetAddr != intent.targetAddr or
+                                 type(M.message) != type(intent.message)))
+            # The dups are duplicate sends to the new intent's target;
+            # complete them when the actual message is finally sent
+            # with the same result
             if dups:
-                intent.addCallback(self._dupSentGood(dups), self._dupSentFail(dups))
+                intent.addCallback(self._dupSentGood(dups),
+                                   self._dupSentFail(dups))
             self._hysteresis_queue.append(intent)
             self._increase_hysteresis()
         self._update_remaining_hysteresis_period()
