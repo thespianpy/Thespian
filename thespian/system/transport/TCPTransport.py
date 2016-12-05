@@ -330,7 +330,8 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
                 list(self._incomingSockets.keys()) + [self.socket.fileno()])
 
     def childResetFileNumList(self):
-        return self.protectedFileNumList()
+        return self.protectedFileNumList() + \
+            [self._openSockets[S].socket.fileno() for S in self._openSockets]
 
     @staticmethod
     def getAdminAddr(capabilities):
