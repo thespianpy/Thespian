@@ -532,56 +532,15 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
                 pass
 
     def _scheduleTransmitActual(self, intent):
+        intent = self._forwardIfNeeded(intent)
+        if not intent:
+            return
         if intent.targetAddr == self.myAddress:
             self._processReceivedEnvelope(ReceiveEnvelope(intent.targetAddr,
                                                           intent.message))
             if not isinstance(intent.message, ForwardMessage):
                 self.interrupt_wait()
             return self._finishIntent(intent)
-        if isinstance(intent.targetAddr.addressDetails,
-                      RoutedTCPv4ActorAddress):
-            if not isinstance(intent.message, ForwardMessage):
-                routing = [A or self._adminAddr
-                           for A in intent.targetAddr.addressDetails.routing]
-                while routing and routing[0] == self.myAddress:
-                    routing = routing[1:]
-                if self.txOnly and routing and routing[0] != self._adminAddr:
-                    routing.insert(0, self._adminAddr)
-                if routing:
-                    if len(routing) != 1 or routing[0] != intent.targetAddr:
-                        newmsg = ForwardMessage(intent.message,
-                                                intent.targetAddr,
-                                                self.myAddress, routing)
-                        newaddr = newmsg.fwdTargets[0]
-                        if hasattr(self, '_addressMgr'):
-                            newaddr, newmsg = self._addressMgr.prepMessageSend(
-                                newaddr, newmsg)
-                            try:
-                                isDead = newmsg == SendStatus.DeadTarget
-                            except Exception:
-                                isDead = False
-                            if isDead:
-                                # this is a DeadEnvelope or a
-                                # ChildActorExited; drop it instead of
-                                # recursing forever.
-                                intent.tx_done(SendStatus.Sent)
-                                return
-                        # Changing the target addr to the next relay
-                        # target for the transmit machinery, but the
-                        # levels above may process completion based on
-                        # the original target (e.g. systemCommon
-                        # _checkNextTransmit), so add a completion
-                        # operation that will reset the target back to
-                        # the original (this occurs before other
-                        # callbacks because callbacks are called in
-                        # reverse order of addition).
-                        intent.addCallback(lambda r,i,ta=intent.targetAddr: i.changeTargetAddr(ta))
-                        intent.changeMessage(newmsg)
-                        intent.changeTargetAddr(newaddr)
-                        intent.serMsg = self.serializer(intent)
-                        self._scheduleTransmitActual(intent)
-                        return
-
         intent.stage = self._XMITStepSendConnect
         if self._nextTransmitStep(intent):
             if hasattr(intent, 'socket'):
@@ -635,6 +594,59 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
             delattr(intent, 'socket')
         intent.tx_done(status)
         return False  # intent no longer needs to be attempted
+
+    def _forwardIfNeeded(self, intent):
+        # Called when an intent is originally received to determine if
+        # the target address requires forwarding; if so, wrap the
+        # message in a ForwardMessage wrapper and set the routing
+        # path.
+        if intent.targetAddr == self.myAddress or \
+           isinstance(intent.message, ForwardMessage) or \
+           not isinstance(intent.targetAddr.addressDetails,
+                          RoutedTCPv4ActorAddress):
+            return intent
+
+        # Replace None with our local admin and remove this actor
+        routing = [A or self._adminAddr
+                   for A in intent.targetAddr.addressDetails.routing
+                   if A != self.myAddress]
+
+        if self.txOnly and routing and \
+           (routing[0] != self._adminAddr) and \
+           self.myAddress != self._adminAddr:
+            routing.insert(0, self._adminAddr)
+
+        if not routing or routing == [intent.targetAddr]:
+            return intent
+
+        newmsg = ForwardMessage(intent.message,
+                                intent.targetAddr,
+                                self.myAddress, routing)
+        newaddr = newmsg.fwdTargets[0]
+        if hasattr(self, '_addressMgr'):
+            newaddr, newmsg = self._addressMgr.prepMessageSend(newaddr, newmsg)
+            try:
+                isDead = newmsg == SendStatus.DeadTarget
+            except Exception:
+                isDead = False
+            if isDead:
+                # this is a DeadEnvelope or a ChildActorExited; drop
+                # it instead of recursing forever.
+                intent.tx_done(SendStatus.Sent)
+                return None
+        # Changing the target addr to the next relay target for the
+        # transmit machinery, but the levels above may process
+        # completion based on the original target (e.g. systemCommon
+        # _checkNextTransmit), so add a completion operation that will
+        # reset the target back to the original (this occurs before
+        # other callbacks because callbacks are called in reverse
+        # order of addition).
+        intent.addCallback(lambda r, i, ta=intent.targetAddr:
+                           i.changeTargetAddr(ta))
+        intent.changeMessage(newmsg)
+        intent.changeTargetAddr(newaddr)
+        intent.serMsg = self.serializer(intent)
+        return intent
 
     def _nextTransmitStepCheck(self, intent, fileno, closed=False):
         # Return True if this intent is still valid, False if it has
