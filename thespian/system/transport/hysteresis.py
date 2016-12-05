@@ -6,7 +6,7 @@ from datetime import timedelta
 
 HYSTERESIS_MIN_PERIOD  = timedelta(milliseconds=250)
 HYSTERESIS_MAX_PERIOD  = timedelta(seconds=45)
-HYSTERESIS_RATE        = 2
+HYSTERESIS_RATE        = 1.2
 
 
 class HysteresisDelaySender(object):
@@ -58,15 +58,36 @@ class HysteresisDelaySender(object):
                 self._current_hysteresis >= self._hysteresis_min_period)
 
     def _increase_hysteresis(self):
-        self._current_hysteresis = min(
-            (self._current_hysteresis * self._hysteresis_rate)
-            if self._has_hysteresis() else self._hysteresis_min_period,
-            self._hysteresis_max_period)
+        if self._has_hysteresis():
+            try:
+                self._current_hysteresis = min(
+                    (self._current_hysteresis * self._hysteresis_rate),
+                    self._hysteresis_max_period)
+            except TypeError:
+                # See note below for _decrease_hysteresis
+                self._current_hysteresis = min(
+                    timedelta(
+                        seconds=(self._current_hysteresis.seconds *
+                                 self._hysteresis_rate)),
+                    self._hysteresis_max_period)
+        else:
+            self._current_hysteresis = self._hysteresis_min_period
 
     def _decrease_hysteresis(self):
-        self._current_hysteresis = (
-            (self._current_hysteresis / self._hysteresis_rate)
-            if self._has_hysteresis() else None)
+        try:
+            self._current_hysteresis = (
+                (self._current_hysteresis / self._hysteresis_rate)
+                if self._has_hysteresis() else None)
+        except TypeError:
+            # Python 2.x cannot multiply or divide a timedelta by a
+            # fractional amount.  There is also not a total_seconds
+            # retrieval from a timedelta, but it should be safe to
+            # assume that the hysteresis value is not greater than 1
+            # day.
+            self._current_hysteresis = timedelta(
+                seconds=(self._current_hysteresis.seconds /
+                         self._hysteresis_rate)) \
+                if self._has_hysteresis() else None
 
     def _update_remaining_hysteresis_period(self, reset=False):
         if not self._current_hysteresis:
