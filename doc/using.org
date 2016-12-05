@@ -628,7 +628,9 @@ class ActorB(Actor):
   The initial Actor creation request with the name will create the
   requested Actor, but the Actor System will remember the Actor
   associated with that name andall subsequent Actor creation requests
-  with the same name will return the originally created Actor.
+  with the same name will return the originally created Actor (see the
+  ~globalName~ parameter to the Actor System's [[*ActorSystem.createActor][createActor]] call or the
+  Actor's [[*createActor][createActor]] call).
 
   It is possible to create any number of Named Actors in the system,
   although it is the responsibility of the creators to manage the
@@ -1092,8 +1094,11 @@ class MyActor(Actor):
    ~actorSystemCapabilityCheck()~ method can understand, although
    typically it is a Python dictionary.
 
-   The ~globalName~ argument may be specified (as an arbitrary string)
-   to create a [[*Named Actors][Named Actors]] instance.
+   The ~globalName~ argument, if specified, should be a string
+   specifying the "name" of the Actor within the ActorSystem.  As
+   describe in [[*Named Actors][Named Actors]], this name allows the Actor to be a
+   system-wide singleton and to be uniquely identified and referenced
+   in a manner additional to the ActorAddress of the actor.
 
    The context for the created Actor will be the context under which
    the Thespian system was started.  _This means that if the Thespian
@@ -1936,9 +1941,9 @@ actorSys = ActorSystem(systemBase = None,
 
    The ~globalName~ argument, if specified, should be a string
    specifying the "name" of the Actor within the ActorSystem.  As
-   describe in [[*Named Actors][Named Actors]], this name allows the Actor to be uniquely
-   identified and referenced in a manner additional to the
-   ActorAddress of the actor.
+   describe in [[*Named Actors][Named Actors]], this name allows the Actor to be a
+   system-wide singleton and to be uniquely identified and referenced
+   in a manner additional to the ActorAddress of the actor.
 
    The ~sourceHash~ argument, if specified, indicates a source file
    which should be prepended to the import path when attempting to
