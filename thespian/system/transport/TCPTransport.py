@@ -1130,7 +1130,13 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
                         # existing openSocket.
                         _safeSocketShutdown(idle)
                     else:
-                        if each == idle.socket.fileno():
+                        fnum = None
+                        try:
+                            fnum = idle.socket.fileno()
+                        except IOError as ex:
+                            if not err_bad_fileno(ex.errno):
+                                raise
+                        if fnum is None or each == fnum:
                             del self._openSockets[opsKey(rmtaddr)]
                             incoming = self._handlePossibleIncoming(
                                 TCPIncomingPersistent(rmtaddr, idle.socket),
