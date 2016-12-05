@@ -361,11 +361,14 @@ class MultiProcReplicator(object):
     def _childExited(self, childAddr):
         children = getattr(self, '_child_procs', [])
         self._child_procs = list(filter(self._checkChildLiveness, children))
-        if len(children) == len(self._child_procs):
-            # Sometimes the child doesn't indicate as not alive immediately.
-            import time
-            time.sleep(0.1)
-            self._child_procs = list(filter(self._checkChildLiveness, children))
+        # The following is obsolete with active signal handling which
+        # will re-examine child liveness on SIGCHLD.
+        #
+        # if len(children) == len(self._child_procs):
+        #     # Sometimes the child doesn't indicate as not alive immediately.
+        #     import time
+        #     time.sleep(0.1)
+        #     self._child_procs = list(filter(self._checkChildLiveness, children))
 
     def signalChildDied(self, _signum, _frame):
         self.transport.interrupt_wait(check_children=True)
