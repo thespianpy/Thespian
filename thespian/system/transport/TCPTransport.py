@@ -619,6 +619,9 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
         if not routing or routing == [intent.targetAddr]:
             return intent
 
+        if intent.targetAddr.addressDetails.isLocalAddr():
+            return intent
+
         newmsg = ForwardMessage(intent.message,
                                 intent.targetAddr,
                                 self.myAddress, routing)
