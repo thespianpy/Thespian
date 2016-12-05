@@ -1200,7 +1200,7 @@ class MyActor(Actor):
 ** send
 
 #+begin_src python
-    self.send(self, targetAddress, message)
+    self.send(targetAddress, message)
 #+end_src
 
     This is the method used to send a message from the current Actor
@@ -1219,7 +1219,7 @@ class MyActor(Actor):
 ** wakeupAfter
 
 #+begin_src python
-    self.wakeupAfter(self, timePeriod)
+    self.wakeupAfter(timePeriod)
 #+end_src
 
     The ~timePeriod~ specifies a Python ~datetime.timedelta~ period.
@@ -1231,7 +1231,7 @@ class MyActor(Actor):
 ** handleDeadLetters
 
 #+begin_src python
-    self.handleDeadLetters(self, startHandling=True)
+    self.handleDeadLetters(startHandling=True)
 #+end_src
 
    This method can be called to register or de-register this Actor for
@@ -1240,7 +1240,7 @@ class MyActor(Actor):
 ** notifyOnSystemRegistrationChanges
 
 #+begin_src python
-    self.notifyOnSystemRegistrationChanges(self, startHandling=True)
+    self.notifyOnSystemRegistrationChanges(startHandling=True)
 #+end_src
 
   This method can be called to register or de-register this Actor for
@@ -1250,7 +1250,7 @@ class MyActor(Actor):
 ** registerSourceAuthority
 
 #+begin_src python
-    self.registerSourceAuthority(self)
+    self.registerSourceAuthority()
 #+end_src
 
    This method registers the current Actor as the Source Authority
@@ -1298,7 +1298,7 @@ class MyActor(Actor):
 ** notifyOnSourceAvailability
 
 #+begin_src python
-    self.notifyOnSourceAvailability(self, enable=True)
+    self.notifyOnSourceAvailability(enable=True)
 #+end_src
 
   This method can be called to register or de-register (based on the
@@ -1445,7 +1445,7 @@ class MyActor(Actor):
    updates; see the [[*ActorSystem API][ActorSystem API]] for that version).
 
 #+begin_src python
-     self.updateCapability(self, capabilityName, capabilityValue=None)
+     self.updateCapability(capabilityName, capabilityValue=None)
 #+end_src
 
    If the capability value is specified and is not None, the specified
@@ -1497,7 +1497,7 @@ class MyActor(Actor):
    become the Convention Leader for the remote system.
 
 #+begin_src python
-     self.preRegisterRemoteSystem(self, remoteSystemAddress,
+     self.preRegisterRemoteSystem(remoteSystemAddress,
                                   remoteSystemCapabilities)
 #+end_src
 
@@ -1530,7 +1530,7 @@ class MyActor(Actor):
    local Actor System, this method will simply return with no effect.
 
 #+begin_src python
-     self.preRegisterRemoteSystem(self, remoteSystemAddress)
+     self.preRegisterRemoteSystem(remoteSystemAddress)
 #+end_src
 
    The ~remoteSystemAddress~ parameter may be specified in the same
