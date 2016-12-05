@@ -32,6 +32,22 @@ MAX_ADMIN_STATUS_REQ_DELAY   = timedelta(seconds=2)
 MAX_TELL_PERIOD              = timedelta(seconds=60)
 
 
+def ensure_TZ_set():
+    # Actor engines handle timeouts and tend to sample system time
+    # frequently.  Under Linux, if TZ is not set to a value,
+    # /etc/localtime or similar is consulted on each call to obtain
+    # system time which can negatively affect performance.  This
+    # function attempts to set TZ if possible/reasonable.
+    if 'TZ' in os.environ:
+        return
+    for fname in ('/etc/localtime',
+                  '/usr/local/etc/localtime'):
+        if os.path.exists(fname):
+            os.environ['TZ'] = ':' + fname
+            return
+    # OK if it's not set, just may be slower
+
+
 class systemBase(object):
 
     """This is the systemBase base class that various Thespian System Base
@@ -58,6 +74,7 @@ class systemBase(object):
     """
 
     def __init__(self, system, logDefs = None):
+        ensure_TZ_set()
         self._numPrimaries = 0
         # Expects self.transport has already been set by subclass __init__
         self.adminAddr = self.transport.getAdminAddr(system.capabilities)
