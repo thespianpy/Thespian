@@ -872,6 +872,26 @@ protect the overall environment from failure scenarios; please contact
 the Thespian developers if this hysteresis is adversely affecting your
 utilization of Thespian.
 
+** Performance
+
+The Thespian implementation is design principles are: correctness,
+reliability, responsiveness, and performance --- in that order.  In
+general Thespian is intended to be used in situations involving Actors
+that communicate relatively frequently with each other, but not
+necessarily with high volumes of data.  While there is nothing in the
+Thespian implementation that prevents exchanging multi-megabyte
+messages between Actors, the implementation is oriented more towards
+low latency and responsiveness rather than high-speed streaming.
+
+To further ensure that a Thespian Actor-based application is a good
+network citizen, there is automatic rate limiting applied to the
+exchange of messages between Actors.  This rate limit is currently set
+to approximately 80Mib/s -- slightly less than the traffic rate that
+would saturate a 100Mib/s Ethernet link.  This is designed to protect
+the overall environment from runaway failure conditions in the
+Actor-based application; please contact Thespian development if this
+is adversely affecting your Actor-base application.
+
 ** Logging
 
 The standard Python logging can be used with the Thespian Actor
