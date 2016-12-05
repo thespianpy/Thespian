@@ -227,9 +227,10 @@ def test_prereg_reg(solo_lcs1, solo_lcs2,
 
     ops = lcs1.got_convention_register(convreg2_prereg)
     verify_io(ops,
-              [ Sends(ConventionInvite) >= lcs2.myAddress,
+              [ (HysteresisCancel, None),
+                Sends(ConventionInvite) >= lcs2.myAddress,
               ])
-    ops[0].tx_done(SendStatus.Failed)  # indicate failure
+    ops[1].tx_done(SendStatus.Failed)  # indicate failure
 
     verify_io(lcs2.got_convention_invite(lcs1.myAddress),
               [ (ConventionRegister, Sends(convreg2_first_noadmin) >= lcs1.myAddress),
@@ -344,9 +345,10 @@ def test_prereg_reg_with_notifications(solo_lcs1, solo_lcs2,
 
     ops = lcs1.got_convention_register(convreg2_prereg)
     verify_io(ops,
-              [ Sends(ConventionInvite) >= lcs2.myAddress,
+              [ (HysteresisCancel, None),
+                Sends(ConventionInvite) >= lcs2.myAddress,
               ])
-    ops[0].tx_done(SendStatus.Failed)  # indicate failure
+    ops[1].tx_done(SendStatus.Failed)  # indicate failure
 
     # lcs2 gets the ConventionRegister generated above, and responds
     # with actual info of its own.  If the other side is indicating
@@ -383,17 +385,19 @@ def test_multi_prereg_reg_with_notifications(solo_lcs1, solo_lcs2,
 
     ops = lcs1.got_convention_register(convreg2_prereg)
     verify_io(ops,
-              [ Sends(ConventionInvite) >= lcs2.myAddress,
+              [ (HysteresisCancel, None),
+                Sends(ConventionInvite) >= lcs2.myAddress,
               ])
-    ops[0].tx_done(SendStatus.Failed)  # indicate failure
+    ops[1].tx_done(SendStatus.Failed)  # indicate failure
 
     # Another prereg should just repeat the invitation but have no
     # other effect because the previous is in progress
     ops = lcs1.got_convention_register(convreg2_prereg)
     verify_io(ops,
-              [ Sends(ConventionInvite) >= lcs2.myAddress,
+              [ (HysteresisCancel, None),
+                Sends(ConventionInvite) >= lcs2.myAddress,
               ])
-    ops[0].tx_done(SendStatus.Failed)  # indicate failure
+    ops[1].tx_done(SendStatus.Failed)  # indicate failure
 
     # lcs2 gets the ConventionRegister generated above, and responds
     # with actual info of its own.  If the other side is indicating
@@ -433,9 +437,10 @@ def test_prereg_reg_prereg_with_notifications(solo_lcs1, solo_lcs2,
 
     ops = lcs1.got_convention_register(convreg2_prereg)
     verify_io(ops,
-              [ Sends(ConventionInvite) >= lcs2.myAddress,
+              [ (HysteresisCancel, None),
+                Sends(ConventionInvite) >= lcs2.myAddress,
               ])
-    ops[0].tx_done(SendStatus.Failed)  # indicate failure
+    ops[1].tx_done(SendStatus.Failed)  # indicate failure
 
     # Lcs2 gets the ConventionInvite generated above, and responds
     # with actual info of its own.  If the other side is indicating
@@ -467,9 +472,10 @@ def test_prereg_reg_prereg_with_notifications(solo_lcs1, solo_lcs2,
     # be sent because it is already registered
     ops = lcs1.got_convention_register(convreg2_prereg)
     verify_io(ops,
-              [ Sends(ConventionInvite) >= lcs2.myAddress,
+              [ (HysteresisCancel, None),
+                Sends(ConventionInvite) >= lcs2.myAddress,
               ])
-    ops[0].tx_done(SendStatus.Failed)  # indicate failure
+    ops[1].tx_done(SendStatus.Failed)  # indicate failure
 
 
 def test_reg_with_notifications(lcs1, lcs2, convreg1, convreg2, convreg2_first,
@@ -829,8 +835,9 @@ def test_S2A(solo_lcs1, solo_lcs2,
     lcs1, lcs2 = solo_lcs1, solo_lcs2
 
     ops = lcs1.got_convention_register(convreg2_prereg)
-    verify_io(ops, [Sends(ConventionInvite) >= lcs2.myAddress,])
-    ops[0].tx_done(SendStatus.Sent)  # indicate failure
+    verify_io(ops, [(HysteresisCancel, None),
+                    Sends(ConventionInvite) >= lcs2.myAddress,])
+    ops[1].tx_done(SendStatus.Sent)  # indicate failure
 
     S2A_1(lcs1, lcs2, convreg1_noadmin,
           convreg2_prereg, convreg2_noadmin, convreg2_first_noadmin,
@@ -921,9 +928,10 @@ def test_S2B(solo_lcs1, solo_lcs2,
 
     ops = lcs1.got_convention_register(convreg2_prereg)
     verify_io(ops,
-              [ Sends(ConventionInvite) >= lcs2.myAddress,
+              [ (HysteresisCancel, None),
+                Sends(ConventionInvite) >= lcs2.myAddress,
               ])
-    ops[0].tx_done(SendStatus.Failed)  # indicate failure
+    ops[1].tx_done(SendStatus.Failed)  # indicate failure
 
     time_offset = (CONVENTION_REREGISTRATION_PERIOD *
                    CONVENTION_REINVITE_ADJUSTMENT) + timedelta(seconds=1)
