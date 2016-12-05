@@ -171,19 +171,36 @@ class IPActorAddress(object):
         return thisSystem.isLocalAddr(self.sockname[0])
 
     def __str__(self):
-        if self.af == socket.AF_INET:
-            if self.socktype == socket.SOCK_STREAM:
-                if self.proto == socket.IPPROTO_TCP:
-                    return '(TCP|%s:%d)' % self.sockname
-            if self.socktype == socket.SOCK_DGRAM:
-                if self.proto == socket.IPPROTO_UDP:
-                    return '(UDP|%s:%d)' % self.sockname
-        if self.af == socket.AF_INET6:
-            if self.socktype == socket.SOCK_STREAM:
-                if self.proto == socket.IPPROTO_TCP:
-                    return '(TCP6|[%s]:%d %d %d)' % self.sockname
-        return '(%s)' % str(((self.af, self.socktype, self.proto),
-                             self.sockname))
+        if not hasattr(self, '_str_form'):
+            self._str_form = ''.join(['(',
+                                      self._str_kind(),
+                                      '|',
+                                      self._str_aps(),
+                                      ')'])
+        return self._str_form
+
+    def _str_kind(self):
+        # n.b. ignores self.socktype of SOCK_STREAM or SOCK_DGRAM
+        if self.proto == socket.IPPROTO_TCP:
+            return ('TCP' if self.af == socket.AF_INET
+                    else ('TCP6' if self.af == socket.AF_INET6
+                          else 'TCP?'))
+        return 'UDP' if self.proto == socket.IPPROTO_TCP \
+            else '%s.%s.%s' % (self.af, self.socktype, self.proto)
+
+    def _str_addr(self):
+        return '' if self.isLocalAddr() else self.sockname[0]
+
+    def _str_port(self):
+        return ':%d' % self.sockname[1]
+
+    def _str_suffix(self):
+        return ''
+
+    def _str_aps(self):
+        return ''.join([self._str_addr(),
+                        self._str_port(),
+                        self._str_suffix()])
 
     @property
     def socketArgs(self): return (self.af, self.socktype, self.proto)
@@ -204,8 +221,8 @@ class UDPv4ActorAddress(IPActorAddress):
                                                 initialIPPort,
                                                 external)
 
-    def __str__(self):
-        return '(UDP|%s:%d)' % self.sockname
+    def _str_kind(self):
+        return 'UDP'
 
 
 class TCPv4ActorAddress(IPActorAddress):
@@ -217,8 +234,8 @@ class TCPv4ActorAddress(IPActorAddress):
                                                 initialIPPort,
                                                 external)
 
-    def __str__(self):
-        return '(TCP|%s:%d)' % self.sockname
+    def _str_kind(self):
+        return 'T'
 
 
 class TCPv6ActorAddress(IPActorAddress):
@@ -230,5 +247,37 @@ class TCPv6ActorAddress(IPActorAddress):
                                                 initialIPPort,
                                                 external)
 
-    def __str__(self):
-        return '(TCP6|[%s]:%d %d %d)' % self.sockname
+    def _str_kind(self):
+        return 'TCP6'
+
+    def _str_addr(self):
+        return '[%s]' % self.sockname[0]
+
+    def _str_port(self):
+        return ':%d.%d.%d' % self.sockname[1:]
+
+
+class RoutedTCPv4ActorAddress(TCPv4ActorAddress):
+    def __init__(self, anIPAddr, anIPPort, adminAddr, txOnly, external=False):
+        super(RoutedTCPv4ActorAddress, self).__init__(anIPAddr, anIPPort,
+                                                      external=external)
+        self.routing = [None, adminAddr] if txOnly else [adminAddr]
+
+    def _str_suffix(self):
+        return '~' + '~'.join(['A' if A is None else
+                               (A.addressDetails._str_aps()
+                                if isinstance(A.addressDetails, IPActorAddress)
+                                else str(A))
+                               for A in self.routing])
+
+
+class TXOnlyAdminTCPv4ActorAddress(TCPv4ActorAddress):
+    # Only assigned to the Admin; allows remote admins to know to wait
+    # for a connection instead of trying to initiate one.
+    def __init__(self, anIPAddr, anIPPort, external):
+        super(TXOnlyAdminTCPv4ActorAddress, self).__init__(anIPAddr, anIPPort,
+                                                           external=external)
+        self.routing = [None]  # remotes must communicate via their local admin
+
+    def _str_suffix(self):
+        return '>'

@@ -83,7 +83,9 @@ from thespian.system.utilis import (thesplog, fmap, partition)
 from thespian.system.timing import timePeriodSeconds, ExpirationTimer
 from thespian.actors import *
 from thespian.system.transport import *
-from thespian.system.transport.IPBase import TCPv4ActorAddress
+from thespian.system.transport.IPBase import (TCPv4ActorAddress,
+                                              RoutedTCPv4ActorAddress,
+                                              TXOnlyAdminTCPv4ActorAddress)
 from thespian.system.transport.streamBuffer import (toSendBuffer,
                                                     ReceiveBuffer,
                                                     ackMsg, ackPacket,
@@ -197,28 +199,6 @@ class TCPIncoming(TCPIncoming_Common):
 class TCPIncomingPersistent(TCPIncoming_Common):
     pass
 
-
-class RoutedTCPv4ActorAddress(TCPv4ActorAddress):
-    def __init__(self, anIPAddr, anIPPort, adminAddr, txOnly, external=False):
-        super(RoutedTCPv4ActorAddress, self).__init__(anIPAddr, anIPPort,
-                                                      external=external)
-        self.routing = [None, adminAddr] if txOnly else [adminAddr]
-
-    def __str__(self):
-        return '~'.join(['(TCP|%s:%d' % self.sockname] +
-                        list(map(str, self.routing))) + ')'
-
-
-class TXOnlyAdminTCPv4ActorAddress(TCPv4ActorAddress):
-    # Only assigned to the Admin; allows remote admins to know to wait
-    # for a connection instead of trying to initiate one.
-    def __init__(self, anIPAddr, anIPPort, external):
-        super(TXOnlyAdminTCPv4ActorAddress, self).__init__(anIPAddr, anIPPort,
-                                                           external=external)
-        self.routing = [None]  # remotes must communicate via their local admin
-
-    def __str__(self):
-        return '(TCP|%s:%d>)' % self.sockname
 
 
 class IdleSocket(object):
