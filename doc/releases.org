@@ -23,65 +23,67 @@ do not change the API.
 
 *** 3.5.0 <2016-12-04 Sun>
 
-**** Enhancements
+  * Enhancements
 
-  * Signal handling is re-enabled after being disabled in 3.0.0 with a
-    new approach to avoid conflicts with signal processing context.
+    * Signal handling is re-enabled after being disabled in 3.0.0 with
+      a new approach to avoid conflicts with signal processing
+      context.
 
-  * Only passes class name and not entire class module heirarchy to
-    setproctitle for setting the Actor process name.
+    * Only passes class name and not entire class module heirarchy to
+      setproctitle for setting the Actor process name.
 
-  * Added ability to query the troupe leader for status (intended for
-    user interpretation with thespianShell and not programmatic
-    consumption).
+    * Added ability to query the troupe leader for status (intended
+      for user interpretation with thespianShell and not programmatic
+      consumption).
 
-  * Added ~self.actorSystemShutdown()~ to allow an actor to shutdown
-    the entire local actor system ([[https://github.com/godaddy/Thespian/issues/24][Issue 24]]).
+    * Added ~self.actorSystemShutdown()~ to allow an actor to shutdown
+      the entire local actor system ([[https://github.com/godaddy/Thespian/issues/24][Issue 24]]).
 
-**** Bug Fixes and internal changes
+  * Bug Fixes and internal changes
 
-  * The TCPTransport will attempt to close old idle sockets if it
-    fails to create new sockets (incoming or outbound) due to resource
-    limits.
+    * The TCPTransport will attempt to close old idle sockets if it
+      fails to create new sockets (incoming or outbound) due to
+      resource limits.
 
-  * Added exception protection against closed descriptors in
-    TCPTransport idle socket cleanup.
+    * Added exception protection against closed descriptors in
+      TCPTransport idle socket cleanup.
 
-  * Now closes all open idle sockets when spawning a child process with
-    the TCPTransport instead of just a subset.
+    * Now closes all open idle sockets when spawning a child process
+      with the TCPTransport instead of just a subset.
 
-  * Remove child liveness detection confirmation delay (enabled
-    SIGCHLD handling makes this unnecessary).
+    * Remove child liveness detection confirmation delay (enabled
+      SIGCHLD handling makes this unnecessary).
 
-  * Ensure convention Hysteresis is reset on pre-registration of
-    remote and slow down hysteresis rate.
+    * Ensure convention Hysteresis is reset on pre-registration of
+      remote and slow down hysteresis rate.
 
-  * Added status indication of exiting condition in status reports.
+    * Added status indication of exiting condition in status reports.
 
-  * Internal cleanup of routed address definitions.
+    * Internal cleanup of routed address definitions.
 
-  * Updated visual form of addresses for more brevity.  Note that all
-    code should treat Actor Addresses as opaque, and there should be
-    no programmatic dependence on a specific representation, so this
-    update does not constitute a compatibility change relative to
-    previous versions.
+    * Updated visual form of addresses for more brevity.  Note that
+      all code should treat Actor Addresses as opaque, and there
+      should be no programmatic dependence on a specific
+      representation, so this update does not constitute a
+      compatibility change relative to previous versions.
 
-  * Added optimization of AdminRouting: local targets are sent
-    directly instead of routing via the Admin, and also avoid extra
-    hops in routing from the Admin back to itself.
+    * Added optimization of AdminRouting: local targets are sent
+      directly instead of routing via the Admin, and also avoid extra
+      hops in routing from the Admin back to itself.
 
-  * Upgraded logging of transmit completion errors to ERROR from INFO.
+    * Upgraded logging of transmit completion errors to ERROR from
+      INFO.
 
-  * Set the TZ environment variable on startup if not already set to
-    avoid repeated stat() calls to "/etc/localtime" under Unix.
+    * Set the TZ environment variable on startup if not already set to
+      avoid repeated stat() calls to "/etc/localtime" under Unix.
 
-  * Fixes and updates to the troupe implementation to handle
-    ChildActorExit messages from workers, ensure completed work
-    messages are sent back to the troupe leader, and use string class
-    names for compatibility with loaded sources.
+    * Fixes and updates to the troupe implementation to handle
+      ChildActorExit messages from workers, ensure completed work
+      messages are sent back to the troupe leader, and use string
+      class names for compatibility with loaded sources.
 
-  * Use SO_EXCLUSIVEADDRUSE on Windows to probe for existing
-    multiprocTCPBase.
+    * Use SO_EXCLUSIVEADDRUSE on Windows to probe for existing
+      multiprocTCPBase.
 
 ** 3.4
 
