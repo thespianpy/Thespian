@@ -83,9 +83,7 @@ from thespian.system.utilis import (thesplog, fmap, partition)
 from thespian.system.timing import timePeriodSeconds, ExpirationTimer
 from thespian.actors import *
 from thespian.system.transport import *
-from thespian.system.transport.IPBase import (TCPv4ActorAddress,
-                                              RoutedTCPv4ActorAddress,
-                                              TXOnlyAdminTCPv4ActorAddress)
+from thespian.system.transport.IPBase import (TCPv4ActorAddress)
 from thespian.system.transport.streamBuffer import (toSendBuffer,
                                                     ReceiveBuffer,
                                                     ackMsg, ackPacket,
@@ -231,6 +229,18 @@ class IdleSocket(object):
 
 def opsKey(addr):
     return addr.addressDetails
+
+
+# The definition of these two address types has moved to IPBase, but
+# declare them here as well for backward compatibility with older
+# running Thespian instances.
+import thespian.system.transport.IPBase
+class RoutedTCPv4ActorAddress(
+        thespian.system.transport.IPBase.RoutedTCPv4ActorAddress):
+    pass
+class TXOnlyAdminTCPv4ActorAddress(
+        thespian.system.transport.IPBase.TXOnlyAdminTCPv4ActorAddress):
+    pass
 
 
 class TCPTransport(asyncTransportBase, wakeupTransportBase):
