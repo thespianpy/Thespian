@@ -40,8 +40,8 @@ for sname in ['SIGCHLD']:
     except AttributeError:
         pass   # not defined for this OS
 
-#set_signal_handler = signal.signal
-set_signal_handler = lambda *args: None
+set_signal_handler = signal.signal
+#set_signal_handler = lambda *args: None
 
 
 def detach_child(childref):
@@ -184,7 +184,7 @@ def startAdmin(adminClass, addrOfStarter, endpointPrep, transportClass,
         # behavior.
         if each not in uncatchable_signals:
             if each in child_exit_signals:
-                set_signal_handler(each, admin.childDied)
+                set_signal_handler(each, admin.signalChildDied)
     if hasattr(signal, 'SIGUSR1'):
         set_signal_handler(signal.SIGUSR1, signal_admin_sts(admin))
 
@@ -367,7 +367,10 @@ class MultiProcReplicator(object):
             time.sleep(0.1)
             self._child_procs = list(filter(self._checkChildLiveness, children))
 
-    def childDied(self, signum, frame):
+    def signalChildDied(self, _signum, _frame):
+        self.transport.interrupt_wait(check_children=True)
+
+    def childDied(self):
         logproc = getattr(self, 'asLogProc', None)
         if logproc and not self._checkChildLiveness(logproc):
             # Logger has died; need to start another
@@ -383,6 +386,7 @@ class MultiProcReplicator(object):
             except CannotPickleAddress:
                 thesplog('child %s is dead but cannot translate address to properly handle it',
                          addr, level=logging.ERROR)
+        return True  # keep going
 
     def h_EndpointConnected(self, envelope):
         for C in getattr(self, '_child_procs', []):
@@ -424,6 +428,8 @@ class MultiProcReplicator(object):
             return True, self.h_EndpointConnected(envelope)
         if isinstance(envelope.message, logging.LogRecord):
             return True, self.h_LogRecord(envelope)
+        if isinstance(envelope.message, ChildMayHaveDied):
+            return True, self.childDied()
         return False, True
 
 
@@ -465,8 +471,7 @@ def shutdown_signal_detector(name, addr, am):
     def shutdown_signal_detected(signum, frame):
         thesplog('Actor %s @ %s got shutdown signal: %s', name, addr, signum,
                  level = logging.WARNING)
-        am.transport.scheduleTransmit(None, TransmitIntent(am.transport.myAddress,
-                                                           ActorExitRequest()))
+        am.transport.interrupt_wait(signal_shutdown=True)
     return shutdown_signal_detected
 
 
@@ -532,7 +537,7 @@ def startChild(childClass, endpoint, transportClass,
         # behavior.
         if each not in uncatchable_signals:
             if each in child_exit_signals:
-                set_signal_handler(each, am.childDied)
+                set_signal_handler(each, am.signalChildDied)
                 continue
             try:
                 set_signal_handler(each,

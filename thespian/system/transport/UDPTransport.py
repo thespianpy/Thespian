@@ -21,6 +21,7 @@ from thespian.system.timing import ExpiryTime
 from thespian.actors import *
 from thespian.system.transport import *
 from thespian.system.transport.IPBase import *
+from thespian.system.messages.multiproc import ChildMayHaveDied
 from thespian.system.addressManager import ActorLocalAddress
 import socket
 import select
@@ -77,6 +78,8 @@ class UDPTransport(asyncTransportBase, wakeupTransportBase):
         else:
             thesplog('UDPTransport init of type %s unsupported', str(initType), level=logging.ERROR)
         self._rcvd = []
+        self._checkChildren = False
+        self._shutdownSignalled = False
 
 
     def protectedFileNumList(self):
@@ -177,7 +180,11 @@ class UDPTransport(asyncTransportBase, wakeupTransportBase):
         return serializer.dumps(intent.message)
 
 
-    def interrupt_wait(self):
+    def interrupt_wait(self,
+                       signal_shutdown=False,
+                       check_children=False):
+        self._shutdownSignalled |= signal_shutdown
+        self._checkChildren |= check_children
         # Under some python implementations, signal handling (which
         # could generate an ActorShutdownRequest) can be performed
         # without interrupting the underlying syscall, so this message
@@ -236,12 +243,22 @@ class UDPTransport(asyncTransportBase, wakeupTransportBase):
                     continue
                 rawmsg, sender = self.socket.recvfrom(65535)
                 if rawmsg == b'BuMP':
+                    sendAddr = self.myAddress
+                    if self._checkChildren:
+                        self._checkChildren = False
+                        msg = ChildMayHaveDied()
+                    elif self._shutdownSignalled:
+                        self._shutdownSignalled = False
+                        msg = ActorExitRequest()
+                    else:
+                        return Thespian__UpdateWork()
                     return Thespian__UpdateWork()
-                sendAddr = ActorAddress(UDPv4ActorAddress(*sender, external=True))
-                try:
-                    msg = serializer.loads(rawmsg)
-                except Exception as ex:
-                    continue
+                else:
+                    sendAddr = ActorAddress(UDPv4ActorAddress(*sender, external=True))
+                    try:
+                        msg = serializer.loads(rawmsg)
+                    except Exception as ex:
+                        continue
                 rcvdEnv = ReceiveEnvelope(sendAddr, msg)
             if incomingHandler is None:
                 return rcvdEnv

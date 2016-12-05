@@ -54,6 +54,7 @@ from thespian.system.timing import ExpiryTime, timePeriodSeconds
 from thespian.system.transport import *
 from thespian.system.transport.asyncTransportBase import asyncTransportBase
 from thespian.system.transport.wakeupTransportBase import wakeupTransportBase
+from thespian.system.messages.multiproc import ChildMayHaveDied
 from thespian.system.addressManager import ActorLocalAddress
 from multiprocessing import Queue
 try:
@@ -67,6 +68,7 @@ import pickle
 MAX_ADMIN_QUEUESIZE=40  # depth of Admin queue
 MAX_ACTOR_QUEUESIZE=10  # depth of Actor queue
 MAX_QUEUE_TRANSMIT_PERIOD = timedelta(seconds=20)  # always local, so shorter times are appropriate
+QUEUE_CHECK_PERIOD = 2  # maximum sleep time in seconds on Q get
 
 
 class QueueActorAddress(object):  # internal use by this module only
@@ -138,6 +140,16 @@ class MultiprocessQueueTransport(asyncTransportBase, wakeupTransportBase):
         self._fwdvia = AssocList()  # targetAddress -> fwdViaAddress
 
         self._nextSubInstance = 0
+
+        # Signals can set these to true; they should be checked and
+        # reset by the main processing loop.  There is a small window
+        # where they could be missed because signals are not queued,
+        # but this should handle the majority of situations.  Note
+        # that the Queue object is NOT signal-safe, so don't try to
+        # queue signals that way.
+
+        self._checkChildren = False
+        self._shutdownSignalled = False
 
 
     def protectedFileNumList(self):
@@ -252,13 +264,30 @@ class MultiprocessQueueTransport(asyncTransportBase, wakeupTransportBase):
 
         while not self.run_time.expired() and not self._aborting_run:
             try:
-                rcvd = self._myInputQ.get(True, self.run_time.remainingSeconds())
+                # Unfortunately, the Queue object is not signal-safe,
+                # so a frequent wakeup is needed to check
+                # _checkChildren and _shutdownSignalled.
+                rcvd = self._myInputQ.get(True,
+                                          min(self.run_time.remainingSeconds() or
+                                              QUEUE_CHECK_PERIOD,
+                                              QUEUE_CHECK_PERIOD))
             except Q.Empty:
-                # Probably a timeout, but let the while loop decide for sure
-                continue
+                if not self._checkChildren and not self._shutdownSignalled:
+                    # Probably a timeout, but let the while loop decide for sure
+                    continue
+                rcvd = 'BuMP'
             if rcvd == 'BuMP':
-                return Thespian__UpdateWork()
-            relayAddr, (sendAddr, destAddr, msg) = rcvd
+                relayAddr = sendAddr = destAddr = self._myQAddress
+                if self._checkChildren:
+                    self._checkChildren = False
+                    msg = ChildMayHaveDied()
+                elif self._shutdownSignalled:
+                    self._shutdownSignalled = False
+                    msg = ActorExitRequest()
+                else:
+                    return Thespian__UpdateWork()
+            else:
+                relayAddr, (sendAddr, destAddr, msg) = rcvd
             if not self._queues.find(sendAddr):
                 # We don't directly know about this sender, so
                 # remember what path this arrived on to know where to
@@ -392,8 +421,17 @@ class MultiprocessQueueTransport(asyncTransportBase, wakeupTransportBase):
         return wrappedMsg
 
 
-    def interrupt_wait(self):
-        self._myInputQ.put_nowait('BuMP')
+    def interrupt_wait(self,
+                       signal_shutdown=False,
+                       check_children=False):
+        self._shutdownSignalled |= signal_shutdown
+        self._checkChildren |= check_children
+        # Do not put anything on the Queue if running in the context
+        # of a signal handler, because Queues are not signal-context
+        # safe.  Instead, those will just have to depend on the short
+        # maximum Queue get wait time.
+        if not signal_shutdown and not check_children:
+            self._myInputQ.put_nowait('BuMP')
 
 
     def _scheduleTransmitActual(self, transmitIntent):

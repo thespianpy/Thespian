@@ -92,6 +92,7 @@ from thespian.system.transport.streamBuffer import (toSendBuffer,
 from thespian.system.transport.asyncTransportBase import asyncTransportBase
 from thespian.system.transport.wakeupTransportBase import wakeupTransportBase
 from thespian.system.transport.errmgmt import *
+from thespian.system.messages.multiproc import ChildMayHaveDied
 from thespian.system.addressManager import ActorLocalAddress
 import socket
 import select
@@ -316,6 +317,8 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
         if REUSE_SOCKETS:
             # key = opsKey(remote listen address), value=IdleSocket
             self._openSockets = {}
+        self._checkChildren = False
+        self._shutdownSignalled = False
 
     def __del__(self):
         _safeSocketShutdown(getattr(self, 'socket', None))
@@ -529,7 +532,11 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
         for each in closed_openSocks:
             del self._openSockets[each]
 
-    def interrupt_wait(self):
+    def interrupt_wait(self,
+                       signal_shutdown=False,
+                       check_children=False):
+        self._shutdownSignalled |= signal_shutdown
+        self._checkChildren |= check_children
         # Now generate a spurious connection to break out of the
         # select.select loop.  This is especially useful if a signal
         # handler caused a message to be sent to myself: get the
@@ -1033,6 +1040,7 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
                 if err_select_retry(errnum):
                     # probably a change in descriptors
                     thesplog('select retry on %s', ex, level=logging.ERROR)
+                    self._check_indicators()
                     continue
                 if err_bad_fileno(errnum):
                     # One of the selected file descriptors was bad,
@@ -1176,14 +1184,28 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
 
         return None
 
+    def _check_indicators(self):
+        if self._checkChildren:
+            self._checkChildren = False
+            self._incomingEnvelopes.append(
+                ReceiveEnvelope(self.myAddress, ChildMayHaveDied()))
+        if self._shutdownSignalled:
+            self._shutdownSignalled = False
+            self._incomingEnvelopes.append(
+                ReceiveEnvelope(self.myAddress, ActorExitRequest()))
+
     def _acceptNewIncoming(self):
+        accepted = False
         try:
             lsock, rmtTxAddr = self.socket.accept()
+            accepted = True
         except (OSError, socket.error) as ex:
             thesplog('Error accepting incoming: %s', ex)
-            return
-        if rmtTxAddr == self.myAddress:
+        self._check_indicators()
+        if not accepted or rmtTxAddr == self.myAddress:
             self._incomingEnvelopes.append(Thespian__UpdateWork())
+        if not accepted:
+            return
         lsock.setblocking(0)
         # Disable Nagle to transmit headers and acks asap
         lsock.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
