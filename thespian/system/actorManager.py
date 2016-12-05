@@ -193,9 +193,6 @@ class ActorManager(systemCommonBase):
 
 
         if isinstance(msg, ActorExitRequest):
-            if getattr(self, '_exiting', None) is not None:
-                return True  # multiple shutdown requests ignored
-            # Initiate exit; may be a delay while children are shutdown
             return self._actorExit(msg)
 
         if hasattr(self.transport, 'set_watch'):
@@ -221,7 +218,7 @@ class ActorManager(systemCommonBase):
         if hasattr(atexit, 'unregister'):
             atexit.unregister(self._shutdownActor)
         if getattr(self, '_exiting', None):
-            return  # already exiting
+            return True  # already exiting
         self._exiting = True  # set exiting mode
 
         children = self.childAddresses
