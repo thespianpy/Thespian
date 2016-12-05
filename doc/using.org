@@ -464,6 +464,21 @@ described in [[*Dead Letter Handling][Dead Letter Handling]].
     in PoisonMessage delivery failures to Actors attempting to
     communicate with the busy Actor.
 
+  - The ActorSystem is limited by system execution limits.  For
+    example, ActorSystems implementing actors as separate processes
+    may be limited by the number of processes that can be created
+    (e.g. ~$ ulimit -u~ on Unix), and ActorSystems using sockets for
+    communications may be limited by the number of file descriptors
+    (~$ ulimit -n~), the max syn backlog (~$ sysctl
+    net.ipv4.tcp_max_syn_backlog~), local port ranges (~$ sysctl
+    net.ipv4.ip_local_port_range~), and various other system limits.
+
+    Thespian does not make any attempt to adjust these values, and
+    will do its best to work within the available limits (e.g. closing
+    idle sockets when the allowed socket limit is reached), but the
+    user should ensure that the ActorSystem is configured properly
+    for the expected utilization.
+
 * Thespian Actor Feature Extensions
 
   The Thespian system provides several extended features not present
