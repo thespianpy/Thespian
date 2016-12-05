@@ -104,11 +104,13 @@ class IPActorAddress(object):
            default, the address is Go Daddy's public webserver
            address.
         """
-        self.af       = af
+        self.af = af
         self.socktype = socktype
-        self.proto    = proto
-        if baseaddr and external and baseaddr == '0.0.0.0': baseaddr = None
-        if baseaddr == '': baseaddr = None if external else '127.0.0.1'
+        self.proto = proto
+        if baseaddr and external and baseaddr == '0.0.0.0':
+            baseaddr = None
+        if baseaddr == '':
+            baseaddr = None if external else '127.0.0.1'
         if external and not baseaddr:
             # Trick to get the "public" IP address... doesn't work so
             # well if there are multiple routes, or if the public site
@@ -129,27 +131,31 @@ class IPActorAddress(object):
                 remoteAddr = ('8.8.8.8', remoteAddr[1])
             try:
                 # Use a UDP socket: no actual connection is made
-                s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
+                s = socket.socket(socket.AF_INET,
+                                  socket.SOCK_DGRAM,
+                                  socket.IPPROTO_UDP)
                 try:
-                    s.connect( remoteAddr )
+                    s.connect(remoteAddr)
                     baseaddr = s.getsockname()[0]
                 finally:
                     s.close()
-            except TypeError as ex:
+            except TypeError:
                 # Probably specified the Admin Port as a string...
-                print('Error connecting to %s'%(str(remoteAddr)))
+                print('Error connecting to %s' % (str(remoteAddr)))
                 import traceback
                 traceback.print_exc()
-            except Exception as ex:
+            except Exception:
                 pass
             if not baseaddr or thisSystem._isLocalReference(baseaddr):
                 raise RuntimeError('Unable to determine valid external socket address.')
             thisSystem.add_local_addr(baseaddr)
         res = socket.getaddrinfo(baseaddr, port, af, socktype, proto,
-                                 socket.AI_PASSIVE if baseaddr is None and not external else 0)
+                                 socket.AI_PASSIVE
+                                 if baseaddr is None and not external else 0)
         af, socktype, proto, canonname, sa = res[0]
         self.sockname = sa
-        self.bindname = ('',sa[1]) if external else sa
+        self.bindname = ('', sa[1]) if external else sa
+
     def __eq__(self, o):
         return self.af == o.af and self.socktype == o.socktype and \
             self.proto == o.proto and \
@@ -168,19 +174,23 @@ class IPActorAddress(object):
         if self.af == socket.AF_INET:
             if self.socktype == socket.SOCK_STREAM:
                 if self.proto == socket.IPPROTO_TCP:
-                    return '(TCP|%s:%d)'%self.sockname
+                    return '(TCP|%s:%d)' % self.sockname
             if self.socktype == socket.SOCK_DGRAM:
                 if self.proto == socket.IPPROTO_UDP:
-                    return '(UDP|%s:%d)'%self.sockname
+                    return '(UDP|%s:%d)' % self.sockname
         if self.af == socket.AF_INET6:
             if self.socktype == socket.SOCK_STREAM:
                 if self.proto == socket.IPPROTO_TCP:
-                    return '(TCP6|[%s]:%d %d %d)'%self.sockname
-        return '(%s)'%str( ((self.af, self.socktype, self.proto), self.sockname) )
+                    return '(TCP6|[%s]:%d %d %d)' % self.sockname
+        return '(%s)' % str(((self.af, self.socktype, self.proto),
+                             self.sockname))
+
     @property
     def socketArgs(self): return (self.af, self.socktype, self.proto)
+
     @property
     def bindArgs(self): return self.bindname,
+
     @property
     def connectArgs(self): return self.sockname,
 
@@ -190,8 +200,12 @@ class UDPv4ActorAddress(IPActorAddress):
         super(UDPv4ActorAddress, self).__init__(socket.AF_INET,
                                                 socket.SOCK_DGRAM,
                                                 socket.IPPROTO_UDP,
-                                                initialIPAddr, initialIPPort, external)
-    def __str__(self): return '(UDP|%s:%d)'%self.sockname
+                                                initialIPAddr,
+                                                initialIPPort,
+                                                external)
+
+    def __str__(self):
+        return '(UDP|%s:%d)' % self.sockname
 
 
 class TCPv4ActorAddress(IPActorAddress):
@@ -199,8 +213,12 @@ class TCPv4ActorAddress(IPActorAddress):
         super(TCPv4ActorAddress, self).__init__(socket.AF_INET,
                                                 socket.SOCK_STREAM,
                                                 socket.IPPROTO_TCP,
-                                                initialIPAddr, initialIPPort, external)
-    def __str__(self): return '(TCP|%s:%d)'%self.sockname
+                                                initialIPAddr,
+                                                initialIPPort,
+                                                external)
+
+    def __str__(self):
+        return '(TCP|%s:%d)' % self.sockname
 
 
 class TCPv6ActorAddress(IPActorAddress):
@@ -208,5 +226,9 @@ class TCPv6ActorAddress(IPActorAddress):
         super(TCPv6ActorAddress, self).__init__(socket.AF_INET6,
                                                 socket.SOCK_STREAM,
                                                 socket.IPPROTO_TCP,
-                                                initialIPAddr, initialIPPort, external)
-    def __str__(self): return '(TCP6|[%s]:%d %d %d)'%self.sockname
+                                                initialIPAddr,
+                                                initialIPPort,
+                                                external)
+
+    def __str__(self):
+        return '(TCP6|[%s]:%d %d %d)' % self.sockname
