@@ -816,6 +816,47 @@ class ActorB(Actor):
   Not all ActorSystems support multi-system communications, and those
   that do are normally of the multi-process variety.
 
+*** Convention Establishment
+
+  The ActorSystem implementation determines the manner in which
+  Conventions are established and should be consulted for details and
+  capabilities, but at the present time there are two main methods for
+  establishing a Convention:
+
+  1. Members known the Convention Leader and upon startup register
+     with the Convention Leader.  In this mode, the Convention Leader
+     operates passively and does not initiate or drive the Convention
+     membership.
+
+  2. The Convention Leader is told about members and actively attempts
+     to establish communications with those members.  This is done
+     using the [[*preRegisterRemoteSystem][preRegisterRemoteSystem()]] call.  In this mode, the
+     Convention Leader will actively connect to the remote to
+     establish or re-establish connectivity (until the membership is
+     cancelled, for example, with the [[*deRegisterRemoteSystem][deRegisterRemoteSystem()]] call).
+
+     This latter method is particularly suited to configurations using
+     the "Outbound Only" connectivity mode (see [[*multiprocTCPBase][multiprocTCPBase]] for
+     example) where the Convention Leader is behind a firewall and can
+     initiate outbound connections to members but those members cannot
+     initiate inbound connections to the Leader.
+
+*** Convention Administrator Communications
+
+The communications between the Convention Leader admin process and the
+Convention Member admin process is handled internally by Thespian.
+
+To prevent network overload in unexpected or erroneous circumstances,
+the Convention communications uses an incremental hysteresis delay on
+communications between the admin processes; this delay increases when
+there are active messages being exchanged and decreases during idle
+times.  The overall traffic between two Convention administrators is
+expected to be relatively low volume, but in unusual circumstances
+this delay may become observable.  The hysteresis delay is designed to
+protect the overall environment from failure scenarios; please contact
+the Thespian developers if this hysteresis is adversely affecting your
+utilization of Thespian.
+
 ** Logging
 
 The standard Python logging can be used with the Thespian Actor
