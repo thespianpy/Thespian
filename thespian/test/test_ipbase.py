@@ -3,7 +3,7 @@ import pytest
 from thespian.system.transport.IPBase import *
 
 
-cmpTCP = lambda a, b: thisSystem.cmpIP2Tuple(socket.AF_INET, socket.SOCK_STREAM, socket.IPPROTO_TCP, a, b)
+cmpTCP = lambda a, b: thisSystem.cmpIP2Tuple(a, b)
 
 @pytest.fixture(params=[ rslt[4][0]
                          for usage in [0, socket.AI_PASSIVE]
