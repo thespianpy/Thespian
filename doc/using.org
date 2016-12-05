@@ -459,7 +459,7 @@ described in [[*Dead Letter Handling][Dead Letter Handling]].
 
   - Actors should not block indefinitely on IO operations; while the
     Actor is running in the ~receiveMessage()~ method it is not able
-    to handle other messages, including Actor System internal
+    to handle other messages, including ActorSystem internal
     messages.  The Actor will appear to be frozen and this will result
     in PoisonMessage delivery failures to Actors attempting to
     communicate with the busy Actor.
@@ -626,10 +626,10 @@ class ActorB(Actor):
   the Actor.
 
   The initial Actor creation request with the name will create the
-  requested Actor, but the Actor System will remember the Actor
+  requested Actor, but the ActorSystem will remember the Actor
   associated with that name andall subsequent Actor creation requests
   with the same name will return the originally created Actor (see the
-  ~globalName~ parameter to the Actor System's [[*ActorSystem.createActor][createActor]] call or the
+  ~globalName~ parameter to the ActorSystem's [[*ActorSystem.createActor][createActor]] call or the
   Actor's [[*createActor][createActor]] call).
 
   It is possible to create any number of Named Actors in the system,
@@ -640,7 +640,7 @@ class ActorB(Actor):
   considered relative to their convenience:
 
    1. All Named Actors are similar to [[*Top-Level Actors][Top-Level Actors]] in that they
-      are managed by the Actor System itself rather than a Parent
+      are managed by the ActorSystem itself rather than a Parent
       Actor and therefore there is no notification when a Named Actor
       exits, and any messages sent to a Named Actor that has exited
       will be sent to the Dead Letter Handler.
@@ -834,7 +834,7 @@ This is needed because the standard Python logging is not
 multi-process safe and attempts to use it as-is will result in missing
 or duplicated log messages.
 
-In addition, the Convention Manager Actor System receives all log
+In addition, the Convention Manager ActorSystem receives all log
 messages from any conference member that is of ~WARNING~ level or above.
 
 Once the logging configuration has been specified in the
@@ -1259,7 +1259,7 @@ class MyActor(Actor):
 #+end_src
 
    This method registers the current Actor as the Source Authority
-   handler for the current Actor System as described in the [[*Security Considerations][Security Considerations]] section of the [[*loadActorSource][loadActorSource]] Actor System API
+   handler for the current ActorSystem as described in the [[*Security Considerations][Security Considerations]] section of the [[*loadActorSource][loadActorSource]] ActorSystem API
    call.  Once registered, this Actor will receive [[*ValidateSource][ValidateSource]]
    messages and be responsible for decrypting (if necessary) and
    determining authorization for loaded sources to run.
@@ -1476,23 +1476,23 @@ class MyActor(Actor):
 ** preRegisterRemoteSystem
 
    The ~preRegisterRemoteSystem()~ method is used to inform the local
-   Actor System about a remote Actor System.
+   ActorSystem about a remote ActorSystem.
 
    /This method is normally not used or needed, and should be avoided
    if possible./
 
-   Normally Actor Systems will communicate with each other and
+   Normally ActorSystems will communicate with each other and
    automatically perform discovery, and Actors themselves should not
    be aware or involved this functionality.
 
    However, there are certain transport configurations where this
    auto-discovery is not possible.  In these configurations, this
-   method can be used to initiate communications between the two Actor
-   Systems.  This method will only work for Actor System bases that
-   support Conventions (as describe in the [[*Other Actor Systems][Other Actor Systems]]
+   method can be used to initiate communications between the two
+   ActorSystems.  This method will only work for ActorSystem bases
+   that support Conventions (as describe in the [[*Other Actor Systems][Other Actor Systems]]
    section).
 
-   Because the remote Actor System and the local Actor System cannot
+   Because the remote System and the local System cannot
    perform auto-discovery, the local system also assumes
    responsibility for actively initiating convention membership checks
    of the pre-registered remote system.  These pre-registration checks
@@ -1508,8 +1508,8 @@ class MyActor(Actor):
 
    The ~remoteSystemAddress~ parameter is not a true Actor Address: it
    specifies the remote system address in string format in a syntax
-   that will be interpreted by the local Actor System.  If the
-   specified string is not recognizeable by the local Actor System, no
+   that will be interpreted by the local ActorSystem.  If the
+   specified string is not recognizeable by the local ActorSystem, no
    Convention membership will be added.  For example, the
    multiprocTCPBase and multiprocUDPBase system bases can recognize
    "ipaddr:port" formats.
@@ -1526,13 +1526,13 @@ class MyActor(Actor):
    counterpart to the ~preRegisterRemoteSystem()~ method and has all
    the same warnings and caveats that apply to the latter.
 
-   If the remote Actor System is still running and communicating with
-   the local Actor System then it will automatically re-register
+   If the remote ActorSystem is still running and communicating with
+   the local ActorSystem then it will automatically re-register
    itself despite having been de-registered by this method.
 
-   If there is no remote Actor System registered for the specified
+   If there is no remote ActorSystem registered for the specified
    address, or if the address cannot be successfully recognized by the
-   local Actor System, this method will simply return with no effect.
+   local ActorSystem, this method will simply return with no effect.
 
 #+begin_src python
      self.preRegisterRemoteSystem(remoteSystemAddress)
@@ -1548,7 +1548,7 @@ class MyActor(Actor):
 ** actorSystemShutdown
 
    The ~actorSystemShutdown()~ method can be called by an actor to
-   shutdown the *entire* local Actor System, including all Actors
+   shutdown the *entire* local ActorSystem, including all Actors
    currently running under that system.  This method should not
    normally be needed and is intended only for situations where the
    local running system is being deactivated.
@@ -1891,8 +1891,8 @@ actorSys = ActorSystem(systemBase = None,
     actorSys.shutdown()
 #+END_SRC
 
-    The ~shutdown()~ ActorSystem method is used to terminate an Actor
-    System and all Actors running in that system.  If issued to a
+    The ~shutdown()~ ActorSystem method is used to terminate an
+    ActorSystem and all Actors running in that system.  If issued to a
     ActorSystem that is part of a multi-system Convention that
     ActorSystem is shutdown and the other Convention members are
     notified (but they continue to exist).
@@ -1965,8 +1965,8 @@ actorSys = ActorSystem(systemBase = None,
        source for that ~actorClass~, then the latter will be used to
        instantiate the new Actor.
      * The source specified by the hash must have been loaded into the
-       current Actor System, or previously have been obtained from a
-       remote Actor System; this operation will *not* cause a query of
+       current ActorSystem, or previously have been obtained from a
+       remote ActorSystem; this operation will *not* cause a query of
        remote actor systems to locate the source if the Actor cannot
        be found locally (the behavior of a ~createActor()~
        call made by an Actor itself may be different).
@@ -2213,7 +2213,7 @@ actorSys = ActorSystem(systemBase = None,
   utilized by the local ActorSystem.
 
   There can be only one Source Authority Actor registered with an
-  Actor System at any one time.  Any Actor can register itself as the
+  ActorSystem at any one time.  Any Actor can register itself as the
   new Source Authority; it is assumed that the previous authorization
   of that Actor validated that it is allowed to run in the system and
   therefore assume Source Authority responsibilities.  Note that in
@@ -2222,7 +2222,7 @@ actorSys = ActorSystem(systemBase = None,
   repeated as indicated by the level of paranoia to further obfuscate
   the manner in which the Source Authority is established.
 
-  By default, at Actor System startup time, there is no Source
+  By default, at ActorSystem startup time, there is no Source
   Authority.  When there is no Source Authority, any
   ~loadActorSource()~ input is ignored.  This ensures that all
   Thespian systems are secure by default.  For debugging and simple
@@ -2245,13 +2245,13 @@ class SimpleSourceAuthority(ActorTypeDispatcher):
 
 **** Multi-System Source Authorization
 
-  The Source Authority registration is unique to an Actor System.
-  Different Actor Systems in a [[*Multiple Systems][Multiple Systems]] configuration can each
+  The Source Authority registration is unique to an ActorSystem.
+  Different ActorSystems in a [[*Multiple Systems][Multiple Systems]] configuration can each
   have a separate Source Authority that may perform different
   authorization techniques.  However, as described in [[*Actor Code Distribution][Actor Code
-  Distribution]], Actor Systems joined together in a Convention can
+  Distribution]], ActorSystems joined together in a Convention can
   exchange sources on demand to satisfy Actor creation requests.
-  sources exchanged between Actor Systems in this manner are not
+  sources exchanged between ActorSystems in this manner are not
   subject to further *validation* after the initial load on the
   original system (although the local ActorSystem can choose the level
   of sharing it wishes to perform; see the *AllowRemoteActorSources*
@@ -2494,7 +2494,7 @@ class SimpleSourceAuthority(ActorTypeDispatcher):
    sent via the ~ValidateSource~ message.  By sending this message
    back to the sender, the Source Authority Actor is indicating that
    the associated contents are valid for running within the current
-   ActorSystem environment (and any other Actor Systems that are part
+   ActorSystem environment (and any other ActorSystems that are part
    of the Convention).
 
    Only compiled objects are returned (with ~.pyc~ or ~.pyo~
@@ -2591,10 +2591,10 @@ class SimpleSourceAuthority(ActorTypeDispatcher):
 
 One of the convenient aspects of an Actor architecture is that the
 Actors themselves are insulated from and agnostic to any particular
-transport type: the Actor System provides the message delivery and
+transport type: the ActorSystem provides the message delivery and
 underlying Actor support functionality.
 
-  * The implementation of the Actor System can be changed or
+  * The implementation of the ActorSystem can be changed or
     redesigned without the Actors themselves needing to change.
 
   * Different implementations can be chosen for different circumstances
@@ -2605,19 +2605,19 @@ The Actors themselves interact with the ActorSystem via the normal
 the Actor.
 
 The external environment can interact with the Actors by making
-requests via the ActorSystem object itself.  In addition, the Actor
-System must be initially created to provide an environment for all
-Actors that are subsequently run within that Actor System; this
+requests via the ActorSystem object itself.  In addition, the
+ActorSystem must be initially created to provide an environment for
+all Actors that are subsequently run within that ActorSystem; this
 creation is the responsibility of code in this external environment.
-When external code calls the ~ActorSystem()~ constructor, an Actor
-System is started if one is not already running.
+When external code calls the ~ActorSystem()~ constructor, an
+ActorSystem is started if one is not already running.
 
 An argument may be passed to the [[*ActorSystem][ActorSystem]] constructor to specify
-the systemBase (a.k.a Actor System implementation) that should be used
-for starting the Actor System if one is not already running; if an
-Actor System is already running, this argument is ignored.  If no
-argument is specified and no Actor System is running, the default
-[[*simpleSystemBase][simpleSystemBase]] Actor System will be started.
+the systemBase (a.k.a ActorSystem implementation) that should be used
+for starting the ActorSystem if one is not already running; if an
+ActorSystem is already running, this argument is ignored.  If no
+argument is specified and no ActorSystem is running, the default
+[[*simpleSystemBase][simpleSystemBase]] ActorSystem will be started.
 
 The following table provides a summary of the different bases; more
 details are available in each section:
@@ -2691,7 +2691,7 @@ ActorSystems:
 
   * *AllowRemoteActorSources* :: This capability specifies whether or
        not this ActorSystem will accept sources loaded via remote
-       Actor Systems as described in the [[*Actor Code Distribution][Actor Code Distribution]]
+       ActorSystems as described in the [[*Actor Code Distribution][Actor Code Distribution]]
        section.  Valid values for this capability are:
 
          - *Yes* :: Any Actor Source validated by a Source Authority
@@ -2705,9 +2705,9 @@ ActorSystems:
 
        Any unrecognized value will be treated as *No* and will
        disallow sources loaded on remote systems to be used in the
-       current Actor System.  If this capability is not specified, the
+       current ActorSystem.  If this capability is not specified, the
        default is *Yes* which will accept sources loaded on any of the
-       remote Actor Systems that are part of the Convention.
+       remote ActorSystems that are part of the Convention.
 
 ** simpleSystemBase
 
@@ -2760,14 +2760,14 @@ for a truly asynchronous system.  The default Actor communication
 method is by utilizing multiprocess Queue objects.  The Actors are
 constrained to the current system, which is unique to the starting
 process. There is no inter-system communications possible, nor sharing
-of the Actor System with processes that are siblings of the starting
+of the ActorSystem with processes that are siblings of the starting
 process (i.e. not started by the ActorSystem itself).
 
 The multiprocQueueBase System Base is used between all processes
 that were created from the original creation of the SystemBase, but a
 new SystemBase is created by each initiating process and the Queues
 are unique between the different SystemBase elements.  The lifetime of
-the Actor System is limited to the lifetime of the process that
+the ActorSystem is limited to the lifetime of the process that
 created it.
 
 The multiprocQueueBase uses Python's multiprocess Queue objects, but
@@ -2810,7 +2810,7 @@ method is by utilizing TCP socket connections.
 
 The multiprocTCP SystemBase is shared between all processes that
 utilize the same Administrator coordinates, and can be used for
-inter-system communications.  The lifetime of the Actor System exceeds
+inter-system communications.  The lifetime of the ActorSystem exceeds
 that of the process that started it and persists until an explicit
 shutdown.
 
@@ -2848,18 +2848,18 @@ The multiprocTCPBase uses the following [[*ActorSystem Capabilities][ActorSystem
        the *Admin Port* setting.
 
   * *Admin Routing* :: if this capability is present and has a true
-       value, this indicates that all Actors in remote Actor Systems
+       value, this indicates that all Actors in remote ActorSystems
        must send all messages to local Actors through the Admin.  This
-       is commonly used where the Actor System is running on a host
+       is commonly used where the ActorSystem is running on a host
        node that has a firewall that only allows the Admin Port to
        have network ingress permissions.  
 
        Note that this capability has no effect on the way in which the
        Actors themselves are implemented; it only changes the way that
-       the Actor System routes messages.
+       the ActorSystem routes messages.
 
   * *Outbound Only* :: if this capability is present and has a true
-       value then it means that this Actor System (and all of the
+       value then it means that this ActorSystem (and all of the
        Actors within it) can only initiate outbound connections.
        Inbound connections are not supported.
 
@@ -2913,7 +2913,7 @@ method is by utilizing UDP messages.
 
 The multiprocUDP SystemBase is shared between all processes that
 utilize the same Administrator coordinates, and can be used for
-inter-system communications.  The lifetime of the Actor System
+inter-system communications.  The lifetime of the ActorSystem
 exceeds that of the process that started it and persists until an
 explicit shutdown.
 
