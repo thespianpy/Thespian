@@ -355,7 +355,8 @@ class ActorManager(systemCommonBase):
                                     self._actorClass,
                                     self._adminAddr,
                                     self._parentAddr,
-                                    self._sourceHash)
+                                    self._sourceHash,
+                                    getattr(self, '_exiting', None))
         self._updateStatusResponse(resp)
         return resp
 

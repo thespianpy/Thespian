@@ -74,13 +74,14 @@ class Thespian_SystemStatus(_Common_StatusResp):
 # Likewise the management of each Actor should support the following diagnostics
 
 class Thespian_ActorStatus(_Common_StatusResp):
-    def __init__(self, address, actorClass, adminAddress, parentAddress=None, sourceHash=None):
+    def __init__(self, address, actorClass, adminAddress, parentAddress=None, sourceHash=None, exiting=None):
         super(Thespian_ActorStatus, self).__init__()
         self.actorAddress    = address
         self.actorClass      = str(actorClass)
         self.adminAddress    = adminAddress
         self.parentAddress   = parentAddress
         self.sourceHash      = sourceHash
+        self.exiting         = exiting
 
 
 
@@ -151,8 +152,12 @@ def formatStatus(response, showAddress=str, tofd=None):
         for N in response.globalActors:
             tofd.write('    %s: %s\n'%(N, showAddress(response.globalActors[N])))
     elif isinstance(response, Thespian_ActorStatus):
-        tofd.write('Status of %s Actor @ %s:\n'%(response.actorClass,
-                                                 showAddress(response.actorAddress)))
+        tofd.write('Status of %s Actor @ %s%s:\n' %
+                   (response.actorClass,
+                    showAddress(response.actorAddress),
+                    (' EXITING:%s' % response.exiting)
+                    if getattr(response, 'exiting', None) is not None else ''
+                   ))
         if response.sourceHash:
             tofd.write('  |Source Hash: %s\n'%(response.sourceHash))
         tofd.write('  |Administrator: %s\n'%(showAddress(response.adminAddress)))
