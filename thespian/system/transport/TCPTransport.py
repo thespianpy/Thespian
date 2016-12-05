@@ -464,6 +464,22 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
         # timeout naturally.
         super(TCPTransport, self).deadAddress(addressManager, childAddr)
 
+    def close_oldest_idle_sockets(self, num_to_close=1):
+        aged_keys = sorted([(self._openSockets[K].validity, K)
+                            for K in self._openSockets])
+        for _,oldkey in aged_keys[:num_to_close]:
+            _safeSocketShutdown(self._openSockets.pop(oldkey))
+
+    def new_socket(self, op, *args, **kw):
+        try:
+            return op(*args, **kw)
+        except IOError as ex:
+            if err_too_many_open_sockets(ex):
+                pass
+            else:
+                raise
+        self.close_oldest_idle_sockets(3)
+        return op(*args, **kw)
 
     _XMITStepSendConnect   = 1
     _XMITStepSendData      = 2
@@ -542,8 +558,9 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
         # select.select loop.  This is especially useful if a signal
         # handler caused a message to be sent to myself: get the
         # select loop to wakeup and process the message.
-        with closing(socket.socket(*self.myAddress
-                                   .addressDetails.socketArgs)) as ts:
+        with closing(self.new_socket(
+                socket.socket,
+                *self.myAddress.addressDetails.socketArgs)) as ts:
             try:
                 ts.connect(*self.myAddress.addressDetails.connectArgs)
             except Exception:
@@ -741,8 +758,9 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
             intent.backoffPause(True)  # KWQ... not really
             intent.stage = self._XMITStepRetry
             return self._nextTransmitStep(intent)
-        intent.socket = socket.socket(*intent.targetAddr
-                                             .addressDetails.socketArgs)
+        intent.socket = self.new_socket(
+            socket.socket,
+            *intent.targetAddr .addressDetails.socketArgs)
         intent.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         intent.socket.setblocking(0)
         # Disable Nagle to transmit headers and acks asap; our sends
@@ -1204,7 +1222,7 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
     def _acceptNewIncoming(self):
         accepted = False
         try:
-            lsock, rmtTxAddr = self.socket.accept()
+            lsock, rmtTxAddr = self.new_socket(self.socket.accept)
             accepted = True
         except (OSError, socket.error) as ex:
             thesplog('Error accepting incoming: %s', ex)

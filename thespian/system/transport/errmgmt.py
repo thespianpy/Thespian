@@ -43,6 +43,10 @@ def err_bad_fileno(err):
     return err == errno.EBADF
 
 
+def err_too_many_open_sockets(errex):
+    return errex.errno == errno.EMFILE
+
+
 try:
     # Access these to see if the exist
     errno.WSAEINVAL
