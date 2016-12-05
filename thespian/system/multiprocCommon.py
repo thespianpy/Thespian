@@ -174,7 +174,8 @@ def startAdmin(adminClass, addrOfStarter, endpointPrep, transportClass,
     # Send of EndpointConnected is deferred until the logger is setup.  See MultiProcReplicator.h_LoggerConnected below.
 
     admin.addrOfStarter = addrOfStarter
-    setProcName(adminClass.__name__, admin.transport.myAddress)
+    setProcName(adminClass.__name__.rpartition('.')[-1],
+                admin.transport.myAddress)
 
     # Admin does not do normal signal handling, but does want to know if children exit
     for each in range(1, signal.NSIG):
@@ -525,7 +526,9 @@ def startChild(childClass, endpoint, transportClass,
     am.transport.scheduleTransmit(None,
                                   TransmitIntent(notifyAddr,
                                                  EndpointConnected(endpoint.addrInst)))
-    setProcName(getattr(childClass, '__name__', str(childClass)), am.transport.myAddress)
+    setProcName(getattr(childClass, '__name__',
+                        str(childClass)).rpartition('.')[-1],
+                am.transport.myAddress)
 
     sighandler = signal_detector(getattr(childClass, '__name__', str(childClass)),
                                  am.transport.myAddress, am)
