@@ -276,6 +276,7 @@ class LocalConventionState(object):
         # should respond.
         #if self.isConventionLeader() or prereg or regmsg.firstTime:
         if prereg:
+            rmsgs.append(HysteresisCancel(registrant))
             rmsgs.append(TransmitIntent(registrant, ConventionInvite()))
         elif (self.isConventionLeader() or prereg or regmsg.firstTime or \
            (existing and existing.permanentEntry)):

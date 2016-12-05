@@ -181,6 +181,7 @@ convention.
   | Sequence       | External or Notifyee  | Leader                              | Remote                            |
   |----------------+-----------------------+-------------------------------------+-----------------------------------|
   | S2A  normal    | ConvReg(prereg) -->   | add rmt / prereg-only               |                                   |
+  |                |                       | HysteresisCancel                    |                                   |
   | .1 ->          |                       | ConvInvite -->                      |                                   |
   |                |                       |                                     | add/update leader                 |
   | .2 ->          |                       |                                     | <-- ConvReg                       |
@@ -193,7 +194,8 @@ convention.
   |                |                       |                                     | upd leader info                   |
   |----------------+-----------------------+-------------------------------------+-----------------------------------|
   | S2B            | ConvReg(prereg) -->   | add rmt / prereg-only               |                                   |
-  | .2 ->          |                       | ConvInvite -->                      |                                   |
+  |                |                       | HysteresisCancel                    |                                   |
+  |                |                       | ConvInvite -->                      |                                   |
   | never joins    |                       | :                                   |                                   |
   |                |                       | ConvInvite -->                      |                                   |
   |                |                       | :                                   |                                   |
