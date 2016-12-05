@@ -196,7 +196,7 @@ class TransmitIntent(PauseWithBackoff):
     def completionCallback(self):
         "This is called by the transport to perform the success or failure callback operation."
         if not self.result:
-            thesplog('completion error: %s', str(self), level=logging.INFO)
+            thesplog('completion error: %s', str(self), level=logging.ERROR)
         self._callbackTo.resultCallback(self.result, self)
 
     def addCallback(self, onSuccess=None, onFailure=None):
