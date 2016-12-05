@@ -49,7 +49,6 @@ class AddTen(Actor):
         self.adders = None
     def receiveMessage(self, msg, sender):
         if not self.adders:
-            # n.b. would prefer to do this initialization in __init__, but that's not supported ATM.  - KWQ 2013.10.30
             # Create 10 AddOne Actors
             self.adders = [ self.createActor(AddOne) for x in range(10) ]
         if isinstance(msg, type((1,2))):
