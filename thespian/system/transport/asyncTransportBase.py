@@ -67,10 +67,16 @@ class asyncTransportBase(object):
         self._aTB_lock = threading.Lock()  # protects the following:
         self._aTB_processing = False       # limits to a single operation
         self._aTB_queuedPendingTransmits = deque()
+        self._aTB_rx_pause_enabled = True
 
 
     def setAddressManager(self, addrManager):
         self._addressMgr = addrManager
+
+
+    def enableRXPauseFlowControl(self, enable=True):
+        self._aTB_rx_pause_enabled = enable
+
 
     def _updateStatusResponse(self, resp):
         """Called to update a Thespian_SystemStatus or Thespian_ActorStatus
@@ -214,7 +220,7 @@ class asyncTransportBase(object):
 
     def _drain_tx_queue_if_needed(self, max_delay=None):
         v, _ = self._complete_expired_intents()
-        if v >= MAX_QUEUED_TRANSMITS:
+        if v >= MAX_QUEUED_TRANSMITS and self._aTB_rx_pause_enabled:
             # Try to drain our local work before accepting more
             # because it looks like we're getting really behind.  This
             # is dangerous though, because if other Actors are having

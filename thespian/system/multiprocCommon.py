@@ -192,6 +192,12 @@ def startAdmin(adminClass, addrOfStarter, endpointPrep, transportClass,
     _startLogger(transportClass, transport, admin, capabilities, logDefs,
                  concurrency_context)
     #closeUnusedFiles(transport)
+
+    # Admin should never enter TX-only flow control state because this
+    # could deadlock or other non-progress conditions, especially if
+    # using admin routing.
+    transport.enableRXPauseFlowControl(False)
+
     admin.run()
 
 
