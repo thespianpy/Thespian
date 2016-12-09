@@ -261,11 +261,7 @@ class RoutedTCPv4ActorAddress(TCPv4ActorAddress):
     def __init__(self, anIPAddr, anIPPort, adminAddr, txOnly, external=False):
         super(RoutedTCPv4ActorAddress, self).__init__(anIPAddr, anIPPort,
                                                       external=external)
-        if hasattr(adminAddr, 'addressDetails') and \
-           self == adminAddr.addressDetails:
-            self.routing = []
-        else:
-            self.routing = [None, adminAddr] if txOnly else [adminAddr]
+        self.routing = [None, adminAddr] if txOnly else [adminAddr]
 
     def _str_suffix(self):
         return '~' + '~'.join(['A' if A is None else
