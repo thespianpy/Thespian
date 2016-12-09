@@ -1,4 +1,4 @@
-# Example actors, similar to those describe in the
+# Example actors, similar to those described in the
 # "In Depth Introduction to Thespian" document.
 #
 # Run this from the top level as:
