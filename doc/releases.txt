@@ -11,6 +11,7 @@ Table of Contents
 
 3.x
 .. 3.5
+..... 3.5.1 <2016-12-08 Thu>
 ..... 3.5.0 <2016-12-04 Sun>
 .. 3.4
 ..... 3.4.0 <2016-11-07 Mon>
@@ -77,6 +78,18 @@ not change the API.
 
 3.5
 ───
+
+3.5.1 <2016-12-08 Thu>
+╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+
+  ‣ Rollback of Admin routing address creation optimization: loses
+    important information needed when passing the address to remote
+    convention members.
+
+  ‣ Ensure local Admin always receives packets, even under high backlog
+    conditions where normal actors will enter TX only mode to drain the
+    outbound message queues.
+
 
 3.5.0 <2016-12-04 Sun>
 ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
