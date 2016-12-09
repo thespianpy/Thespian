@@ -7,7 +7,7 @@
 #+LATEX_HEADER: \product{Thespian}
 #+LATEX_HEADER: \component{Python Actor System}
 #+LATEX_HEADER: \doctype{Release Notes}
-#+LATEX_HEADER: \docrev{3.5.0}{2016 Dec 04}
+#+LATEX_HEADER: \docrev{3.5.1}{2016 Dec 08}
 #+LATEX_HEADER: \docid{TheDoc-06}
 #+OPTIONS: ^:nil num:nil
 
@@ -19,6 +19,16 @@ do not change the API.
 * 3.x
 
 ** 3.5
+
+*** 3.5.1 <2016-12-08 Thu>
+
+  * Rollback of Admin routing address creation optimization: loses
+    important information needed when passing the address to remote
+    convention members.
+
+  * Ensure local Admin always receives packets, even under high
+    backlog conditions where normal actors will enter TX only mode to
+    drain the outbound message queues.
 
 
 *** 3.5.0 <2016-12-04 Sun>
