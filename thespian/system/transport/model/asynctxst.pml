@@ -17,6 +17,7 @@ typedef TXIntent {
 int numPendingTransmits;
 bit lock;
 bit processing;
+bit has_interrupted;
 chan pending = [5] of {TXIntent}; /* _aTB_queuedPendingTransmits */
 
 inline canSendNow (result)
@@ -129,7 +130,8 @@ proctype asyncTX(chan tx_in; chan select_chan; chan res; bit is_main_thread)
         /* _schedulePreparedIntent */
         bit csn, excl;
         if
-        :: tx.internal_update -> skip
+        :: tx.internal_update ->
+              has_interrupted = false;
         :: ! tx.internal_update ->
               get_lock();
               pending ! tx;
@@ -159,8 +161,10 @@ proctype asyncTX(chan tx_in; chan select_chan; chan res; bit is_main_thread)
               :: !r ->
                     if
                     :: is_main_thread -> skip;
-                    :: ! is_main_thread ->
+                    :: has_interrupted -> skip
+                    :: ! is_main_thread && ! has_interrupted ->
                           printf("Tell main to grab work\n");
+                          has_interrupted = true;
                           interrupt_wait(select_chan);
                     fi
                     break;
@@ -226,6 +230,7 @@ init
     numPendingTransmits = 0;
     lock = false;
     processing = false;
+    has_interrupted = false;
   }
   run actor()
 }

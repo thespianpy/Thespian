@@ -67,6 +67,7 @@ class asyncTransportBase(object):
         self._aTB_processing = False       # limits to a single operation
         self._aTB_queuedPendingTransmits = deque()
         self._aTB_rx_pause_enabled = True
+        self._aTB_interrupted = False
 
 
     def setAddressManager(self, addrManager):
@@ -250,6 +251,8 @@ class asyncTransportBase(object):
             if not self._queue_tx(transmitIntent):
                 # TX overflow, intent discarded, no further work needed here
                 return
+        else:
+            self._aTB_interrupted = False
 
         if not self._canSendNow():
             if self._exclusively_processing():
@@ -262,7 +265,8 @@ class asyncTransportBase(object):
                 # is waiting for input on select() that it is
                 # awakened in case it needs to monitor new
                 # transmit sockets.
-                if not is_main_thread():
+                if not is_main_thread() and not self._aTB_interrupted:
+                    self._aTB_interrupted = True
                     self.interrupt_wait()
                 break
 
