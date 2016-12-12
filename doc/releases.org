@@ -7,7 +7,7 @@
 #+LATEX_HEADER: \product{Thespian}
 #+LATEX_HEADER: \component{Python Actor System}
 #+LATEX_HEADER: \doctype{Release Notes}
-#+LATEX_HEADER: \docrev{3.5.1}{2016 Dec 08}
+#+LATEX_HEADER: \docrev{3.5.2}{2016 Dec 12}
 #+LATEX_HEADER: \docid{TheDoc-06}
 #+OPTIONS: ^:nil num:nil
 
@@ -19,6 +19,14 @@ do not change the API.
 * 3.x
 
 ** 3.5
+
+*** 3.5.2 <2016-12-12 Mon>
+
+  * Slow down hysteresis backoff rate for inter-system admin messages.
+
+  * Updates to asynchronous transmit management for better
+    multi-threading support, and addition of Spin/Promela models for
+    validation of this behavior.
 
 *** 3.5.1 <2016-12-08 Thu>
 
