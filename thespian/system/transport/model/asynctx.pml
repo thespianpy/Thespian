@@ -80,7 +80,8 @@ inline runQueued (result, donechan, p_mainthread)
               pending ? nextTX;
               processing = false;
               lock = 0;
-              numPendingTransmits = numPendingTransmits + 1;
+              numPendingTransmits++;
+              printf("TX\n")
               run submitTransmit(nextTX, donechan, p_mainthread);
               result = true;
         fi;
@@ -90,11 +91,13 @@ inline runQueued (result, donechan, p_mainthread)
 proctype submitTransmit(TXIntent tx; chan donechan; bit p_main)
 {
   /* Transmit activity occurs here */
-  numPendingTransmits = numPendingTransmits - 1;
+  printf("TX done\n");
+  numPendingTransmits--;
   if
   :: running_tx_queued -> skip;
-  :: ! p_main -> skip;
-  :: p_main && ! running_tx_queued ->
+  // :: ! p_main -> skip;
+  // :: p_main && ! running_tx_queued ->
+  :: ! running_tx_queued ->
         running_tx_queued = true;
         bit dcsn, dr;
         canSendNow(dcsn);
@@ -138,33 +141,39 @@ proctype asyncTX(chan tx_in; chan select_chan; chan res; bit is_main_thread)
               lock = 0;
         fi
         canSendNow(csn);
-        do
-        :: csn ->
-              bit r;
-              do
-              :: true ->
-                    runQueued(r, res, is_main_thread);
-                    if
-                    :: r -> skip;
-                    :: !r ->
-                          if
-                          :: is_main_thread -> skip;
-                          :: ! is_main_thread ->
-                                interrupt_wait(select_chan);
-                          fi
-                          break;
-                    fi;
-                    canSendNow(csn);
-              od;
+        if
         :: !csn ->
+              printf("Blocked\n");
               exclusively_processing(excl);
               if
               :: excl -> /* run drain_if_needed(delay); */
+                         printf("Draining\n");
                          processing = false;
               :: !excl -> skip
               fi
-              break;
+        :: csn -> skip;
+        fi
+        printf("Sending all\n");
+        canSendNow(csn);
+        do
+        :: csn ->
+              bit r;
+              runQueued(r, res, is_main_thread);
+              if
+              :: r -> skip;
+              :: !r ->
+                    if
+                    :: is_main_thread -> skip;
+                    :: ! is_main_thread ->
+                          printf("Tell main to grab work\n");
+                          interrupt_wait(select_chan);
+                    fi
+                    break;
+              fi;
+              canSendNow(csn);
+        :: !csn -> break;
         od;
+        printf("MSC: Waiting for more TX\n");
 end_idle_select:       tx_in ? tx;  /* select waits for new stuff */
   od;
 }
@@ -173,9 +182,9 @@ end_idle_select:       tx_in ? tx;  /* select waits for new stuff */
 proctype actor()
 {
   chan result = [10] of { TXIntent };
-  chan main_thread_tx = [1] of { TXIntent };
-  chan thrd1_tx = [1] of { TXIntent };
-  chan thrd2_tx = [1] of { TXIntent };
+  chan main_thread_tx = [5] of { TXIntent };
+  chan thrd1_tx = [5] of { TXIntent };
+  chan thrd2_tx = [5] of { TXIntent };
   TXIntent t1, t2, t3, t4, t5, t6, t;
   d_step {
     t1.done = false; t1.internal_update = false;
@@ -213,6 +222,7 @@ proctype actor()
 
   result ? t;
   t.done == true;
+
 
   empty(pending);  // No more pending work
   empty(main_thread_tx);  // No more work in progress, including interrupt waits

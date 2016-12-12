@@ -102,7 +102,7 @@ class asyncTransportBase(object):
         # also represents recursion.  All those entry points will
         # re-check for additional work and initiated the work at that
         # point.
-        if is_main_thread() and not self._aTB_running_tx_queued:
+        if not self._aTB_running_tx_queued:
             self._aTB_running_tx_queued = True
             try:
                 # If _canSendNow does not ensure self._aTB_processing
@@ -258,6 +258,11 @@ class asyncTransportBase(object):
                 # TX overflow, intent discarded, no further work needed here
                 return
 
+        if not self._canSendNow():
+            if self._exclusively_processing():
+                self._drain_tx_queue_if_needed(transmitIntent.delay())
+                self._aTB_processing = False
+
         while self._canSendNow():
             if not self._runQueued():
                 # Before exiting, ensure that if the main thread
@@ -267,10 +272,6 @@ class asyncTransportBase(object):
                 if not is_main_thread():
                     self.interrupt_wait()
                 break
-        else:
-            if self._exclusively_processing():
-                self._drain_tx_queue_if_needed(transmitIntent.delay())
-                self._aTB_processing = False
 
 
     def _submitTransmit(self, transmitIntent):
