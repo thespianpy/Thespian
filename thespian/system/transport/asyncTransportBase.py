@@ -63,7 +63,6 @@ class asyncTransportBase(object):
     def __init__(self, *args, **kw):
         super(asyncTransportBase, self).__init__(*args, **kw)
         self._aTB_numPendingTransmits = 0  # counts recursion and in-progress
-        self._aTB_running_tx_queued = False  # True when processing TX callbacks; prevents recursion
         self._aTB_lock = threading.Lock()  # protects the following:
         self._aTB_processing = False       # limits to a single operation
         self._aTB_queuedPendingTransmits = deque()
@@ -102,16 +101,9 @@ class asyncTransportBase(object):
         # also represents recursion.  All those entry points will
         # re-check for additional work and initiated the work at that
         # point.
-        if not self._aTB_running_tx_queued:
-            self._aTB_running_tx_queued = True
-            try:
-                # If _canSendNow does not ensure self._aTB_processing
-                # is not set, that will need to be added here.
-                while self._canSendNow():
-                    if not self._runQueued():
-                        break
-            finally:
-                self._aTB_running_tx_queued = False
+        while self._canSendNow():
+            if not self._runQueued():
+                break
 
     def _runQueued(self):
         v, e = self._complete_expired_intents()
@@ -126,11 +118,12 @@ class asyncTransportBase(object):
             try:
                 nextTransmit = self._aTB_queuedPendingTransmits.popleft()
             except IndexError:
-                nextTransmit = None
+                self._aTB_processing = False
+                return False
+        self._submitTransmit(nextTransmit)
+        with self._aTB_lock:
             self._aTB_processing = False
-        if nextTransmit:
-            self._submitTransmit(nextTransmit)
-        return bool(nextTransmit)
+        return True
 
     def scheduleTransmit(self, addressManager, transmitIntent):
 

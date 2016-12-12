@@ -1,5 +1,4 @@
-/* This model validates the transmit functionality when there are
- * multiple threads in the current actor transmitting.
+/* This model is similar to asynctx but it models a single-threaded actor.
  *
  * $ spin asynctx.pml
  * $ spin -a asynctx.pml
@@ -19,7 +18,6 @@ int numPendingTransmits;
 bit lock;
 bit processing;
 chan pending = [5] of {TXIntent}; /* _aTB_queuedPendingTransmits */
-int active_tx_pid;
 
 inline canSendNow (result)
 {
@@ -84,16 +82,9 @@ inline runQueued (result, donechan, p_mainthread)
               lock = 0;
               numPendingTransmits++;
               printf("TX\n")
-              d_step {
-                assert(active_tx_pid == 0 || active_tx_pid == _pid);
-                active_tx_pid = _pid;
-              }
               run submitTransmit(nextTX, donechan, p_mainthread);
               get_lock();
-              d_step {
-                active_tx_pid = 0;
-                processing = false;
-              }
+              processing = false;
               lock = 0;
               result = true;
         fi;
@@ -187,8 +178,6 @@ proctype actor()
 {
   chan result = [10] of { TXIntent };
   chan main_thread_tx = [5] of { TXIntent };
-  chan thrd1_tx = [5] of { TXIntent };
-  chan thrd2_tx = [5] of { TXIntent };
   TXIntent t1, t2, t3, t4, t5, t6, t;
   d_step {
     t1.done = false; t1.internal_update = false;
@@ -199,15 +188,13 @@ proctype actor()
   };
 
   run asyncTX(main_thread_tx, main_thread_tx, result, true);
-  run asyncTX(thrd1_tx, main_thread_tx, result, false);
-  run asyncTX(thrd2_tx, main_thread_tx, result, false);
 
   main_thread_tx ! t1;
-  thrd1_tx ! t2;
-  thrd2_tx ! t3;
-  thrd2_tx ! t4;
-  thrd2_tx ! t5;
-  thrd2_tx ! t6;
+  main_thread_tx ! t2;
+  main_thread_tx ! t3;
+  main_thread_tx ! t4;
+  main_thread_tx ! t5;
+  main_thread_tx ! t6;
 
   result ? t;
   t.done == true;
@@ -239,7 +226,6 @@ init
     numPendingTransmits = 0;
     lock = false;
     processing = false;
-    active_tx_pid = 0;
   }
   run actor()
 }
