@@ -11,6 +11,7 @@ Table of Contents
 
 3.x
 .. 3.5
+..... 3.5.2 <2016-12-12 Mon>
 ..... 3.5.1 <2016-12-08 Thu>
 ..... 3.5.0 <2016-12-04 Sun>
 .. 3.4
@@ -78,6 +79,16 @@ not change the API.
 
 3.5
 ───
+
+3.5.2 <2016-12-12 Mon>
+╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+
+  ‣ Slow down hysteresis backoff rate for inter-system admin messages.
+
+  ‣ Updates to asynchronous transmit management for better
+    multi-threading support, and addition of Spin/Promela models for
+    validation of this behavior.
+
 
 3.5.1 <2016-12-08 Thu>
 ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
