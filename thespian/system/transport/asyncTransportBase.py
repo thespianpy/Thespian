@@ -90,8 +90,7 @@ class asyncTransportBase(object):
 
 
     def _canSendNow(self):
-        return (MAX_PENDING_TRANSMITS > self._aTB_numPendingTransmits and
-                not self._aTB_processing)
+        return (MAX_PENDING_TRANSMITS > self._aTB_numPendingTransmits)
 
     def _async_txdone(self, _TXresult, _TXIntent):
         self._aTB_numPendingTransmits -= 1
@@ -103,7 +102,7 @@ class asyncTransportBase(object):
         # also represents recursion.  All those entry points will
         # re-check for additional work and initiated the work at that
         # point.
-        if not self._aTB_running_tx_queued:
+        if is_main_thread() and not self._aTB_running_tx_queued:
             self._aTB_running_tx_queued = True
             try:
                 # If _canSendNow does not ensure self._aTB_processing
@@ -119,12 +118,19 @@ class asyncTransportBase(object):
         while e:
             v, e = self._complete_expired_intents()
         # If something is queued, submit it to the lower level for transmission
-        if not v:
-            return False  # nothing queued up to be transmitted
         with self._aTB_lock:
-            nextTransmit = self._aTB_queuedPendingTransmits.popleft()
-        self._submitTransmit(nextTransmit)
-        return True
+            if self._aTB_processing:
+                # Some other thread is processing TX
+                return False
+            self._aTB_processing = True
+            try:
+                nextTransmit = self._aTB_queuedPendingTransmits.popleft()
+            except IndexError:
+                nextTransmit = None
+            self._aTB_processing = False
+        if nextTransmit:
+            self._submitTransmit(nextTransmit)
+        return bool(nextTransmit)
 
     def scheduleTransmit(self, addressManager, transmitIntent):
 
@@ -211,13 +217,6 @@ class asyncTransportBase(object):
             each.tx_done(SendStatus.Failed)
         return rlen, bool(expiredTX)
 
-    def _check_tx_queue_length(self):
-        while self._complete_expired_intents():
-            pass
-        with self._aTB_lock:
-            validTX, expiredTX = partition(lambda i: i.expired(),
-                                           self._aTB_queuedPendingTransmits)
-
     def _drain_tx_queue_if_needed(self, max_delay=None):
         v, _ = self._complete_expired_intents()
         if v >= MAX_QUEUED_TRANSMITS and self._aTB_rx_pause_enabled:
@@ -259,31 +258,20 @@ class asyncTransportBase(object):
                 # TX overflow, intent discarded, no further work needed here
                 return
 
-        if not self._canSendNow():
-            if not self._aTB_processing:  # recursion protection
-                if self._exclusively_processing():
-                    self._drain_tx_queue_if_needed(transmitIntent.delay())
-                    self._aTB_processing = False
-            return
+        while self._canSendNow():
+            if not self._runQueued():
+                # Before exiting, ensure that if the main thread
+                # is waiting for input on select() that it is
+                # awakened in case it needs to monitor new
+                # transmit sockets.
+                if not is_main_thread():
+                    self.interrupt_wait()
+                break
+        else:
+            if self._exclusively_processing():
+                self._drain_tx_queue_if_needed(transmitIntent.delay())
+                self._aTB_processing = False
 
-        if not self._exclusively_processing():
-            return
-
-        try:
-            # Queue transmits until there is one still pending; at that
-            # point exit because the completion of that transmit will
-            # resume consuming the queue.
-            while MAX_PENDING_TRANSMITS > self._aTB_numPendingTransmits:
-                if not self._runQueued():
-                    # Before exiting, ensure that if the main thread
-                    # is waiting for input on select() that it is
-                    # awakened in case it needs to monitor new
-                    # transmit sockets.
-                    if not is_main_thread():
-                        self.interrupt_wait()
-                    break
-        finally:
-            self._aTB_processing = False
 
     def _submitTransmit(self, transmitIntent):
         self._aTB_numPendingTransmits += 1
