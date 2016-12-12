@@ -21,7 +21,8 @@ chan pending = [5] of {TXIntent}; /* _aTB_queuedPendingTransmits */
 
 inline canSendNow (result)
 {
-  result = true;   /* Ignore numPendingTransmits for now */
+  // result = true;   /* Ignore numPendingTransmits for now */
+  result = numPendingTransmits < 2;  // MAX_PENDING_TRANSMITS=2
 }
 
 inline get_lock ()
@@ -137,14 +138,7 @@ proctype asyncTX(chan tx_in; chan select_chan; chan res; bit is_main_thread)
               lock = 0;
         fi
         canSendNow(csn);
-        if
-        :: !csn ->
-              exclusively_processing(excl);
-              if
-              :: excl -> /* run drain_if_needed(delay); */
-                         processing = false;
-              :: !excl -> skip
-              fi
+        do
         :: csn ->
               bit r;
               do
@@ -160,8 +154,17 @@ proctype asyncTX(chan tx_in; chan select_chan; chan res; bit is_main_thread)
                           fi
                           break;
                     fi;
+                    canSendNow(csn);
               od;
-        fi;
+        :: !csn ->
+              exclusively_processing(excl);
+              if
+              :: excl -> /* run drain_if_needed(delay); */
+                         processing = false;
+              :: !excl -> skip
+              fi
+              break;
+        od;
 end_idle_select:       tx_in ? tx;  /* select waits for new stuff */
   od;
 }
@@ -169,17 +172,17 @@ end_idle_select:       tx_in ? tx;  /* select waits for new stuff */
 
 proctype actor()
 {
-  chan result = [5] of { TXIntent };
+  chan result = [10] of { TXIntent };
   chan main_thread_tx = [1] of { TXIntent };
   chan thrd1_tx = [1] of { TXIntent };
   chan thrd2_tx = [1] of { TXIntent };
-  chan thrd3_tx = [1] of { TXIntent };
-  TXIntent t1, t2, t3, t4, t;
+  TXIntent t1, t2, t3, t4, t5, t6, t;
   d_step {
     t1.done = false; t1.internal_update = false;
     t2.done = false; t2.internal_update = false;
     t3.done = false; t3.internal_update = false;
     t4.done = false; t4.internal_update = false;
+    t5.done = false; t5.internal_update = false;
   };
 
   run asyncTX(main_thread_tx, main_thread_tx, result, true);
@@ -190,6 +193,14 @@ proctype actor()
   thrd1_tx ! t2;
   thrd2_tx ! t3;
   thrd2_tx ! t4;
+  thrd2_tx ! t5;
+  thrd2_tx ! t6;
+
+  result ? t;
+  t.done == true;
+
+  result ? t;
+  t.done == true;
 
   result ? t;
   t.done == true;
