@@ -1,9 +1,24 @@
+import time
 from datetime import datetime, timedelta
 
 
 ###
 ### Time Management
 ###
+
+
+# Use the function currentTime in this module to get a number representing the current time. The time
+# will be denoted in seconds but the return value is not suitable for wall clock time measurement
+# but only for measuring time intervals.
+#
+# For Python 3.3 and later, we will use the CPU performance counter (see PEP-418) which is a monotonic
+# clock. For older Python versions we fall back to time.time() which is less accurate and also not
+# monotonic.
+try:
+    currentTime = time.perf_counter
+except NameError:
+    currentTime = time.time
+
 
 def timePeriodSeconds(basis, other=None):
     if isinstance(basis, datetime):
@@ -30,21 +45,21 @@ def toTimeDeltaOrNone(timespec):
 
 class ExpiryTime(object):
     def __init__(self, duration):
-        self._time_to_quit = None if duration is None else (datetime.now() + duration)
+        self._time_to_quit = None if duration is None else (currentTime() + duration)
     def expired(self):
-        return False if self._time_to_quit is None else (datetime.now() >= self._time_to_quit)
+        return False if self._time_to_quit is None else (currentTime() >= self._time_to_quit)
     def remaining(self, forever=None):
         return forever if self._time_to_quit is None else \
-            (timedelta(seconds=0) if datetime.now() > self._time_to_quit else \
-             (self._time_to_quit - datetime.now()))
+            (timedelta(seconds=0) if currentTime() > self._time_to_quit else \
+             (self._time_to_quit - currentTime()))
     def remainingSeconds(self, forever=None):
         return forever if self._time_to_quit is None else \
-            (0 if datetime.now() > self._time_to_quit else \
-             timePeriodSeconds(self._time_to_quit - datetime.now()))
+            (0 if currentTime() > self._time_to_quit else \
+             timePeriodSeconds(self._time_to_quit - currentTime()))
     def __str__(self):
         if self._time_to_quit is None: return 'Forever'
         if self.expired():
-            return 'Expired_for_%s'%(datetime.now() - self._time_to_quit)
+            return 'Expired_for_%s'%(currentTime() - self._time_to_quit)
         return 'Expires_in_' + str(self.remaining())
     def __eq__(self, o):
         if isinstance(o, timedelta):
@@ -77,42 +92,43 @@ class ExpiryTime(object):
 class ExpirationTimer(object):
     """Keeps track of a duration relative to an original time and
        indicates whether that duration has expired or how much time is
-       left before it expires.  As an optimization, this object will
-       not call datetime.now() itself and must be updated via the
-       `update_time_now()` method to accurately measure elapsed
-       time.
+       left before it expires.
 
        May also be initialized with a duration of None, indicating
        that it should never timeout and that `remaining()` should
        return the forever value (defaulting to None).
+
+       Note that `timenow` is only provided for backwards compatibility. It is
+       completely ignored and will be removed soon.
     """
-    def __init__(self, duration, timenow=None):
-        self._time_now = timenow or datetime.now()
-        self._time_to_quit = None if duration is None else (self._time_now + duration)
+    def __init__(self, duration=None, timenow=None):
+        self.duration = duration
+        self._time_to_quit = None if duration is None else (currentTime() + duration)
     def update_time_now(self, timenow):
-        "Call this to update the elapsed time."
-        self._time_now = timenow
+        """
+        This method only provided for backwards compatibility and is implemented
+        as noop. It will be removed soon.
+        """
+        pass
     def expired(self):
         "Returns true if the indicated duration has passed since this was created."
-        return False if self._time_to_quit is None else (self._time_now >= self._time_to_quit)
+        return False if self._time_to_quit is None else (currentTime() >= self._time_to_quit)
     def remaining(self, forever=None):
         """Returns a timedelta of remaining time until expiration, or 0 if the
            duration has already expired.  Returns forever if no timeout."""
         return forever if self._time_to_quit is None else \
-            (timedelta(seconds=0) if self._time_now > self._time_to_quit else \
-             (self._time_to_quit - self._time_now))
+            timedelta(seconds=self.remainingSeconds())
     def remainingSeconds(self, forever=None):
         """Similar to `remaining()`, but returns an floating point value of the
            number of remaining seconds instead of returning a
            timedelta object.
         """
         return forever if self._time_to_quit is None else \
-            (0 if self._time_now > self._time_to_quit else \
-             timePeriodSeconds(self._time_to_quit - self._time_now))
+            max(self._time_to_quit - currentTime(), 0)
     def __str__(self):
         if self._time_to_quit is None: return 'Forever'
         if self.expired():
-            return 'Expired_for_%s'%(self._time_now - self._time_to_quit)
+            return 'Expired_for_%s'%(currentTime() - self._time_to_quit)
         return 'Expires_in_' + str(self.remaining())
     def __eq__(self, o):
         if isinstance(o, timedelta):
