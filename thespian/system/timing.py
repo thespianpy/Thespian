@@ -97,19 +97,10 @@ class ExpirationTimer(object):
        May also be initialized with a duration of None, indicating
        that it should never timeout and that `remaining()` should
        return the forever value (defaulting to None).
-
-       Note that `timenow` is only provided for backwards compatibility. It is
-       completely ignored and will be removed soon.
     """
-    def __init__(self, duration=None, timenow=None):
+    def __init__(self, duration=None):
         self.duration = duration
         self._time_to_quit = None if duration is None else (currentTime() + duration)
-    def update_time_now(self, timenow):
-        """
-        This method only provided for backwards compatibility and is implemented
-        as noop. It will be removed soon.
-        """
-        pass
     def expired(self):
         "Returns true if the indicated duration has passed since this was created."
         return False if self._time_to_quit is None else (currentTime() >= self._time_to_quit)
