@@ -80,7 +80,12 @@ class Timer(object):
 
 class ExpiryTime(object):
     def __init__(self, duration):
-        self._time_to_quit = None if duration is None else (currentTime() + duration)
+        if duration is None:
+            self._time_to_quit = None
+        elif isinstance(duration, timedelta):
+            self._time_to_quit = currentTime() + timePeriodSeconds(duration)
+        else:
+            self._time_to_quit = currentTime() + duration
     def expired(self):
         return False if self._time_to_quit is None else (currentTime() >= self._time_to_quit)
     def remaining(self, forever=None):
