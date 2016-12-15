@@ -5,10 +5,11 @@ try:
 except ImportError:
     # Old python that doesn't contain this...
     from thespian.system.dictconfig import dictConfig
-from datetime import timedelta, datetime
+from datetime import timedelta
 import multiprocessing
 import traceback
 from thespian.system.utilis import setProcName, thesplog_control
+from thespian.system.timing import Timer
 from thespian.system.messages.multiproc import *
 from thespian.system.transport import TransmitIntent, Thespian__UpdateWork
 
@@ -94,14 +95,17 @@ def startupASLogger(addrOfStarter, logEndpoint, logDefs,
                 logging.warn('Unknown message rcvd by logger: %s'%str(logrecord))
         except Exception:
             logging.error('Thespian Logger aborting (#%d) with error', exception_count, exc_info=True)
-            if last_exception is None or datetime.now() - last_exception_time > timedelta(seconds=1):
-                last_exception_time = datetime.now()
+            if last_exception is None:
+                last_exception_time = Timer()
+                exception_count = 0
+            elif last_exception_time.elapsed() > timedelta(seconds=1):
+                last_exception_time.reset()
                 exception_count = 0
             else:
                 exception_count += 1
                 if exception_count >= MAX_LOGGING_EXCEPTIONS_PER_SECOND:
                     logging.error('Too many Thespian Logger exceptions (#%d in %s); exiting!',
-                                  exception_count, datetime.now() - last_exception_time)
+                                  exception_count, last_exception_time.elapsed())
                     return
 
 

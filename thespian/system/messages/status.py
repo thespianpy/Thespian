@@ -98,10 +98,10 @@ def _common_formatStatus(tofd, response, childActorTag, showAddress=str):
     for F,T,M in response.receivedMessages:
         tofd.write('    %s <-- %s:  %s\n'%(showAddress(T), showAddress(F), M))
     tofd.write('  |Pending Wakeups [%d]:\n'%len(response.pendingWakeups))
-    import datetime
+    from thespian.system.timing import ExpirationTimer
     for W in response.pendingWakeups:
         tofd.write('    %s%s\n'%(str(W),
-                                 (' (in %s)'%(W - datetime.datetime.now()) if isinstance(W, datetime.datetime)
+                                 (' (in %s)'%W.remaining() if isinstance(W, ExpirationTimer)
                                   else '')))
     tofd.write('  |Pending Address Resolution [%d]:\n'%(len(response._pendingAddrCnts)))
     for A in response._pendingAddrCnts:

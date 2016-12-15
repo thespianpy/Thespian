@@ -96,7 +96,7 @@ from thespian.system.messages.multiproc import ChildMayHaveDied
 from thespian.system.addressManager import ActorLocalAddress
 import socket
 import select
-from datetime import datetime, timedelta
+from datetime import timedelta
 import pickle
 import errno
 from contextlib import closing
@@ -150,7 +150,7 @@ class TCPIncoming_Common(PauseWithBackoff):
         # identification
         self._rmtAddr = rmtAddr
         self._rData = rcvBuf or ReceiveBuffer(serializer.loads)
-        self._expires = datetime.now() + MAX_INCOMING_SOCKET_PERIOD
+        self._expires = ExpirationTimer(MAX_INCOMING_SOCKET_PERIOD)
         self.failCount = 0
 
     @property
@@ -166,11 +166,10 @@ class TCPIncoming_Common(PauseWithBackoff):
         self._rmtAddr = newAddr
 
     def delay(self):
-        now = datetime.now()
         # n.b. include _pauseUntil from PauseWithBackoff
         return max(timedelta(seconds=0),
-                   min(self._expires - now,
-                       getattr(self, '_pauseUntil', self._expires) - now))
+                   min(self._expires.remaining(),
+                       getattr(self, '_pauseUntil', self._expires).remaining()))
 
     def addData(self, newData): self._rData.addMore(newData)
 

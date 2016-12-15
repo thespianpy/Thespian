@@ -17,10 +17,9 @@
 '''
 
 import logging, string, types, functools
-from datetime import datetime, timedelta
 from thespian.actors import *
 from thespian.system.utilis import actualActorClass
-from thespian.system.timing import timePeriodSeconds, toTimeDeltaOrNone
+from thespian.system.timing import timePeriodSeconds, toTimeDeltaOrNone, ExpirationTimer
 try:
     from logging.config import dictConfig
 except ImportError:
@@ -228,7 +227,7 @@ class ActorSystemBase:
         self._primaryCount  = 0
         self._globalNames = {}
         self.procLimit = 0
-        self._wakeUps = {}  # key = datetime for wakeup, value = list
+        self._wakeUps = {}  # key = ExpirationTimer for wakeup, value = list
                             # of (targetAddress, pending
                             # WakeupMessage) to restart at
                             # that time
@@ -265,10 +264,9 @@ class ActorSystemBase:
 
     def _realizeWakeups(self):
         "Find any expired wakeups and queue them to the send processing queue"
-        now = datetime.now()
         removals = []
         for wakeupTime in self._wakeUps:
-            if wakeupTime > now:
+            if not wakeupTime.expired():
                 continue
             self._pendingSends.extend([PendingSend(A,M,A) for A,M in self._wakeUps[wakeupTime]])
             removals.append(wakeupTime)
@@ -278,9 +276,8 @@ class ActorSystemBase:
 
     def _runSends(self, timeout=None, stop_on_available=False):
         numsends = 0
-        endtime = ((datetime.now() + toTimeDeltaOrNone(timeout))
-                   if timeout else None)
-        while not endtime or datetime.now() < endtime:
+        endtime = ExpirationTimer(toTimeDeltaOrNone(timeout))
+        while not endtime.expired():
             while self._pendingSends:
                 numsends += 1
                 if self.procLimit and numsends > self.procLimit:
@@ -292,10 +289,9 @@ class ActorSystemBase:
                         for M in getattr(stop_on_available.instance,
                                          'responses', [])]):
                     return
-            if not endtime:
+            if endtime.remaining(forever=-1) == -1:
                 return
-            now = datetime.now()
-            valid_wakeups = [(W-now) for W in self._wakeUps if W <= endtime]
+            valid_wakeups = [W for W in self._wakeUps if W <= endtime]
             if not valid_wakeups:
                 return
             import time
@@ -527,7 +523,7 @@ class ActorSystemBase:
         self._pendingSends.append(PendingSend(fromActor, msg, toActor))
 
     def wakeupAfter(self, fromActor, timePeriod):
-        wakeupTime = datetime.now() + timePeriod
+        wakeupTime = ExpirationTimer(timePeriod)
         self._wakeUps.setdefault(wakeupTime, []).append( (fromActor, WakeupMessage(timePeriod)) )
         self._realizeWakeups()
 
