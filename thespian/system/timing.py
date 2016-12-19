@@ -1,5 +1,5 @@
 import time
-from datetime import datetime, timedelta
+from datetime import timedelta
 
 
 ###
@@ -20,16 +20,16 @@ except (AttributeError, NameError):
     currentTime = time.time
 
 
-def timePeriodSeconds(basis, other=None):
-    if isinstance(basis, datetime):
-        if isinstance(other, datetime):
-            return timePeriodSeconds(other - basis)
+def timePeriodSeconds(basis):
     if isinstance(basis, timedelta):
         try:
             return basis.total_seconds()
         except AttributeError:
             # Must be Python 2.6... which doesn't have total_seconds yet
             return (basis.days * 24.0 * 60 * 60) + basis.seconds + (basis.microseconds / 1000.0 / 1000)
+    elif isinstance(basis, (int, float)):
+        # assume the raw value is already in seconds
+        return basis
     raise TypeError('Cannot determine time from a %s argument'%str(type(basis)))
 
 
