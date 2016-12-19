@@ -385,8 +385,7 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
         asyncTransportBase._updateStatusResponse(self, resp)
         wakeupTransportBase._updateStatusResponse(self, resp)
         for num, each in enumerate(self._openSockets.values()):
-            resp.addKeyVal('sock#%d-fd%d' % (num, each.socket.fileno()),
-                           str(each))
+            resp.addKeyVal(str(each), 'sock#%d-fd%d' % (num, each.socket.fileno()))
 
     @staticmethod
     def probeAdmin(addr):
