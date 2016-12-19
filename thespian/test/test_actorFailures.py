@@ -1,7 +1,7 @@
 from thespian.actors import *
 from thespian.test import *
 import time
-from datetime import timedelta, datetime
+from datetime import timedelta
 
 
 max_replacement_delay = timedelta(seconds=0.50)
