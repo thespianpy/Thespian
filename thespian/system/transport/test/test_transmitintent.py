@@ -1,12 +1,23 @@
 from thespian.system.transport import (TransmitIntent, SendStatus,
                                        MAX_TRANSMIT_RETRIES)
 from thespian.system.timing import timePeriodSeconds
-from datetime import datetime, timedelta
+from datetime import timedelta
+from pytest import mark
 try: from unittest.mock import patch
 except ImportError:
     try: from mock import patch
     except ImportError:
         patch = None
+from contextlib import contextmanager
+
+@contextmanager
+def update_elapsed_time(time_base, elapsed):
+    with patch('thespian.system.timing.currentTime') as p_ctime:
+        p_ctime.return_value = time_base + (timePeriodSeconds(elapsed)
+                                            if isinstance(elapsed, timedelta)
+                                            else elapsed)
+        yield p_ctime.return_value
+
 
 
 class TestUnitSendStatus(object):
@@ -289,60 +300,67 @@ class TestUnitTransmitIntent(object):
             assert ti.retry()
         assert not ti.retry()
 
+    @mark.skipif(not patch, reason='requires mock patch')
     def testTransmitIntentRetryTiming(self):
         maxPeriod = timedelta(milliseconds=90)
         period = timedelta(milliseconds=30)
-        now = datetime.now()
-        if patch:
-            with patch('thespian.system.transport.datetime') as p_datetime:
-                p_datetime.now.return_value = now
-                ti = TransmitIntent('addr', 'msg',
-                                    maxPeriod=maxPeriod,
-                                    retryPeriod=period)
-                assert not ti.timeToRetry()
+        now = 0.01
+        timepad = timedelta(microseconds=10) # avoid float imprecision
+        with update_elapsed_time(now, timedelta(0)):
+            ti = TransmitIntent('addr', 'msg',
+                                maxPeriod=maxPeriod,
+                                retryPeriod=period)
+            assert not ti.timeToRetry()
 
-                p_datetime.datetime.now.return_value = now + period
-                assert not ti.timeToRetry()
+        with update_elapsed_time(now, period + timepad):
+            assert not ti.timeToRetry()
 
-                assert ti.retry()
-                assert not ti.timeToRetry()
-                p_datetime.now.return_value = now + period + period
-                assert ti.timeToRetry()
+            assert ti.retry()
+            assert not ti.timeToRetry()
 
-                assert ti.retry()
-                assert not ti.timeToRetry()
-                p_datetime.now.return_value = now + (3 * period)
-                assert not ti.timeToRetry()  # Each retry increases
-                p_datetime.now.return_value = now + (4 * period)
-                assert ti.timeToRetry()
+        with update_elapsed_time(now, period + period + timepad):
+            assert ti.timeToRetry()
+            assert ti.retry()
+            assert not ti.timeToRetry()
 
-                assert not ti.retry()  # Exceeds maximum time
+        with update_elapsed_time(now, period * 3 + timepad):
+            assert not ti.timeToRetry()  # Each retry increases
 
+        with update_elapsed_time(now, period * 4 + timepad):
+            assert ti.timeToRetry()
+            assert not ti.retry()  # Exceeds maximum time
+
+    @mark.skipif(not patch, reason='requires mock patch')
     def testTransmitIntentRetryTimingExceedsLimit(self):
         maxPeriod = timedelta(seconds=90)
         period = timedelta(microseconds=1)
-        now = datetime.now()
-        if patch:
-            with patch('thespian.system.transport.datetime') as p_datetime:
-                p_datetime.now.return_value = now
-                ti = TransmitIntent('addr', 'msg',
-                                    maxPeriod=maxPeriod,
-                                    retryPeriod=period)
-                assert not ti.timeToRetry()
+        now = 1.23
+        timepad = timedelta(microseconds=10) # avoid float imprecision
+        with update_elapsed_time(now, timedelta(0)):
+            ti = TransmitIntent('addr', 'msg',
+                                maxPeriod=maxPeriod,
+                                retryPeriod=period)
+            assert not ti.timeToRetry()
 
-                for N in range(MAX_TRANSMIT_RETRIES+1):
-                    # Indicate "failure" and the need to retry
-                    assert ti.retry()
-                    # Wait for the indication that it is time to retry
-                    time_to_retry = False
-                    for x in range(90):
-                        # Only call timeToRetry once, because it auto-resets
-                        time_to_retry = ti.timeToRetry()
-                        if time_to_retry: break
-                        p_datetime.now.return_value += period * 1.5
-                    assert time_to_retry
+        timeoffset = timedelta(0)
+        for N in range(MAX_TRANSMIT_RETRIES+1):
+            # Indicate "failure" and the need to retry
+            with update_elapsed_time(now, timeoffset + timepad):
+                assert ti.retry()
+            # Wait for the indication that it is time to retry
+            time_to_retry = False
+            for x in range(90):
+                with update_elapsed_time(now, timeoffset + timepad):
+                    # Only call timeToRetry once, because it auto-resets
+                    time_to_retry = ti.timeToRetry()
+                    if time_to_retry: break
+                timeoffset += (period + (period / 2))
+                # = period * 1.5, but python2 cannot multiply
+                # timedelta by fractions.
+            assert time_to_retry
 
-                assert not ti.retry()
+        with update_elapsed_time(now, timeoffset + timepad):
+            assert not ti.retry()
 
     def testTransmitIntentDelay(self):
         maxPeriod = timedelta(milliseconds=90)

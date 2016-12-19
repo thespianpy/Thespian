@@ -6,8 +6,9 @@ from thespian.system.admin.convention import (LocalConventionState, LostRemote,
                                               HysteresisSend, HysteresisCancel,
                                               CONVENTION_REREGISTRATION_PERIOD,
                                               CONVENTION_REGISTRATION_MISS_MAX,
-                                              CONVENTION_REINVITE_ADJUSTMENT)
+                                              convention_reinvite_adjustment)
 from thespian.system.utilis import fmap, StatsManager
+from thespian.system.timing import timePeriodSeconds
 from thespian.system.logdirector import LogAggregator
 from thespian.system.transport import SendStatus
 try:
@@ -17,9 +18,19 @@ except ImportError:
         from mock import patch
     except ImportError:
         patch = None
-from datetime import datetime, timedelta
+from datetime import timedelta
 from pytest import fixture, mark
 import inspect
+from contextlib import contextmanager
+
+
+@contextmanager
+def update_elapsed_time(time_base, elapsed):
+    with patch('thespian.system.timing.currentTime') as p_ctime:
+        p_ctime.return_value = time_base + (timePeriodSeconds(elapsed)
+                                            if isinstance(elapsed, timedelta)
+                                            else elapsed)
+        yield p_ctime.return_value
 
 
 @fixture
@@ -285,6 +296,7 @@ def test_notification_management(solo_lcs1, solo_lcs2):
     verify_io(lcs1.add_notification_handler(notifyAddr), [])
 
 
+@mark.skipif(not patch, reason='requires mock patch')
 def test_notification_management_with_registrations(lcs1, lcs2, convreg1,
                                                     convreg2, convreg2_first,
                                                     conv1_notifyAddr,
@@ -478,49 +490,55 @@ def test_prereg_reg_prereg_with_notifications(solo_lcs1, solo_lcs2,
     ops[1].tx_done(SendStatus.Failed)  # indicate failure
 
 
+@mark.skipif(not patch, reason='requires mock patch')
 def test_reg_with_notifications(lcs1, lcs2, convreg1, convreg2, convreg2_first,
                                 conv1_notifyAddr, update_lcs2_added, update_lcs2_removed,
-                                lcs2_was_registered=False):
+                                lcs2_was_registered=False,
+                                time_offset=timedelta(0)):
     # Similar to S1A, but without testing of subsequent delay periods.
 
-    # This test is also called from several other tests to provide
-    # common functionality for validating convention entry.  Some of
-    # those calls may occur after convention membership was lost, so
-    # there may be an extra notification needed.
+    with update_elapsed_time(0.001, time_offset) as the_time:
 
-    expected_messages = \
-              [ Sends(convreg1) >= lcs2.myAddress,
-                Sends(update_lcs2_added) >= conv1_notifyAddr,
-              ]
-    if lcs2_was_registered:
-        # lcs2 was previously registered, so since it is now sending a
-        # registration with "first" specified, that should cause a
-        # reset of its membership, which includes a notification
-        # update.
-        expected_messages = [
-            (LostRemote, None),
-            Sends(update_lcs2_removed) >= conv1_notifyAddr,
-            (HysteresisCancel, None),
-        ] + expected_messages
+        # This test is also called from several other tests to provide
+        # common functionality for validating convention entry.  Some of
+        # those calls may occur after convention membership was lost, so
+        # there may be an extra notification needed.
 
-    verify_io(lcs1.got_convention_register(convreg2_first), expected_messages)
+        expected_messages = \
+                  [ Sends(convreg1) >= lcs2.myAddress,
+                    Sends(update_lcs2_added) >= conv1_notifyAddr,
+                  ]
+        if lcs2_was_registered:
+            # lcs2 was previously registered, so since it is now sending a
+            # registration with "first" specified, that should cause a
+            # reset of its membership, which includes a notification
+            # update.
+            expected_messages = [
+                (LostRemote, None),
+                Sends(update_lcs2_removed) >= conv1_notifyAddr,
+                (HysteresisCancel, None),
+            ] + expected_messages
 
-    verify_io(lcs2.got_convention_register(convreg1), [])
+        verify_io(lcs1.got_convention_register(convreg2_first), expected_messages)
 
-    # Non-convention leader generates periodic registrations to the
-    # leader (i.e. keepalive) and the leader responds accordingly.
+        verify_io(lcs2.got_convention_register(convreg1), [])
 
-    # A pair of messages within the initial time period causes an
-    # acknowledgement, but no other activities.
+        # Non-convention leader generates periodic registrations to the
+        # leader (i.e. keepalive) and the leader responds accordingly.
 
-    verify_normal_notification_updates(lcs1, lcs2, convreg1, convreg2)
+        # A pair of messages within the initial time period causes an
+        # acknowledgement, but no other activities.
 
-    # Convention check shows all is in order and nothing needs to be done
+        verify_normal_notification_updates(lcs1, lcs2, convreg1, convreg2)
 
-    verify_io(lcs1.check_convention(), [])
-    verify_io(lcs2.check_convention(), [])
+        # Convention check shows all is in order and nothing needs to be done
 
-    return conv1_notifyAddr  # used by callers
+        verify_io(lcs1.check_convention(), [])
+        verify_io(lcs2.check_convention(), [])
+
+        time_base = the_time
+
+    return conv1_notifyAddr, time_base  # used by callers
 
 
 def test_check_before_activate_with_notifications(lcs1, lcs2, convreg2_first):
@@ -555,6 +573,7 @@ def test_check_before_activate_with_notifications(lcs1, lcs2, convreg2_first):
 
 
 
+@mark.skipif(not patch, reason='requires mock patch')
 def test_reg_dereg_with_notifications(lcs1, lcs2,
                                       convreg1, convreg2, convreg2_first,
                                       convdereg_lcs2,
@@ -562,9 +581,12 @@ def test_reg_dereg_with_notifications(lcs1, lcs2,
                                       update_lcs2_added, update_lcs2_removed):
 
     # Setup both in the registered condition
-    notifyAddr = test_reg_with_notifications(lcs1, lcs2, convreg1, convreg2,
-                                             convreg2_first, conv1_notifyAddr,
-                                             update_lcs2_added, update_lcs2_removed)
+    notifyAddr, time_base = test_reg_with_notifications(lcs1, lcs2,
+                                                        convreg1, convreg2,
+                                                        convreg2_first,
+                                                        conv1_notifyAddr,
+                                                        update_lcs2_added,
+                                                        update_lcs2_removed)
 
     verify_io(lcs1.got_convention_deregister(convdereg_lcs2),
               [ (LostRemote, None),
@@ -573,6 +595,7 @@ def test_reg_dereg_with_notifications(lcs1, lcs2,
               ])
 
 
+@mark.skipif(not patch, reason='requires mock patch')
 def test_reg_dereg_rereg_with_notifications(lcs1, lcs2,
                                             convreg1,
                                             convreg2, convreg2_first,
@@ -581,9 +604,12 @@ def test_reg_dereg_rereg_with_notifications(lcs1, lcs2,
                                             update_lcs2_added, update_lcs2_removed):
 
     # Setup both in the registered condition
-    notifyAddr = test_reg_with_notifications(lcs1, lcs2, convreg1, convreg2,
-                                             convreg2_first, conv1_notifyAddr,
-                                             update_lcs2_added, update_lcs2_removed)
+    notifyAddr, time_base = test_reg_with_notifications(lcs1, lcs2,
+                                                        convreg1, convreg2,
+                                                        convreg2_first,
+                                                        conv1_notifyAddr,
+                                                        update_lcs2_added,
+                                                        update_lcs2_removed)
 
     verify_io(lcs1.got_convention_deregister(convdereg_lcs2),
               [ (LostRemote, None),
@@ -660,20 +686,22 @@ def test_S1A(lcs1, lcs2,
              time_offset=timedelta(0)):
 
     # Setup both in the registered condition
-    test_reg_with_notifications(lcs1, lcs2,
-                                convreg1, convreg2, convreg2_first,
-                                conv1_notifyAddr, update_lcs2_added, update_lcs2_removed,
-                                lcs2_was_registered=lcs2_was_registered)
+    _, time_base = test_reg_with_notifications(
+        lcs1, lcs2, convreg1, convreg2,
+        convreg2_first, conv1_notifyAddr,
+        update_lcs2_added, update_lcs2_removed,
+        lcs2_was_registered=lcs2_was_registered,
+        time_offset = time_offset)
 
     assert lcs2.active_in_convention()
 
     # Now add some elapsed time and check update messages
 
-    with patch('thespian.system.timing.datetime') as p_datetime:
-        p_datetime.now.return_value = (
-            datetime.now() + time_offset +
-            CONVENTION_REREGISTRATION_PERIOD +
-            timedelta(seconds=1))
+    with update_elapsed_time(time_base,
+                             # time_offset +
+                             CONVENTION_REREGISTRATION_PERIOD +
+                             timedelta(seconds=1)) as later:
+
         # Convention leader does not take action
         verify_io(lcs1.check_convention(), [])
         # But convention member should re-up their membership
@@ -692,6 +720,8 @@ def test_S1A(lcs1, lcs2,
         verify_io(lcs2.got_convention_register(convreg1),
                   [])
 
+    return time_base
+
 
 # S1B is not really testable, other than as a subset of S1C
 
@@ -701,18 +731,17 @@ def test_S1C(lcs1, lcs2, convreg1, convreg2, convreg2_first,
              convdereg_lcs2,
              conv1_notifyAddr, update_lcs2_added, update_lcs2_removed):
 
-    test_S1A(lcs1, lcs2, convreg1, convreg2, convreg2_first,
-             convdereg_lcs2,
-             conv1_notifyAddr, update_lcs2_added, update_lcs2_removed)
-
+    time_base = test_S1A(lcs1, lcs2, convreg1, convreg2, convreg2_first,
+                         convdereg_lcs2,
+                         conv1_notifyAddr,
+                         update_lcs2_added, update_lcs2_removed)
 
     # Now add some more elapsed time and check update messages
 
     timeoffset = CONVENTION_REREGISTRATION_PERIOD  + timedelta(seconds=1) # from test_S1A
     for retries in range(0, CONVENTION_REGISTRATION_MISS_MAX):
         timeoffset += CONVENTION_REREGISTRATION_PERIOD
-        with patch('thespian.system.timing.datetime') as p_datetime:
-            p_datetime.now.return_value = datetime.now() + timeoffset
+        with update_elapsed_time(time_base, timeoffset) as later:
             # convention member should attempt to re-up their membership
             ops = lcs2.check_convention()
             verify_io(ops,
@@ -724,8 +753,7 @@ def test_S1C(lcs1, lcs2, convreg1, convreg2, convreg2_first,
     # Too many misses, the member should believe it is no longer a member
 
     timeoffset += CONVENTION_REREGISTRATION_PERIOD
-    with patch('thespian.system.timing.datetime') as p_datetime:
-        p_datetime.now.return_value = datetime.now() + timeoffset
+    with update_elapsed_time(time_base, timeoffset) as later:
         # convention member should attempt to re-up their membership
         ops = lcs2.check_convention()
         verify_io(ops,
@@ -738,14 +766,12 @@ def test_S1C(lcs1, lcs2, convreg1, convreg2, convreg2_first,
     # After a really long time, connectivity is restored
 
     timeoffset += timedelta(seconds=100)
-    with patch('thespian.system.timing.datetime') as p_datetime:
-        p_datetime.now.return_value = datetime.now() + timeoffset
-        test_S1A(lcs1, lcs2,
-                 convreg1, convreg2, convreg2_first,
-                 convdereg_lcs2,
-                 conv1_notifyAddr, update_lcs2_added, update_lcs2_removed,
-                 lcs2_was_registered=True,
-                 time_offset=timeoffset)
+    test_S1A(lcs1, lcs2,
+             convreg1, convreg2, convreg2_first,
+             convdereg_lcs2,
+             conv1_notifyAddr, update_lcs2_added, update_lcs2_removed,
+             lcs2_was_registered=True,
+             time_offset=timeoffset)
 
 
 @mark.skipif(not patch, reason='requires mock patch')
@@ -754,21 +780,22 @@ def test_S1D(lcs1, lcs2,
              convdereg_lcs2,
              conv1_notifyAddr, update_lcs2_added, update_lcs2_removed):
 
-    test_S1A(lcs1, lcs2,
-             convreg1, convreg2, convreg2_first,
-             convdereg_lcs2,
-             conv1_notifyAddr, update_lcs2_added, update_lcs2_removed)
+    time_base = test_S1A(lcs1, lcs2,
+                         convreg1, convreg2, convreg2_first,
+                         convdereg_lcs2,
+                         conv1_notifyAddr,
+                         update_lcs2_added,
+                         update_lcs2_removed)
 
     # Skip time ahead to a point beyond then the convention would
     # expire.  S1A performed one refresh, so this needs to skip
     # forward from there.
 
-    with patch('thespian.system.timing.datetime') as p_datetime:
-        p_datetime.now.return_value = (
-            datetime.now() +
-            (CONVENTION_REREGISTRATION_PERIOD *
-             (CONVENTION_REGISTRATION_MISS_MAX + 1)) +
-            timedelta(seconds=1))
+    time_offset = (CONVENTION_REREGISTRATION_PERIOD *
+                   (CONVENTION_REGISTRATION_MISS_MAX + 1)) + \
+                   timedelta(seconds=1)
+
+    with update_elapsed_time(time_base, time_offset) as later:
         # Convention leader indicates that it is no longer a member
         verify_io(lcs1.check_convention(),
                   [ (LostRemote, None),
@@ -788,7 +815,8 @@ def test_S1D(lcs1, lcs2,
                                 # normal registration messages
                                 convreg2,
                                 conv1_notifyAddr,
-                                update_lcs2_added, update_lcs2_removed)
+                                update_lcs2_added, update_lcs2_removed,
+                                time_offset=time_offset)
 
 
 @mark.skipif(not patch, reason='requires mock patch')
@@ -832,17 +860,20 @@ def test_S2A(solo_lcs1, solo_lcs2,
              update_lcs2_added_noadmin, update_lcs2_removed_noadmin,
              time_offset=timedelta(seconds=0)):
 
-    lcs1, lcs2 = solo_lcs1, solo_lcs2
+    with update_elapsed_time(0.002, time_offset) as the_time:
 
-    ops = lcs1.got_convention_register(convreg2_prereg)
-    verify_io(ops, [(HysteresisCancel, None),
-                    Sends(ConventionInvite) >= lcs2.myAddress,])
-    ops[1].tx_done(SendStatus.Sent)  # indicate failure
+        lcs1, lcs2 = solo_lcs1, solo_lcs2
 
-    S2A_1(lcs1, lcs2, convreg1_noadmin,
-          convreg2_prereg, convreg2_noadmin, convreg2_first_noadmin,
-          solo_conv1_notifyAddr, update_lcs2_added_noadmin, update_lcs2_removed_noadmin,
-          time_offset=time_offset)
+        ops = lcs1.got_convention_register(convreg2_prereg)
+        verify_io(ops, [(HysteresisCancel, None),
+                        Sends(ConventionInvite) >= lcs2.myAddress,])
+        ops[1].tx_done(SendStatus.Sent)  # indicate failure
+
+    return S2A_1(lcs1, lcs2, convreg1_noadmin,
+                 convreg2_prereg, convreg2_noadmin, convreg2_first_noadmin,
+                 solo_conv1_notifyAddr,
+                 update_lcs2_added_noadmin, update_lcs2_removed_noadmin,
+                 time_offset=time_offset + timedelta(milliseconds=2))
 
 
 def S2A_1(lcs1, lcs2,
@@ -852,17 +883,18 @@ def S2A_1(lcs1, lcs2,
           lcs2_was_in_convention=False,
           time_offset=timedelta(0)):
 
-    verify_io(lcs2.got_convention_invite(lcs1.myAddress),
-              [ Sends(convreg2_first_noadmin) >= lcs1.myAddress,
-                (LogAggregator, None),
-              ])
+    with update_elapsed_time(0, time_offset) as the_time:
+        verify_io(lcs2.got_convention_invite(lcs1.myAddress),
+                  [ Sends(convreg2_first_noadmin) >= lcs1.myAddress,
+                    (LogAggregator, None),
+                  ])
 
-    S2A_2(lcs1, lcs2,
-          convreg1_noadmin,
-          convreg2_prereg, convreg2_noadmin, convreg2_first_noadmin,
-          notifyAddr, update_lcs2_added, update_lcs2_removed,
-          lcs2_was_in_convention=lcs2_was_in_convention,
-          time_offset=time_offset)
+    return S2A_2(lcs1, lcs2,
+                 convreg1_noadmin,
+                 convreg2_prereg, convreg2_noadmin, convreg2_first_noadmin,
+                 notifyAddr, update_lcs2_added, update_lcs2_removed,
+                 lcs2_was_in_convention=lcs2_was_in_convention,
+                 time_offset=time_offset)
 
 
 def S2A_2(lcs1, lcs2,
@@ -872,29 +904,30 @@ def S2A_2(lcs1, lcs2,
           lcs2_was_in_convention=False,
           time_offset=timedelta(0)):
 
-    # lcs1 gets full ConventionRegister from lcs2.  This should also
-    # cause an update notification with the full specification.
-    verify_io(lcs1.got_convention_register(convreg2_first_noadmin),
-              ([ (LostRemote, None),
-                 Sends(update_lcs2_removed) >= notifyAddr,
-                 (HysteresisCancel, None),
-               ] if lcs2_was_in_convention else []
-              ) +
-              [ Sends(convreg1_noadmin) >= lcs2.myAddress,
-                Sends(update_lcs2_added) >= notifyAddr,
-              ], echo=True)
+    with update_elapsed_time(0, time_offset):
 
-    verify_io(lcs2.got_convention_register(convreg1_noadmin), [])
+        # lcs1 gets full ConventionRegister from lcs2.  This should also
+        # cause an update notification with the full specification.
+        verify_io(lcs1.got_convention_register(convreg2_first_noadmin),
+                  ([ (LostRemote, None),
+                     Sends(update_lcs2_removed) >= notifyAddr,
+                     (HysteresisCancel, None),
+                   ] if lcs2_was_in_convention else []
+                  ) +
+                  [ Sends(convreg1_noadmin) >= lcs2.myAddress,
+                    Sends(update_lcs2_added) >= notifyAddr,
+                  ], echo=True)
 
-    verify_normal_notification_updates(lcs1, lcs2, convreg1_noadmin, convreg2_noadmin)
+        verify_io(lcs2.got_convention_register(convreg1_noadmin), [])
+
+        verify_normal_notification_updates(lcs1, lcs2,
+                                           convreg1_noadmin, convreg2_noadmin)
 
     # Now add some elapsed time and check update messages
 
-    with patch('thespian.system.timing.datetime') as p_datetime:
-        p_datetime.now.return_value = (
-            datetime.now() + time_offset +
-            CONVENTION_REREGISTRATION_PERIOD +
-            timedelta(seconds=1))
+    with update_elapsed_time(0, time_offset +
+                             CONVENTION_REREGISTRATION_PERIOD +
+                             timedelta(seconds=1)):
         # Convention leader issues an invite
         ops = lcs1.check_convention()
         verify_io(ops,
@@ -910,11 +943,15 @@ def S2A_2(lcs1, lcs2,
                   ])
         # # And convention leader should respond
         verify_io(lcs1.got_convention_register(convreg2_noadmin),
-                  [(ConventionRegister, Sends(convreg1_noadmin) >= lcs2.myAddress),
+                  [(ConventionRegister,
+                    Sends(convreg1_noadmin) >= lcs2.myAddress),
                   ])
         # But convention member ends the conversation
         verify_io(lcs2.got_convention_register(convreg1_noadmin),
                   [])
+
+    return time_offset + CONVENTION_REREGISTRATION_PERIOD + timedelta(seconds=1)
+
 
 
 @mark.skipif(not patch, reason='requires mock patch')
@@ -924,19 +961,20 @@ def test_S2B(solo_lcs1, solo_lcs2,
              solo_conv1_notifyAddr,
              update_lcs2_added_noadmin, update_lcs2_removed_noadmin):
 
-    lcs1, lcs2 = solo_lcs1, solo_lcs2
+    time_base = 0.003
 
-    ops = lcs1.got_convention_register(convreg2_prereg)
-    verify_io(ops,
-              [ (HysteresisCancel, None),
-                Sends(ConventionInvite) >= lcs2.myAddress,
-              ])
-    ops[1].tx_done(SendStatus.Failed)  # indicate failure
+    with update_elapsed_time(time_base, timedelta(0)):
+        lcs1, lcs2 = solo_lcs1, solo_lcs2
 
-    time_offset = (CONVENTION_REREGISTRATION_PERIOD *
-                   CONVENTION_REINVITE_ADJUSTMENT) + timedelta(seconds=1)
-    with patch('thespian.system.timing.datetime') as p_datetime:
-        p_datetime.now.return_value = datetime.now() + time_offset
+        ops = lcs1.got_convention_register(convreg2_prereg)
+        verify_io(ops,
+                  [ (HysteresisCancel, None),
+                    Sends(ConventionInvite) >= lcs2.myAddress,
+                  ])
+        ops[1].tx_done(SendStatus.Failed)  # indicate failure
+
+    time_offset = convention_reinvite_adjustment(CONVENTION_REREGISTRATION_PERIOD) + timedelta(seconds=1)
+    with update_elapsed_time(time_base, time_offset):
         # Convention leader has not connecteed to remote and retries
         ops = lcs1.check_convention()
         verify_io(ops,
@@ -944,10 +982,8 @@ def test_S2B(solo_lcs1, solo_lcs2,
                   ])
         ops[0].tx_done(SendStatus.Failed)  # indicate failure
 
-    time_offset += (CONVENTION_REREGISTRATION_PERIOD *
-                    CONVENTION_REINVITE_ADJUSTMENT) + timedelta(seconds=1)
-    with patch('thespian.system.timing.datetime') as p_datetime:
-        p_datetime.now.return_value = datetime.now() + time_offset
+    time_offset += convention_reinvite_adjustment(CONVENTION_REREGISTRATION_PERIOD) + timedelta(seconds=1)
+    with update_elapsed_time(time_base, time_offset):
         # Convention leader has not connecteed to remote and retries
         ops = lcs1.check_convention()
         verify_io(ops,
@@ -957,8 +993,7 @@ def test_S2B(solo_lcs1, solo_lcs2,
 
 
     time_offset += CONVENTION_REREGISTRATION_PERIOD
-    with patch('thespian.system.timing.datetime') as p_datetime:
-        p_datetime.now.return_value = datetime.now() + time_offset
+    with update_elapsed_time(time_base, time_offset):
         S2A_1(lcs1, lcs2, convreg1_noadmin,
               convreg2_prereg, convreg2_noadmin, convreg2_first_noadmin,
               solo_conv1_notifyAddr, update_lcs2_added_noadmin, update_lcs2_removed_noadmin,
@@ -974,20 +1009,24 @@ def test_S2C(solo_lcs1, solo_lcs2, convreg1_noadmin, convreg2_noadmin,
 
     lcs1, lcs2 = solo_lcs1, solo_lcs2
 
-    test_S2A(solo_lcs1, solo_lcs2,
-             convreg1_noadmin,
-             convreg2_prereg, convreg2_noadmin, convreg2_first_noadmin,
-             solo_conv1_notifyAddr,
-             update_lcs2_added_noadmin, update_lcs2_removed_noadmin)
+    time_base = 0.003
+
+    with update_elapsed_time(time_base, timedelta(0)):
+        timeoffset = test_S2A(solo_lcs1, solo_lcs2,
+                              convreg1_noadmin,
+                              convreg2_prereg,
+                              convreg2_noadmin, convreg2_first_noadmin,
+                              solo_conv1_notifyAddr,
+                              update_lcs2_added_noadmin,
+                              update_lcs2_removed_noadmin)
 
     # Now add some more elapsed time and check update messages
 
-    timeoffset = (CONVENTION_REREGISTRATION_PERIOD + # 1 from test_S2A
-                  timedelta(seconds=1))
+    timeoffset += timedelta(milliseconds=10) # step over thresholds
+
     for retries in range(0, CONVENTION_REGISTRATION_MISS_MAX):
         timeoffset += CONVENTION_REREGISTRATION_PERIOD
-        with patch('thespian.system.timing.datetime') as p_datetime:
-            p_datetime.now.return_value = datetime.now() + timeoffset
+        with update_elapsed_time(time_base, timeoffset):
             # convention member should attempt to re-up their membership
             ops = lcs2.check_convention()
             verify_io(ops,
@@ -999,8 +1038,7 @@ def test_S2C(solo_lcs1, solo_lcs2, convreg1_noadmin, convreg2_noadmin,
     # Too many misses, the member should believe it is no longer a member
 
     timeoffset += CONVENTION_REREGISTRATION_PERIOD
-    with patch('thespian.system.timing.datetime') as p_datetime:
-        p_datetime.now.return_value = datetime.now() + timeoffset
+    with update_elapsed_time(time_base, timeoffset):
         ops = lcs2.check_convention()
         verify_io(ops,
                   [ (LostRemote, None),
@@ -1012,15 +1050,13 @@ def test_S2C(solo_lcs1, solo_lcs2, convreg1_noadmin, convreg2_noadmin,
     # Ignores any Convention Register (acks) received after that
 
     timeoffset += timedelta(seconds=2)
-    with patch('thespian.system.timing.datetime') as p_datetime:
-        p_datetime.now.return_value = datetime.now() + timeoffset
+    with update_elapsed_time(time_base, timeoffset):
         verify_io(lcs2.got_convention_register(convreg1_noadmin), [], echo=True)
 
     # But a new invitation restores everything
 
     timeoffset += timedelta(seconds=1)
-    with patch('thespian.system.timing.datetime') as p_datetime:
-        p_datetime.now.return_value = datetime.now() + timeoffset
+    with update_elapsed_time(time_base, timeoffset):
         S2A_1(lcs1, lcs2,
               convreg1_noadmin,
               convreg2_prereg, convreg2_noadmin, convreg2_first_noadmin,
@@ -1041,23 +1077,26 @@ def test_S2D(solo_lcs1, solo_lcs2, convreg1_noadmin, convreg2_noadmin,
 
     lcs1, lcs2 = solo_lcs1, solo_lcs2
 
-    test_S2A(solo_lcs1, solo_lcs2,
-             convreg1_noadmin,
-             convreg2_prereg, convreg2_noadmin, convreg2_first_noadmin,
-             solo_conv1_notifyAddr,
-             update_lcs2_added_noadmin, update_lcs2_removed_noadmin)
+    time_base = 0.003
+
+    with update_elapsed_time(time_base, timedelta(0)):
+        test_S2A(solo_lcs1, solo_lcs2,
+                 convreg1_noadmin,
+                 convreg2_prereg,
+                 convreg2_noadmin, convreg2_first_noadmin,
+                 solo_conv1_notifyAddr,
+                 update_lcs2_added_noadmin,
+                 update_lcs2_removed_noadmin)
 
     # Now add some more elapsed time and check update messages
 
-    timeoffset = ((CONVENTION_REREGISTRATION_PERIOD *
-                   CONVENTION_REINVITE_ADJUSTMENT) +
+    timeoffset = (convention_reinvite_adjustment(CONVENTION_REREGISTRATION_PERIOD) +
                   timedelta(seconds=1))
 
     for retries in range(0, CONVENTION_REGISTRATION_MISS_MAX-1):
-        timeoffset += (CONVENTION_REREGISTRATION_PERIOD *
-                       CONVENTION_REINVITE_ADJUSTMENT) + timedelta(seconds=1)
-        with patch('thespian.system.timing.datetime') as p_datetime:
-            p_datetime.now.return_value = datetime.now() + timeoffset
+        timeoffset += convention_reinvite_adjustment(CONVENTION_REREGISTRATION_PERIOD) + \
+                      timedelta(seconds=1)
+        with update_elapsed_time(time_base, timeoffset):
             # convention member should attempt to re-up their membership
             ops = lcs1.check_convention()
             verify_io(ops,
@@ -1068,8 +1107,7 @@ def test_S2D(solo_lcs1, solo_lcs2, convreg1_noadmin, convreg2_noadmin,
     # Too many misses, the member should believe it is no longer a member
 
     timeoffset += CONVENTION_REREGISTRATION_PERIOD
-    with patch('thespian.system.timing.datetime') as p_datetime:
-        p_datetime.now.return_value = datetime.now() + timeoffset
+    with update_elapsed_time(time_base, timeoffset):
         # convention member should attempt to re-up their membership
         verify_io(lcs1.check_convention(),
                   [ (LostRemote, None),
@@ -1080,10 +1118,9 @@ def test_S2D(solo_lcs1, solo_lcs2, convreg1_noadmin, convreg2_noadmin,
     # Exit notification and cleanup is only performed once, but still issues invitations
 
     for retry in range(2):
-        timeoffset += (CONVENTION_REREGISTRATION_PERIOD *
-                       CONVENTION_REINVITE_ADJUSTMENT) + timedelta(seconds=1)
-        with patch('thespian.system.timing.datetime') as p_datetime:
-            p_datetime.now.return_value = datetime.now() + timeoffset
+        timeoffset += convention_reinvite_adjustment(CONVENTION_REREGISTRATION_PERIOD) + \
+                      timedelta(seconds=1)
+        with update_elapsed_time(time_base, timeoffset):
             # convention member should attempt to re-up their membership
             ops = lcs1.check_convention()
             verify_io(ops,
@@ -1093,11 +1130,10 @@ def test_S2D(solo_lcs1, solo_lcs2, convreg1_noadmin, convreg2_noadmin,
 
     # After a really long time, connectivity is restored
 
-    with patch('thespian.system.timing.datetime') as p_datetime:
-        timeoffset = ((CONVENTION_REREGISTRATION_PERIOD *
-                        CONVENTION_REGISTRATION_MISS_MAX) +
-                       timedelta(seconds=100))
-        p_datetime.now.return_value = datetime.now() + timeoffset
+    timeoffset = ((CONVENTION_REREGISTRATION_PERIOD *
+                   CONVENTION_REGISTRATION_MISS_MAX) +
+                  timedelta(seconds=100))
+    with update_elapsed_time(time_base, timeoffset):
         S2A_2(lcs1, lcs2,
               convreg1_noadmin,
               convreg2_prereg, convreg2_noadmin,
@@ -1117,37 +1153,40 @@ def test_S2E(solo_lcs1, solo_lcs2, convreg1_noadmin, convreg2_noadmin,
 
     lcs1, lcs2 = solo_lcs1, solo_lcs2
 
-    test_S2A(solo_lcs1, solo_lcs2,
-             convreg1_noadmin,
-             convreg2_prereg, convreg2_noadmin, convreg2_first_noadmin,
-             solo_conv1_notifyAddr,
-             update_lcs2_added_noadmin, update_lcs2_removed_noadmin)
+    time_base = 0.003
+
+    with update_elapsed_time(time_base, timedelta(0)):
+        test_S2A(solo_lcs1, solo_lcs2,
+                 convreg1_noadmin,
+                 convreg2_prereg, convreg2_noadmin, convreg2_first_noadmin,
+                 solo_conv1_notifyAddr,
+                 update_lcs2_added_noadmin, update_lcs2_removed_noadmin)
+
+
+        verify_io(lcs1.got_convention_deregister(convdereg_lcs2),
+                  [ (LostRemote, None),
+                    Sends(update_lcs2_removed_noadmin) >= solo_conv1_notifyAddr,
+                    (HysteresisCancel, None),
+                  ])
 
     # Now add some more elapsed time and check update messages
-
-    verify_io(lcs1.got_convention_deregister(convdereg_lcs2),
-              [ (LostRemote, None),
-                Sends(update_lcs2_removed_noadmin) >= solo_conv1_notifyAddr,
-                (HysteresisCancel, None),
-              ])
-
     # Exit notification and cleanup is only performed once, but still issues invitations
 
-    timeoffset = ((CONVENTION_REREGISTRATION_PERIOD *
-                   CONVENTION_REINVITE_ADJUSTMENT) +
+    timeoffset = (convention_reinvite_adjustment(CONVENTION_REREGISTRATION_PERIOD) +
                   timedelta(seconds=1))
 
     for retry in range(2):
-        timeoffset += (CONVENTION_REREGISTRATION_PERIOD *
-                       CONVENTION_REINVITE_ADJUSTMENT) + timedelta(seconds=1)
-        with patch('thespian.system.timing.datetime') as p_datetime:
-            p_datetime.now.return_value = datetime.now() + timeoffset
+        timeoffset += convention_reinvite_adjustment(CONVENTION_REREGISTRATION_PERIOD) + \
+                      timedelta(seconds=1)
+        with update_elapsed_time(time_base, timeoffset):
             # convention member should attempt to re-up their membership
             ops = lcs1.check_convention()
             verify_io(ops,
                       [ Sends(ConventionInvite) >= lcs2.myAddress,
                       ])
             ops[0].tx_done(SendStatus.Failed)  # indicate failure
+
+    return time_base, timeoffset
 
 
 @mark.skipif(not patch, reason='requires mock patch')
@@ -1160,20 +1199,22 @@ def test_S2F(solo_lcs1, solo_lcs2, convreg1_noadmin, convreg2_noadmin,
 
     lcs1, lcs2 = solo_lcs1, solo_lcs2
 
-    test_S2E(solo_lcs1, solo_lcs2, convreg1_noadmin, convreg2_noadmin,
-             convreg2_first_noadmin, convreg2_prereg,
-             convdereg_lcs2,
-             conv1_notifyAddr,
-             solo_conv1_notifyAddr,
-             update_lcs2_added_noadmin, update_lcs2_removed_noadmin)
+    time_base, timeoffset = test_S2E(solo_lcs1, solo_lcs2,
+                                     convreg1_noadmin, convreg2_noadmin,
+                                     convreg2_first_noadmin,
+                                     convreg2_prereg,
+                                     convdereg_lcs2,
+                                     conv1_notifyAddr,
+                                     solo_conv1_notifyAddr,
+                                     update_lcs2_added_noadmin,
+                                     update_lcs2_removed_noadmin)
 
     # After a really long time, connectivity is restored
 
-    with patch('thespian.system.timing.datetime') as p_datetime:
-        timeoffset = ((CONVENTION_REREGISTRATION_PERIOD *
-                        CONVENTION_REGISTRATION_MISS_MAX) +
-                       timedelta(seconds=100))
-        p_datetime.now.return_value = datetime.now() + timeoffset
+    timeoffset = ((CONVENTION_REREGISTRATION_PERIOD *
+                   CONVENTION_REGISTRATION_MISS_MAX) +
+                  timedelta(seconds=100))
+    with update_elapsed_time(time_base, timeoffset):
         S2A_2(lcs1, lcs2,
               convreg1_noadmin,
               convreg2_prereg, convreg2_noadmin,
@@ -1194,23 +1235,29 @@ def test_S2G(solo_lcs1, solo_lcs2, convreg1_noadmin, convreg2_noadmin,
 
     lcs1, lcs2 = solo_lcs1, solo_lcs2
 
-    test_S2A(solo_lcs1, solo_lcs2,
-             convreg1_noadmin,
-             convreg2_prereg, convreg2_noadmin, convreg2_first_noadmin,
-             solo_conv1_notifyAddr,
-             update_lcs2_added_noadmin, update_lcs2_removed_noadmin)
+    time_base = 0.003
 
-    verify_io(lcs1.got_convention_deregister(convdereg_lcs2_prereg),
-              [ Sends(convdereg_lcs1) >= lcs2.myAddress,
-                (LostRemote, None),
-                Sends(update_lcs2_removed_noadmin) >= solo_conv1_notifyAddr,
-                (HysteresisCancel, None),
-              ], echo=True)
+    with update_elapsed_time(time_base, timedelta(0)):
+        timeoffset = test_S2A(solo_lcs1, solo_lcs2,
+                              convreg1_noadmin,
+                              convreg2_prereg, convreg2_noadmin,
+                              convreg2_first_noadmin,
+                              solo_conv1_notifyAddr,
+                              update_lcs2_added_noadmin,
+                              update_lcs2_removed_noadmin)
 
-    verify_io(lcs2.got_convention_deregister(convdereg_lcs1),
-              [ (LostRemote, None),
-                (HysteresisCancel, None),
-              ])
+    with update_elapsed_time(time_base, timeoffset):
+        verify_io(lcs1.got_convention_deregister(convdereg_lcs2_prereg),
+                  [ Sends(convdereg_lcs1) >= lcs2.myAddress,
+                    (LostRemote, None),
+                    Sends(update_lcs2_removed_noadmin) >= solo_conv1_notifyAddr,
+                    (HysteresisCancel, None),
+                  ], echo=True)
+
+        verify_io(lcs2.got_convention_deregister(convdereg_lcs1),
+                  [ (LostRemote, None),
+                    (HysteresisCancel, None),
+                  ])
 
     # Time passes, both sides are idle
 
@@ -1220,15 +1267,13 @@ def test_S2G(solo_lcs1, solo_lcs2, convreg1_noadmin, convreg2_noadmin,
 
     for each in range(3):
         timeoffset += CONVENTION_REREGISTRATION_PERIOD
-        with patch('thespian.system.timing.datetime') as p_datetime:
-            p_datetime.now.return_value = datetime.now() + timeoffset
+        with update_elapsed_time(time_base, timeoffset):
             verify_io(lcs1.check_convention(), [])
             verify_io(lcs2.check_convention(), [])
 
     # But a new pre-register gets them both talking again
 
-    with patch('thespian.system.timing.datetime') as p_datetime:
-        p_datetime.now.return_value = datetime.now() + timeoffset
+    with update_elapsed_time(time_base, timeoffset):
         test_S2A(solo_lcs1, solo_lcs2,
                  convreg1_noadmin,
                  convreg2_prereg, convreg2_noadmin, convreg2_first_noadmin,
