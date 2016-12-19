@@ -18,7 +18,7 @@
 
 import logging, string, types, functools
 from thespian.actors import *
-from thespian.system.utilis import actualActorClass
+from thespian.system.utilis import (actualActorClass, partition)
 from thespian.system.timing import timePeriodSeconds, toTimeDeltaOrNone, ExpirationTimer
 try:
     from logging.config import dictConfig
@@ -217,9 +217,32 @@ defaultLoggingConfig = {
 }
 
 
-class ActorSystemBase:
+class WakeupManager(object):
+    def __init__(self):
+        # _wakeUps is a list of (targetAddress, ExpirationTimer)
+        self._wakeUps = []
+
+    def _pop_expired_wakeups(self):
+        exp, self._wakeUps = partition(lambda E: E[1].expired(), self._wakeUps)
+        return exp
+
+    def _next_wakeup(self):
+        "Returns the ExpirationTimer for the next wakeup to occur"
+        return min([T for A,T in self._wakeUps]) if self._wakeUps else None
+
+    def _add_wakeup(self, from_actor, time_period):
+        self._wakeUps.append( (from_actor, ExpirationTimer(time_period)) )
+
+    def add_wakeups_to_status(self, statusmsg):
+        statusmsg.addWakeups(self._wakeUps)
+        return statusmsg
+
+
+
+class ActorSystemBase(WakeupManager):
 
     def __init__(self, system, logDefs = None):
+        super(ActorSystemBase, self).__init__()
         self.system = system
         self._pendingSends = []
         if logDefs is not False: dictConfig(logDefs or defaultLoggingConfig)
@@ -227,10 +250,6 @@ class ActorSystemBase:
         self._primaryCount  = 0
         self._globalNames = {}
         self.procLimit = 0
-        self._wakeUps = {}  # key = ExpirationTimer for wakeup, value = list
-                            # of (targetAddress, pending
-                            # WakeupMessage) to restart at
-                            # that time
         self._sources = {}  # key = sourcehash, value = encrypted zipfile data
         self._sourceAuthority = None  # ActorAddress of Source Authority
         self._sourceNotifications = [] # list of actor addresses to notify of loads
@@ -262,18 +281,6 @@ class ActorSystemBase:
             self.unloadActorSource(list(self._sources.keys())[0])
 
 
-    def _realizeWakeups(self):
-        "Find any expired wakeups and queue them to the send processing queue"
-        removals = []
-        for wakeupTime in self._wakeUps:
-            if not wakeupTime.expired():
-                continue
-            self._pendingSends.extend([PendingSend(A,M,A) for A,M in self._wakeUps[wakeupTime]])
-            removals.append(wakeupTime)
-        for each in removals:
-            del self._wakeUps[each]
-
-
     def _runSends(self, timeout=None, stop_on_available=False):
         numsends = 0
         endtime = ExpirationTimer(toTimeDeltaOrNone(timeout))
@@ -291,11 +298,10 @@ class ActorSystemBase:
                     return
             if endtime.remaining(forever=-1) == -1:
                 return
-            valid_wakeups = [W for W in self._wakeUps if W <= endtime]
-            if not valid_wakeups:
+            next_wakeup = self._next_wakeup()
+            if next_wakeup is None or next_wakeup > endtime:
                 return
-            import time
-            time.sleep(max(0, timePeriodSeconds(min(valid_wakeups))))
+            time.sleep(max(0, timePeriodSeconds(next_wakeup.remaining())))
             self._realizeWakeups()
 
 
@@ -347,6 +353,12 @@ class ActorSystemBase:
                 self.actorRegistry[deadAddr] = None
 
 
+    def _realizeWakeups(self):
+        "Find any expired wakeups and queue them to the send processing queue"
+        for target_addr, expired in self._pop_expired_wakeups():
+            self._pendingSends.append(
+                PendingSend(target_addr, WakeupMessage(expired.duration), target_addr))
+
     def _callActorWithMessage(self, tgt, ps, msg, sndr):
         try:
             # This if is to avoid sending PoisonMessage(ChildActorExited) back to child
@@ -388,11 +400,10 @@ class ActorSystemBase:
 
 
     def _generateStatusResponse(self, msg, tgt, sndr):
-        pendWake = [W for K,E in self._wakeUps.items() for T,W in E if T == tgt.address]
         stsresp = Thespian_ActorStatus(tgt.address,
                                        tgt.instance.__class__.__name__,
                                        tgt._system.systemAddress)
-        stsresp.addWakeups(self._wakeUps)
+        stsresp = self.add_wakeups_to_status(stsresp)
         for C in tgt._yung: stsresp.addChild(C)
         for M in self._pendingSends:
             if M[1] == tgt.address:
@@ -523,8 +534,7 @@ class ActorSystemBase:
         self._pendingSends.append(PendingSend(fromActor, msg, toActor))
 
     def wakeupAfter(self, fromActor, timePeriod):
-        wakeupTime = ExpirationTimer(timePeriod)
-        self._wakeUps.setdefault(wakeupTime, []).append( (fromActor, WakeupMessage(timePeriod)) )
+        self._add_wakeup(fromActor, timePeriod)
         self._realizeWakeups()
 
     def _handleDeadLetters(self, address, enable):
