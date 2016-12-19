@@ -34,18 +34,22 @@ class wakeupTransportBase(object):
 
     def __init__(self, *args, **kw):
         super(wakeupTransportBase, self).__init__(*args, **kw)
-        # _pendingWakeups: key = ExpirationTimer for wakeup, value = list of
-        # pending wakeupAfter msgs to restart at that time
-        self._pendingWakeups = {}
+        # _pendingWakeups is a sorted list of ExpirationTimer objects,
+        # from the shortest to the longest.
+        self._pendingWakeups = []
         self._activeWakeups = []  # expired wakeups to be delivered
 
 
     def _updateStatusResponse(self, resp):
-        "Called to update a Thespian_SystemStatus or Thespian_ActorStatus with common information"
-        resp.addWakeups(self._pendingWakeups)
+        """Called to update a Thespian_SystemStatus or Thespian_ActorStatus
+           with common information
+        """
+        resp.addWakeups([(self.myAddress, T) for T in self._pendingWakeups])
         for each in self._activeWakeups:
             resp.addPendingMessage(self.myAddress, self.myAddress, str(each.message))
 
+    def _update_runtime(self):
+        self.run_time = (self._pendingWakeups + [self._max_runtime])[0]
 
     def run(self, incomingHandler, maximumDuration=None):
         """Core scheduling method; called by the current Actor process when
@@ -61,7 +65,7 @@ class wakeupTransportBase(object):
 
         while firstTime or not self._max_runtime.expired():
             firstTime = False
-            self.run_time = min(list(self._pendingWakeups.keys()) + [self._max_runtime])
+            self._update_runtime()
             rval = self._runWithExpiry(incomingHandler)
             if rval is not None:
                 return rval
@@ -82,22 +86,19 @@ class wakeupTransportBase(object):
 
 
     def addWakeup(self, timePeriod):
-        wakeupTime = ExpirationTimer(timePeriod)
-        self._pendingWakeups.setdefault(wakeupTime, []) \
-                            .append(ReceiveEnvelope(self.myAddress, WakeupMessage(timePeriod)))
-        self.run_time = min(list(self._pendingWakeups.keys()) + [self._max_runtime])
+        self._pendingWakeups.append(ExpirationTimer(timePeriod))
+        self._pendingWakeups.sort()
+        # The addWakeup method is called as a result of
+        # self.wakeupAfter, so ensure that the current run time is
+        # updated in case this new wakeup is the shortest.
+        self._update_runtime()
 
 
     def _realizeWakeups(self):
         "Find any expired wakeups and queue them to the send processing queue"
-        removals = []
-        for wakeupTime in self._pendingWakeups:
-            if not wakeupTime.expired():
-                continue
-            self._activeWakeups.extend(self._pendingWakeups[wakeupTime])
-            removals.append(wakeupTime)
-        for each in removals:
-            del self._pendingWakeups[each]
-        return bool(removals)
-
-    # KWQ: Thespian_ActorStatus pendingWakeups = [W for K,V in self._pendingWakeups.items() for A,W in V]
+        starting_len = len(self._activeWakeups)
+        while self._pendingWakeups and self._pendingWakeups[0].expired():
+            self._activeWakeups.append(
+                ReceiveEnvelope(self.myAddress,
+                                WakeupMessage(self._pendingWakeups.pop(0).duration)))
+        return starting_len != len(self._activeWakeups)
