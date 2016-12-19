@@ -17,7 +17,7 @@ class Thespian_StatusReq(ActorSystemMessage):
 class _Common_StatusResp(ActorSystemMessage):
     def __init__(self):
         self.pendingMessages  = []  # array of (fromActor, toActor, msgstr) tuples
-        self.pendingWakeups   = {}  # key = wakeup time, value = array of WakeupMessages
+        self.pendingWakeups   = []  # array of (toActor, Timer)
         self.receivedMessages = []  # array of (fromActor, toActor, msgstr) tuples
         self.childActors      = []  # array of addresses
         self.governer         = None
@@ -31,8 +31,8 @@ class _Common_StatusResp(ActorSystemMessage):
         self.pendingMessages.append( (fromActor, toActor, str(msgstr)) )
     def addReceivedMessage(self, fromActor, toActor, msgstr):
         self.receivedMessages.append( (fromActor, toActor, str(msgstr)) )
-    def addWakeups(self, wakeupdict):
-        self.pendingWakeups.update(wakeupdict)
+    def addWakeups(self, wakeups_list):
+        self.pendingWakeups.extend(wakeups_list)
     def addSent(self, count): self._numSent += count
     def addSendFailures(self, count): self._numSendFailures += count
     def addReceived(self, count): self._numReceived += count
@@ -97,12 +97,30 @@ def _common_formatStatus(tofd, response, childActorTag, showAddress=str):
     tofd.write('  |Received Messages [%d]:\n'%len(response.receivedMessages))
     for F,T,M in response.receivedMessages:
         tofd.write('    %s <-- %s:  %s\n'%(showAddress(T), showAddress(F), M))
+
+    # pendingWakeups is a dict with datetime keys and a list of
+    # ReceiveEnvelope(WakeupMessage) values in older Thespian versions
+    # (3.5.2 and earlier), changed to a list of (address,
+    # ExpirationTimer) in newer versions.  The following maintains
+    # compatibility for both.
     tofd.write('  |Pending Wakeups [%d]:\n'%len(response.pendingWakeups))
     from thespian.system.timing import ExpirationTimer
-    for W in response.pendingWakeups:
-        tofd.write('    %s%s\n'%(str(W),
-                                 (' (in %s)'%W.remaining() if isinstance(W, ExpirationTimer)
-                                  else '')))
+    from datetime import datetime
+    now = datetime.now()
+    pw = [(('' if V.sender == getattr(response, 'actorAddress', None)
+            else '--> %s : ' % V.sender),
+           '%s  (in %s  @  %s)' % (V.message.delayPeriod, str(A - now), str(A)))
+          for A in response.pendingWakeups
+          for V in response.pendingWakeups[A]] \
+         if isinstance(response.pendingWakeups, dict) else \
+            [(('' if A == getattr(response, 'actorAddress', None)
+               else '--> %s : ' % A),
+              '%s  (in %s @ %s)' % (W.duration, W.remaining(),
+                                       str(now + W.remaining())))
+             for (A,W) in response.pendingWakeups]
+    for each in pw:
+        tofd.write('    %s%s\n' % each)
+
     tofd.write('  |Pending Address Resolution [%d]:\n'%(len(response._pendingAddrCnts)))
     for A in response._pendingAddrCnts:
         tofd.write('    %s: %s\n'%(A, response._pendingAddrCnts[A]))
