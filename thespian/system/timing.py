@@ -16,7 +16,7 @@ from datetime import datetime, timedelta
 # monotonic.
 try:
     currentTime = time.perf_counter
-except NameError:
+except (AttributeError, NameError):
     currentTime = time.time
 
 
