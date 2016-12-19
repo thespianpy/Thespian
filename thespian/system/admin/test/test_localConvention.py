@@ -3,7 +3,7 @@ from thespian.system.messages.convention import (ConventionRegister,
                                                  ConventionDeRegister,
                                                  ConventionInvite)
 from thespian.system.admin.convention import (LocalConventionState, LostRemote,
-                                              HysteresisSend, HysteresisCancel,
+                                              HysteresisCancel,
                                               CONVENTION_REREGISTRATION_PERIOD,
                                               CONVENTION_REGISTRATION_MISS_MAX,
                                               convention_reinvite_adjustment)
