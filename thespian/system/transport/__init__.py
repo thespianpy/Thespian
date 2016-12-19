@@ -1,6 +1,7 @@
 "This module provides various low-level inter-Actor transport implementations."
 
-from datetime import datetime, timedelta
+from datetime import timedelta
+from thespian.system.timing import ExpirationTimer
 from thespian.system.utilis import thesplog
 import logging
 
@@ -122,12 +123,11 @@ class PauseWithBackoff(object):
     def backoffPause(self, startPausing=False):
         if startPausing:
             self._lastPauseLength = backoffDelay(getattr(self, '_lastPauseLength', 0))
-            self._pauseUntil = datetime.now() + self._lastPauseLength
+            self._pauseUntil = ExpirationTimer(self._lastPauseLength)
             return self._lastPauseLength
         elif hasattr(self, '_pauseUntil'):
-            now = datetime.now()
-            if now < self._pauseUntil:
-                return self._pauseUntil - now
+            if not self._pauseUntil.expired():
+                return self._pauseUntil.remaining()
             delattr(self, '_pauseUntil')
         return timedelta(0)
 
@@ -172,7 +172,7 @@ class TransmitIntent(PauseWithBackoff):
         self._message    = msg
         self._callbackTo = ResultCallback(onSuccess, onError)
         self._resultsts  = None
-        self._quitTime   = datetime.now() + (maxPeriod or DEFAULT_MAX_TRANSMIT_PERIOD)
+        self._quitTime   = ExpirationTimer(maxPeriod or DEFAULT_MAX_TRANSMIT_PERIOD)
         self.nextIntent  = None
         self._attempts    = 0
         self.transmit_retry_period = retryPeriod
@@ -215,37 +215,37 @@ class TransmitIntent(PauseWithBackoff):
     def retry(self, immediately=False):
         if self._attempts > MAX_TRANSMIT_RETRIES:
             return False
-        if self._quitTime < datetime.now():
+        if self._quitTime.expired():
             return False
         self._attempts += 1
-        self._retryTime = datetime.now()
-        if not immediately:
-            self._retryTime += self._attempts * self.transmit_retry_period
+        if immediately:
+            self._retryTime = ExpirationTimer(0)
+        else:
+            self._retryTime = ExpirationTimer(self._attempts * self.transmit_retry_period)
         return True
 
     def timeToRetry(self, socketAvail=False):
         if socketAvail and hasattr(self, '_awaitingTXSlot'):
             delattr(self, '_awaitingTXSlot')
         if hasattr(self, '_retryTime'):
-            retryNow = self._retryTime <= datetime.now()
+            retryNow = self._retryTime.expired()
             if retryNow:
                 delattr(self, '_retryTime')
             return retryNow
         return socketAvail
 
     def delay(self):
-        now = datetime.now()
         if getattr(self, '_awaitingTXSlot', False):
-            if now > self._quitTime:
+            if self._quitTime.expired():
                 return timedelta(seconds=0)
-            return max(timedelta(milliseconds=10), (self._quitTime - now) / 2)
+            return max(timedelta(milliseconds=10), (self._quitTime.remaining()) / 2)
         return max(timedelta(seconds=0),
-                   min(self._quitTime - now,
-                       getattr(self, '_retryTime', self._quitTime) - now,
-                       getattr(self, '_pauseUntil', self._quitTime) - now))
+                   min(self._quitTime.remaining(),
+                       getattr(self, '_retryTime', self._quitTime).remaining(),
+                       getattr(self, '_pauseUntil', self._quitTime).remaining()))
 
     def expired(self):
-        return self._quitTime < datetime.now()
+        return self._quitTime.expired()
 
     def __str__(self):
         return '************* %s' % self.identify()
@@ -257,7 +257,6 @@ class TransmitIntent(PauseWithBackoff):
             smsg = '<msg-cannot-convert-to-ascii>'
         if len(smsg) > MAX_SHOWLEN:
             smsg = smsg[:MAX_SHOWLEN] + '...'
-        now = datetime.now()
         return 'TransportIntent(' + '-'.join(filter(None, [
             str(self.targetAddr),
             'pending' if self.result is None else '='+str(self.result),
@@ -265,9 +264,9 @@ class TransmitIntent(PauseWithBackoff):
             'WAITSLOT' if getattr(self, '_awaitingTXSlot', False) else None,
             'retry#%d'%self._attempts if self._attempts else '',
             str(type(self.message)), smsg,
-            'quit_%s'%str(self._quitTime-now),
-            'retry_%s'%str(self._retryTime-now) if getattr(self, '_retryTime', None) else None,
-            'pause_%s'%str(self._pauseUntil-now) if getattr(self, '_pauseUntil', None) else None,
+            'quit_%s'%str(self._quitTime.remaining()),
+            'retry_%s'%str(self._retryTime.remaining()) if getattr(self, '_retryTime', None) else None,
+            'pause_%s'%str(self._pauseUntil.remaining()) if getattr(self, '_pauseUntil', None) else None,
             ])) + ')'
 
 

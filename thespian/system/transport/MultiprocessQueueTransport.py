@@ -50,7 +50,7 @@ testActorAdder.py:test07_LotsOfActorsEveryTenWithBackground (deadlocks
 import logging
 from thespian.actors import *
 from thespian.system.utilis import thesplog, partition, foldl, AssocList
-from thespian.system.timing import ExpiryTime, timePeriodSeconds
+from thespian.system.timing import timePeriodSeconds
 from thespian.system.transport import *
 from thespian.system.transport.asyncTransportBase import asyncTransportBase
 from thespian.system.transport.wakeupTransportBase import wakeupTransportBase

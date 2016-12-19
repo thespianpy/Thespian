@@ -43,9 +43,49 @@ def toTimeDeltaOrNone(timespec):
     raise TypeError('Unknown type for timespec: %s'%type(timespec))
 
 
+class Timer(object):
+    """
+    Keeps track of the elapsed time since its creation or the last call to reset().
+    """
+    def __init__(self):
+        self._start = currentTime()
+    def elapsed(self):
+        """
+        :return: a timedelta object representing the elapsed time.
+        """
+        return timedelta(seconds=(currentTime() - self._start))
+    def elapsedSeconds(self):
+        """
+        :return: A float representing the elapsed time in seconds.
+        """
+        return timePeriodSeconds(self.elapsed())
+    def reset(self):
+        """
+        Restarts the timer.
+        """
+        self._start = currentTime()
+    def __str__(self):
+        return 'Started_on_' + str(self._start)
+    def __eq__(self, o):
+        return abs(self._start - o._start) < timedelta(microseconds=1)
+    def __lt__(self, o):
+        return self._start < o._start
+    def __gt__(self, o):
+        return not self.__lt__(o)
+    def __le__(self, o): return self.__eq__(o) or self.__lt__(o)
+    def __ge__(self, o): return self.__eq__(o) or self.__gt__(o)
+    def __ne__(self, o): return not self.__eq__(o)
+    def __nonzero__(self): return self.elapsedSeconds()
+
+
 class ExpiryTime(object):
     def __init__(self, duration):
-        self._time_to_quit = None if duration is None else (currentTime() + duration)
+        if duration is None:
+            self._time_to_quit = None
+        elif isinstance(duration, timedelta):
+            self._time_to_quit = currentTime() + timePeriodSeconds(duration)
+        else:
+            self._time_to_quit = currentTime() + duration
     def expired(self):
         return False if self._time_to_quit is None else (currentTime() >= self._time_to_quit)
     def remaining(self, forever=None):
@@ -97,19 +137,15 @@ class ExpirationTimer(object):
        May also be initialized with a duration of None, indicating
        that it should never timeout and that `remaining()` should
        return the forever value (defaulting to None).
-
-       Note that `timenow` is only provided for backwards compatibility. It is
-       completely ignored and will be removed soon.
     """
-    def __init__(self, duration=None, timenow=None):
+    def __init__(self, duration=None):
         self.duration = duration
-        self._time_to_quit = None if duration is None else (currentTime() + duration)
-    def update_time_now(self, timenow):
-        """
-        This method only provided for backwards compatibility and is implemented
-        as noop. It will be removed soon.
-        """
-        pass
+        if duration is None:
+            self._time_to_quit = None
+        elif isinstance(duration, timedelta):
+            self._time_to_quit = currentTime() + timePeriodSeconds(duration)
+        else:
+            self._time_to_quit = currentTime() + duration
     def expired(self):
         "Returns true if the indicated duration has passed since this was created."
         return False if self._time_to_quit is None else (currentTime() >= self._time_to_quit)

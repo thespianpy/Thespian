@@ -96,7 +96,7 @@ from thespian.system.messages.multiproc import ChildMayHaveDied
 from thespian.system.addressManager import ActorLocalAddress
 import socket
 import select
-from datetime import datetime, timedelta
+from datetime import timedelta
 import pickle
 import errno
 from contextlib import closing
@@ -150,7 +150,7 @@ class TCPIncoming_Common(PauseWithBackoff):
         # identification
         self._rmtAddr = rmtAddr
         self._rData = rcvBuf or ReceiveBuffer(serializer.loads)
-        self._expires = datetime.now() + MAX_INCOMING_SOCKET_PERIOD
+        self._expires = ExpirationTimer(MAX_INCOMING_SOCKET_PERIOD)
         self.failCount = 0
 
     @property
@@ -166,11 +166,10 @@ class TCPIncoming_Common(PauseWithBackoff):
         self._rmtAddr = newAddr
 
     def delay(self):
-        now = datetime.now()
         # n.b. include _pauseUntil from PauseWithBackoff
         return max(timedelta(seconds=0),
-                   min(self._expires - now,
-                       getattr(self, '_pauseUntil', self._expires) - now))
+                   min(self._expires.remaining(),
+                       getattr(self, '_pauseUntil', self._expires).remaining()))
 
     def addData(self, newData): self._rData.addMore(newData)
 
@@ -201,17 +200,14 @@ class TCPIncomingPersistent(TCPIncoming_Common):
 
 
 class IdleSocket(object):
-    def __init__(self, socket, addr, timenow=None):
+    def __init__(self, socket, addr):
         self.socket = socket
         self.rmtaddr = addr
         # n.b. the remote may have bound an outbound connect socket to
         # a different address, but rmtAddr represents the primary
         # address of an Actor/Admin: the one it listens on.
         # self.rmtAddr = rmtAddr
-        self.validity = ExpirationTimer(MAX_IDLE_SOCKET_PERIOD, timenow)
-
-    def update_time_now(self, timenow):
-        self.validity.update_time_now(timenow)
+        self.validity = ExpirationTimer(MAX_IDLE_SOCKET_PERIOD)
 
     def expired(self):
         return self.validity.expired()
@@ -374,7 +370,6 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
         """Called to update a Thespian_SystemStatus or Thespian_ActorStatus
            with common information
         """
-        timenow = datetime.now()
         for each in self._transmitIntents.values():
             resp.addPendingMessage(self.myAddress,
                                    each.targetAddr,
@@ -390,7 +385,6 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
         asyncTransportBase._updateStatusResponse(self, resp)
         wakeupTransportBase._updateStatusResponse(self, resp)
         for num, each in enumerate(self._openSockets.values()):
-            each.update_time_now(timenow)
             resp.addKeyVal('sock#%d-fd%d' % (num, each.socket.fileno()),
                            str(each))
 
@@ -584,7 +578,6 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
                 self._waitingTransmits.append(intent)
 
     def _finishIntent(self, intent, status=SendStatus.Sent):
-        timenow = datetime.now()
         if hasattr(intent, 'socket'):
             if hasattr(self, '_openSockets'):
                 extraRead = getattr(intent, 'extraRead', None)
@@ -601,8 +594,7 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
                         opskey = opsKey(intent.targetAddr)
                         _safeSocketShutdown(self._openSockets.get(opskey, None))
                         self._openSockets[opskey] = IdleSocket(intent.socket,
-                                                               intent.targetAddr,
-                                                               timenow)
+                                                               intent.targetAddr)
                         # No need to restart a pending transmit for
                         # this target here; the main loop will check
                         # the waitingIntents and find/start the next one
@@ -1268,14 +1260,12 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
         # Only called if incomingSocket can continue to be used; if
         # there was an error then incomingSocket should be closed and
         # released.
-        timenow = datetime.now()
         fromAddr = incomingSocket.fromAddress
         if fromAddr and isinstance(incomingSocket, TCPIncomingPersistent):
             opskey = opsKey(fromAddr)
             _safeSocketShutdown(self._openSockets.get(opskey, None))
             self._openSockets[opskey] = IdleSocket(incomingSocket.socket,
-                                                   fromAddr,
-                                                   timenow)
+                                                   fromAddr)
             for T in self._transmitIntents.values():
                 if T.targetAddr == fromAddr and T.stage == self._XMITStepRetry:
                     T.retry(immediately=True)

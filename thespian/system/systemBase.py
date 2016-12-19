@@ -16,12 +16,12 @@ except ImportError:
 from thespian.actors import *
 from thespian.system import *
 from thespian.system.utilis import thesplog
-from thespian.system.timing import toTimeDeltaOrNone, ExpiryTime
+from thespian.system.timing import toTimeDeltaOrNone, ExpiryTime, ExpirationTimer
 from thespian.system.messages.admin import *
 from thespian.system.messages.status import *
 from thespian.system.transport import *
 
-from datetime import datetime, timedelta
+from datetime import timedelta
 import os
 
 MAX_SYSTEM_SHUTDOWN_DELAY    = timedelta(seconds=10)
@@ -167,12 +167,12 @@ class systemBase(object):
                                         globalName=globalName,
                                         sourceHash=sourceHash),
                            onError = self._newPrimarySendFailed))
-        endwait = datetime.now() + MAX_CHILD_ACTOR_CREATE_DELAY
+        endwait = ExpirationTimer(MAX_CHILD_ACTOR_CREATE_DELAY)
         self.transport.run(self._newActorCallback,
                            MAX_CHILD_ACTOR_CREATE_DELAY)
         # Other items might abort the transport run... like transmit
         # failures on a previous ask() that itself already timed out.
-        while self._newActorAddress is None and not self._pcrFAILED and datetime.now() < endwait:
+        while self._newActorAddress is None and not self._pcrFAILED and not endwait.expired():
             self.transport.run(self._newActorCallback,
                                MAX_CHILD_ACTOR_CREATE_DELAY)
 
