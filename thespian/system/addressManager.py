@@ -23,7 +23,14 @@ class ActorLocalAddress:
         # n.b. compareAddressEq below expects this to throw an exception if o is not an ActorLocalAddress
         return isinstance(o, ActorLocalAddress) and self.generatingActor == o.generatingActor and self.addressInstanceNum == o.addressInstanceNum
     def __ne__(self, o): return not self.__eq__(o)
-    def __str__(self): return 'LocalAddr.%s'%self.addressInstanceNum
+    def __str__(self):
+        try:
+            realized = self.addressManager.exportAddr(self)
+            if realized:
+                return str(realized)
+        except Exception:
+            pass
+        return 'LocalAddr.%s'%self.addressInstanceNum
 
 
 class CannotPickle(Exception):
@@ -171,11 +178,17 @@ class ActorAddressManager:
 
 
     def exportAddr(self, anAddress):
-        """Returns an exportable form of the Address: internal addresses are converted
-           to external; if no conversion is yet possible, this returns None."""
-        if isinstance(anAddress.addressDetails, ActorLocalAddress):
-            if anAddress.addressDetails.generatingActor == self._thisActorAddr:
-                return self._managed[anAddress.addressDetails.addressInstanceNum]
+        """Returns an exportable form of the Address: internal addresses are
+           converted to external; if no conversion is yet possible,
+           this returns None.  Input is either an ActorAddress or the
+           details of an actor address whose public export version is
+           to be looked up and returned.
+
+        """
+        details = getattr(anAddress, 'addressDetails', anAddress)
+        if isinstance(details, ActorLocalAddress):
+            if details.generatingActor == self._thisActorAddr:
+                return self._managed[details.addressInstanceNum]
             return None
         # Assumed to be directly useable
         return anAddress
