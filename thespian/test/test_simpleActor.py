@@ -47,12 +47,13 @@ class TestFuncSimpleActorOperations(object):
     def testSimpleActorAskTimeout(self, asys):
         clooney = asys.createActor(Clooney)
         t1 = datetime.datetime.now()
-        r = asys.ask(clooney, 'Silence!', 3.5)
+        r = asys.ask(clooney, 'Silence!', 0.5)
         assert r == None
-        t2 = datetime.datetime.now()
         # Could test that it waited the proper amount of time, but
         # that doesn't allow an ActorSystems that knows there will be
         # no response to run more quickly (e.g. simpleActorSystem).
+        #
+        # t2 = datetime.datetime.now()
         # self.assertGreaterEqual(t2 - t1, datetime.timedelta(microseconds=500*1000))
 
     def testSendTupleToSelf(self, asys):
