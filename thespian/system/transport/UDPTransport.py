@@ -207,7 +207,7 @@ class UDPTransport(asyncTransportBase, wakeupTransportBase):
         # without interrupting the underlying syscall, so this message
         # is otherwise ignored but causes the select.select below to
         # return.
-        r = self.socket.sendto(b'BuMP', self.myAddress.addressDetails.sockname)
+        self.socket.sendto(b'BuMP', self.myAddress.addressDetails.sockname)
 
 
     def _scheduleTransmitActual(self, transmitIntent):
@@ -276,7 +276,7 @@ class UDPTransport(asyncTransportBase, wakeupTransportBase):
                     sendAddr = ActorAddress(UDPv4ActorAddress(*sender, external=True))
                     try:
                         msg = serializer.loads(rawmsg)
-                    except Exception as ex:
+                    except Exception:
                         continue
                 rcvdEnv = ReceiveEnvelope(sendAddr, msg)
             if incomingHandler is None:
