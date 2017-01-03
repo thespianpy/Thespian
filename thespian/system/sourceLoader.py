@@ -218,7 +218,8 @@ class HashLoader(LoaderBase):
             name = ospath.join(*tuple(moduleName.split('.'))) + '.py'
         else:
             name = moduleName + '.py'
-        codeproc = lambda s: fix_imports(s, name, hashRoot, self.finder.getZipTopLevelNames())
+        codeproc = lambda s: fix_imports(s, name, hashRoot,
+                                         self.finder.getZipTopLevelNames())
         try:
             # Ensure the file ends in a carriage-return.  The path
             # importer does this automatically and no trailing
@@ -232,9 +233,7 @@ class HashLoader(LoaderBase):
                 #converter = lambda s: codeproc(s + b'\n')
             else:
                 converter = lambda s: codeproc(s.replace('\r\n', '\n')+'\n')
-            code = self.finder.withZipElementSource(
-                name,
-                converter)
+            code = self.finder.withZipElementSource(name, converter)
 
             # Intercept uses of __import__ in the loaded module, which
             # bypasses the normal import machinery.
@@ -350,11 +349,13 @@ class SourceHashFinder(FinderBase):
     def getZipNames(self):
         return self._getFromZipFile(lambda z: z.namelist())
     def getZipTopLevelNames(self):
-        return set([N.partition('/')[0] for N in self.getZipNames() if N != '__init__.py'])
+        return set([N.partition('/')[0]
+                    for N in self.getZipNames()
+                    if N != '__init__.py'])
     def getZipDirectory(self):
         return self._getFromZipFile(lambda z: z.infolist())
     def withZipElementSource(self, elementname, onSrcFunc):
-        return self._getFromZipFile(lambda z: onSrcFunc(z.open(elementname, 'r').read()))
+        return self._getFromZipFile(lambda z: onSrcFunc(z.read(elementname)))
     def find_spec(self, fullname, path=None, target=None):
         try:
             return self.find_module(fullname, path)
