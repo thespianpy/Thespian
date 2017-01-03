@@ -272,7 +272,19 @@ class ActorManager(systemCommonBase):
 
     def actor_send(self, targetAddr, msg):
         self._sCBStats.inc('Actor.Message Send.Generated')
-        self._send_intent(TransmitIntent(targetAddr, msg))
+        self._send_intent(TransmitIntent(targetAddr, msg,
+                                         onError=self.actor_send_fail))
+
+    def actor_send_fail(self, result, intent):
+        # If this was a DeadTarget failure, forward to the Admin for
+        # dead letter handling (with appropriate avoiding of recursion
+        # loops; see also addressManager.py:prepMessageSend).
+        if result == SendStatus.DeadTarget and \
+           intent.targetAddr != self._adminAddr and \
+           not isinstance(intent.message, (DeadEnvelope, ChildActorExited)):
+            self._send_intent(TransmitIntent(self._adminAddr,
+                                             DeadEnvelope(intent.targetAddr,
+                                                          intent.message)))
 
 
     # ----------------------------------------------------------------------
