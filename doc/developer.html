@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
 <title>Thespian Developer's Notes</title>
-<!-- 2016-12-04 Sun 22:09 -->
+<!-- 2017-01-02 Mon 22:38 -->
 <meta  http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta  name="generator" content="Org-mode" />
 <meta  name="author" content="Kevin Quick &lt;kquick@godaddy.com&gt;" />
@@ -428,19 +428,19 @@ These attributes should be specified on the class itself:
 
 <div class="org-src-container">
 
-<pre class="src src-python"><span class="linenr"> 1: </span><span class="org-keyword">class</span> <span class="org-type">TestASimpleSystem</span>(ActorSystemTestCase):
-<span class="linenr"> 2: </span>    <span class="org-variable-name">testbase</span> = <span class="org-string">'Simple'</span>
-<span class="linenr"> 3: </span>    <span class="org-variable-name">scope</span> = <span class="org-string">'func'</span>
+<pre class="src src-python"><span class="linenr"> 1: </span>class TestASimpleSystem(ActorSystemTestCase):
+<span class="linenr"> 2: </span>    testbase = 'Simple'
+<span class="linenr"> 3: </span>    scope = 'func'
 <span class="linenr"> 4: </span>
-<span class="linenr"> 5: </span>    <span class="org-keyword">def</span> <span class="org-function-name">test_something</span>(<span class="org-keyword">self</span>):
-<span class="linenr"> 6: </span>        <span class="org-doc">"insert test here"</span>
+<span class="linenr"> 5: </span>    def test_something(self):
+<span class="linenr"> 6: </span>        "insert test here"
 <span class="linenr"> 7: </span>
-<span class="linenr"> 8: </span>    <span class="org-keyword">def</span> <span class="org-function-name">test06_frobnicator</span>(<span class="org-keyword">self</span>):
-<span class="linenr"> 9: </span>        <span class="org-doc">"verify the frobnicator functionality"</span>
+<span class="linenr"> 8: </span>    def test06_frobnicator(self):
+<span class="linenr"> 9: </span>        "verify the frobnicator functionality"
 <span class="linenr">10: </span>
-<span class="linenr">11: </span><span class="org-keyword">class</span> <span class="org-type">TestMultiprocUDPSystem</span>(TestASimpleSystem):
-<span class="linenr">12: </span>    <span class="org-variable-name">testbase</span> = <span class="org-string">'MultiprocUDP'</span>
-<span class="linenr">13: </span>    <span class="org-variable-name">unstable</span> = <span class="org-constant">True</span> <span class="org-comment-delimiter"># </span><span class="org-comment">see note in test06</span>
+<span class="linenr">11: </span>class TestMultiprocUDPSystem(TestASimpleSystem):
+<span class="linenr">12: </span>    testbase = 'MultiprocUDP'
+<span class="linenr">13: </span>    unstable = True # see note in test06
 </pre>
 </div>
 
@@ -485,7 +485,7 @@ testing.
 </div>
 <div id="postamble" class="status">
 <p class="author">Author: Kevin Quick &lt;kquick@godaddy.com&gt;</p>
-<p class="date">Created: 2016-12-04 Sun 22:09</p>
+<p class="date">Created: 2017-01-02 Mon 22:38</p>
 <p class="creator"><a href="http://www.gnu.org/software/emacs/">Emacs</a> 25.1.1 (<a href="http://orgmode.org">Org</a> mode 8.2.10)</p>
 <p class="validation"><a href="http://validator.w3.org/check?uri=referer">Validate</a></p>
 </div>

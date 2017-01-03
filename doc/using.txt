@@ -72,7 +72,6 @@ Table of Contents
 .. 5.16 actorSystemShutdown
 .. 5.17 ActorTypeDispatcher
 ..... 5.17.1 Type Handling Deferral
-.. 5.18 Actor Troupe Support
 6 ActorSystem API
 .. 6.1 Exceptions
 .. 6.2 ActorSystem
@@ -114,15 +113,18 @@ Table of Contents
 ..... 7.12.1 Attributes
 .. 7.13 Thespian_SystemStatus
 .. 7.14 Thespian_ActorStatus
-8 ActorSystem Implementations
-.. 8.1 Common Capabilities
-.. 8.2 simpleSystemBase
-.. 8.3 multiprocQueueBase
-.. 8.4 multiprocTCPBase
-.. 8.5 multiprocUDPBase
-9 Deploying Actor-based Projects
-.. 9.1 Overall Security Considerations
-..... 9.1.1 Security Scenarios
+8 Patterns and Helpers
+.. 8.1 Actor Troupe Support
+.. 8.2 Transient Actors
+9 ActorSystem Implementations
+.. 9.1 Common Capabilities
+.. 9.2 simpleSystemBase
+.. 9.3 multiprocQueueBase
+.. 9.4 multiprocTCPBase
+.. 9.5 multiprocUDPBase
+10 Deploying Actor-based Projects
+.. 10.1 Overall Security Considerations
+..... 10.1.1 Security Scenarios
 
 
 
@@ -1965,70 +1967,6 @@ Table of Contents
   └────
 
 
-5.18 Actor Troupe Support
-─────────────────────────
-
-  The use of Actor Troupes is supported by importing the
-  `thespian.troupe' file and adding a `@troupe()' decorator to the Actor
-  definition.  This decorator turns a regular Actor into a dynamic Actor
-  Troupe, where multiple Actors are spun up on-demand to handle
-  messages.
-
-  This pattern is especially useful for situations where multiple
-  requests are received and processing individual requests may take some
-  time to perform.
-
-  ┌────
-  │ from thespian.troupe import troupe
-  │ 
-  │ @troupe()
-  │ class MyActor(Actor):
-  │    ...
-  └────
-
-
-  The optional arguments to the troupe decorator are:
-
-  ‣ `max_count' is the maximum number of actors in the troupe
-    (defaulting to 10).
-
-  ‣ `idle_count' is the default number of actors in the troupe when
-    idle. As work is received, the number of actors will grow up to the
-    max_count, but when there is no more work, the number of actors will
-    shrink back down to this number.  Note that there may be fewer than
-    this number of actors present: actors are only created if work is
-    received and there are no idle actors to handle that work.
-
-  The decorator usage above works very well for a simple worker actor
-  that can perform all of the necessary work utilizing only the message
-  sent to it; the actor can be turned into a troupe member with no
-  change other than adding the decorator.
-
-  However, an actor which must interact with other actors to process the
-  work requires additional modifications to allow the troupe manager to
-  know when the actor has finished performing the work.  A troupe member
-  that has not fully performed the work and is exchanging messages with
-  other actors to complete the work (or awaiting WakeupMessages) must
-  set the `troupe_work_in_progress' attribute on self to `True'.  Once
-  the work is completed by a subsequent message delivery, it should set
-  this attribute to `False', which will cause the troupe manager to be
-  notified that the actor is ready for more work.
-
-  ‣ Failure to set the `troupe_work_in_progress' attribute to `True' on
-    a multi-step actor will result in either (a) the actor receiving
-    more work before it has completed the previous work, or (b) the
-    actor will be killed by the troupe manager before finishing the work
-    because the manager believes the actor is finished.
-
-  ‣ Failure to reset the `troup_work_in_progress' attribute to `False'
-    will cause the troupe manager to never send any more work requests
-    to the troupe actor, even if the latter is idle.  The troupe actor
-    will also never be killed until the troupe manager itself is killed.
-
-  Manipulating the `troupe_work_in_progress' member variable for
-  non-troupe actors has no effect on their behavior and is safe to do.
-
-
 6 ActorSystem API
 ═════════════════
 
@@ -2715,12 +2653,20 @@ Table of Contents
   source is authorized to run in the context of the current ActorSystem.
 
   If the specified source is not authorized to run in the current
-  ActorSystem, the Source Authority simply discards this message and
-  takes no further action.
+  ActorSystem, the Source Authority may either simply discard this
+  message and take no further action, or it may send a ValidatedSource
+  message specifying None as the validated source.  The latter is
+  recommended since it allows immediate response handling for pending
+  actors for that source; otherwise a source load timeout must expire
+  before rejecting actor create requests for the rejected source load
+  attempt.
 
   If the specified source is valid for running in the current
   ActorSystem, the Source Authority should return a zipfile containing
-  *compiled sources only* to the sender in a ValidatedSource message.
+  the sources to the sender in a ValidatedSource message.
+
+  At the present time, only `.py' sources are utilized; any `.pyc' or
+  `.pyo' sources are ignored if present in the zipfile.
 
   It is important to note that the sources provided to the
   `loadActorSource()' call are not actually available for use in
@@ -2747,18 +2693,20 @@ Table of Contents
   This message is not sent by the ActorSystem to an Actor, but is
   instead sent by the Source Authority Actor back to the system as the
   response to a ValidateSource message.  The data associated with this
-  response is a zipfile in zipimport format providing the *compiled
-  sources only* that were extracted from the input data sent via the
-  `ValidateSource' message.  By sending this message back to the sender,
-  the Source Authority Actor is indicating that the associated contents
-  are valid for running within the current ActorSystem environment (and
-  any other ActorSystems that are part of the Convention).
+  response is a zipfile in zipimport format providing the source file
+  tree of `.py' files that were extracted from the input data sent via
+  the `ValidateSource' message.  By sending this message back to the
+  sender, the Source Authority Actor is indicating that the associated
+  contents are valid for running within the current ActorSystem
+  environment (and any other ActorSystems that are part of the
+  Convention).
 
-  Only compiled objects are returned (with `.pyc' or `.pyo' extensions)
-  in the returned zipimport file to further preserve security: an
-  attacker with visibility into the memory of the ActorSystem would need
-  to locate and de-compile the body of the zipfile instead of being
-  granted access directly to the decrypted original sources.
+  At this time, only `.py' files are used from the loaded source: any
+  `.pyc' or `.pyo' files are ignored.
+
+  This message may also be sent by the Source Authority with None as the
+  data to indicate that the associated Source Hash is invalid and is
+  being actively rejected.
 
 
 7.9.1 Attributes
@@ -2767,7 +2715,8 @@ Table of Contents
   ‣ `.sourceHash' – the hash associated with the loaded source as
     provided in the `ValidateSource' input message.
   ‣ `.sourceZip' – the zipimport-format decrypted and validated compiled
-    form of the originally provided source.
+    form of the originally provided source, or None to reject the load
+    attempt.
 
 
 7.10 LoadedSource
@@ -2863,7 +2812,122 @@ Table of Contents
   specific fields or values in this message is not recommended.
 
 
-8 ActorSystem Implementations
+8 Patterns and Helpers
+══════════════════════
+
+  The elements described in this section is supplemental to the base
+  Thespian functionality.  It is entirely possible to use Thespian
+  without using any of the elements here, but these elements represent
+  common patterns or helpers that can be used when developing a Thespian
+  actor-based application.
+
+
+8.1 Actor Troupe Support
+────────────────────────
+
+  The use of Actor Troupes is supported by importing the
+  `thespian.troupe' file and adding a `@troupe()' decorator to the Actor
+  definition.  This decorator turns a regular Actor into a dynamic Actor
+  Troupe, where multiple Actors are spun up on-demand to handle
+  messages.
+
+  This pattern is especially useful for situations where multiple
+  requests are received and processing individual requests may take some
+  time to perform.
+
+  ┌────
+  │ from thespian.troupe import troupe
+  │ 
+  │ @troupe()
+  │ class MyActor(Actor):
+  │    ...
+  └────
+
+
+  The optional arguments to the troupe decorator are:
+
+  ‣ `max_count' is the maximum number of actors in the troupe
+    (defaulting to 10).
+
+  ‣ `idle_count' is the default number of actors in the troupe when
+    idle. As work is received, the number of actors will grow up to the
+    max_count, but when there is no more work, the number of actors will
+    shrink back down to this number.  Note that there may be fewer than
+    this number of actors present: actors are only created if work is
+    received and there are no idle actors to handle that work.
+
+  The decorator usage above works very well for a simple worker actor
+  that can perform all of the necessary work utilizing only the message
+  sent to it; the actor can be turned into a troupe member with no
+  change other than adding the decorator.
+
+  However, an actor which must interact with other actors to process the
+  work requires additional modifications to allow the troupe manager to
+  know when the actor has finished performing the work.  A troupe member
+  that has not fully performed the work and is exchanging messages with
+  other actors to complete the work (or awaiting WakeupMessages) must
+  set the `troupe_work_in_progress' attribute on self to `True'.  Once
+  the work is completed by a subsequent message delivery, it should set
+  this attribute to `False', which will cause the troupe manager to be
+  notified that the actor is ready for more work.
+
+  ‣ Failure to set the `troupe_work_in_progress' attribute to `True' on
+    a multi-step actor will result in either (a) the actor receiving
+    more work before it has completed the previous work, or (b) the
+    actor will be killed by the troupe manager before finishing the work
+    because the manager believes the actor is finished.
+
+  ‣ Failure to reset the `troup_work_in_progress' attribute to `False'
+    will cause the troupe manager to never send any more work requests
+    to the troupe actor, even if the latter is idle.  The troupe actor
+    will also never be killed until the troupe manager itself is killed.
+
+  Manipulating the `troupe_work_in_progress' member variable for
+  non-troupe actors has no effect on their behavior and is safe to do.
+
+
+8.2 Transient Actors
+────────────────────
+
+  Some actors should automatically die at some period after they are
+  initially used, or after they are last used.  These actors are
+  referred to as "transient" in contrast to normal actors that will
+  persist until explicitly shutdown (either by themselves or by another
+  Actor).
+
+  Implementing transient actors is made easier by importing the
+  `thespian.transient' file and adding a `@transient()' or
+  `@transient_idle()' decorator to the Actor definition.
+
+  The `transient' decorator cause the actor to exit at some time period
+  after it receives its first message.
+
+  The `transient_idle' decorator causes the actor to exit at some time
+  period after it has received its last message.
+
+  Both decorators default to a period of 10 seconds, and both take an
+  optional `exit_delay' argument value that specifies an alternate time
+  period.  The time period should be a `datetime.timedelta' object.
+
+
+  ┌────
+  │ from thespian.transient import transient_idle
+  │ 
+  │ @transient_idle(timedelta(seconds=3, milliseconds=250))
+  │ class BoredActor(Actor):
+  │    ...
+  │ 
+  │ @transient()
+  │ class TempActor(Actor):
+  │    ...
+  └────
+
+  Note that a transient actor which is created but which never receives
+  any messages does not exit; the timer for transient exit is only
+  started after receipt of the actor's first message.
+
+
+9 ActorSystem Implementations
 ═════════════════════════════
 
   One of the convenient aspects of an Actor architecture is that the
@@ -2909,7 +2973,7 @@ Table of Contents
   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 
-8.1 Common Capabilities
+9.1 Common Capabilities
 ───────────────────────
 
   As described in ActorSystem Capabilities each ActorSystem has a set of
@@ -3007,7 +3071,7 @@ Table of Contents
                              ActorSystems that are part of the Convention.
 
 
-8.2 simpleSystemBase
+9.2 simpleSystemBase
 ────────────────────
 
   The simpleSystemBase implementation is primarily designed for Unit
@@ -3053,7 +3117,7 @@ Table of Contents
   *Thespian ActorSystem Name*: /read-only/ "simpleSystemBase"
 
 
-8.3 multiprocQueueBase
+9.3 multiprocQueueBase
 ──────────────────────
 
   The multiprocQueueBase runs each Actor in its own separate process for
@@ -3105,7 +3169,7 @@ Table of Contents
                             "forkserver" method.
 
 
-8.4 multiprocTCPBase
+9.4 multiprocTCPBase
 ────────────────────
 
   The multiprocTCPBase runs each Actor in its own separate process for a
@@ -3221,7 +3285,7 @@ Table of Contents
                             "spawn" method.
 
 
-8.5 multiprocUDPBase
+9.5 multiprocUDPBase
 ────────────────────
 
   The multiprocUDPBase runs each Actor in its own separate process for a
@@ -3286,8 +3350,8 @@ Table of Contents
                             "spawn" method.
 
 
-9 Deploying Actor-based Projects
-════════════════════════════════
+10 Deploying Actor-based Projects
+═════════════════════════════════
 
   Possible Methods for deployment:
   ‣ Create a virtualenv via os-specific packaging (e.g. RPM) of all
@@ -3312,8 +3376,8 @@ Table of Contents
   running simultaneously).
 
 
-9.1 Overall Security Considerations
-───────────────────────────────────
+10.1 Overall Security Considerations
+────────────────────────────────────
 
   *ActorSystem Startup*: ActorSystem startup will inherit the permissions
                          of the starting user.  In many cases this is root
@@ -3372,8 +3436,8 @@ Table of Contents
                      but remember the guideline: "Fail Early, Fail Often."
 
 
-9.1.1 Security Scenarios
-╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+10.1.1 Security Scenarios
+╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 
   On any particular host where an ActorSystem is running, the primary
   focus is on protecting that ActorSystem to prevent injection of code

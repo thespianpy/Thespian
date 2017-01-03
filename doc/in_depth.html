@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
 <title>Thespian In-Depth Introduction</title>
-<!-- 2016-12-04 Sun 22:09 -->
+<!-- 2017-01-02 Mon 22:38 -->
 <meta  http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta  name="generator" content="Org-mode" />
 <meta  name="author" content="Kevin Quick &lt;kquick@godaddy.com&gt;" />
@@ -393,17 +393,17 @@ and print that response:
 
 <div class="org-src-container">
 <label class="org-src-name">hello.py:</label>
-<pre class="src src-python" id="hello.py"><span class="linenr"> 1: </span><span class="org-keyword">from</span> thespian.actors <span class="org-keyword">import</span> *
+<pre class="src src-python" id="hello.py"><span class="linenr"> 1: </span>from thespian.actors import *
 <span class="linenr"> 2: </span>
-<span id="coderef-baseclass" class="coderef-off"><span class="linenr"> 3: </span><span class="org-keyword">class</span> <span class="org-type">Hello</span>(Actor):</span>
-<span id="coderef-receiveMessage" class="coderef-off"><span class="linenr"> 4: </span>    <span class="org-keyword">def</span> <span class="org-function-name">receiveMessage</span>(<span class="org-keyword">self</span>, message, sender):</span>
-<span id="coderef-send" class="coderef-off"><span class="linenr"> 5: </span>        <span class="org-keyword">self</span>.send(sender, <span class="org-string">'Hello, world!'</span>)</span>
+<span id="coderef-baseclass" class="coderef-off"><span class="linenr"> 3: </span>class Hello(Actor):</span>
+<span id="coderef-receiveMessage" class="coderef-off"><span class="linenr"> 4: </span>    def receiveMessage(self, message, sender):</span>
+<span id="coderef-send" class="coderef-off"><span class="linenr"> 5: </span>        self.send(sender, 'Hello, world!')</span>
 <span class="linenr"> 6: </span>
-<span class="linenr"> 7: </span><span class="org-keyword">def</span> <span class="org-function-name">say_hello</span>():
-<span id="coderef-startActorSystem" class="coderef-off"><span class="linenr"> 8: </span>    <span class="org-variable-name">hello</span> = ActorSystem().createActor(Hello)</span>
-<span id="coderef-ask" class="coderef-off"><span class="linenr"> 9: </span>    <span class="org-keyword">print</span>(ActorSystem().ask(hello, <span class="org-string">'are you there?'</span>, 1.5))</span>
+<span class="linenr"> 7: </span>def say_hello():
+<span id="coderef-startActorSystem" class="coderef-off"><span class="linenr"> 8: </span>    hello = ActorSystem().createActor(Hello)</span>
+<span id="coderef-ask" class="coderef-off"><span class="linenr"> 9: </span>    print(ActorSystem().ask(hello, 'are you there?', 1.5))</span>
 <span class="linenr">10: </span>
-<span class="linenr">11: </span><span class="org-keyword">if</span> <span class="org-builtin">__name__</span> == <span class="org-string">"__main__"</span>:
+<span class="linenr">11: </span>if __name__ == "__main__":
 <span class="linenr">12: </span>    say_hello()
 </pre>
 </div>
@@ -595,9 +595,9 @@ equally valid to rewrite those lines as below:
 
 <div class="org-src-container">
 
-<pre class="src src-python">  <span class="org-variable-name">actorsys</span> = ActorSystem()
-  <span class="org-variable-name">hello</span> = actorsys.createActor(Hello)
-  <span class="org-keyword">print</span>(actorsys.ask(hello, <span class="org-string">'are you there?'</span>, 1.5))
+<pre class="src src-python">  actorsys = ActorSystem()
+  hello = actorsys.createActor(Hello)
+  print(actorsys.ask(hello, 'are you there?', 1.5))
 </pre>
 </div>
 
@@ -615,9 +615,9 @@ System is shutdown.
 </p>
 <div class="org-src-container">
 
-<pre class="src src-python">  <span class="org-variable-name">actorsys</span> = ActorSystem()
-  <span class="org-variable-name">hello</span> = actorsys.createActor(Hello)
-  <span class="org-keyword">print</span>(actorsys.ask(hello, <span class="org-string">'are you there?'</span>, 1.5))
+<pre class="src src-python">  actorsys = ActorSystem()
+  hello = actorsys.createActor(Hello)
+  print(actorsys.ask(hello, 'are you there?', 1.5))
   actorsys.shutdown()
 </pre>
 </div>
@@ -637,35 +637,35 @@ to system limits), and for Actors to create other Actors.
 
 <div class="org-src-container">
 <label class="org-src-name">hellogoodbye.py:</label>
-<pre class="src src-python" id="hellogoodbye.py"><span class="linenr"> 1: </span><span class="org-keyword">from</span> thespian.actors <span class="org-keyword">import</span> *
+<pre class="src src-python" id="hellogoodbye.py"><span class="linenr"> 1: </span>from thespian.actors import *
 <span class="linenr"> 2: </span>
-<span class="linenr"> 3: </span><span class="org-keyword">class</span> <span class="org-type">Hello</span>(Actor):
-<span class="linenr"> 4: </span>    <span class="org-keyword">def</span> <span class="org-function-name">receiveMessage</span>(<span class="org-keyword">self</span>, message, sender):
-<span id="coderef-messageCheck" class="coderef-off"><span class="linenr"> 5: </span>        <span class="org-keyword">if</span> message == <span class="org-string">'are you there?'</span>:</span>
-<span id="coderef-createGoodbye" class="coderef-off"><span class="linenr"> 6: </span>            <span class="org-variable-name">world</span> = <span class="org-keyword">self</span>.createActor(World)</span>
-<span id="coderef-messageTuple" class="coderef-off"><span class="linenr"> 7: </span>            <span class="org-variable-name">worldmsg</span> = (sender, <span class="org-string">'Hello,'</span>)</span>
-<span class="linenr"> 8: </span>            <span class="org-keyword">self</span>.send(world, worldmsg)
+<span class="linenr"> 3: </span>class Hello(Actor):
+<span class="linenr"> 4: </span>    def receiveMessage(self, message, sender):
+<span id="coderef-messageCheck" class="coderef-off"><span class="linenr"> 5: </span>        if message == 'are you there?':</span>
+<span id="coderef-createGoodbye" class="coderef-off"><span class="linenr"> 6: </span>            world = self.createActor(World)</span>
+<span id="coderef-messageTuple" class="coderef-off"><span class="linenr"> 7: </span>            worldmsg = (sender, 'Hello,')</span>
+<span class="linenr"> 8: </span>            self.send(world, worldmsg)
 <span class="linenr"> 9: </span>
-<span class="linenr">10: </span><span class="org-keyword">class</span> <span class="org-type">World</span>(Actor):
-<span class="linenr">11: </span>    <span class="org-keyword">def</span> <span class="org-function-name">receiveMessage</span>(<span class="org-keyword">self</span>, message, sender):
-<span id="coderef-messageIsTuple" class="coderef-off"><span class="linenr">12: </span>        <span class="org-keyword">if</span> <span class="org-builtin">isinstance</span>(message, <span class="org-builtin">tuple</span>):</span>
-<span class="linenr">13: </span>            <span class="org-variable-name">orig_sender</span>, <span class="org-variable-name">pre_world</span> = message
-<span id="coderef-sendOriginalSender" class="coderef-off"><span class="linenr">14: </span>            <span class="org-keyword">self</span>.send(orig_sender, pre_world + <span class="org-string">' world!'</span>)</span>
+<span class="linenr">10: </span>class World(Actor):
+<span class="linenr">11: </span>    def receiveMessage(self, message, sender):
+<span id="coderef-messageIsTuple" class="coderef-off"><span class="linenr">12: </span>        if isinstance(message, tuple):</span>
+<span class="linenr">13: </span>            orig_sender, pre_world = message
+<span id="coderef-sendOriginalSender" class="coderef-off"><span class="linenr">14: </span>            self.send(orig_sender, pre_world + ' world!')</span>
 <span class="linenr">15: </span>
-<span class="linenr">16: </span><span class="org-keyword">class</span> <span class="org-type">Goodbye</span>(Actor):
-<span class="linenr">17: </span>    <span class="org-keyword">def</span> <span class="org-function-name">receiveMessage</span>(<span class="org-keyword">self</span>, message, sender):
-<span class="linenr">18: </span>        <span class="org-keyword">self</span>.send(sender, <span class="org-string">'Goodbye'</span>)
+<span class="linenr">16: </span>class Goodbye(Actor):
+<span class="linenr">17: </span>    def receiveMessage(self, message, sender):
+<span class="linenr">18: </span>        self.send(sender, 'Goodbye')
 <span class="linenr">19: </span>
-<span class="linenr">20: </span><span class="org-keyword">def</span> <span class="org-function-name">run_example</span>(systembase=<span class="org-constant">None</span>):
-<span class="linenr">21: </span>    <span class="org-variable-name">hello</span> = ActorSystem(systembase).createActor(Hello)
-<span class="linenr">22: </span>    <span class="org-variable-name">goodbye</span> = ActorSystem().createActor(Goodbye)
-<span class="linenr">23: </span>    <span class="org-variable-name">greeting</span> = ActorSystem().ask(hello, <span class="org-string">'are you there?'</span>, 1.5)
-<span id="coderef-print" class="coderef-off"><span class="linenr">24: </span>    <span class="org-keyword">print</span>(greeting + <span class="org-string">'\n'</span> + ActorSystem().ask(goodbye, <span class="org-constant">None</span>, 0.1))</span>
+<span class="linenr">20: </span>def run_example(systembase=None):
+<span class="linenr">21: </span>    hello = ActorSystem(systembase).createActor(Hello)
+<span class="linenr">22: </span>    goodbye = ActorSystem().createActor(Goodbye)
+<span class="linenr">23: </span>    greeting = ActorSystem().ask(hello, 'are you there?', 1.5)
+<span id="coderef-print" class="coderef-off"><span class="linenr">24: </span>    print(greeting + '\n' + ActorSystem().ask(goodbye, None, 0.1))</span>
 <span id="coderef-actorSysShutdown" class="coderef-off"><span class="linenr">25: </span>    ActorSystem().shutdown()</span>
 <span class="linenr">26: </span>
-<span class="linenr">27: </span><span class="org-keyword">if</span> <span class="org-builtin">__name__</span> == <span class="org-string">"__main__"</span>:
-<span class="linenr">28: </span>    <span class="org-keyword">import</span> sys
-<span class="linenr">29: </span>    run_example(sys.argv[1] <span class="org-keyword">if</span> <span class="org-builtin">len</span>(sys.argv) &gt; 1 <span class="org-keyword">else</span> <span class="org-constant">None</span>)
+<span class="linenr">27: </span>if __name__ == "__main__":
+<span class="linenr">28: </span>    import sys
+<span class="linenr">29: </span>    run_example(sys.argv[1] if len(sys.argv) &gt; 1 else None)
 </pre>
 </div>
 
@@ -737,9 +737,9 @@ unconstrained growth, there are two options:
 <li>Hello only creates one World Actor and remembers the address:
 <div class="org-src-container">
 
-<pre class="src src-python">  <span class="org-keyword">if</span> <span class="org-keyword">not</span> <span class="org-builtin">hasattr</span>(<span class="org-keyword">self</span>, <span class="org-string">'world'</span>):
-      <span class="org-keyword">self</span>.world = <span class="org-keyword">self</span>.createActor(World)
-  <span class="org-keyword">self</span>.send(<span class="org-keyword">self</span>.world, (sender, <span class="org-string">'Hello'</span>))
+<pre class="src src-python">  if not hasattr(self, 'world'):
+      self.world = self.createActor(World)
+  self.send(self.world, (sender, 'Hello'))
 </pre>
 </div>
 </li>
@@ -750,9 +750,9 @@ message can be sent by any Actor to any other Actor, so the
 Hello Actor could send it as follows:
 <div class="org-src-container">
 
-<pre class="src src-python">  <span class="org-variable-name">world</span> = <span class="org-keyword">self</span>.createActor(World)
-  <span class="org-keyword">self</span>.send(world, (sender, <span class="org-string">'Hello,'</span>))
-  <span class="org-keyword">self</span>.send(world, ActorExitRequest())
+<pre class="src src-python">  world = self.createActor(World)
+  self.send(world, (sender, 'Hello,'))
+  self.send(world, ActorExitRequest())
 </pre>
 </div>
 <p>
@@ -762,9 +762,9 @@ message, the World Actor could send it to itself (using the
 </p>
 <div class="org-src-container">
 
-<pre class="src src-python">  <span class="org-variable-name">orig_sender</span>, <span class="org-variable-name">pre_world</span> = message
-  <span class="org-keyword">self</span>.send(orig_sender, pre_world + <span class="org-string">' world!'</span>)
-  <span class="org-keyword">self</span>.send(<span class="org-keyword">self</span>.myAddress, ActorExitRequest())
+<pre class="src src-python">  orig_sender, pre_world = message
+  self.send(orig_sender, pre_world + ' world!')
+  self.send(self.myAddress, ActorExitRequest())
 </pre>
 </div>
 </li>
@@ -1022,18 +1022,18 @@ return to our original <code>hello.py</code> sample:
 
 <div class="org-src-container">
 <label class="org-src-name">hello.py:</label>
-<pre class="src src-python" id="hello2.py"><span class="linenr"> 1: </span><span class="org-keyword">from</span> thespian.actors <span class="org-keyword">import</span> *
+<pre class="src src-python" id="hello2.py"><span class="linenr"> 1: </span>from thespian.actors import *
 <span class="linenr"> 2: </span>
-<span class="linenr"> 3: </span><span class="org-keyword">class</span> <span class="org-type">Hello</span>(Actor):
-<span class="linenr"> 4: </span>    <span class="org-keyword">def</span> <span class="org-function-name">receiveMessage</span>(<span class="org-keyword">self</span>, message, sender):
-<span id="coderef-message" class="coderef-off"><span class="linenr"> 5: </span>        <span class="org-keyword">self</span>.send(sender, <span class="org-string">'Hello, world!'</span>)</span>
+<span class="linenr"> 3: </span>class Hello(Actor):
+<span class="linenr"> 4: </span>    def receiveMessage(self, message, sender):
+<span id="coderef-message" class="coderef-off"><span class="linenr"> 5: </span>        self.send(sender, 'Hello, world!')</span>
 <span class="linenr"> 6: </span>
-<span class="linenr"> 7: </span><span class="org-keyword">def</span> <span class="org-function-name">say_hello</span>():
-<span id="coderef-ActorSystemSpec" class="coderef-off"><span class="linenr"> 8: </span>    <span class="org-variable-name">hello</span> = ActorSystem().createActor(Hello)</span>
-<span class="linenr"> 9: </span>    <span class="org-keyword">print</span>(ActorSystem().ask(hello, <span class="org-string">'are you there?'</span>, 1.5))
+<span class="linenr"> 7: </span>def say_hello():
+<span id="coderef-ActorSystemSpec" class="coderef-off"><span class="linenr"> 8: </span>    hello = ActorSystem().createActor(Hello)</span>
+<span class="linenr"> 9: </span>    print(ActorSystem().ask(hello, 'are you there?', 1.5))
 <span id="coderef-nomorehello" class="coderef-off"><span class="linenr">10: </span>    ActorSystem().tell(hello, ActorExitRequest)</span>
 <span class="linenr">11: </span>
-<span class="linenr">12: </span><span class="org-keyword">if</span> <span class="org-builtin">__name__</span> == <span class="org-string">"__main__"</span>:
+<span class="linenr">12: </span>if __name__ == "__main__":
 <span class="linenr">13: </span>    say_hello()
 </pre>
 </div>
@@ -1123,37 +1123,37 @@ inserted in one of the actors:
 
 <div class="org-src-container">
 <label class="org-src-name">hellogoodbyelog.py:</label>
-<pre class="src src-python" id="hellogoodbyelog.py"><span class="linenr"> 1: </span><span class="org-keyword">import</span> logging
-<span class="linenr"> 2: </span><span class="org-keyword">from</span> thespian.actors <span class="org-keyword">import</span> *
+<pre class="src src-python" id="hellogoodbyelog.py"><span class="linenr"> 1: </span>import logging
+<span class="linenr"> 2: </span>from thespian.actors import *
 <span class="linenr"> 3: </span>
-<span class="linenr"> 4: </span><span class="org-keyword">class</span> <span class="org-type">Hello</span>(Actor):
-<span class="linenr"> 5: </span>    <span class="org-keyword">def</span> <span class="org-function-name">receiveMessage</span>(<span class="org-keyword">self</span>, message, sender):
-<span id="coderef-loghello" class="coderef-off"><span class="linenr"> 6: </span>        logging.info(<span class="org-string">'Hello actor got: %s'</span>, message)</span>
-<span class="linenr"> 7: </span>        <span class="org-keyword">if</span> message == <span class="org-string">'are you there?'</span>:
-<span class="linenr"> 8: </span>            <span class="org-variable-name">world</span> = <span class="org-keyword">self</span>.createActor(World)
-<span class="linenr"> 9: </span>            <span class="org-variable-name">worldmsg</span> = (sender, <span class="org-string">'Hello,'</span>)
-<span class="linenr">10: </span>            <span class="org-keyword">self</span>.send(world, worldmsg)
+<span class="linenr"> 4: </span>class Hello(Actor):
+<span class="linenr"> 5: </span>    def receiveMessage(self, message, sender):
+<span id="coderef-loghello" class="coderef-off"><span class="linenr"> 6: </span>        logging.info('Hello actor got: %s', message)</span>
+<span class="linenr"> 7: </span>        if message == 'are you there?':
+<span class="linenr"> 8: </span>            world = self.createActor(World)
+<span class="linenr"> 9: </span>            worldmsg = (sender, 'Hello,')
+<span class="linenr">10: </span>            self.send(world, worldmsg)
 <span class="linenr">11: </span>
-<span class="linenr">12: </span><span class="org-keyword">class</span> <span class="org-type">World</span>(Actor):
-<span class="linenr">13: </span>    <span class="org-keyword">def</span> <span class="org-function-name">receiveMessage</span>(<span class="org-keyword">self</span>, message, sender):
-<span class="linenr">14: </span>        <span class="org-keyword">if</span> <span class="org-builtin">isinstance</span>(message, <span class="org-builtin">tuple</span>):
-<span class="linenr">15: </span>            <span class="org-variable-name">orig_sender</span>, <span class="org-variable-name">pre_world</span> = message
-<span class="linenr">16: </span>            <span class="org-keyword">self</span>.send(orig_sender, pre_world + <span class="org-string">' world!'</span>)
+<span class="linenr">12: </span>class World(Actor):
+<span class="linenr">13: </span>    def receiveMessage(self, message, sender):
+<span class="linenr">14: </span>        if isinstance(message, tuple):
+<span class="linenr">15: </span>            orig_sender, pre_world = message
+<span class="linenr">16: </span>            self.send(orig_sender, pre_world + ' world!')
 <span class="linenr">17: </span>
-<span class="linenr">18: </span><span class="org-keyword">class</span> <span class="org-type">Goodbye</span>(Actor):
-<span class="linenr">19: </span>    <span class="org-keyword">def</span> <span class="org-function-name">receiveMessage</span>(<span class="org-keyword">self</span>, message, sender):
-<span class="linenr">20: </span>        <span class="org-keyword">self</span>.send(sender, <span class="org-string">'Goodbye'</span>)
+<span class="linenr">18: </span>class Goodbye(Actor):
+<span class="linenr">19: </span>    def receiveMessage(self, message, sender):
+<span class="linenr">20: </span>        self.send(sender, 'Goodbye')
 <span class="linenr">21: </span>
-<span class="linenr">22: </span><span class="org-keyword">def</span> <span class="org-function-name">run_example</span>(systembase=<span class="org-constant">None</span>):
-<span class="linenr">23: </span>    <span class="org-variable-name">hello</span> = ActorSystem(systembase).createActor(Hello)
-<span class="linenr">24: </span>    <span class="org-variable-name">goodbye</span> = ActorSystem().createActor(Goodbye)
-<span class="linenr">25: </span>    <span class="org-variable-name">greeting</span> = ActorSystem().ask(hello, <span class="org-string">'are you there?'</span>, 1.5)
-<span class="linenr">26: </span>    <span class="org-keyword">print</span>(greeting + <span class="org-string">'\n'</span> + ActorSystem().ask(goodbye, <span class="org-constant">None</span>, 0.1))
+<span class="linenr">22: </span>def run_example(systembase=None):
+<span class="linenr">23: </span>    hello = ActorSystem(systembase).createActor(Hello)
+<span class="linenr">24: </span>    goodbye = ActorSystem().createActor(Goodbye)
+<span class="linenr">25: </span>    greeting = ActorSystem().ask(hello, 'are you there?', 1.5)
+<span class="linenr">26: </span>    print(greeting + '\n' + ActorSystem().ask(goodbye, None, 0.1))
 <span class="linenr">27: </span>    ActorSystem().shutdown()
 <span class="linenr">28: </span>
-<span class="linenr">29: </span><span class="org-keyword">if</span> <span class="org-builtin">__name__</span> == <span class="org-string">"__main__"</span>:
-<span class="linenr">30: </span>    <span class="org-keyword">import</span> sys
-<span class="linenr">31: </span>    run_example(sys.argv[1] <span class="org-keyword">if</span> <span class="org-builtin">len</span>(sys.argv) &gt; 1 <span class="org-keyword">else</span> <span class="org-constant">None</span>)
+<span class="linenr">29: </span>if __name__ == "__main__":
+<span class="linenr">30: </span>    import sys
+<span class="linenr">31: </span>    run_example(sys.argv[1] if len(sys.argv) &gt; 1 else None)
 </pre>
 </div>
 
@@ -1186,50 +1186,50 @@ To customize the logging (for example, to write to a file called
 
 <div class="org-src-container">
 <label class="org-src-name">hellogoodbyelog2.py:</label>
-<pre class="src src-python" id="hellogoodbyelog2.py"><span class="linenr"> 1: </span><span class="org-keyword">import</span> logging
-<span class="linenr"> 2: </span><span class="org-keyword">from</span> thespian.actors <span class="org-keyword">import</span> *
+<pre class="src src-python" id="hellogoodbyelog2.py"><span class="linenr"> 1: </span>import logging
+<span class="linenr"> 2: </span>from thespian.actors import *
 <span class="linenr"> 3: </span>
-<span class="linenr"> 4: </span><span class="org-keyword">class</span> <span class="org-type">Hello</span>(Actor):
-<span class="linenr"> 5: </span>    <span class="org-keyword">def</span> <span class="org-function-name">receiveMessage</span>(<span class="org-keyword">self</span>, message, sender):
-<span class="linenr"> 6: </span>        logging.info(<span class="org-string">'Hello actor got: %s'</span>, message)
-<span class="linenr"> 7: </span>        <span class="org-keyword">if</span> message == <span class="org-string">'are you there?'</span>:
-<span class="linenr"> 8: </span>            <span class="org-variable-name">world</span> = <span class="org-keyword">self</span>.createActor(World)
-<span class="linenr"> 9: </span>            <span class="org-variable-name">worldmsg</span> = (sender, <span class="org-string">'Hello,'</span>)
-<span class="linenr">10: </span>            <span class="org-keyword">self</span>.send(world, worldmsg)
+<span class="linenr"> 4: </span>class Hello(Actor):
+<span class="linenr"> 5: </span>    def receiveMessage(self, message, sender):
+<span class="linenr"> 6: </span>        logging.info('Hello actor got: %s', message)
+<span class="linenr"> 7: </span>        if message == 'are you there?':
+<span class="linenr"> 8: </span>            world = self.createActor(World)
+<span class="linenr"> 9: </span>            worldmsg = (sender, 'Hello,')
+<span class="linenr">10: </span>            self.send(world, worldmsg)
 <span class="linenr">11: </span>
-<span class="linenr">12: </span><span class="org-keyword">class</span> <span class="org-type">World</span>(Actor):
-<span class="linenr">13: </span>    <span class="org-keyword">def</span> <span class="org-function-name">receiveMessage</span>(<span class="org-keyword">self</span>, message, sender):
-<span class="linenr">14: </span>        <span class="org-keyword">if</span> <span class="org-builtin">isinstance</span>(message, <span class="org-builtin">tuple</span>):
-<span class="linenr">15: </span>            <span class="org-variable-name">orig_sender</span>, <span class="org-variable-name">pre_world</span> = message
-<span class="linenr">16: </span>            <span class="org-keyword">self</span>.send(orig_sender, pre_world + <span class="org-string">' world!'</span>)
+<span class="linenr">12: </span>class World(Actor):
+<span class="linenr">13: </span>    def receiveMessage(self, message, sender):
+<span class="linenr">14: </span>        if isinstance(message, tuple):
+<span class="linenr">15: </span>            orig_sender, pre_world = message
+<span class="linenr">16: </span>            self.send(orig_sender, pre_world + ' world!')
 <span class="linenr">17: </span>
-<span class="linenr">18: </span><span class="org-keyword">class</span> <span class="org-type">Goodbye</span>(Actor):
-<span class="linenr">19: </span>    <span class="org-keyword">def</span> <span class="org-function-name">receiveMessage</span>(<span class="org-keyword">self</span>, message, sender):
-<span class="linenr">20: </span>        <span class="org-keyword">self</span>.send(sender, <span class="org-string">'Goodbye'</span>)
+<span class="linenr">18: </span>class Goodbye(Actor):
+<span class="linenr">19: </span>    def receiveMessage(self, message, sender):
+<span class="linenr">20: </span>        self.send(sender, 'Goodbye')
 <span class="linenr">21: </span>
-<span id="coderef-logdef" class="coderef-off"><span class="linenr">22: </span><span class="org-variable-name">logcfg</span> = { <span class="org-string">'version'</span>: 1,</span>
-<span class="linenr">23: </span>           <span class="org-string">'formatters'</span>: {
-<span class="linenr">24: </span>               <span class="org-string">'normal'</span>: {
-<span class="linenr">25: </span>                   <span class="org-string">'format'</span>: <span class="org-string">'%(levelname)-8s %(message)s'</span>}},
-<span class="linenr">26: </span>           <span class="org-string">'handlers'</span>: {
-<span class="linenr">27: </span>               <span class="org-string">'h'</span>: {<span class="org-string">'class'</span>: <span class="org-string">'logging.FileHandler'</span>,
-<span class="linenr">28: </span>                     <span class="org-string">'filename'</span>: <span class="org-string">'hello.log'</span>,
-<span class="linenr">29: </span>                     <span class="org-string">'formatter'</span>: <span class="org-string">'normal'</span>,
-<span class="linenr">30: </span>                     <span class="org-string">'level'</span>: logging.INFO}},
-<span class="linenr">31: </span>           <span class="org-string">'loggers'</span> : {
-<span class="linenr">32: </span>               <span class="org-string">''</span>: {<span class="org-string">'handlers'</span>: [<span class="org-string">'h'</span>], <span class="org-string">'level'</span>: logging.DEBUG}}
+<span id="coderef-logdef" class="coderef-off"><span class="linenr">22: </span>logcfg = { 'version': 1,</span>
+<span class="linenr">23: </span>           'formatters': {
+<span class="linenr">24: </span>               'normal': {
+<span class="linenr">25: </span>                   'format': '%(levelname)-8s %(message)s'}},
+<span class="linenr">26: </span>           'handlers': {
+<span class="linenr">27: </span>               'h': {'class': 'logging.FileHandler',
+<span class="linenr">28: </span>                     'filename': 'hello.log',
+<span class="linenr">29: </span>                     'formatter': 'normal',
+<span class="linenr">30: </span>                     'level': logging.INFO}},
+<span class="linenr">31: </span>           'loggers' : {
+<span class="linenr">32: </span>               '': {'handlers': ['h'], 'level': logging.DEBUG}}
 <span class="linenr">33: </span>         }
 <span class="linenr">34: </span>
-<span class="linenr">35: </span><span class="org-keyword">def</span> <span class="org-function-name">run_example</span>(systembase=<span class="org-constant">None</span>):
-<span id="coderef-loginit" class="coderef-off"><span class="linenr">36: </span>    <span class="org-variable-name">hello</span> = ActorSystem(systembase, logDefs=logcfg).createActor(Hello)</span>
-<span class="linenr">37: </span>    <span class="org-variable-name">goodbye</span> = ActorSystem().createActor(Goodbye)
-<span class="linenr">38: </span>    <span class="org-variable-name">greeting</span> = ActorSystem().ask(hello, <span class="org-string">'are you there?'</span>, 1.5)
-<span class="linenr">39: </span>    <span class="org-keyword">print</span>(greeting + <span class="org-string">'\n'</span> + ActorSystem().ask(goodbye, <span class="org-constant">None</span>, 0.1))
+<span class="linenr">35: </span>def run_example(systembase=None):
+<span id="coderef-loginit" class="coderef-off"><span class="linenr">36: </span>    hello = ActorSystem(systembase, logDefs=logcfg).createActor(Hello)</span>
+<span class="linenr">37: </span>    goodbye = ActorSystem().createActor(Goodbye)
+<span class="linenr">38: </span>    greeting = ActorSystem().ask(hello, 'are you there?', 1.5)
+<span class="linenr">39: </span>    print(greeting + '\n' + ActorSystem().ask(goodbye, None, 0.1))
 <span class="linenr">40: </span>    ActorSystem().shutdown()
 <span class="linenr">41: </span>
-<span class="linenr">42: </span><span class="org-keyword">if</span> <span class="org-builtin">__name__</span> == <span class="org-string">"__main__"</span>:
-<span class="linenr">43: </span>    <span class="org-keyword">import</span> sys
-<span class="linenr">44: </span>    run_example(sys.argv[1] <span class="org-keyword">if</span> <span class="org-builtin">len</span>(sys.argv) &gt; 1 <span class="org-keyword">else</span> <span class="org-constant">None</span>)
+<span class="linenr">42: </span>if __name__ == "__main__":
+<span class="linenr">43: </span>    import sys
+<span class="linenr">44: </span>    run_example(sys.argv[1] if len(sys.argv) &gt; 1 else None)
 </pre>
 </div>
 
@@ -1274,71 +1274,71 @@ this attribute:
 
 <div class="org-src-container">
 <label class="org-src-name">hellogoodbyelog3.py:</label>
-<pre class="src src-python" id="hellogoodbyelog3.py"><span class="linenr"> 1: </span><span class="org-keyword">import</span> logging
-<span class="linenr"> 2: </span><span class="org-keyword">from</span> thespian.actors <span class="org-keyword">import</span> *
+<pre class="src src-python" id="hellogoodbyelog3.py"><span class="linenr"> 1: </span>import logging
+<span class="linenr"> 2: </span>from thespian.actors import *
 <span class="linenr"> 3: </span>
-<span class="linenr"> 4: </span><span class="org-keyword">class</span> <span class="org-type">Hello</span>(Actor):
-<span class="linenr"> 5: </span>    <span class="org-keyword">def</span> <span class="org-function-name">receiveMessage</span>(<span class="org-keyword">self</span>, message, sender):
-<span class="linenr"> 6: </span>        logging.info(<span class="org-string">'Hello actor got: %s'</span>, message)
-<span class="linenr"> 7: </span>        <span class="org-keyword">if</span> message == <span class="org-string">'are you there?'</span>:
-<span class="linenr"> 8: </span>            <span class="org-variable-name">world</span> = <span class="org-keyword">self</span>.createActor(World)
-<span class="linenr"> 9: </span>            <span class="org-variable-name">worldmsg</span> = (sender, <span class="org-string">'Hello,'</span>)
-<span class="linenr">10: </span>            <span class="org-keyword">self</span>.send(world, worldmsg)
+<span class="linenr"> 4: </span>class Hello(Actor):
+<span class="linenr"> 5: </span>    def receiveMessage(self, message, sender):
+<span class="linenr"> 6: </span>        logging.info('Hello actor got: %s', message)
+<span class="linenr"> 7: </span>        if message == 'are you there?':
+<span class="linenr"> 8: </span>            world = self.createActor(World)
+<span class="linenr"> 9: </span>            worldmsg = (sender, 'Hello,')
+<span class="linenr">10: </span>            self.send(world, worldmsg)
 <span class="linenr">11: </span>
-<span class="linenr">12: </span><span class="org-keyword">class</span> <span class="org-type">World</span>(Actor):
-<span class="linenr">13: </span>    <span class="org-keyword">def</span> <span class="org-function-name">receiveMessage</span>(<span class="org-keyword">self</span>, message, sender):
-<span class="linenr">14: </span>        <span class="org-keyword">if</span> <span class="org-builtin">isinstance</span>(message, <span class="org-builtin">tuple</span>):
-<span class="linenr">15: </span>            <span class="org-variable-name">orig_sender</span>, <span class="org-variable-name">pre_world</span> = message
-<span class="linenr">16: </span>            <span class="org-keyword">self</span>.send(orig_sender, pre_world + <span class="org-string">' world!'</span>)
+<span class="linenr">12: </span>class World(Actor):
+<span class="linenr">13: </span>    def receiveMessage(self, message, sender):
+<span class="linenr">14: </span>        if isinstance(message, tuple):
+<span class="linenr">15: </span>            orig_sender, pre_world = message
+<span class="linenr">16: </span>            self.send(orig_sender, pre_world + ' world!')
 <span class="linenr">17: </span>
-<span class="linenr">18: </span><span class="org-keyword">class</span> <span class="org-type">Goodbye</span>(Actor):
-<span class="linenr">19: </span>    <span class="org-keyword">def</span> <span class="org-function-name">receiveMessage</span>(<span class="org-keyword">self</span>, message, sender):
-<span class="linenr">20: </span>        <span class="org-keyword">self</span>.send(sender, <span class="org-string">'Goodbye'</span>)
+<span class="linenr">18: </span>class Goodbye(Actor):
+<span class="linenr">19: </span>    def receiveMessage(self, message, sender):
+<span class="linenr">20: </span>        self.send(sender, 'Goodbye')
 <span class="linenr">21: </span>
-<span class="linenr">22: </span><span class="org-keyword">class</span> <span class="org-type">actorLogFilter</span>(logging.Filter):
-<span class="linenr">23: </span>    <span class="org-keyword">def</span> <span class="org-function-name">filter</span>(<span class="org-keyword">self</span>, logrecord):
-<span class="linenr">24: </span>        <span class="org-keyword">return</span> <span class="org-string">'actorAddress'</span> <span class="org-keyword">in</span> logrecord.__dict__
-<span class="linenr">25: </span><span class="org-keyword">class</span> <span class="org-type">notActorLogFilter</span>(logging.Filter):
-<span class="linenr">26: </span>    <span class="org-keyword">def</span> <span class="org-function-name">filter</span>(<span class="org-keyword">self</span>, logrecord):
-<span class="linenr">27: </span>        <span class="org-keyword">return</span> <span class="org-string">'actorAddress'</span> <span class="org-keyword">not</span> <span class="org-keyword">in</span> logrecord.__dict__
+<span class="linenr">22: </span>class actorLogFilter(logging.Filter):
+<span class="linenr">23: </span>    def filter(self, logrecord):
+<span class="linenr">24: </span>        return 'actorAddress' in logrecord.__dict__
+<span class="linenr">25: </span>class notActorLogFilter(logging.Filter):
+<span class="linenr">26: </span>    def filter(self, logrecord):
+<span class="linenr">27: </span>        return 'actorAddress' not in logrecord.__dict__
 <span class="linenr">28: </span>
-<span class="linenr">29: </span><span class="org-variable-name">logcfg</span> = {
-<span class="linenr">30: </span>  <span class="org-string">'version'</span>: 1,
-<span class="linenr">31: </span>  <span class="org-string">'formatters'</span>: {
-<span class="linenr">32: </span>      <span class="org-string">'normal'</span>: {<span class="org-string">'format'</span>: <span class="org-string">'%(levelname)-8s %(message)s'</span>},
-<span class="linenr">33: </span>      <span class="org-string">'actor'</span>: {
-<span class="linenr">34: </span>          <span class="org-string">'format'</span>: <span class="org-string">'%(levelname)-8s %(actorAddress)s =&gt; %(message)s'</span>}},
-<span class="linenr">35: </span>  <span class="org-string">'filters'</span>: { <span class="org-string">'isActorLog'</span>: { <span class="org-string">'()'</span>: actorLogFilter},
-<span class="linenr">36: </span>               <span class="org-string">'notActorLog'</span>: { <span class="org-string">'()'</span>: notActorLogFilter}},
-<span class="linenr">37: </span>  <span class="org-string">'handlers'</span>: { <span class="org-string">'h1'</span>: {<span class="org-string">'class'</span>: <span class="org-string">'logging.FileHandler'</span>,
-<span class="linenr">38: </span>                       <span class="org-string">'filename'</span>: <span class="org-string">'hello.log'</span>,
-<span class="linenr">39: </span>                       <span class="org-string">'formatter'</span>: <span class="org-string">'normal'</span>,
-<span class="linenr">40: </span>                       <span class="org-string">'filters'</span>: [<span class="org-string">'notActorLog'</span>],
-<span class="linenr">41: </span>                       <span class="org-string">'level'</span>: logging.INFO},
-<span class="linenr">42: </span>                <span class="org-string">'h2'</span>: {<span class="org-string">'class'</span>: <span class="org-string">'logging.FileHandler'</span>,
-<span class="linenr">43: </span>                       <span class="org-string">'filename'</span>: <span class="org-string">'hello.log'</span>,
-<span class="linenr">44: </span>                       <span class="org-string">'formatter'</span>: <span class="org-string">'actor'</span>,
-<span class="linenr">45: </span>                       <span class="org-string">'filters'</span>: [<span class="org-string">'isActorLog'</span>],
-<span class="linenr">46: </span>                       <span class="org-string">'level'</span>: logging.INFO},},
-<span class="linenr">47: </span>  <span class="org-string">'loggers'</span> : {
-<span class="linenr">48: </span>      <span class="org-string">''</span>: {<span class="org-string">'handlers'</span>: [<span class="org-string">'h1'</span>, <span class="org-string">'h2'</span>], <span class="org-string">'level'</span>: logging.DEBUG}}
+<span class="linenr">29: </span>logcfg = {
+<span class="linenr">30: </span>  'version': 1,
+<span class="linenr">31: </span>  'formatters': {
+<span class="linenr">32: </span>      'normal': {'format': '%(levelname)-8s %(message)s'},
+<span class="linenr">33: </span>      'actor': {
+<span class="linenr">34: </span>          'format': '%(levelname)-8s %(actorAddress)s =&gt; %(message)s'}},
+<span class="linenr">35: </span>  'filters': { 'isActorLog': { '()': actorLogFilter},
+<span class="linenr">36: </span>               'notActorLog': { '()': notActorLogFilter}},
+<span class="linenr">37: </span>  'handlers': { 'h1': {'class': 'logging.FileHandler',
+<span class="linenr">38: </span>                       'filename': 'hello.log',
+<span class="linenr">39: </span>                       'formatter': 'normal',
+<span class="linenr">40: </span>                       'filters': ['notActorLog'],
+<span class="linenr">41: </span>                       'level': logging.INFO},
+<span class="linenr">42: </span>                'h2': {'class': 'logging.FileHandler',
+<span class="linenr">43: </span>                       'filename': 'hello.log',
+<span class="linenr">44: </span>                       'formatter': 'actor',
+<span class="linenr">45: </span>                       'filters': ['isActorLog'],
+<span class="linenr">46: </span>                       'level': logging.INFO},},
+<span class="linenr">47: </span>  'loggers' : {
+<span class="linenr">48: </span>      '': {'handlers': ['h1', 'h2'], 'level': logging.DEBUG}}
 <span class="linenr">49: </span>}
 <span class="linenr">50: </span>
-<span class="linenr">51: </span><span class="org-keyword">def</span> <span class="org-function-name">run_example</span>(systembase=<span class="org-constant">None</span>):
-<span class="linenr">52: </span>    <span class="org-variable-name">hello</span> = ActorSystem(systembase,
+<span class="linenr">51: </span>def run_example(systembase=None):
+<span class="linenr">52: </span>    hello = ActorSystem(systembase,
 <span class="linenr">53: </span>                        logDefs=logcfg).createActor(Hello)
-<span class="linenr">54: </span>    <span class="org-variable-name">goodbye</span> = ActorSystem().createActor(Goodbye)
-<span class="linenr">55: </span>    <span class="org-variable-name">greeting</span> = ActorSystem().ask(hello, <span class="org-string">'are you there?'</span>, 1.5)
+<span class="linenr">54: </span>    goodbye = ActorSystem().createActor(Goodbye)
+<span class="linenr">55: </span>    greeting = ActorSystem().ask(hello, 'are you there?', 1.5)
 <span class="linenr">56: </span>
-<span class="linenr">57: </span>    logging.info(<span class="org-string">'Actors are started'</span>)
-<span class="linenr">58: </span>    <span class="org-keyword">print</span>(greeting + <span class="org-string">'\n'</span> + ActorSystem().ask(goodbye, <span class="org-constant">None</span>, 0.1))
+<span class="linenr">57: </span>    logging.info('Actors are started')
+<span class="linenr">58: </span>    print(greeting + '\n' + ActorSystem().ask(goodbye, None, 0.1))
 <span class="linenr">59: </span>
-<span class="linenr">60: </span>    logging.info(<span class="org-string">'Finished with example'</span>)
+<span class="linenr">60: </span>    logging.info('Finished with example')
 <span class="linenr">61: </span>    ActorSystem().shutdown()
 <span class="linenr">62: </span>
-<span class="linenr">63: </span><span class="org-keyword">if</span> <span class="org-builtin">__name__</span> == <span class="org-string">"__main__"</span>:
-<span class="linenr">64: </span>    <span class="org-keyword">import</span> sys
-<span class="linenr">65: </span>    run_example(sys.argv[1] <span class="org-keyword">if</span> <span class="org-builtin">len</span>(sys.argv) &gt; 1 <span class="org-keyword">else</span> <span class="org-constant">None</span>)
+<span class="linenr">63: </span>if __name__ == "__main__":
+<span class="linenr">64: </span>    import sys
+<span class="linenr">65: </span>    run_example(sys.argv[1] if len(sys.argv) &gt; 1 else None)
 </pre>
 </div>
 </div>
@@ -1439,13 +1439,13 @@ Actor's <code>receiveMessage()</code> is executed one after another serially.
 
 <div class="org-src-container">
 <label class="org-src-name">test-hellogoodbye.py:</label>
-<pre class="src src-python" id="test-hellogoodbye.py"><span class="linenr">1: </span>  <span class="org-keyword">from</span> hellogoodbye <span class="org-keyword">import</span> *
-<span class="linenr">2: </span>  <span class="org-keyword">from</span> unitttest <span class="org-keyword">import</span> TestCase
+<pre class="src src-python" id="test-hellogoodbye.py"><span class="linenr">1: </span>  from hellogoodbye import *
+<span class="linenr">2: </span>  from unitttest import TestCase
 <span class="linenr">3: </span>
-<span class="linenr">4: </span>  <span class="org-keyword">class</span> <span class="org-type">TestHelloGoodbye</span>(TestCase):
+<span class="linenr">4: </span>  class TestHelloGoodbye(TestCase):
 <span class="linenr">5: </span>
-<span class="linenr">6: </span>      <span class="org-keyword">def</span> <span class="org-function-name">test_example</span>(<span class="org-keyword">self</span>):
-<span class="linenr">7: </span>          run_example(<span class="org-string">'simpleSystemBase'</span>)
+<span class="linenr">6: </span>      def test_example(self):
+<span class="linenr">7: </span>          run_example('simpleSystemBase')
 </pre>
 </div>
 
@@ -1534,20 +1534,20 @@ capabilities of the current system match the Actor's requirements.
 
 <div class="org-src-container">
 
-<pre class="src src-python"><span class="linenr"> 1: </span>  <span class="org-keyword">from</span> thespian.actors <span class="org-keyword">import</span> *
-<span class="linenr"> 2: </span>  <span class="org-keyword">from</span> database <span class="org-keyword">import</span> dbclass
+<pre class="src src-python"><span class="linenr"> 1: </span>  from thespian.actors import *
+<span class="linenr"> 2: </span>  from database import dbclass
 <span class="linenr"> 3: </span>
-<span class="linenr"> 4: </span>  <span class="org-keyword">class</span> <span class="org-type">DBUpdate</span>(Actor):
+<span class="linenr"> 4: </span>  class DBUpdate(Actor):
 <span class="linenr"> 5: </span>
-<span class="linenr"> 6: </span>      <span class="org-type">@staticmethod</span>
-<span id="coderef-capcheck" class="coderef-off"><span class="linenr"> 7: </span>      <span class="org-keyword">def</span> <span class="org-function-name">actorSystemCapabilityCheck</span>(capabilities, requirements):</span>
-<span id="coderef-dbCap" class="coderef-off"><span class="linenr"> 8: </span>          <span class="org-keyword">return</span> capabilities.get(<span class="org-string">'Has DB access'</span>, <span class="org-constant">False</span>)</span>
+<span class="linenr"> 6: </span>      @staticmethod
+<span id="coderef-capcheck" class="coderef-off"><span class="linenr"> 7: </span>      def actorSystemCapabilityCheck(capabilities, requirements):</span>
+<span id="coderef-dbCap" class="coderef-off"><span class="linenr"> 8: </span>          return capabilities.get('Has DB access', False)</span>
 <span class="linenr"> 9: </span>      
-<span class="linenr">10: </span>      <span class="org-keyword">def</span> <span class="org-function-name">__init__</span>(<span class="org-keyword">self</span>):
-<span class="linenr">11: </span>          <span class="org-keyword">self</span>.db = dbclass.connect(...)
+<span class="linenr">10: </span>      def __init__(self):
+<span class="linenr">11: </span>          self.db = dbclass.connect(...)
 <span class="linenr">12: </span>          
-<span class="linenr">13: </span>      <span class="org-keyword">def</span> <span class="org-function-name">receiveMessage</span>(<span class="org-keyword">self</span>, message, sender):
-<span class="linenr">14: </span>          <span class="org-variable-name">rows</span> = <span class="org-keyword">self</span>.db.query(<span class="org-string">'select * from ...'</span>)
+<span class="linenr">13: </span>      def receiveMessage(self, message, sender):
+<span class="linenr">14: </span>          rows = self.db.query('select * from ...')
 <span class="linenr">15: </span>          ...
 </pre>
 </div>
@@ -1589,18 +1589,18 @@ method:
 
 <div class="org-src-container">
 
-<pre class="src src-python"><span class="linenr"> 1: </span>  <span class="org-keyword">from</span> thespian.actors <span class="org-keyword">import</span> *
-<span class="linenr"> 2: </span>  <span class="org-keyword">from</span> database <span class="org-keyword">import</span> dbclass
+<pre class="src src-python"><span class="linenr"> 1: </span>  from thespian.actors import *
+<span class="linenr"> 2: </span>  from database import dbclass
 <span class="linenr"> 3: </span>
-<span class="linenr"> 4: </span>  <span class="org-type">@requireCapability</span>(<span class="org-string">'Has DB access'</span>)
-<span class="linenr"> 5: </span>  <span class="org-type">@requireCapability</span>(<span class="org-string">'LDAP installed'</span>)
-<span class="linenr"> 6: </span>  <span class="org-keyword">class</span> <span class="org-type">DBUpdateFromLDAP</span>(Actor):
+<span class="linenr"> 4: </span>  @requireCapability('Has DB access')
+<span class="linenr"> 5: </span>  @requireCapability('LDAP installed')
+<span class="linenr"> 6: </span>  class DBUpdateFromLDAP(Actor):
 <span class="linenr"> 7: </span>
-<span class="linenr"> 8: </span>      <span class="org-type">@staticmethod</span>
-<span class="linenr"> 9: </span>      <span class="org-keyword">def</span> <span class="org-function-name">actorSystemCapabilityCheck</span>(capabilities, requirements):
-<span class="linenr">10: </span>          <span class="org-keyword">return</span> capabilities.get(<span class="org-string">'LDAP zone'</span>, <span class="org-constant">None</span>) == <span class="org-string">'Active'</span>
+<span class="linenr"> 8: </span>      @staticmethod
+<span class="linenr"> 9: </span>      def actorSystemCapabilityCheck(capabilities, requirements):
+<span class="linenr">10: </span>          return capabilities.get('LDAP zone', None) == 'Active'
 <span class="linenr">11: </span>      
-<span class="linenr">12: </span>      <span class="org-keyword">def</span> <span class="org-function-name">receiveMessage</span>(<span class="org-keyword">self</span>, message, sender): ...
+<span class="linenr">12: </span>      def receiveMessage(self, message, sender): ...
 </pre>
 </div>
 </div>
@@ -1619,19 +1619,19 @@ and share Actors:
 
 <div class="org-src-container">
 
-<pre class="src src-python"><span class="linenr"> 1: </span>  <span class="org-keyword">from</span> thespian.actors <span class="org-keyword">import</span> *
-<span class="linenr"> 2: </span>  <span class="org-keyword">from</span> database <span class="org-keyword">import</span> dbclass
+<pre class="src src-python"><span class="linenr"> 1: </span>  from thespian.actors import *
+<span class="linenr"> 2: </span>  from database import dbclass
 <span class="linenr"> 3: </span>
-<span id="coderef-conventionSpec" class="coderef-off"><span class="linenr"> 4: </span>  <span class="org-variable-name">capabilities</span> = { <span class="org-string">'Convention Address.IPv4'</span>: <span class="org-string">'10.5.1.1:1900'</span> }</span>
+<span id="coderef-conventionSpec" class="coderef-off"><span class="linenr"> 4: </span>  capabilities = { 'Convention Address.IPv4': '10.5.1.1:1900' }</span>
 <span class="linenr"> 5: </span>
-<span class="linenr"> 6: </span>  <span class="org-keyword">try</span>:
-<span class="linenr"> 7: </span>      <span class="org-variable-name">dbconn</span> = dbclass.connect(...)
-<span class="linenr"> 8: </span>      <span class="org-keyword">if</span> dbconn <span class="org-keyword">and</span> 1 == dbconn.runquery(<span class="org-string">'select 1=1'</span>):
-<span id="coderef-dbAccessSet" class="coderef-off"><span class="linenr"> 9: </span>          <span class="org-variable-name">capabilities</span>[<span class="org-string">'Has DB access'</span>] = <span class="org-constant">True</span></span>
-<span class="linenr">10: </span>  <span class="org-keyword">except</span> DBError:
-<span class="linenr">11: </span>      <span class="org-keyword">pass</span>
+<span class="linenr"> 6: </span>  try:
+<span class="linenr"> 7: </span>      dbconn = dbclass.connect(...)
+<span class="linenr"> 8: </span>      if dbconn and 1 == dbconn.runquery('select 1=1'):
+<span id="coderef-dbAccessSet" class="coderef-off"><span class="linenr"> 9: </span>          capabilities['Has DB access'] = True</span>
+<span class="linenr">10: </span>  except DBError:
+<span class="linenr">11: </span>      pass
 <span class="linenr">12: </span>
-<span id="coderef-startupActorSys" class="coderef-off"><span class="linenr">13: </span>  ActorSystem(<span class="org-string">'multiprocTCPBase'</span>, capabilities)</span>
+<span id="coderef-startupActorSys" class="coderef-off"><span class="linenr">13: </span>  ActorSystem('multiprocTCPBase', capabilities)</span>
 </pre>
 </div>
 
@@ -1845,29 +1845,29 @@ used each time it is run:
 
 <div class="org-src-container">
 <label class="org-src-name">hi.py:</label>
-<pre class="src src-python" id="hi.py"><span class="linenr"> 1: </span><span class="org-keyword">from</span> thespian.actors <span class="org-keyword">import</span> *
+<pre class="src src-python" id="hi.py"><span class="linenr"> 1: </span>from thespian.actors import *
 <span class="linenr"> 2: </span>
-<span class="linenr"> 3: </span><span class="org-keyword">class</span> <span class="org-type">Hello</span>(Actor):
-<span class="linenr"> 4: </span>    <span class="org-keyword">def</span> <span class="org-function-name">receiveMessage</span>(<span class="org-keyword">self</span>, message, sender):
-<span class="linenr"> 5: </span>        <span class="org-keyword">self</span>.send(sender, <span class="org-string">'Hello, world!'</span>)
+<span class="linenr"> 3: </span>class Hello(Actor):
+<span class="linenr"> 4: </span>    def receiveMessage(self, message, sender):
+<span class="linenr"> 5: </span>        self.send(sender, 'Hello, world!')
 <span class="linenr"> 6: </span>
-<span class="linenr"> 7: </span><span class="org-keyword">def</span> <span class="org-function-name">zipMyself</span>():
-<span class="linenr"> 8: </span>    <span class="org-variable-name">zipname</span> = <span class="org-string">'hi.zip'</span>
-<span class="linenr"> 9: </span>    <span class="org-keyword">import</span> zipfile
-<span class="linenr">10: </span>    <span class="org-variable-name">zf</span> = zipfile.ZipFile(zipname, <span class="org-string">'w'</span>)
-<span class="linenr">11: </span>    zf.writestr(<span class="org-string">'hi.py'</span>, <span class="org-builtin">open</span>(<span class="org-string">'hi.py'</span>, <span class="org-string">'r'</span>).read())
+<span class="linenr"> 7: </span>def zipMyself():
+<span class="linenr"> 8: </span>    zipname = 'hi.zip'
+<span class="linenr"> 9: </span>    import zipfile
+<span class="linenr">10: </span>    zf = zipfile.ZipFile(zipname, 'w')
+<span class="linenr">11: </span>    zf.writestr('hi.py', open('hi.py', 'r').read())
 <span class="linenr">12: </span>    zf.close()
-<span class="linenr">13: </span>    <span class="org-keyword">return</span> zipname
+<span class="linenr">13: </span>    return zipname
 <span class="linenr">14: </span>
-<span class="linenr">15: </span><span class="org-keyword">def</span> <span class="org-function-name">say_hello</span>():
-<span class="linenr">16: </span>    <span class="org-variable-name">actorSys</span> = ActorSystem(<span class="org-string">"multiprocTCPBase"</span>)
-<span id="coderef-loadSource" class="coderef-off"><span class="linenr">17: </span>    <span class="org-variable-name">loadHash</span> = actorSys.loadActorSource(zipMyself())</span>
-<span class="linenr">18: </span>    <span class="org-variable-name">hello</span> = actorSys.createActor(<span class="org-string">'hi.Hello'</span>,
+<span class="linenr">15: </span>def say_hello():
+<span class="linenr">16: </span>    actorSys = ActorSystem("multiprocTCPBase")
+<span id="coderef-loadSource" class="coderef-off"><span class="linenr">17: </span>    loadHash = actorSys.loadActorSource(zipMyself())</span>
+<span class="linenr">18: </span>    hello = actorSys.createActor('hi.Hello',
 <span id="coderef-hashCreate" class="coderef-off"><span class="linenr">19: </span>                                 sourceHash = loadHash)</span>
-<span class="linenr">20: </span>    <span class="org-keyword">print</span>(actorSys.ask(hello, <span class="org-string">'are you there?'</span>, 1.5))
+<span class="linenr">20: </span>    print(actorSys.ask(hello, 'are you there?', 1.5))
 <span class="linenr">21: </span>    actorSys.tell(hello, ActorExitRequest)
 <span class="linenr">22: </span>
-<span class="linenr">23: </span><span class="org-keyword">if</span> <span class="org-builtin">__name__</span> == <span class="org-string">"__main__"</span>:
+<span class="linenr">23: </span>if __name__ == "__main__":
 <span class="linenr">24: </span>    say_hello()
 </pre>
 </div>
@@ -2092,7 +2092,7 @@ cloud-based applications.
 </div>
 <div id="postamble" class="status">
 <p class="author">Author: Kevin Quick &lt;kquick@godaddy.com&gt;</p>
-<p class="date">Created: 2016-12-04 Sun 22:09</p>
+<p class="date">Created: 2017-01-02 Mon 22:38</p>
 <p class="creator"><a href="http://www.gnu.org/software/emacs/">Emacs</a> 25.1.1 (<a href="http://orgmode.org">Org</a> mode 8.2.10)</p>
 <p class="validation"><a href="http://validator.w3.org/check?uri=referer">Validate</a></p>
 </div>

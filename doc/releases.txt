@@ -10,6 +10,8 @@ Table of Contents
 ─────────────────
 
 3.x
+.. 3.6
+..... 3.6.0 <2017-01-02 Mon>
 .. 3.5
 ..... 3.5.2 <2016-12-12 Mon>
 ..... 3.5.1 <2016-12-08 Thu>
@@ -76,6 +78,74 @@ not change the API.
 
 3.x
 ═══
+
+3.6
+───
+
+3.6.0 <2017-01-02 Mon>
+╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+
+  ‣ Enhancements
+
+    ‣ Added the thespian director to help manage loading and managing
+      sources.  See the `thespian/director.py' file for more
+      information, or `$ python -m thespian.director' for cli help.
+
+    ‣ Added `thespian.transient' import with `@transient' and
+      `@transient_idle' decorators.  See `thespian/transient.py' for
+      more information.
+
+    ‣ Added the rsasig.py helper source (used by the director) to
+      perform signature validation of sources on systems where a full
+      encryption/SSL library may not be installed or available.
+
+    ‣ Internal improvements to the ExpirationTimer and ExpiryTimer
+      implementation to reduce overhead for better performance (thanks
+      to Daniel Mitterdorfer).
+
+    ‣ A Source Authority can now actively reject a loaded source by
+      responding with a None value for the validated results.
+      Previously the Source Authority could only passively reject the
+      source by doing nothing, which did not provide feedback to waiting
+      elements about the disposition of the load attempt.
+
+    ‣ When displaying Actor Addresses, the final value is shown (if
+      known); previously these always output as "LocalAddr" even if the
+      final address was known.
+
+    ‣ Added a failure reason to the InvalidActorSpecification exception.
+
+    ‣ More logging on Actor System startup and shutdown.
+
+    ‣ Transports that may re-use addresses (e.g. TCP ports) do not need
+      to declare an Actor Address as permanently dead-lettered in case
+      of re-use.
+
+  ‣ Bugs
+
+    ‣ Ensure that loaded source information specified by an Actor is
+      preserved.
+
+    ‣ Fixed a bug introduced in version 3.5.0 where the string form of
+      Actor Addresses for remote actors might not show the remote
+      address portion.
+
+    ‣ Ensure dead target transmit failures are forwarded to the dead
+      letter handler.
+
+    ‣ Clarified that only `.py' files in the loadable sources are used,
+      and that `.pyo' and `.pyc' files are ignored.  This has always
+      been the way it operated, but the previous documentation stated
+      the inverse.
+
+  ‣ Other
+
+    ‣ Miscellaneous internal cleanup.
+
+    ‣ Update status reporting of pending wakeups.
+
+    ‣ Refactor and improve simpleSystemBase handling of wakeups.
+
 
 3.5
 ───
