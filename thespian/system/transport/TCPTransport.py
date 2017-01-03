@@ -455,7 +455,12 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
 
         # No need to clean up self._incomingSockets entries: they will
         # timeout naturally.
+
         super(TCPTransport, self).deadAddress(addressManager, childAddr)
+
+        # Ports may be re-used, so do not set this address to dead in
+        # the address manager
+
 
     def close_oldest_idle_sockets(self, num_to_close=1):
         aged_keys = sorted([(self._openSockets[K].validity, K)

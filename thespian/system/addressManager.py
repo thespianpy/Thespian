@@ -98,6 +98,13 @@ class ActorAddressManager:
             del self._deadAddrs[self._deadAddrs.index(anAddr)]
 
     def deadAddress(self, address):
+        """This function is called to track a known dead address.  This method
+           should be used by transports that cannot independently
+           determine that an address is dead (e.g. multiprocQueueBase)
+           but it should *not* be used for transports that may re-use
+           addresses (e.g. multiprocTCPBase re-use of port
+           numbers).
+        """
         self._deadAddrs.append(address)
         # If the following is present, then the index of actors
         #changes after a dead address, which causes subsequent
@@ -108,6 +115,10 @@ class ActorAddressManager:
 
     def isDeadAddress(self, address):
         return address in self._deadAddrs
+
+    def remove_dead_address(self, address):
+        if address in self._deadAddrs:
+            self._deadAddrs.remove(address)
 
     def associateUseableAddress(self, ownerAddress, ownerInstance, useableAddress):
         """Called when the actual Actor Address becomes known for a

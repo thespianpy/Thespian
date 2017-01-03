@@ -239,6 +239,7 @@ class MultiprocessQueueTransport(asyncTransportBase, wakeupTransportBase):
         # the addressManager is also aware of the dead address and
         # will cause DeadEnvelope forwarding.  Deleting here
         # prevents hanging on queue full to dead children.
+        addressManager.deadAddress(childAddr)
         self._queues.rmv(childAddr)
         deadfwd, okfwd = ([],[]) if False else \
                          partition(lambda i: i[0] == childAddr or i[1] == childAddr,

@@ -20,15 +20,19 @@ from thespian.system.utilis import thesplog
 from thespian.actors import *
 from thespian.system.transport import *
 from thespian.system.transport.IPBase import *
+from thespian.system.timing import ExpirationTimer
+from thespian.system.utilis import partition
 from thespian.system.messages.multiproc import ChildMayHaveDied
 from thespian.system.addressManager import ActorLocalAddress
 import socket
 import select
-from datetime import datetime
-#import json
+from datetime import timedelta
 import pickle
 from thespian.system.transport.asyncTransportBase import asyncTransportBase
 from thespian.system.transport.wakeupTransportBase import wakeupTransportBase
+
+
+DEAD_ADDRESS_TIMEOUT = timedelta(seconds=15)
 
 
 serializer = pickle
@@ -79,7 +83,7 @@ class UDPTransport(asyncTransportBase, wakeupTransportBase):
         self._rcvd = []
         self._checkChildren = False
         self._shutdownSignalled = False
-
+        self._pending_actions = [] # array of (ExpirationTimer, func)
 
     def protectedFileNumList(self):
         return [self.socket.fileno()]
@@ -175,6 +179,20 @@ class UDPTransport(asyncTransportBase, wakeupTransportBase):
         # KWQ: not actually connected? waiting for child to callback and confirm?  happens automatically?  need this method really?
 
 
+    def deadAddress(self, addressManager, childAddr):
+        # UDP is unable to indicate whether the target address is
+        # still alive or not, so this entry point is unlikely to be
+        # utilized.  In addition, UDP can use recycled ports, so the
+        # hopeful workaround here is to mark the address as dead for a
+        # period of time and hope that the port is not recycled by the
+        # system in that time frame.
+        addressManager.deadAddress(childAddr)
+        self._pending_actions.append( (ExpirationTimer(DEAD_ADDRESS_TIMEOUT),
+                                       lambda am=addressManager, addr=childAddr:
+                                       addressManager.remove_dead_address(addr)))
+        super(UDPTransport, self).deadAddress(addressManager, childAddr)
+
+
     def serializer(self, intent):
         return serializer.dumps(intent.message)
 
@@ -220,9 +238,11 @@ class UDPTransport(asyncTransportBase, wakeupTransportBase):
             if self._rcvd:
                 rcvdEnv = self._rcvd.pop()
             else:
+                next_action_timeout = self.check_pending_actions()
                 try:
                     sresp, _ign1, _ign2 = select.select([self.socket.fileno()], [], [],
-                                                        self.run_time.remainingSeconds())
+                                                        min(self.run_time, next_action_timeout)
+                                                        .remainingSeconds())
                 except select.error as se:
                     import errno
                     if se.args[0] != errno.EINTR:
@@ -266,6 +286,13 @@ class UDPTransport(asyncTransportBase, wakeupTransportBase):
 
         return None
 
+    def check_pending_actions(self):
+        expired, remaining = partition(lambda E: E[0].expired(),
+                                       self._pending_actions)
+        for each in expired:
+            each[1]()
+        self._pending_actions = remaining
+        return min([E[0] for E in self._pending_actions] + [ExpirationTimer(None)])
 
     def abort_run(self, drain=False):
         """Indicates that run should exit; similar to a handler returning

@@ -114,7 +114,6 @@ class systemCommonBase(object):
 
     def _handleChildExited(self, childAddress):
         self._sCBStats.inc('Common.Message Received.Child Actor Exited')
-        self._addrManager.deadAddress(childAddress)
         self.transport.deadAddress(self._addrManager, childAddress)
         self._childExited(childAddress)
         self._children = [C for C in self._children if C != childAddress]
