@@ -425,6 +425,14 @@ class AdminCore(systemCommonBase):
                           sourceHash, ex)
             return
 
+        if self._sources[sourceHash].source_valid:
+            # If a duplicate source load request is made while the
+            # first is still being validated by the Source Authority,
+            # another request will be sent to the Source Authority and
+            # the latter response will be a duplicate here and can
+            # simply be dropped.
+            return
+
         # Store this registered source
         self._sources[sourceHash] = ValidSource(sourceHash, sourceZip, str(sourceInfo))
 
