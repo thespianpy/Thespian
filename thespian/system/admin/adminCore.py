@@ -35,6 +35,9 @@ class AdminCore(systemCommonBase):
                  self.transport.myAddress, str(ThespianGeneration),
                  level=logging.INFO,
                  primary=True)
+        logging.info('++++ Actor System gen %s started, admin @ %s',
+                     str(ThespianGeneration), self.transport.myAddress)
+        logging.debug('Thespian source: %s', sys.modules['thespian'].__file__)
         self._nannying = AssocList()  # child actorAddress -> parent Address
         self._deadLetterHandler = None
         self._sources = {}  # Index is sourcehash, value is requestor
@@ -198,6 +201,7 @@ class AdminCore(systemCommonBase):
         self._send_intent(TransmitIntent(self._exiting,
                                          SystemShutdownCompleted()))
         thesplog('---- shutdown completed', level=logging.INFO)
+        logging.info('---- Actor System shutdown')
         self.shutdown_completed = True
 
 
