@@ -6,7 +6,7 @@ from thespian.system.utilis import (thesplog, checkActorCapabilities,
 from thespian.system.timing import ExpiryTime
 from thespian.system.logdirector import LogAggregator
 from thespian.system.admin.globalNames import GlobalNamesAdmin
-from thespian.system.admin.adminCore import ValidSource
+from thespian.system.admin.adminCore import PendingSource
 from thespian.system.transport import TransmitIntent, ReceiveEnvelope
 from thespian.system.messages.admin import PendingActorResponse
 from thespian.system.messages.convention import *
@@ -550,7 +550,6 @@ class ConventioneerAdmin(GlobalNamesAdmin):
             self.capabilities,
             self._sCBStats,
             getattr(self.transport, 'getConventionAddress', lambda c: None))
-        self._pendingSources = {}  # key = sourceHash, value is array of PendingActor requests
         self._hysteresisSender = HysteresisDelaySender(self._send_intent)
 
     def _updateStatusResponse(self, resp):
@@ -621,6 +620,7 @@ class ConventioneerAdmin(GlobalNamesAdmin):
                 self._performIO(self._cstate.check_convention())
 
                 self._hysteresisSender.checkSends()
+                self._remove_expired_sources()
         except Exception as ex:
             import traceback
             thesplog('ActorAdmin uncaught exception: %s', traceback.format_exc(),
@@ -633,29 +633,51 @@ class ConventioneerAdmin(GlobalNamesAdmin):
     def h_SourceHashTransferRequest(self, envelope):
         sourceHash = envelope.message.sourceHash
         src = self._sources.get(sourceHash, None)
-        self._send_intent(
-            TransmitIntent(envelope.sender,
-                           SourceHashTransferReply(sourceHash,
-                                                   src and src.zipsrc,
-                                                   src and src.srcInfo)))
+        if not src or not src.source_valid:
+            self._send_intent(
+                TransmitIntent(envelope.sender,
+                               SourceHashTransferReply(sourceHash)))
+        else:
+            # Older requests did not have the prefer_original field;
+            # maintain backward compatibility
+            orig = getattr(envelope.message, 'prefer_original', False)
+            self._send_intent(
+                TransmitIntent(
+                    envelope.sender,
+                    SourceHashTransferReply(
+                        sourceHash,
+                        src.orig_data if orig else src.zipsrc,
+                        src.srcInfo,
+                        original_form = orig)))
         return True
 
 
     def h_SourceHashTransferReply(self, envelope):
         sourceHash = envelope.message.sourceHash
-        pending = self._pendingSources[sourceHash]
-        del self._pendingSources[sourceHash]
+        if sourceHash not in self._sources:
+            return True
         if envelope.message.isValid():
-            self._sources[sourceHash] = ValidSource(sourceHash,
-                                                    envelope.message.sourceData,
-                                                    getattr(envelope.message,
-                                                            'sourceInfo', None))
-            for each in pending:
-                self.h_PendingActor(each)
-        else:
-            for each in pending:
-                self._sendPendingActorResponse(each, None,
-                                               errorCode = PendingActorResponse.ERROR_Invalid_SourceHash)
+            # nb.. original_form added; use getattr for backward compatibility
+            if getattr(envelope.message, 'original_form', False):
+                if self._sourceAuthority:
+                    self._send_intent(
+                        TransmitIntent(
+                            self._sourceAuthority,
+                            ValidateSource(sourceHash,
+                                           envelope.message.sourceData,
+                                           getattr(envelope.message,
+                                                   'sourceInfo', None))))
+                    return True
+            else:
+                self._loadValidatedActorSource(sourceHash,
+                                               envelope.message.sourceData,
+                                               # sourceInfo added; backward compat.
+                                               getattr(envelope.message,
+                                                       'sourceInfo', None))
+                return True
+
+        self._cancel_pending_actors(self._sources[sourceHash].pending_actors)
+        del self._sources[sourceHash]
         return True
 
 
@@ -692,21 +714,29 @@ class ConventioneerAdmin(GlobalNamesAdmin):
                  envelope.message.actorClassName,
                  ' (%s)'%sourceHash if sourceHash else '',
                  childRequirements, envelope.sender)
-        # If this request was forwarded by a remote Admin and the
-        # sourceHash is not known locally, request it from the sending
-        # remote Admin
-        if sourceHash and \
-           sourceHash not in self._sources and \
-           self._cstate.sentByRemoteAdmin(envelope) and \
-           self._acceptsRemoteLoadedSourcesFrom(envelope):
-            requestedAlready = self._pendingSources.get(sourceHash, False)
-            self._pendingSources.setdefault(sourceHash, []).append(envelope)
-            if not requestedAlready:
-                self._hysteresisSender.sendWithHysteresis(
-                    TransmitIntent(envelope.sender,
-                                   SourceHashTransferRequest(sourceHash)))
-                return False  # sent with hysteresis, so break out to local _run
-            return True
+
+        if sourceHash:
+            if sourceHash not in self._sources:
+                # If this request was forwarded by a remote Admin and the
+                # sourceHash is not known locally, request it from the sending
+                # remote Admin
+                if self._cstate.sentByRemoteAdmin(envelope) and \
+                   self._acceptsRemoteLoadedSourcesFrom(envelope):
+                    self._sources[sourceHash] = PendingSource(sourceHash, None)
+                    self._sources[sourceHash].pending_actors.append(envelope)
+                    self._hysteresisSender.sendWithHysteresis(
+                        TransmitIntent(
+                            envelope.sender,
+                            SourceHashTransferRequest(sourceHash,
+                                                      bool(self._sourceAuthority))))
+                    # sent with hysteresis, so break out to local _run
+                    return False
+            if sourceHash in self._sources and \
+               not self._sources[sourceHash].source_valid:
+                # Still pending, add this create request to the waiting list
+                self._sources[sourceHash].pending_actors.append(envelope)
+                return True
+
         # If the requested ActorClass is compatible with this
         # ActorSystem, attempt to start it, otherwise forward the
         # request to any known compatible ActorSystem.

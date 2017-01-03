@@ -549,7 +549,9 @@ class ValidateSource(ActorSystemMessage):
 
 class ValidatedSource(ActorSystemMessage):
     """The response to the ValidateSource providing the validated source
-       code to enable.
+       code to enable.  The sourceZip parameter should be binary
+       Zipfile data; if it is None then the Source Authority is
+       actively rejecting the source and this sourceHash is not valid.
     """
     def __init__(self, sourceHash, sourceZip, sourceInfo=None):
         self.sourceHash = sourceHash

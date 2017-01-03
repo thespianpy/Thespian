@@ -66,9 +66,10 @@ class Thespian_SystemStatus(_Common_StatusResp):
     def setDeadLetterHandler(self, address): self.deadLetterHandler = address
     def setNotifyHandlers(self, addresses): self.notifyAddresses = addresses
     def setLoadedSources(self, sourceHashes):
-        self.loadedSources = list(map(lambda K: (sourceHashes[K].srcHash,
-                                                 sourceHashes[K].srcInfo),
-                                      sourceHashes))
+        self.loadedSources = [
+            (H, S.srcInfo if S.source_valid else '...pending validation...')
+            for H,S in sourceHashes.items()
+        ]
 
 
 # Likewise the management of each Actor should support the following diagnostics

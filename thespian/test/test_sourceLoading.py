@@ -1258,6 +1258,8 @@ class TestFuncLoadSource(object):
             assert '' == 'Invalid exception thrown: %s (%s)'%(str(ex), type(ex))
 
     def test07_sourceAuthorityExceptions(self, asys, source_zips):
+        if asys.base_name != 'simpleSystemBase':
+            pytest.skip('Source load timeout is too long to wait for valid testing.')
         thesplog('ttt %s', asys.port_num)
         tmpdir, foozipFname, foozipEncFile, dogzipFname, dogzipEncFile = source_zips
         auth = asys.createActor(rot13FailAuthority)
@@ -1278,8 +1280,10 @@ class rot13Authority(Actor):
             self.send(sender, 'Enabled')
         elif isinstance(msg, ValidateSource):
             clear = _decryptROT13(msg.sourceData)
-            if clear:
-                self.send(sender, ValidatedSource(msg.sourceHash, clear))
+            # clear will be None on decryption failure, this actively
+            # rejects the source load.
+            self.send(sender, ValidatedSource(msg.sourceHash, clear))
+
 
 class rot13CorruptAuthority(Actor):
     def receiveMessage(self, msg, sender):

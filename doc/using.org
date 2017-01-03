@@ -2470,13 +2470,20 @@ class SimpleSourceAuthority(ActorTypeDispatcher):
    ActorSystem.
 
    If the specified source is not authorized to run in the current
-   ActorSystem, the Source Authority simply discards this message and
-   takes no further action.
+   ActorSystem, the Source Authority may either simply discard this
+   message and take no further action, or it may send a
+   [[*ValidatedSource][ValidatedSource]] message specifying None as the validated source.
+   The latter is recommended since it allows immediate response
+   handling for pending actors for that source; otherwise a source
+   load timeout must expire before rejecting actor create requests for
+   the rejected source load attempt.
 
    If the specified source is valid for running in the current
    ActorSystem, the Source Authority should return a zipfile
-   containing *compiled sources only* to the sender in a
-   [[*ValidatedSource][ValidatedSource]] message.
+   containing the sources to the sender in a [[*ValidatedSource][ValidatedSource]] message.
+
+   At the present time, only ~.py~ sources are utilized; any ~.pyc~ or
+   ~.pyo~ sources are ignored if present in the zipfile.
 
    It is important to note that the sources provided to the
    ~loadActorSource()~ call are not actually available for use in
@@ -2499,27 +2506,27 @@ class SimpleSourceAuthority(ActorTypeDispatcher):
    This message is not sent by the ActorSystem to an Actor, but is
    instead sent by the Source Authority Actor back to the system as
    the response to a [[*ValidateSource][ValidateSource]] message.  The data associated with
-   this response is a zipfile in zipimport format providing the
-   *compiled sources only* that were extracted from the input data
+   this response is a zipfile in zipimport format providing the source
+   file tree of ~.py~ files that were extracted from the input data
    sent via the ~ValidateSource~ message.  By sending this message
    back to the sender, the Source Authority Actor is indicating that
    the associated contents are valid for running within the current
    ActorSystem environment (and any other ActorSystems that are part
    of the Convention).
 
-   Only compiled objects are returned (with ~.pyc~ or ~.pyo~
-   extensions) in the returned zipimport file to further preserve
-   security: an attacker with visibility into the memory of the
-   ActorSystem would need to locate and de-compile the body of the
-   zipfile instead of being granted access directly to the decrypted
-   original sources.
+   At this time, only ~.py~ files are used from the loaded source: any
+   ~.pyc~ or ~.pyo~ files are ignored.
 
+   This message may also be sent by the Source Authority with None as
+   the data to indicate that the associated Source Hash is invalid and
+   is being actively rejected.
 
 *** Attributes
   * ~.sourceHash~ -- the hash associated with the loaded source as
     provided in the ~ValidateSource~ input message.
   * ~.sourceZip~ -- the zipimport-format decrypted and validated
-    compiled form of the originally provided source.
+    compiled form of the originally provided source, or None to reject
+    the load attempt.
 
 ** LoadedSource
 

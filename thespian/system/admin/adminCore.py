@@ -1,5 +1,7 @@
 import sys
 import logging
+from datetime import timedelta
+
 from thespian.actors import *
 from thespian.system.utilis import thesplog, AssocList
 from thespian.system.systemCommon import systemCommonBase
@@ -7,11 +9,28 @@ from thespian.system.messages.status import Thespian_SystemStatus
 from thespian.system.messages.admin import *
 from thespian.system.transport import TransmitIntent
 from thespian.system.sourceLoader import SourceHashFinder
+from thespian.system.timing import ExpirationTimer
 
+
+
+SOURCE_LOAD_TIMEOUT_PERIOD = timedelta(minutes=2)
+
+
+class PendingSource(object):
+    source_valid = False
+    def __init__(self, srchash, orig_data):
+        self.srchash = srchash
+        self.orig_data = orig_data
+        self.load_expires = ExpirationTimer(SOURCE_LOAD_TIMEOUT_PERIOD)
+        # pending_actors is an array of PendingActor requests waiting
+        # on this source.
+        self.pending_actors = []
 
 class ValidSource(object):
-    def __init__(self, srchash, zipsrc, srcinfo):
+    source_valid = True
+    def __init__(self, srchash, orig_data, zipsrc, srcinfo):
         self.srcHash = srchash
+        self.orig_data = orig_data
         self.zipsrc  = zipsrc
         self.srcInfo = srcinfo
 
@@ -40,8 +59,7 @@ class AdminCore(systemCommonBase):
         logging.debug('Thespian source: %s', sys.modules['thespian'].__file__)
         self._nannying = AssocList()  # child actorAddress -> parent Address
         self._deadLetterHandler = None
-        self._sources = {}  # Index is sourcehash, value is requestor
-                            # ActorAddress or ValidSource (when validated)
+        self._sources = {}  # Index is sourcehash, value PendingSource or ValidSource
         self._sourceAuthority = None
         self._sourceNotifications = []  # array of notification addresses
 
@@ -188,6 +206,23 @@ class AdminCore(systemCommonBase):
         return True
 
 
+    def _remove_expired_sources(self):
+        rmvlist = []
+        for each in self._sources:
+            if not self._sources[each].source_valid and \
+               self._sources[each].load_expires.expired():
+                rmvlist.append(each)
+        for each in rmvlist:
+            self._cancel_pending_actors(self._sources[each].pending_actors)
+            del self._sources[each]
+
+    def _cancel_pending_actors(self, pending_envelopes,
+                               error_code=PendingActorResponse.ERROR_Invalid_SourceHash):
+        for each in pending_envelopes:
+            self._sendPendingActorResponse(each, None, errorCode = error_code)
+
+
+
     def _killLocalActors(self):
         for each in self.childAddresses:
             self._send_intent(
@@ -249,14 +284,14 @@ class AdminCore(systemCommonBase):
 
         sourceHash = envelope.message.sourceHash
         if sourceHash:
+            self._remove_expired_sources()
             if sourceHash not in self._sources:
-                self._sendPendingActorResponse(envelope, None,
-                                               errorCode = PendingActorResponse.ERROR_Invalid_SourceHash)
+                self._sendPendingActorResponse(
+                    envelope, None,
+                    errorCode = PendingActorResponse.ERROR_Invalid_SourceHash)
                 return True
-            if not isinstance(self._sources[sourceHash], ValidSource):
-                thesplog('sourceHash %s is not valid (yet)', sourceHash)
-                self._sendPendingActorResponse(envelope, None,
-                                               errorCode = PendingActorResponse.ERROR_Invalid_SourceHash)
+            if not self._sources[sourceHash].source_valid:
+                self._sources[sourceHash].pending_actors.append(envelope)
                 return True
 
         # Note, both Admin and remote requester will have a local
@@ -361,11 +396,11 @@ class AdminCore(systemCommonBase):
     def h_NotifyOnSourceAvailability(self, envelope):
         address = envelope.message.notificationAddress
         enable = envelope.message.enable
-        all_except = list(filter(lambda a: a != address, self._sourceNotifications))
+        all_except = [A for A in self._sourceNotifications if A != address]
         if enable:
             self._sourceNotifications = all_except + [address]
             for each in self._sources:
-                if hasattr(self._sources[each], 'srcHash'):
+                if self._sources[each].source_valid:
                     self._send_intent(
                         TransmitIntent(address,
                                        LoadedSource(self._sources[each].srcHash,
@@ -375,13 +410,15 @@ class AdminCore(systemCommonBase):
 
 
     def h_ValidateSource(self, envelope):
+        self._remove_expired_sources()
         sourceHash = envelope.message.sourceHash
         if not envelope.message.sourceData:
             self.unloadActorSource(sourceHash)
             logging.getLogger('Thespian')\
                    .info('Source hash %s unloaded', sourceHash)
             return
-        if sourceHash in self._sources:
+        if sourceHash in self._sources and \
+           self._sources[sourceHash].source_valid:
             logging.getLogger('Thespian')\
                    .info('Source hash %s (%s) already loaded', sourceHash,
                          self._sources[sourceHash].srcInfo
@@ -389,6 +426,8 @@ class AdminCore(systemCommonBase):
                          else '<pending>')
             return
         if self._sourceAuthority:
+            self._sources[sourceHash] = PendingSource(sourceHash,
+                                                      envelope.message.sourceData)
             self._send_intent(TransmitIntent(self._sourceAuthority,
                                              envelope.message))
             return
@@ -400,17 +439,46 @@ class AdminCore(systemCommonBase):
             sourceHash)
 
     def h_ValidatedSource(self, envelope):
-        self._loadValidatedActorSource(envelope.message.sourceHash,
-                                       envelope.message.sourceZip,
-                                       getattr(envelope.message, 'sourceInfo', None))
-        thesplog('Source hash %s (%s) validated by Source Authority; now available.',
-                 envelope.message.sourceHash,
-                 getattr(envelope.message, 'sourceInfo', '-'))
+        self._remove_expired_sources()
+        if envelope.sender != self._sourceAuthority:
+            logging.getLogger('Thespian').warning(
+                'Ignoring validated source from %s: not the source authority at %s',
+                envelope.sender, self._sourceAuthority)
+            return
+        source_hash = envelope.message.sourceHash
+        if envelope.message.sourceZip:
+            self._loadValidatedActorSource(
+                source_hash,
+                envelope.message.sourceZip,
+                getattr(envelope.message, 'sourceInfo', None))
+            logging.getLogger('Thespian').info(
+                'Source hash %s (%s) validated by Source Authority'
+                '; now available.',
+                source_hash,
+                getattr(envelope.message, 'sourceInfo', '-'))
+        else:
+            # Source Authority actively rejected this source, so
+            # actively unloaded it.  Alternatively the Source
+            # Authority can do nothing and this load attempt will
+            # timeout.
+            self._cancel_pending_actors(
+                self._sources[source_hash].pending_actors)
+            logging.getLogger('Thespian').warning(
+                'Source hash %s (%s) REJECTED by Source Authority',
+                source_hash,
+                getattr(envelope.message, 'sourceInfo', '-'))
+            del self._sources[source_hash]
 
     def _loadValidatedActorSource(self, sourceHash, sourceZip, sourceInfo):
         # Validate the source file; this doesn't actually utilize the
         # sourceZip, but it ensures that the sourceZip isn't garbage
         # before registering it as active source.
+        if sourceHash not in self._sources:
+            logging.getLogger('Thespian').warning(
+                'Provided validated source with no or expired request'
+                ', hash %s; ignoring.', sourceHash)
+            return
+
         try:
             f = SourceHashFinder(sourceHash, lambda v: v, sourceZip)
             namelist = f.getZipNames()
@@ -434,7 +502,15 @@ class AdminCore(systemCommonBase):
             return
 
         # Store this registered source
-        self._sources[sourceHash] = ValidSource(sourceHash, sourceZip, str(sourceInfo))
+        pending_actors = self._sources[sourceHash].pending_actors
+
+        self._sources[sourceHash] = ValidSource(sourceHash,
+                                                self._sources[sourceHash].orig_data,
+                                                sourceZip,
+                                                str(sourceInfo))
+
+        for each in pending_actors:
+            self.h_PendingActor(each)
 
         msg = LoadedSource(self._sources[sourceHash].srcHash,
                            self._sources[sourceHash].srcInfo)

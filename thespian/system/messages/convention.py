@@ -73,8 +73,10 @@ class SourceHashTransferRequest(ActorSystemMessage):
        sourceHash not currently known by that ActorSystem.  This is sent to the
        requesting ActorSystem which should reply with a SourceHashTransferReply
        message."""
-    def __init__(self, sourceHash):
+
+    def __init__(self, sourceHash, have_local_authority=False):
         self.sourceHash = sourceHash
+        self.prefer_original = have_local_authority
 
 
 class SourceHashTransferReply(ActorSystemMessage):
@@ -83,12 +85,16 @@ class SourceHashTransferReply(ActorSystemMessage):
        indication if the sourceHash is unknown.  A sourceData response
        has a simple fletcher32 checksum to provide a basic integrity
        check on the receiving end."""
-    def __init__(self, sourceHash, sourceData=None, sourceInfo=None):
+
+    def __init__(self, sourceHash, sourceData=None, sourceInfo=None,
+                 original_form=False):
         self.sourceHash = sourceHash
         self.sourceInfo = sourceInfo
         self.sourceData = sourceData # None/False indicates not-found
-        if sourceData:
+        self.original_form = original_form
+        if sourceData and not original_form:
             self.sourceSum = self._fletcher32(sourceData)
+
     @staticmethod
     def _fletcher32(sourceData):
         sum1, sum0 = 0xffff, 0xffff
@@ -101,5 +107,11 @@ class SourceHashTransferReply(ActorSystemMessage):
         sum1 = (sum1 & 0xffff) + (sum1 >> 16)
         sum0 = (sum0 & 0xffff) + (sum0 >> 16)
         return (sum0 << 16) + sum1
+
     def isValid(self):
-        return self.sourceData and self._fletcher32(self.sourceData) == self.sourceSum
+        if not self.sourceData:
+            return False
+        src_sum = getattr(self, 'sourceSum', None)
+        if src_sum:
+            return self._fletcher32(self.sourceData) == src_sum
+        return True
