@@ -180,7 +180,8 @@ class systemBase(object):
             if self._pcrFAILED == PendingActorResponse.ERROR_Invalid_SourceHash:
                 raise InvalidActorSourceHash(sourceHash)
             if self._pcrFAILED == PendingActorResponse.ERROR_Invalid_ActorClass:
-                raise InvalidActorSpecification(actorClass)
+                raise InvalidActorSpecification(actorClass,
+                                                getattr(self, '_pcrMessage', None))
             if self._pcrFAILED == PendingActorResponse.ERROR_Import:
                 info = getattr(self, '_pcrMessage', '')
                 if info:

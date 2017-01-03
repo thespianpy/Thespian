@@ -743,10 +743,12 @@ class ConventioneerAdmin(GlobalNamesAdmin):
                 envelope, None,
                 errorCode=PendingActorResponse.ERROR_Invalid_SourceHash)
             return True
-        except InvalidActorSpecification:
+        except InvalidActorSpecification as ex:
+            thesplog('Error: InvalidActorSpecification: %s', str(ex), exc_info=True)
             self._sendPendingActorResponse(
                 envelope, None,
-                errorCode=PendingActorResponse.ERROR_Invalid_ActorClass)
+                errorCode=PendingActorResponse.ERROR_Invalid_ActorClass,
+                errorStr=str(ex))
             return True
         except ImportError as ex:
             self._sendPendingActorResponse(
@@ -756,6 +758,7 @@ class ConventioneerAdmin(GlobalNamesAdmin):
             return True
         except AttributeError as ex:
             # Usually when the module has no attribute FooActor
+            thesplog('Error: AttributeError: %s', str(ex), exc_info=True)
             self._sendPendingActorResponse(
                 envelope, None,
                 errorCode=PendingActorResponse.ERROR_Invalid_ActorClass,

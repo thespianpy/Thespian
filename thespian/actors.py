@@ -60,9 +60,10 @@ class InvalidActorSourceHash(ActorSystemException):
 
 class InvalidActorSpecification(ActorSystemException):
     "Caller specified an invalid Actor Class for a createActor() request."
-    def __init__(self, badActorClassSpecification):
+    def __init__(self, badActorClassSpecification, reason=None):
         super(InvalidActorSpecification, self).__init__(
-            'Invalid Actor Specification: ' + str(badActorClassSpecification))
+            'Invalid Actor Specification: ' + str(badActorClassSpecification) +
+            ((' (%s)' % reason) if reason else ''))
 
 
 class ActorAddress(object):
