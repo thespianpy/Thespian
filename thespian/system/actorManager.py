@@ -428,8 +428,13 @@ class ActorManager(systemCommonBase):
             d = f.read()
             import hashlib
             hval = hashlib.md5(d).hexdigest()
-            self._send_intent(TransmitIntent(self._adminAddr,
-                                             ValidateSource(hval, d)))
+            self._send_intent(
+                TransmitIntent(self._adminAddr,
+                               ValidateSource(hval, d,
+                                              getattr(f, 'name',
+                                                      str(fname)
+                                                      if hasattr(fname, 'read')
+                                                      else fname))))
             return hval
         finally:
             f.close()
