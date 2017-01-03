@@ -679,7 +679,7 @@ class ConventioneerAdmin(GlobalNamesAdmin):
         allowed = self.capabilities.get('AllowRemoteActorSources', 'yes')
         return allowed.lower() == 'yes' or \
             (allowed == 'LeaderOnly' and
-             pendingActorEnvelope.sender == self.conventionLeaderAddr)
+             pendingActorEnvelope.sender == self._cstate.conventionLeaderAddr)
 
 
     # ---- Remote Actor interactions ----------------------------------------------
