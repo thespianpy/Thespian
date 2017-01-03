@@ -2671,6 +2671,46 @@ that the actor is ready for more work.
 Manipulating the ~troupe_work_in_progress~ member variable for
 non-troupe actors has no effect on their behavior and is safe to do.
 
+** Transient Actors
+
+Some actors should automatically die at some period after they are
+initially used, or after they are last used.  These actors are
+referred to as "transient" in contrast to normal actors that will
+persist until explicitly shutdown (either by themselves or by another
+Actor).
+
+Implementing transient actors is made easier by importing the
+~thespian.transient~ file and adding a ~@transient()~ or
+~@transient_idle()~ decorator to the Actor definition.
+
+The ~transient~ decorator cause the actor to exit at some time period
+after it receives its first message.
+
+The ~transient_idle~ decorator causes the actor to exit at some time
+period after it has received its last message.
+
+Both decorators default to a period of 10 seconds, and both take an
+optional ~exit_delay~ argument value that specifies an alternate time
+period.  The time period should be a ~datetime.timedelta~ object.
+
+
+#+BEGIN_SRC python
+from thespian.transient import transient_idle
+
+@transient_idle(timedelta(seconds=3, milliseconds=250))
+class BoredActor(Actor):
+   ...
+
+@transient()
+class TempActor(Actor):
+   ...
+
+#+END_SRC
+
+Note that a transient actor which is created but which never receives
+any messages does not exit; the timer for transient exit is only
+started after receipt of the actor's first message.
+
 
 * ActorSystem Implementations
 
