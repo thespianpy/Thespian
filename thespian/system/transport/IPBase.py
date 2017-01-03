@@ -179,6 +179,15 @@ class IPActorAddress(object):
                                       ')'])
         return self._str_form
 
+    def __getstate__(self):
+        # Removed the cached str() form when pickling so that it is
+        # regenerated on the (possibly) remote end.
+        if not hasattr(self, '_str_form'):
+            return self.__dict__
+        odict = self.__dict__.copy()
+        del odict['_str_form']
+        return odict
+
     def _str_kind(self):
         # n.b. ignores self.socktype of SOCK_STREAM or SOCK_DGRAM
         if self.proto == socket.IPPROTO_TCP:
