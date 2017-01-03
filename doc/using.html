@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
 <title>Thespian Actors User's Guide</title>
-<!-- 2016-12-04 Sun 22:10 -->
+<!-- 2017-01-02 Mon 22:39 -->
 <meta  http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta  name="generator" content="Org-mode" />
 <meta  name="author" content="Kevin Quick &lt;kquick@godaddy.com&gt;" />
@@ -261,7 +261,6 @@ for the JavaScript code in this tag.
 <li><a href="#sec-5-17-1">5.17.1. Type Handling Deferral</a></li>
 </ul>
 </li>
-<li><a href="#sec-5-18">5.18. Actor Troupe Support</a></li>
 </ul>
 </li>
 <li><a href="#sec-6">6. ActorSystem API</a>
@@ -353,20 +352,26 @@ for the JavaScript code in this tag.
 <li><a href="#sec-7-14">7.14. Thespian_ActorStatus</a></li>
 </ul>
 </li>
-<li><a href="#sec-8">8. ActorSystem Implementations</a>
+<li><a href="#sec-8">8. Patterns and Helpers</a>
 <ul>
-<li><a href="#sec-8-1">8.1. Common Capabilities</a></li>
-<li><a href="#sec-8-2">8.2. simpleSystemBase</a></li>
-<li><a href="#sec-8-3">8.3. multiprocQueueBase</a></li>
-<li><a href="#sec-8-4">8.4. multiprocTCPBase</a></li>
-<li><a href="#sec-8-5">8.5. multiprocUDPBase</a></li>
+<li><a href="#sec-8-1">8.1. Actor Troupe Support</a></li>
+<li><a href="#sec-8-2">8.2. Transient Actors</a></li>
 </ul>
 </li>
-<li><a href="#sec-9">9. Deploying Actor-based Projects</a>
+<li><a href="#sec-9">9. ActorSystem Implementations</a>
 <ul>
-<li><a href="#sec-9-1">9.1. Overall Security Considerations</a>
+<li><a href="#sec-9-1">9.1. Common Capabilities</a></li>
+<li><a href="#sec-9-2">9.2. simpleSystemBase</a></li>
+<li><a href="#sec-9-3">9.3. multiprocQueueBase</a></li>
+<li><a href="#sec-9-4">9.4. multiprocTCPBase</a></li>
+<li><a href="#sec-9-5">9.5. multiprocUDPBase</a></li>
+</ul>
+</li>
+<li><a href="#sec-10">10. Deploying Actor-based Projects</a>
 <ul>
-<li><a href="#sec-9-1-1">9.1.1. Security Scenarios</a></li>
+<li><a href="#sec-10-1">10.1. Overall Security Considerations</a>
+<ul>
+<li><a href="#sec-10-1-1">10.1.1. Security Scenarios</a></li>
 </ul>
 </li>
 </ul>
@@ -521,7 +526,7 @@ shared-memory queue structures.
 </p>
 
 <p>
-The <a href="#sec-8">ActorSystem Implementations</a> section provides detailed
+The <a href="#sec-9">ActorSystem Implementations</a> section provides detailed
 information about the known ActorSystem implementations including
 their level of feature support and any known issues.
 </p>
@@ -676,7 +681,7 @@ package:
 
 <div class="org-src-container">
 
-<pre class="src src-python">    &gt;&gt;&gt; <span class="org-keyword">import</span> thespian
+<pre class="src src-python">    &gt;&gt;&gt; import thespian
 </pre>
 </div>
 </div>
@@ -693,13 +698,13 @@ an ActorSystem using the "multiprocTCPBase":
 
 <div class="org-src-container">
 
-<pre class="src src-python">    &gt;&gt;&gt; <span class="org-variable-name">asys</span> = ActorSystem(<span class="org-string">'multiprocTCPBase'</span>)
+<pre class="src src-python">    &gt;&gt;&gt; asys = ActorSystem('multiprocTCPBase')
 </pre>
 </div>
 
 <p>
 More details on the explicit parameters for this call are found in
-<a href="#sec-1-3">ActorSystem</a>, and the known system bases are describe in <a href="#sec-8">ActorSystem
+<a href="#sec-1-3">ActorSystem</a>, and the known system bases are describe in <a href="#sec-9">ActorSystem
 Implementations</a>.
 </p>
 
@@ -748,11 +753,11 @@ A Top-Level Actor is created via the <a href="#sec-6-4">ActorSystem.createActor<
 
 <div class="org-src-container">
 
-<pre class="src src-python">    &gt;&gt;&gt; <span class="org-keyword">class</span> <span class="org-type">MyFirstActor</span>(Actor):
-    ...     <span class="org-keyword">def</span> <span class="org-function-name">receiveMessage</span>(<span class="org-keyword">self</span>, message, sender):
-    ...         <span class="org-keyword">pass</span>
+<pre class="src src-python">    &gt;&gt;&gt; class MyFirstActor(Actor):
+    ...     def receiveMessage(self, message, sender):
+    ...         pass
     ...
-    &gt;&gt;&gt; <span class="org-variable-name">mfa_addr</span> = asys.createActor(MyFirstActor)
+    &gt;&gt;&gt; mfa_addr = asys.createActor(MyFirstActor)
 </pre>
 </div>
 
@@ -775,14 +780,14 @@ own instance:
 
 <div class="org-src-container">
 
-<pre class="src src-python">    &gt;&gt;&gt; <span class="org-keyword">class</span> <span class="org-type">Support</span>(Actor):
-    ...     <span class="org-keyword">def</span> <span class="org-function-name">receiveMessage</span>(<span class="org-keyword">self</span>, message, sender):
-    ...         <span class="org-keyword">pass</span>
+<pre class="src src-python">    &gt;&gt;&gt; class Support(Actor):
+    ...     def receiveMessage(self, message, sender):
+    ...         pass
     ...
-    &gt;&gt;&gt; <span class="org-keyword">class</span> <span class="org-type">MyFirstActor</span>(Actor):
-    ...     <span class="org-keyword">def</span> <span class="org-function-name">receiveMessage</span>(<span class="org-keyword">self</span>, message, sender):
-    ...         <span class="org-keyword">if</span> message == <span class="org-string">'create another actor'</span>:
-    ...             <span class="org-variable-name">newActor</span> = <span class="org-keyword">self</span>.createActor(Support)
+    &gt;&gt;&gt; class MyFirstActor(Actor):
+    ...     def receiveMessage(self, message, sender):
+    ...         if message == 'create another actor':
+    ...             newActor = self.createActor(Support)
 </pre>
 </div>
 
@@ -1027,10 +1032,10 @@ some implementations.
 
 <div class="org-src-container">
 
-<pre class="src src-python"><span class="org-keyword">class</span> <span class="org-type">MyActor</span>(Actor):
-    <span class="org-keyword">def</span> <span class="org-function-name">receiveMessage</span>(<span class="org-keyword">self</span>, message, sender):
+<pre class="src src-python">class MyActor(Actor):
+    def receiveMessage(self, message, sender):
         ...
-        <span class="org-keyword">self</span>.send(actor2, NewMessage(...))
+        self.send(actor2, NewMessage(...))
         ...
 </pre>
 </div>
@@ -1046,20 +1051,20 @@ Actor's copy <b>may</b> be modified by code in the recipient.
 
 <div class="org-src-container">
 
-<pre class="src src-python"><span class="linenr"> 1: </span><span class="org-keyword">class</span> <span class="org-type">ActorA</span>(Actor):
-<span class="linenr"> 2: </span>    <span class="org-keyword">def</span> <span class="org-function-name">receiveMessage</span>(<span class="org-keyword">self</span>, message, sender):
+<pre class="src src-python"><span class="linenr"> 1: </span>class ActorA(Actor):
+<span class="linenr"> 2: </span>    def receiveMessage(self, message, sender):
 <span class="linenr"> 3: </span>        ...
-<span class="linenr"> 4: </span>        <span class="org-variable-name">actorb</span> = <span class="org-keyword">self</span>.createActor(ActorB)
-<span class="linenr"> 5: </span>        <span class="org-variable-name">newmsg</span> = NewMessage(foo=<span class="org-string">"foo"</span>)
-<span class="linenr"> 6: </span>        <span class="org-keyword">self</span>.messages.append(newmsg)
-<span class="linenr"> 7: </span>        <span class="org-keyword">self</span>.send(actorb, newmsg)
+<span class="linenr"> 4: </span>        actorb = self.createActor(ActorB)
+<span class="linenr"> 5: </span>        newmsg = NewMessage(foo="foo")
+<span class="linenr"> 6: </span>        self.messages.append(newmsg)
+<span class="linenr"> 7: </span>        self.send(actorb, newmsg)
 <span class="linenr"> 8: </span>        ...
-<span class="linenr"> 9: </span>        <span class="org-keyword">for</span> each <span class="org-keyword">in</span> <span class="org-keyword">self</span>.messages:
-<span id="coderef-assertFoo" class="coderef-off"><span class="linenr">10: </span>            <span class="org-keyword">assert</span> each.foo == <span class="org-string">"foo"</span></span>
+<span class="linenr"> 9: </span>        for each in self.messages:
+<span id="coderef-assertFoo" class="coderef-off"><span class="linenr">10: </span>            assert each.foo == "foo"</span>
 <span class="linenr">11: </span>
-<span class="linenr">12: </span><span class="org-keyword">class</span> <span class="org-type">ActorB</span>(Actor):
-<span class="linenr">13: </span>    <span class="org-keyword">def</span> <span class="org-function-name">receiveMessage</span>(<span class="org-keyword">self</span>, message, sender):
-<span id="coderef-changeFoo" class="coderef-off"><span class="linenr">14: </span>        <span class="org-variable-name">message.foo</span> = <span class="org-string">"bar"</span></span>
+<span class="linenr">12: </span>class ActorB(Actor):
+<span class="linenr">13: </span>    def receiveMessage(self, message, sender):
+<span id="coderef-changeFoo" class="coderef-off"><span class="linenr">14: </span>        message.foo = "bar"</span>
 </pre>
 </div>
 
@@ -1071,7 +1076,7 @@ based on timing of execution between the two actors, and also on the
 system Base that is used.  When using a multi-process system base,
 ActorA's version will not be modified because the two Actors run as
 separate processes and so ActorB has a separate copy of the message,
-but the <a href="#sec-8-2">simpleSystemBase</a> (for example) is exposed to this modification.
+but the <a href="#sec-9-2">simpleSystemBase</a> (for example) is exposed to this modification.
 </p>
 
 <p>
@@ -1406,7 +1411,7 @@ handling of messages for that Actor.
 </p>
 
 <p>
-See <a href="#sec-5-18">Actor Troupe Support</a> for more details.
+See <a href="#sec-8-1">Actor Troupe Support</a> for more details.
 </p>
 </div>
 </div>
@@ -1438,7 +1443,7 @@ specifies them.
 
 <p>
 All Thespian ActorSystem instances automatically supply a set of
-common capabilities described in the <a href="#sec-8-1">Common Capabilities</a> section.
+common capabilities described in the <a href="#sec-9-1">Common Capabilities</a> section.
 </p>
 </div>
 </div>
@@ -1505,7 +1510,7 @@ cancelled, for example, with the <a href="#sec-5-15">deRegisterRemoteSystem()</a
 
 <p>
 This latter method is particularly suited to configurations using
-the "Outbound Only" connectivity mode (see <a href="#sec-8-4">multiprocTCPBase</a> for
+the "Outbound Only" connectivity mode (see <a href="#sec-9-4">multiprocTCPBase</a> for
 example) where the Convention Leader is behind a firewall and can
 initiate outbound connections to members but those members cannot
 initiate inbound connections to the Leader.
@@ -1585,7 +1590,7 @@ where the logger is obtained).
 <p>
 The functionality provided by logging in the Thespian environment
 possibly includes sending log messages to a central Logging actor (as
-explicitly indicated in the <a href="#sec-8">ActorSystem Implementations</a> section).
+explicitly indicated in the <a href="#sec-9">ActorSystem Implementations</a> section).
 This is needed because the standard Python logging is not
 multi-process safe and attempts to use it as-is will result in missing
 or duplicated log messages.
@@ -1618,32 +1623,32 @@ For example:
 
 <div class="org-src-container">
 
-<pre class="src src-python"><span class="org-keyword">import</span> logging
+<pre class="src src-python">import logging
 
-<span class="org-keyword">class</span> <span class="org-type">actorLogFilter</span>(logging.Filter):
-    <span class="org-keyword">def</span> <span class="org-function-name">filter</span>(<span class="org-keyword">self</span>, logrecord):
-        <span class="org-keyword">return</span> <span class="org-string">'actorAddress'</span> <span class="org-keyword">in</span> logrecord.__dict__
-<span class="org-keyword">class</span> <span class="org-type">notActorLogFilter</span>(logging.Filter):
-    <span class="org-keyword">def</span> <span class="org-function-name">filter</span>(<span class="org-keyword">self</span>, logrecord):
-        <span class="org-keyword">return</span> <span class="org-string">'actorAddress'</span> <span class="org-keyword">not</span> <span class="org-keyword">in</span> logrecord.__dict__
+class actorLogFilter(logging.Filter):
+    def filter(self, logrecord):
+        return 'actorAddress' in logrecord.__dict__
+class notActorLogFilter(logging.Filter):
+    def filter(self, logrecord):
+        return 'actorAddress' not in logrecord.__dict__
 
-<span class="org-variable-name">logcfg</span> = { <span class="org-string">'version'</span>: 1,
-           <span class="org-string">'formatters'</span>: {
-               <span class="org-string">'normal'</span>: {<span class="org-string">'format'</span>: <span class="org-string">'%(levelname)-8s %(message)s'</span>},
-               <span class="org-string">'actor'</span>: {<span class="org-string">'format'</span>: <span class="org-string">'%(levelname)-8s %(actorAddress)s =&gt; %(message)s'</span>}},
-           <span class="org-string">'filters'</span>: { <span class="org-string">'isActorLog'</span>: { <span class="org-string">'()'</span>: actorLogFilter},
-                        <span class="org-string">'notActorLog'</span>: { <span class="org-string">'()'</span>: notActorLogFilter}},
-           <span class="org-string">'handlers'</span>: { <span class="org-string">'h1'</span>: {<span class="org-string">'class'</span>: <span class="org-string">'logging.FileHandler'</span>,
-                                <span class="org-string">'filename'</span>: <span class="org-string">'example.log'</span>,
-                                <span class="org-string">'formatter'</span>: <span class="org-string">'normal'</span>,
-                                <span class="org-string">'filters'</span>: [<span class="org-string">'notActorLog'</span>],
-                                <span class="org-string">'level'</span>: logging.INFO},
-                         <span class="org-string">'h2'</span>: {<span class="org-string">'class'</span>: <span class="org-string">'logging.FileHandler'</span>,
-                                <span class="org-string">'filename'</span>: <span class="org-string">'example.log'</span>,
-                                <span class="org-string">'formatter'</span>: <span class="org-string">'actor'</span>,
-                                <span class="org-string">'filters'</span>: [<span class="org-string">'isActorLog'</span>],
-                                <span class="org-string">'level'</span>: logging.INFO},},
-           <span class="org-string">'loggers'</span> : { <span class="org-string">''</span>: {<span class="org-string">'handlers'</span>: [<span class="org-string">'h1'</span>, <span class="org-string">'h2'</span>], <span class="org-string">'level'</span>: logging.DEBUG}}
+logcfg = { 'version': 1,
+           'formatters': {
+               'normal': {'format': '%(levelname)-8s %(message)s'},
+               'actor': {'format': '%(levelname)-8s %(actorAddress)s =&gt; %(message)s'}},
+           'filters': { 'isActorLog': { '()': actorLogFilter},
+                        'notActorLog': { '()': notActorLogFilter}},
+           'handlers': { 'h1': {'class': 'logging.FileHandler',
+                                'filename': 'example.log',
+                                'formatter': 'normal',
+                                'filters': ['notActorLog'],
+                                'level': logging.INFO},
+                         'h2': {'class': 'logging.FileHandler',
+                                'filename': 'example.log',
+                                'formatter': 'actor',
+                                'filters': ['isActorLog'],
+                                'level': logging.INFO},},
+           'loggers' : { '': {'handlers': ['h1', 'h2'], 'level': logging.DEBUG}}
          }
 </pre>
 </div>
@@ -1810,9 +1815,9 @@ Each Actor is represented by an Actor baseclass:
 
 <div class="org-src-container">
 
-<pre class="src src-python">    <span class="org-keyword">from</span> thespian.actors <span class="org-keyword">import</span> Actor
+<pre class="src src-python">    from thespian.actors import Actor
 
-    <span class="org-keyword">class</span> <span class="org-type">MyActor</span>(Actor): ...
+    class MyActor(Actor): ...
 </pre>
 </div>
 
@@ -1827,7 +1832,7 @@ Versioning of the Actor API and the ActorSystem are described in
 <div class="outline-text-3" id="text-5-1">
 <div class="org-src-container">
 
-<pre class="src src-python">    <span class="org-keyword">self</span>.myAddress
+<pre class="src src-python">    self.myAddress
 </pre>
 </div>
 
@@ -1842,7 +1847,7 @@ This property is the ActorAddress of this Actor.
 <div class="outline-text-3" id="text-5-2">
 <div class="org-src-container">
 
-<pre class="src src-python">    <span class="org-keyword">def</span> <span class="org-function-name">receiveMessage</span>(<span class="org-keyword">self</span>, message, sender): ...
+<pre class="src src-python">    def receiveMessage(self, message, sender): ...
 </pre>
 </div>
 
@@ -1905,13 +1910,13 @@ numbers to watch for incoming data from.
 
 <div class="org-src-container">
 
-<pre class="src src-python"><span class="org-keyword">from</span> thespian.actors <span class="org-keyword">import</span> Actor, ThespianWatch
+<pre class="src src-python">from thespian.actors import Actor, ThespianWatch
 
-<span class="org-keyword">class</span> <span class="org-type">MyActor</span>(Actor):
-    <span class="org-keyword">def</span> <span class="org-function-name">receiveMessage</span>(<span class="org-keyword">self</span>, message, sender):
+class MyActor(Actor):
+    def receiveMessage(self, message, sender):
        ...process message...
-       <span class="org-keyword">return</span> ThespianWatch([<span class="org-keyword">self</span>.socket1.fileno(),
-                             <span class="org-keyword">self</span>.socket2.fileno()])
+       return ThespianWatch([self.socket1.fileno(),
+                             self.socket2.fileno()])
 </pre>
 </div>
 
@@ -1930,9 +1935,9 @@ the set of file descriptors that should be watched when it exits.
 <div class="outline-text-3" id="text-5-3">
 <div class="org-src-container">
 
-<pre class="src src-python">    <span class="org-variable-name">newAddress</span> = <span class="org-keyword">self</span>.createActor(<span class="org-keyword">self</span>, actorClass,
-                                  targetActorRequirements=<span class="org-constant">None</span>,
-                                  globalName=<span class="org-constant">None</span>)
+<pre class="src src-python">    newAddress = self.createActor(self, actorClass,
+                                  targetActorRequirements=None,
+                                  globalName=None)
 </pre>
 </div>
 
@@ -2114,7 +2119,7 @@ a name/import-path string.
 <div class="outline-text-3" id="text-5-4">
 <div class="org-src-container">
 
-<pre class="src src-python">    <span class="org-keyword">self</span>.send(targetAddress, message)
+<pre class="src src-python">    self.send(targetAddress, message)
 </pre>
 </div>
 
@@ -2142,7 +2147,7 @@ delivered.
 <div class="outline-text-3" id="text-5-5">
 <div class="org-src-container">
 
-<pre class="src src-python">    <span class="org-keyword">self</span>.wakeupAfter(timePeriod)
+<pre class="src src-python">    self.wakeupAfter(timePeriod)
 </pre>
 </div>
 
@@ -2161,7 +2166,7 @@ Messages</a> for more information.
 <div class="outline-text-3" id="text-5-6">
 <div class="org-src-container">
 
-<pre class="src src-python">    <span class="org-keyword">self</span>.handleDeadLetters(startHandling=<span class="org-constant">True</span>)
+<pre class="src src-python">    self.handleDeadLetters(startHandling=True)
 </pre>
 </div>
 
@@ -2177,7 +2182,7 @@ handling Dead Letters.
 <div class="outline-text-3" id="text-5-7">
 <div class="org-src-container">
 
-<pre class="src src-python">    <span class="org-keyword">self</span>.notifyOnSystemRegistrationChanges(startHandling=<span class="org-constant">True</span>)
+<pre class="src src-python">    self.notifyOnSystemRegistrationChanges(startHandling=True)
 </pre>
 </div>
 
@@ -2194,7 +2199,7 @@ handling system registration events from other ActorSystems (see
 <div class="outline-text-3" id="text-5-8">
 <div class="org-src-container">
 
-<pre class="src src-python">    <span class="org-keyword">self</span>.registerSourceAuthority()
+<pre class="src src-python">    self.registerSourceAuthority()
 </pre>
 </div>
 
@@ -2218,7 +2223,7 @@ Actor registers for this role.
 <div class="outline-text-3" id="text-5-9">
 <div class="org-src-container">
 
-<pre class="src src-python">    <span class="org-variable-name">sourceHash</span> = <span class="org-keyword">self</span>.loadActorSource(fileref)
+<pre class="src src-python">    sourceHash = self.loadActorSource(fileref)
 </pre>
 </div>
 
@@ -2250,7 +2255,7 @@ section for more details.
 <div class="outline-text-3" id="text-5-10">
 <div class="org-src-container">
 
-<pre class="src src-python">    <span class="org-keyword">self</span>.unloadActorSource(sourceHash)
+<pre class="src src-python">    self.unloadActorSource(sourceHash)
 </pre>
 </div>
 
@@ -2271,7 +2276,7 @@ section for more details.
 <div class="outline-text-3" id="text-5-11">
 <div class="org-src-container">
 
-<pre class="src src-python">    <span class="org-keyword">self</span>.notifyOnSourceAvailability(enable=<span class="org-constant">True</span>)
+<pre class="src src-python">    self.notifyOnSourceAvailability(enable=True)
 </pre>
 </div>
 
@@ -2297,8 +2302,8 @@ available, but are not triggered by local load or unload events.
 <div class="outline-text-3" id="text-5-12">
 <div class="org-src-container">
 
-<pre class="src src-python">    <span class="org-keyword">def</span> <span class="org-function-name">actorSystemCapabilityCheck</span>(capabilities, requirements=<span class="org-constant">None</span>):
-        <span class="org-keyword">return</span> <span class="org-constant">True</span>
+<pre class="src src-python">    def actorSystemCapabilityCheck(capabilities, requirements=None):
+        return True
 </pre>
 </div>
 
@@ -2349,7 +2354,7 @@ capabilities.
 
 <div class="org-src-container">
 
-<pre class="src src-python">    <span class="org-type">@requireCapability</span>(capabilityName[, capabilityValue])
+<pre class="src src-python">    @requireCapability(capabilityName[, capabilityValue])
 </pre>
 </div>
 
@@ -2372,15 +2377,15 @@ For example:
 
 <div class="org-src-container">
 
-<pre class="src src-python">    <span class="org-keyword">class</span> <span class="org-type">MyActor</span>(Actor):
+<pre class="src src-python">    class MyActor(Actor):
 
-        <span class="org-type">@staticmethod</span>
-        <span class="org-keyword">def</span> <span class="org-function-name">actorSystemCapabilityCheck</span>(capabilities, requirements):
-            <span class="org-keyword">return</span> capabilities.get(<span class="org-string">'Has Lightbulb'</span>, <span class="org-constant">False</span>) <span class="org-keyword">and</span> \
-                   capabilities.get(<span class="org-string">'Lit'</span>, <span class="org-constant">False</span>) <span class="org-keyword">and</span> \
-                   capabilities.get(<span class="org-string">'Color'</span>, <span class="org-string">'none'</span>) == <span class="org-string">'Yellow'</span>
+        @staticmethod
+        def actorSystemCapabilityCheck(capabilities, requirements):
+            return capabilities.get('Has Lightbulb', False) and \
+                   capabilities.get('Lit', False) and \
+                   capabilities.get('Color', 'none') == 'Yellow'
 
-        <span class="org-keyword">def</span> <span class="org-function-name">receiveMessage</span>(<span class="org-keyword">self</span>, msg, sender): <span class="org-keyword">pass</span>
+        def receiveMessage(self, msg, sender): pass
 </pre>
 </div>
 
@@ -2390,15 +2395,15 @@ is equivalent to the following combined use:
 
 <div class="org-src-container">
 
-<pre class="src src-python">    <span class="org-type">@requireCapability</span>(<span class="org-string">'Has Lightbulb'</span>)
-    <span class="org-type">@requireCapability</span>(<span class="org-string">'Lit'</span>)
-    <span class="org-keyword">class</span> <span class="org-type">MyActor</span>(Actor):
+<pre class="src src-python">    @requireCapability('Has Lightbulb')
+    @requireCapability('Lit')
+    class MyActor(Actor):
 
-        <span class="org-type">@staticmethod</span>
-        <span class="org-keyword">def</span> <span class="org-function-name">actorSystemCapabilityCheck</span>(capabilities, requirements):
-            <span class="org-keyword">return</span> capabilities.get(<span class="org-string">'Color'</span>, <span class="org-string">'none'</span>) == <span class="org-string">'Yellow'</span>
+        @staticmethod
+        def actorSystemCapabilityCheck(capabilities, requirements):
+            return capabilities.get('Color', 'none') == 'Yellow'
 
-        <span class="org-keyword">def</span> <span class="org-function-name">receiveMessage</span>(<span class="org-keyword">self</span>, msg, sender): <span class="org-keyword">pass</span>
+        def receiveMessage(self, msg, sender): pass
 </pre>
 </div>
 
@@ -2408,12 +2413,12 @@ or the equivalent use of only the decorator:
 
 <div class="org-src-container">
 
-<pre class="src src-python">    <span class="org-type">@requireCapability</span>(<span class="org-string">'Has Lightbulb'</span>)
-    <span class="org-type">@requireCapability</span>(<span class="org-string">'Lit'</span>)
-    <span class="org-type">@requireCapability</span>(Color<span class="org-string">', '</span>Yellow<span class="org-string">')</span>
-<span class="org-string">    class MyActor(Actor):</span>
+<pre class="src src-python">    @requireCapability('Has Lightbulb')
+    @requireCapability('Lit')
+    @requireCapability(Color', 'Yellow')
+    class MyActor(Actor):
 
-<span class="org-string">        def receiveMessage(self, msg, sender): pass</span>
+        def receiveMessage(self, msg, sender): pass
 </pre>
 </div>
 
@@ -2425,9 +2430,9 @@ in an ActorSystem that had the capabilities of:
 <div class="org-src-container">
 
 <pre class="src src-python">    {
-      <span class="org-string">'Has Lightbulb'</span>: 5,
-      <span class="org-string">'Lit'</span>: <span class="org-constant">True</span>,
-      <span class="org-string">'Color'</span> : <span class="org-string">'Yellow'</span>
+      'Has Lightbulb': 5,
+      'Lit': True,
+      'Color' : 'Yellow'
     }
 </pre>
 </div>
@@ -2444,13 +2449,13 @@ An example of a much simpler case:
 
 <div class="org-src-container">
 
-<pre class="src src-python">    <span class="org-keyword">class</span> <span class="org-type">MyActor</span>(Actor):
+<pre class="src src-python">    class MyActor(Actor):
 
-        <span class="org-type">@staticmethod</span>
-        <span class="org-keyword">def</span> <span class="org-function-name">actorSystemCapabilityCheck</span>(capabilities, requirements):
-            <span class="org-keyword">return</span> capabilities.get(<span class="org-string">'Has Lightbulb'</span>, <span class="org-constant">False</span>)
+        @staticmethod
+        def actorSystemCapabilityCheck(capabilities, requirements):
+            return capabilities.get('Has Lightbulb', False)
 
-        <span class="org-keyword">def</span> <span class="org-function-name">receiveMessage</span>(<span class="org-keyword">self</span>, msg, sender): <span class="org-keyword">pass</span>
+        def receiveMessage(self, msg, sender): pass
 </pre>
 </div>
 
@@ -2460,10 +2465,10 @@ is equivalent to:
 
 <div class="org-src-container">
 
-<pre class="src src-python">    <span class="org-type">@requireCapability</span>(<span class="org-string">'Has Lightbulb'</span>)
-    <span class="org-keyword">class</span> <span class="org-type">MyActor</span>(Actor):
+<pre class="src src-python">    @requireCapability('Has Lightbulb')
+    class MyActor(Actor):
 
-        <span class="org-keyword">def</span> <span class="org-function-name">receiveMessage</span>(<span class="org-keyword">self</span>, msg, sender): <span class="org-keyword">pass</span>
+        def receiveMessage(self, msg, sender): pass
 </pre>
 </div>
 </div>
@@ -2481,7 +2486,7 @@ updates; see the <a href="#sec-6">ActorSystem API</a> for that version).
 
 <div class="org-src-container">
 
-<pre class="src src-python">     <span class="org-keyword">self</span>.updateCapability(capabilityName, capabilityValue=<span class="org-constant">None</span>)
+<pre class="src src-python">     self.updateCapability(capabilityName, capabilityValue=None)
 </pre>
 </div>
 
@@ -2556,7 +2561,7 @@ become the Convention Leader for the remote system.
 
 <div class="org-src-container">
 
-<pre class="src src-python">     <span class="org-keyword">self</span>.preRegisterRemoteSystem(remoteSystemAddress,
+<pre class="src src-python">     self.preRegisterRemoteSystem(remoteSystemAddress,
                                   remoteSystemCapabilities)
 </pre>
 </div>
@@ -2604,7 +2609,7 @@ local ActorSystem, this method will simply return with no effect.
 
 <div class="org-src-container">
 
-<pre class="src src-python">     <span class="org-keyword">self</span>.preRegisterRemoteSystem(remoteSystemAddress)
+<pre class="src src-python">     self.preRegisterRemoteSystem(remoteSystemAddress)
 </pre>
 </div>
 
@@ -2637,7 +2642,7 @@ ActorExitRequests will be sent to all locally running Actors.
 
 <div class="org-src-container">
 
-<pre class="src src-python">    <span class="org-keyword">self</span>.actorSystemShutdown()
+<pre class="src src-python">    self.actorSystemShutdown()
 </pre>
 </div>
 
@@ -2662,13 +2667,13 @@ the actual type.
 
 <div class="org-src-container">
 
-<pre class="src src-python"><span class="org-keyword">class</span> <span class="org-type">Typer</span>(ActorTypeDispatcher):
+<pre class="src src-python">class Typer(ActorTypeDispatcher):
 
-    <span class="org-keyword">def</span> <span class="org-function-name">receiveMsg_str</span>(<span class="org-keyword">self</span>, message, sender):
-        <span class="org-keyword">self</span>.send(sender, <span class="org-string">"Got a string"</span>)
+    def receiveMsg_str(self, message, sender):
+        self.send(sender, "Got a string")
 
-    <span class="org-keyword">def</span> <span class="org-function-name">receiveMsg_int</span>(<span class="org-keyword">self</span>, message, sender):
-        <span class="org-keyword">self</span>.send(sender, <span class="org-string">"Got an int"</span>)
+    def receiveMsg_int(self, message, sender):
+        self.send(sender, "Got an int")
 </pre>
 </div>
 
@@ -2680,28 +2685,28 @@ handler is not found.
 
 <div class="org-src-container">
 
-<pre class="src src-python"><span class="org-keyword">class</span> <span class="org-type">BaseMsg</span>(<span class="org-builtin">object</span>): <span class="org-keyword">pass</span>
+<pre class="src src-python">class BaseMsg(object): pass
 
-<span class="org-keyword">class</span> <span class="org-type">ShortMsg</span>(BaseMsg):
-    <span class="org-keyword">def</span> <span class="org-function-name">__init__</span>(<span class="org-keyword">self</span>, report = <span class="org-string">''</span>):
-        <span class="org-keyword">self</span>.report = report
+class ShortMsg(BaseMsg):
+    def __init__(self, report = ''):
+        self.report = report
 
-<span class="org-keyword">class</span> <span class="org-type">LongMsg</span>(BaseMsg): <span class="org-keyword">pass</span>
+class LongMsg(BaseMsg): pass
 
 
-<span class="org-keyword">class</span> <span class="org-type">Typer</span>(ActorTypeDispatcher):
+class Typer(ActorTypeDispatcher):
 
-    <span class="org-keyword">def</span> <span class="org-function-name">receiveMsg_str</span>(<span class="org-keyword">self</span>, message, sender):
-        <span class="org-keyword">self</span>.send(sender, <span class="org-string">"Got a string"</span>)
+    def receiveMsg_str(self, message, sender):
+        self.send(sender, "Got a string")
 
-    <span class="org-keyword">def</span> <span class="org-function-name">receiveMsg_int</span>(<span class="org-keyword">self</span>, message, sender):
-        <span class="org-keyword">self</span>.send(sender, <span class="org-string">"Got an int"</span>)
+    def receiveMsg_int(self, message, sender):
+        self.send(sender, "Got an int")
 
-    <span class="org-keyword">def</span> <span class="org-function-name">receiveMsg_LongMsg</span>(<span class="org-keyword">self</span>, message, sender):
-        <span class="org-keyword">self</span>.send(sender, <span class="org-string">"Got a long message"</span>)
+    def receiveMsg_LongMsg(self, message, sender):
+        self.send(sender, "Got a long message")
 
-    <span class="org-keyword">def</span> <span class="org-function-name">receiveMsg_BaseMsg</span>(<span class="org-keyword">self</span>, message, sender):
-        <span class="org-keyword">self</span>.send(sender, <span class="org-string">"Got a message"</span>)
+    def receiveMsg_BaseMsg(self, message, sender):
+        self.send(sender, "Got a message")
 </pre>
 </div>
 
@@ -2725,9 +2730,9 @@ This receive method lookup also works for derived classes:
 
 <div class="org-src-container">
 
-<pre class="src src-python"><span class="org-keyword">class</span> <span class="org-type">Subtyper</span>(Typer):
-    <span class="org-keyword">def</span> <span class="org-function-name">receiveMsg_ShortMsg</span>(<span class="org-keyword">self</span>, message, sender):
-        <span class="org-keyword">self</span>.send(sender, <span class="org-string">"Got a short message"</span>)
+<pre class="src src-python">class Subtyper(Typer):
+    def receiveMsg_ShortMsg(self, message, sender):
+        self.send(sender, "Got a short message")
 </pre>
 </div>
 
@@ -2755,13 +2760,13 @@ defining the <code>receiveUnrecognizedMessage()</code> method.
 
 <div class="org-src-container">
 
-<pre class="src src-python"><span class="org-keyword">class</span> <span class="org-type">Subtyper2</span>(Typer):
+<pre class="src src-python">class Subtyper2(Typer):
 
-    <span class="org-keyword">def</span> <span class="org-function-name">receiveMsg_ShortMsg</span>(<span class="org-keyword">self</span>, message, sender):
-        <span class="org-keyword">self</span>.send(sender, <span class="org-string">"Got a short message"</span>)
+    def receiveMsg_ShortMsg(self, message, sender):
+        self.send(sender, "Got a short message")
 
-    <span class="org-keyword">def</span> <span class="org-function-name">receiveUnrecognizedMessage</span>(<span class="org-keyword">self</span>, message, sender):
-        <span class="org-keyword">self</span>.send(sender, <span class="org-string">"Did not recognize the message type: %s"</span>%<span class="org-builtin">type</span>(message))
+    def receiveUnrecognizedMessage(self, message, sender):
+        self.send(sender, "Did not recognize the message type: %s"%type(message))
 </pre>
 </div>
 
@@ -2789,13 +2794,13 @@ function:
 
 <div class="org-src-container">
 
-<pre class="src src-python"><span class="org-keyword">class</span> <span class="org-type">ClassA</span>(<span class="org-builtin">object</span>):
-    <span class="org-keyword">def</span> <span class="org-function-name">method1</span>(<span class="org-keyword">self</span>): <span class="org-keyword">pass</span>
+<pre class="src src-python">class ClassA(object):
+    def method1(self): pass
 
-<span class="org-keyword">class</span> <span class="org-type">ClassB</span>(<span class="org-builtin">object</span>):
-    <span class="org-keyword">def</span> <span class="org-function-name">method1</span>(<span class="org-keyword">self</span>, val):
-        <span class="org-keyword">if</span> val == 1: <span class="org-keyword">pass</span>
-        <span class="org-builtin">super</span>(ClassB, <span class="org-keyword">self</span>).method1()
+class ClassB(object):
+    def method1(self, val):
+        if val == 1: pass
+        super(ClassB, self).method1()
 </pre>
 </div>
 
@@ -2808,12 +2813,12 @@ operation implemented by <code>ActorTypeDispatcher</code>:
 
 <div class="org-src-container">
 
-<pre class="src src-python"><span class="org-keyword">class</span> <span class="org-type">SubTyper3</span>(Typer):
-    <span class="org-keyword">def</span> <span class="org-function-name">receiveMsg_ShortMsg</span>(<span class="org-keyword">self</span>, message, sender):
-        <span class="org-keyword">if</span> <span class="org-string">"private"</span> <span class="org-keyword">in</span> message.report:
-            <span class="org-builtin">super</span>(SubTyper3, <span class="org-keyword">self</span>).receiveMsg_ShortMsg(<span class="org-keyword">self</span>, message, sender)
-        <span class="org-keyword">else</span>:
-            <span class="org-keyword">self</span>.send(sender, <span class="org-string">"Got a public short message"</span>)
+<pre class="src src-python">class SubTyper3(Typer):
+    def receiveMsg_ShortMsg(self, message, sender):
+        if "private" in message.report:
+            super(SubTyper3, self).receiveMsg_ShortMsg(self, message, sender)
+        else:
+            self.send(sender, "Got a public short message")
 </pre>
 </div>
 
@@ -2837,12 +2842,12 @@ return <code>ActorTypeDispatcher.SUPER</code> to instruct the
 
 <div class="org-src-container">
 
-<pre class="src src-python"><span class="org-keyword">class</span> <span class="org-type">SubTyper4</span>(Typer):
-    <span class="org-keyword">def</span> <span class="org-function-name">receiveMsg_ShortMsg</span>(<span class="org-keyword">self</span>, message, sender):
-        <span class="org-keyword">if</span> <span class="org-string">"private"</span> <span class="org-keyword">in</span> message.report:
-            <span class="org-keyword">return</span> <span class="org-keyword">self</span>.SUPER
-        <span class="org-keyword">else</span>:
-            <span class="org-keyword">self</span>.send(sender, <span class="org-string">"Got a public short message"</span>)
+<pre class="src src-python">class SubTyper4(Typer):
+    def receiveMsg_ShortMsg(self, message, sender):
+        if "private" in message.report:
+            return self.SUPER
+        else:
+            self.send(sender, "Got a public short message")
 </pre>
 </div>
 
@@ -2856,96 +2861,6 @@ Got a message
 &gt;&gt;&gt;
 </pre>
 </div>
-</div>
-</div>
-
-<div id="outline-container-sec-5-18" class="outline-3">
-<h3 id="sec-5-18"><span class="section-number-3">5.18</span> Actor Troupe Support</h3>
-<div class="outline-text-3" id="text-5-18">
-<p>
-The use of <a href="#sec-4-9">Actor Troupes</a> is supported by importing the
-<code>thespian.troupe</code> file and adding a <code>@troupe()</code> decorator to the Actor
-definition.   This decorator turns a regular Actor into a dynamic
-Actor Troupe, where multiple Actors are spun up on-demand to handle
-messages.
-</p>
-
-<p>
-This pattern is especially useful for situations where multiple
-requests are received and processing individual requests may take some
-time to perform.
-</p>
-
-<div class="org-src-container">
-
-<pre class="src src-python"><span class="org-keyword">from</span> thespian.troupe <span class="org-keyword">import</span> troupe
-
-<span class="org-type">@troupe</span>()
-<span class="org-keyword">class</span> <span class="org-type">MyActor</span>(Actor):
-   ...
-</pre>
-</div>
-
-
-<p>
-The optional arguments to the troupe decorator are:
-</p>
-
-<ul class="org-ul">
-<li><code>max_count</code> is the maximum number of actors in the troupe
-(defaulting to 10).
-</li>
-
-<li><code>idle_count</code> is the default number of actors in the troupe when
-idle. As work is received, the number of actors will grow up to
-the max_count, but when there is no more work, the number of
-actors will shrink back down to this number.  Note that there may
-be fewer than this number of actors present: actors are only
-created if work is received and there are no idle actors to
-handle that work.
-</li>
-</ul>
-
-<p>
-The decorator usage above works very well for a simple worker actor
-that can perform all of the necessary work utilizing only the message
-sent to it; the actor can be turned into a troupe member with no
-change other than adding the decorator.
-</p>
-
-<p>
-However, an actor which must interact with other actors to process the
-work requires additional modifications to allow the troupe manager to
-know when the actor has finished performing the work.  A troupe member
-that has not fully performed the work and is exchanging messages with
-other actors to complete the work (or awaiting <a href="#sec-4-7">WakeupMessages</a>) must
-set the <code>troupe_work_in_progress</code> attribute on self to <code>True</code>.  Once the
-work is completed by a subsequent message delivery, it should set this
-attribute to <code>False</code>, which will cause the troupe manager to be notified
-that the actor is ready for more work.
-</p>
-
-<ul class="org-ul">
-<li>Failure to set the <code>troupe_work_in_progress</code> attribute to <code>True</code>
-on a multi-step actor will result in either (a) the actor
-receiving more work before it has completed the previous work, or
-(b) the actor will be killed by the troupe manager before
-finishing the work because the manager believes the actor is
-finished.
-</li>
-
-<li>Failure to reset the <code>troup_work_in_progress</code> attribute to
-<code>False</code> will cause the troupe manager to never send any more work
-requests to the troupe actor, even if the latter is idle.  The
-troupe actor will also never be killed until the troupe manager
-itself is killed.
-</li>
-</ul>
-
-<p>
-Manipulating the <code>troupe_work_in_progress</code> member variable for
-non-troupe actors has no effect on their behavior and is safe to do.
-</p>
 </div>
 </div>
 </div>
@@ -2966,7 +2881,7 @@ The ActorSystem API is made available by importing the
 
 <div class="org-src-container">
 
-<pre class="src src-python">     <span class="org-keyword">import</span> thespian.actors
+<pre class="src src-python">     import thespian.actors
 </pre>
 </div>
 </div>
@@ -3021,22 +2936,22 @@ The following shows the heirarchy of defined Thespian exceptions:
 <div class="outline-text-3" id="text-6-2">
 <div class="org-src-container">
 
-<pre class="src src-python"><span class="org-variable-name">actorSys</span> = ActorSystem(systemBase = <span class="org-constant">None</span>,
-                       capabilities = <span class="org-constant">None</span>,
-                       logDefs = <span class="org-constant">None</span>,
-                       transientUnique = <span class="org-constant">False</span>)
+<pre class="src src-python">actorSys = ActorSystem(systemBase = None,
+                       capabilities = None,
+                       logDefs = None,
+                       transientUnique = False)
 </pre>
 </div>
 
 <p>
 The <code>systemBase</code> argument should specify which ActorSystem
 implementation base should be used for this ActorSystem, as
-selected from those systems describe in the <a href="#sec-8">ActorSystem
+selected from those systems describe in the <a href="#sec-9">ActorSystem
 Implementations</a> section. If <code>systemBase</code> is None, this call will
 check to see if there was a previous call to ActorSystem in the
 current process and if so, re-use the <code>systemBase</code> from the
 previous call. If there is no previous call, the default system
-base is the <code>simpleSystemBase</code> (see <a href="#sec-8-2">simpleSystemBase</a>).
+base is the <code>simpleSystemBase</code> (see <a href="#sec-9-2">simpleSystemBase</a>).
 </p>
 
 <p>
@@ -3093,7 +3008,7 @@ notified (but they continue to exist).
 <p>
 As described previously, the ActorSystem is a process-global
 singleton that may be a system-wide singleton, depending on the
-system base used (see <a href="#sec-8">ActorSystem Implementations</a> for details).
+system base used (see <a href="#sec-9">ActorSystem Implementations</a> for details).
 The <code>shutdown()</code> method is the proper way to stop those
 process-wide or system-wide ActorSystems when they are no longer
 needed.  The decision of when to do this is left to the user; in
@@ -3115,10 +3030,10 @@ unaffected by stopping the transient unique ActorSystem.
 <div class="outline-text-3" id="text-6-4">
 <div class="org-src-container">
 
-<pre class="src src-python">    <span class="org-variable-name">actorAddr</span> = actorSys.createActor(actorClass,
-                                     targetActorRequirements = <span class="org-constant">None</span>,
-                                     globalName = <span class="org-constant">None</span>,
-                                     sourceHash = <span class="org-constant">None</span>)
+<pre class="src src-python">    actorAddr = actorSys.createActor(actorClass,
+                                     targetActorRequirements = None,
+                                     globalName = None,
+                                     sourceHash = None)
 </pre>
 </div>
 
@@ -3247,7 +3162,7 @@ Actor system) and wait for a response message.
 
 <div class="org-src-container">
 
-<pre class="src src-python">     <span class="org-variable-name">responseMessage</span> = actorSys.ask(targetAddr, message[, timeout])
+<pre class="src src-python">     responseMessage = actorSys.ask(targetAddr, message[, timeout])
 </pre>
 </div>
 
@@ -3310,7 +3225,7 @@ Listen is used to wait for a message.
 
 <div class="org-src-container">
 
-<pre class="src src-python">     <span class="org-variable-name">responseMessage</span> = actorSys.listen([timeout])
+<pre class="src src-python">     responseMessage = actorSys.listen([timeout])
 </pre>
 </div>
 
@@ -3345,7 +3260,7 @@ capabilities; Actors can issue capability updates as well.
 
 <div class="org-src-container">
 
-<pre class="src src-python">     actorSys.updateCapability(capabilityName, capabilityValue=<span class="org-constant">None</span>)
+<pre class="src src-python">     actorSys.updateCapability(capabilityName, capabilityValue=None)
 </pre>
 </div>
 
@@ -3385,7 +3300,7 @@ issuing a <a href="#sec-7-12">Thespian_StatusReq</a> to the ActorSystem.
 <div class="outline-text-3" id="text-6-9">
 <div class="org-src-container">
 
-<pre class="src src-python">    <span class="org-variable-name">sourceHash</span> = actorSys.loadActorSource(fileref)
+<pre class="src src-python">    sourceHash = actorSys.loadActorSource(fileref)
 </pre>
 </div>
 
@@ -3583,7 +3498,7 @@ sources exchanged between ActorSystems in this manner are not
 subject to further <b>validation</b> after the initial load on the
 original system (although the local ActorSystem can choose the level
 of sharing it wishes to perform; see the <b>AllowRemoteActorSources</b>
-capability setting in the <a href="#sec-8-1">Common Capabilities</a> section).
+capability setting in the <a href="#sec-9-1">Common Capabilities</a> section).
 </p>
 
 <p>
@@ -3905,15 +3820,24 @@ ActorSystem.
 
 <p>
 If the specified source is not authorized to run in the current
-ActorSystem, the Source Authority simply discards this message and
-takes no further action.
+ActorSystem, the Source Authority may either simply discard this
+message and take no further action, or it may send a
+<a href="#sec-7-9">ValidatedSource</a> message specifying None as the validated source.
+The latter is recommended since it allows immediate response
+handling for pending actors for that source; otherwise a source
+load timeout must expire before rejecting actor create requests for
+the rejected source load attempt.
 </p>
 
 <p>
 If the specified source is valid for running in the current
 ActorSystem, the Source Authority should return a zipfile
-containing <b>compiled sources only</b> to the sender in a
-<a href="#sec-7-9">ValidatedSource</a> message.
+containing the sources to the sender in a <a href="#sec-7-9">ValidatedSource</a> message.
+</p>
+
+<p>
+At the present time, only <code>.py</code> sources are utilized; any <code>.pyc</code> or
+<code>.pyo</code> sources are ignored if present in the zipfile.
 </p>
 
 <p>
@@ -3950,8 +3874,8 @@ load via the <a href="#sec-7-12">Thespian_StatusReq</a> operation.
 This message is not sent by the ActorSystem to an Actor, but is
 instead sent by the Source Authority Actor back to the system as
 the response to a <a href="#sec-7-8">ValidateSource</a> message.  The data associated with
-this response is a zipfile in zipimport format providing the
-<b>compiled sources only</b> that were extracted from the input data
+this response is a zipfile in zipimport format providing the source
+file tree of <code>.py</code> files that were extracted from the input data
 sent via the <code>ValidateSource</code> message.  By sending this message
 back to the sender, the Source Authority Actor is indicating that
 the associated contents are valid for running within the current
@@ -3960,15 +3884,16 @@ of the Convention).
 </p>
 
 <p>
-Only compiled objects are returned (with <code>.pyc</code> or <code>.pyo</code>
-extensions) in the returned zipimport file to further preserve
-security: an attacker with visibility into the memory of the
-ActorSystem would need to locate and de-compile the body of the
-zipfile instead of being granted access directly to the decrypted
-original sources.
+At this time, only <code>.py</code> files are used from the loaded source: any
+<code>.pyc</code> or <code>.pyo</code> files are ignored.
+</p>
+
+<p>
+This message may also be sent by the Source Authority with None as
+the data to indicate that the associated Source Hash is invalid and
+is being actively rejected.
 </p>
 </div>
-
 
 <div id="outline-container-sec-7-9-1" class="outline-4">
 <h4 id="sec-7-9-1"><span class="section-number-4">7.9.1</span> Attributes</h4>
@@ -3978,7 +3903,8 @@ original sources.
 provided in the <code>ValidateSource</code> input message.
 </li>
 <li><code>.sourceZip</code> &#x2013; the zipimport-format decrypted and validated
-compiled form of the originally provided source.
+compiled form of the originally provided source, or None to reject
+the load attempt.
 </li>
 </ul>
 </div>
@@ -4119,8 +4045,168 @@ recommended.
 </div>
 
 <div id="outline-container-sec-8" class="outline-2">
-<h2 id="sec-8"><span class="section-number-2">8</span> ActorSystem Implementations</h2>
+<h2 id="sec-8"><span class="section-number-2">8</span> Patterns and Helpers</h2>
 <div class="outline-text-2" id="text-8">
+<p>
+The elements described in this section is supplemental to the base
+Thespian functionality.  It is entirely possible to use Thespian
+without using any of the elements here, but these elements represent
+common patterns or helpers that can be used when developing a Thespian
+actor-based application.
+</p>
+</div>
+
+<div id="outline-container-sec-8-1" class="outline-3">
+<h3 id="sec-8-1"><span class="section-number-3">8.1</span> Actor Troupe Support</h3>
+<div class="outline-text-3" id="text-8-1">
+<p>
+The use of <a href="#sec-4-9">Actor Troupes</a> is supported by importing the
+<code>thespian.troupe</code> file and adding a <code>@troupe()</code> decorator to the Actor
+definition.   This decorator turns a regular Actor into a dynamic
+Actor Troupe, where multiple Actors are spun up on-demand to handle
+messages.
+</p>
+
+<p>
+This pattern is especially useful for situations where multiple
+requests are received and processing individual requests may take some
+time to perform.
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-python">from thespian.troupe import troupe
+
+@troupe()
+class MyActor(Actor):
+   ...
+</pre>
+</div>
+
+
+<p>
+The optional arguments to the troupe decorator are:
+</p>
+
+<ul class="org-ul">
+<li><code>max_count</code> is the maximum number of actors in the troupe
+(defaulting to 10).
+</li>
+
+<li><code>idle_count</code> is the default number of actors in the troupe when
+idle. As work is received, the number of actors will grow up to
+the max_count, but when there is no more work, the number of
+actors will shrink back down to this number.  Note that there may
+be fewer than this number of actors present: actors are only
+created if work is received and there are no idle actors to
+handle that work.
+</li>
+</ul>
+
+<p>
+The decorator usage above works very well for a simple worker actor
+that can perform all of the necessary work utilizing only the message
+sent to it; the actor can be turned into a troupe member with no
+change other than adding the decorator.
+</p>
+
+<p>
+However, an actor which must interact with other actors to process the
+work requires additional modifications to allow the troupe manager to
+know when the actor has finished performing the work.  A troupe member
+that has not fully performed the work and is exchanging messages with
+other actors to complete the work (or awaiting <a href="#sec-4-7">WakeupMessages</a>) must
+set the <code>troupe_work_in_progress</code> attribute on self to <code>True</code>.  Once the
+work is completed by a subsequent message delivery, it should set this
+attribute to <code>False</code>, which will cause the troupe manager to be notified
+that the actor is ready for more work.
+</p>
+
+<ul class="org-ul">
+<li>Failure to set the <code>troupe_work_in_progress</code> attribute to <code>True</code>
+on a multi-step actor will result in either (a) the actor
+receiving more work before it has completed the previous work, or
+(b) the actor will be killed by the troupe manager before
+finishing the work because the manager believes the actor is
+finished.
+</li>
+
+<li>Failure to reset the <code>troup_work_in_progress</code> attribute to
+<code>False</code> will cause the troupe manager to never send any more work
+requests to the troupe actor, even if the latter is idle.  The
+troupe actor will also never be killed until the troupe manager
+itself is killed.
+</li>
+</ul>
+
+<p>
+Manipulating the <code>troupe_work_in_progress</code> member variable for
+non-troupe actors has no effect on their behavior and is safe to do.
+</p>
+</div>
+</div>
+
+<div id="outline-container-sec-8-2" class="outline-3">
+<h3 id="sec-8-2"><span class="section-number-3">8.2</span> Transient Actors</h3>
+<div class="outline-text-3" id="text-8-2">
+<p>
+Some actors should automatically die at some period after they are
+initially used, or after they are last used.  These actors are
+referred to as "transient" in contrast to normal actors that will
+persist until explicitly shutdown (either by themselves or by another
+Actor).
+</p>
+
+<p>
+Implementing transient actors is made easier by importing the
+<code>thespian.transient</code> file and adding a <code>@transient()</code> or
+<code>@transient_idle()</code> decorator to the Actor definition.
+</p>
+
+<p>
+The <code>transient</code> decorator cause the actor to exit at some time period
+after it receives its first message.
+</p>
+
+<p>
+The <code>transient_idle</code> decorator causes the actor to exit at some time
+period after it has received its last message.
+</p>
+
+<p>
+Both decorators default to a period of 10 seconds, and both take an
+optional <code>exit_delay</code> argument value that specifies an alternate time
+period.  The time period should be a <code>datetime.timedelta</code> object.
+</p>
+
+
+<div class="org-src-container">
+
+<pre class="src src-python">from thespian.transient import transient_idle
+
+@transient_idle(timedelta(seconds=3, milliseconds=250))
+class BoredActor(Actor):
+   ...
+
+@transient()
+class TempActor(Actor):
+   ...
+</pre>
+</div>
+
+<p>
+Note that a transient actor which is created but which never receives
+any messages does not exit; the timer for transient exit is only
+started after receipt of the actor's first message.
+</p>
+</div>
+</div>
+</div>
+
+
+<div id="outline-container-sec-9" class="outline-2">
+<h2 id="sec-9"><span class="section-number-2">9</span> ActorSystem Implementations</h2>
+<div class="outline-text-2" id="text-9">
 <p>
 One of the convenient aspects of an Actor architecture is that the
 Actors themselves are insulated from and agnostic to any particular
@@ -4160,7 +4246,7 @@ the systemBase (a.k.a ActorSystem implementation) that should be used
 for starting the ActorSystem if one is not already running; if an
 ActorSystem is already running, this argument is ignored.  If no
 argument is specified and no ActorSystem is running, the default
-<a href="#sec-8-2">simpleSystemBase</a> ActorSystem will be started.
+<a href="#sec-9-2">simpleSystemBase</a> ActorSystem will be started.
 </p>
 
 <p>
@@ -4208,9 +4294,9 @@ details are available in each section:
 
 
 
-<div id="outline-container-sec-8-1" class="outline-3">
-<h3 id="sec-8-1"><span class="section-number-3">8.1</span> Common Capabilities</h3>
-<div class="outline-text-3" id="text-8-1">
+<div id="outline-container-sec-9-1" class="outline-3">
+<h3 id="sec-9-1"><span class="section-number-3">9.1</span> Common Capabilities</h3>
+<div class="outline-text-3" id="text-9-1">
 <p>
 As described in <a href="#sec-4-10">ActorSystem Capabilities</a> each ActorSystem has a set of
 capabilities that describe that ActorSystem and which can be audited
@@ -4309,9 +4395,9 @@ remote ActorSystems that are part of the Convention.
 </div>
 </div>
 
-<div id="outline-container-sec-8-2" class="outline-3">
-<h3 id="sec-8-2"><span class="section-number-3">8.2</span> simpleSystemBase</h3>
-<div class="outline-text-3" id="text-8-2">
+<div id="outline-container-sec-9-2" class="outline-3">
+<h3 id="sec-9-2"><span class="section-number-3">9.2</span> simpleSystemBase</h3>
+<div class="outline-text-3" id="text-9-2">
 <p>
 The simpleSystemBase implementation is primarily designed for Unit
 Testing and other very simplistic Actor environments:
@@ -4376,9 +4462,9 @@ The simpleSystemBase uses the following <a href="#sec-4-10">ActorSystem Capabili
 </div>
 </div>
 
-<div id="outline-container-sec-8-3" class="outline-3">
-<h3 id="sec-8-3"><span class="section-number-3">8.3</span> multiprocQueueBase</h3>
-<div class="outline-text-3" id="text-8-3">
+<div id="outline-container-sec-9-3" class="outline-3">
+<h3 id="sec-9-3"><span class="section-number-3">9.3</span> multiprocQueueBase</h3>
+<div class="outline-text-3" id="text-9-3">
 <p>
 The multiprocQueueBase runs each Actor in its own separate process
 for a truly asynchronous system.  The default Actor communication
@@ -4443,9 +4529,9 @@ method, but this multiprocQueueBase does not support the
 </div>
 
 
-<div id="outline-container-sec-8-4" class="outline-3">
-<h3 id="sec-8-4"><span class="section-number-3">8.4</span> multiprocTCPBase</h3>
-<div class="outline-text-3" id="text-8-4">
+<div id="outline-container-sec-9-4" class="outline-3">
+<h3 id="sec-9-4"><span class="section-number-3">9.4</span> multiprocTCPBase</h3>
+<div class="outline-text-3" id="text-9-4">
 <p>
 The multiprocTCPBase runs each Actor in its own separate process
 for a truly asynchronous system.  The default Actor communication
@@ -4582,9 +4668,9 @@ performance of the "spawn" method.
 </div>
 
 
-<div id="outline-container-sec-8-5" class="outline-3">
-<h3 id="sec-8-5"><span class="section-number-3">8.5</span> multiprocUDPBase</h3>
-<div class="outline-text-3" id="text-8-5">
+<div id="outline-container-sec-9-5" class="outline-3">
+<h3 id="sec-9-5"><span class="section-number-3">9.5</span> multiprocUDPBase</h3>
+<div class="outline-text-3" id="text-9-5">
 <p>
 The multiprocUDPBase runs each Actor in its own separate process
 for a truly asynchronous system.  The default Actor communication
@@ -4649,7 +4735,7 @@ If not specified, the default Admin Port of 1029 is used.
 
 <dt> <b>Convention Address.IPv4</b> </dt><dd>the IPv4 address of the convention
 leader's Admin.  See the description of the same capability in the
-<a href="#sec-8-4">multiprocTCPBase</a> for more details.
+<a href="#sec-9-4">multiprocTCPBase</a> for more details.
 </dd>
 
 <dt> <b>Process Startup Method</b> </dt><dd><i>optional</i> specifies the
@@ -4669,9 +4755,9 @@ performance of the "spawn" method.
 </div>
 
 
-<div id="outline-container-sec-9" class="outline-2">
-<h2 id="sec-9"><span class="section-number-2">9</span> Deploying Actor-based Projects</h2>
-<div class="outline-text-2" id="text-9">
+<div id="outline-container-sec-10" class="outline-2">
+<h2 id="sec-10"><span class="section-number-2">10</span> Deploying Actor-based Projects</h2>
+<div class="outline-text-2" id="text-10">
 <p>
 Possible Methods for deployment:
 </p>
@@ -4705,9 +4791,9 @@ sources can be running simultaneously).
 </p>
 </div>
 
-<div id="outline-container-sec-9-1" class="outline-3">
-<h3 id="sec-9-1"><span class="section-number-3">9.1</span> Overall Security Considerations</h3>
-<div class="outline-text-3" id="text-9-1">
+<div id="outline-container-sec-10-1" class="outline-3">
+<h3 id="sec-10-1"><span class="section-number-3">10.1</span> Overall Security Considerations</h3>
+<div class="outline-text-3" id="text-10-1">
 <dl class="org-dl">
 <dt> <b>ActorSystem Startup</b> </dt><dd>ActorSystem startup will inherit the
 permissions of the starting user.  In many cases this is root
@@ -4766,9 +4852,9 @@ remember the guideline: "Fail Early, Fail Often."
 </dl>
 </div>
 
-<div id="outline-container-sec-9-1-1" class="outline-4">
-<h4 id="sec-9-1-1"><span class="section-number-4">9.1.1</span> Security Scenarios</h4>
-<div class="outline-text-4" id="text-9-1-1">
+<div id="outline-container-sec-10-1-1" class="outline-4">
+<h4 id="sec-10-1-1"><span class="section-number-4">10.1.1</span> Security Scenarios</h4>
+<div class="outline-text-4" id="text-10-1-1">
 <p>
 On any particular host where an ActorSystem is running, the primary
 focus is on protecting that ActorSystem to prevent injection of code
@@ -4815,7 +4901,7 @@ difference will remain unaddressed.
 </div></div>
 <div id="postamble" class="status">
 <p class="author">Author: Kevin Quick &lt;kquick@godaddy.com&gt;</p>
-<p class="date">Created: 2016-12-04 Sun 22:10</p>
+<p class="date">Created: 2017-01-02 Mon 22:39</p>
 <p class="creator"><a href="http://www.gnu.org/software/emacs/">Emacs</a> 25.1.1 (<a href="http://orgmode.org">Org</a> mode 8.2.10)</p>
 <p class="validation"><a href="http://validator.w3.org/check?uri=referer">Validate</a></p>
 </div>
