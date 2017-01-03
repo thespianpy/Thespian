@@ -275,7 +275,7 @@ class RoutedTCPv4ActorAddress(TCPv4ActorAddress):
     def _str_suffix(self):
         return '~' + '~'.join(['A' if A is None else
                                (A.addressDetails._str_aps()
-                                if isinstance(A.addressDetails, IPActorAddress)
+                                if hasattr(A.addressDetails, '_str_aps')
                                 else str(A))
                                for A in self.routing])
 
