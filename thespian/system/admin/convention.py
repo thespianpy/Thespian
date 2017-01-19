@@ -592,7 +592,7 @@ class ConventioneerAdmin(GlobalNamesAdmin):
                 self._hysteresisSender.sendWithHysteresis(msg)
             elif isinstance(msg, LogAggregator):
                 if getattr(self, 'asLogger', None):
-                    thesplog('Setting log aggregator of %s to %s', self.asLogger, msg)
+                    thesplog('Setting log aggregator of %s to %s', self.asLogger, msg.aggregatorAddress)
                     self._send_intent(TransmitIntent(self.asLogger, msg))
             elif isinstance(msg, LostRemote):
                 if hasattr(self.transport, 'lostRemote'):
