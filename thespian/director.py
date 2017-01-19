@@ -511,22 +511,20 @@ class Director(thespian.actors.ActorTypeDispatcher):
         self.send(sender,  {
             'DirectorResponse': 'AllAddresses',
             'Success': True,
-            'Groups': {
-                group: {
-                    'ActiveHash': self.active[group],
-                    'Loaded': [L.source_hash
-                               for L in self.loaded[group]],
-                    'Running': {
-                        L.source_hash: [{'ActorClass': actor.classname,
-                                         'Role': actor.role,
-                                         'ActorAddress': actor.address}
-                                        for actor in L.actors]
-                        for L in self.loaded[group]
-                    }
-                }
+            'Groups': dict([
+                (group,
+                 {'ActiveHash': self.active[group],
+                  'Loaded': [L.source_hash
+                             for L in self.loaded[group]],
+                  'Running': dict([
+                      (L.source_hash, [{'ActorClass': actor.classname,
+                                        'Role': actor.role,
+                                        'ActorAddress': actor.address}
+                                       for actor in L.actors])
+                      for L in self.loaded[group]])
+                 })
                 for group in ([msg['Group']]
-                              if 'Group' in msg else self.groups.keys())
-            }
+                              if 'Group' in msg else self.groups.keys())])
         })
 
     def RetrieveRole(self, msg, sender):
@@ -1129,7 +1127,9 @@ the update.
         elif os.name == 'posix':
             import subprocess
             try:
-                r = subprocess.check_output(['systemctl', '--version'])
+                r = subprocess.Popen(['systemctl', '--version'],
+                                    stdout=subprocess.PIPE) \
+                              .communicate()[0]
             except OSError:
                 r = b'no'
             if b'systemd' in r:
@@ -1431,9 +1431,11 @@ class SourceEncoding(object):
                  GroupLoadableFiles.src_suffix
         sftmp = os.path.join(sfdir, '.'+sfname)
         sfpath = os.path.join(sfdir, sfname)
-        shasig = subprocess.check_output(["openssl", "dgst", "-sha256",
-                                       "-sign", private_keyfile,
-                                       zfpath])
+        shasig = subprocess.Popen(["openssl", "dgst", "-sha256",
+                                   "-sign", private_keyfile,
+                                   zfpath],
+                                  stdout=subprocess.PIPE)\
+                           .communicate()[0]
         try:
             with open(sftmp, 'wb') as sf:
                 verbose('Signing %s', sfpath)
