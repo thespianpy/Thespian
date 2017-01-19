@@ -381,7 +381,7 @@ class LocalConventionState(object):
                     thesplog('Admin convention registration lost @ %s (miss %d)',
                              self.conventionLeaderAddr,
                              self._conventionLeaderMissCount,
-                             level=logging.ERROR, primary=True)
+                             level=logging.WARNING, primary=True)
                     rmsgs.extend(self._remote_system_cleanup(self.conventionLeaderAddr))
                     self._conventionLeaderMissCount = 0
                 else:

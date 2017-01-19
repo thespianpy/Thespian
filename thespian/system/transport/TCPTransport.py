@@ -804,7 +804,7 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
                 # discovered here rather than for the actual connect
                 # request.
                 thesplog('ConnRefused to %s; declaring as DeadTarget.',
-                         intent.targetAddr, level=logging.ERROR)
+                         intent.targetAddr, level=logging.INFO)
                 return self._finishIntent(intent, SendStatus.DeadTarget)
             thesplog('Socket error sending to %s on %s: %s / %s: %s',
                      intent.targetAddr, intent.socket, str(err), err.errno,

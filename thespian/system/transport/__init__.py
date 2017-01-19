@@ -195,7 +195,13 @@ class TransmitIntent(PauseWithBackoff):
     def completionCallback(self):
         "This is called by the transport to perform the success or failure callback operation."
         if not self.result:
-            thesplog('completion error: %s', str(self), level=logging.ERROR)
+            if self.result == SendStatus.DeadTarget:
+                # Do not perform logging in case admin or logdirector
+                # is dead (this will recurse infinitely).
+                # logging.getLogger('Thespian').warning('Dead target: %s', self.targetAddr)
+                pass
+            else:
+                thesplog('completion error: %s', str(self), level=logging.INFO)
         self._callbackTo.resultCallback(self.result, self)
 
     def addCallback(self, onSuccess=None, onFailure=None):

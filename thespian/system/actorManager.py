@@ -67,7 +67,7 @@ class ActorManager(systemCommonBase):
                           exc_info = True)
             thesplog('Actor %s @ %s instantiation exception: %s', self._actorClass,
                      self.transport.myAddress, traceback.format_exc(),
-                     level=logging.ERROR, primary=True)
+                     level=logging.WARNING, primary=True)
             self._sCBStats.inc('Actor.Instance Create Failed')
             self._sayGoodbye()
             return
@@ -178,8 +178,7 @@ class ActorManager(systemCommonBase):
                         self._sCBStats.inc('Actor.Message Received.Caused Secondary Exception')
                         thesplog('Actor %s @ %s second exception on message %s: %s',
                                  self._actorClass, self.transport.myAddress, msg,
-                                 traceback.format_exc(),
-                                 level = logging.ERROR)
+                                 traceback.format_exc())
                         logging.getLogger(str(self._actorClass)) \
                                .error('Actor %s @ %s second exception on message %s',
                                       self._actorClass, self.transport.myAddress, msg,
@@ -338,7 +337,7 @@ class ActorManager(systemCommonBase):
         # Have seen it arrive here without errorCode set on the PendingActorResponse...
         if not hasattr(envelope.message, 'errorCode'):
             thesplog('Corrupted Pending Actor Response?: %s (%s)',
-                     envelope.message, dir(envelope.message), level = logging.ERROR)
+                     envelope.message, dir(envelope.message), level=logging.ERROR)
             return True
         if not getattr(envelope.message, 'errorCode', 'Failed'):
             self._pendingActorReady(envelope.message.instanceNum,
