@@ -767,10 +767,14 @@ the update.
 
     @property
     def logdir(self):
-        return self.filecfg('thesplogd.cfg', None) or \
-            [P for P in [ 'C:\\Windows\\temp',
-                          '/var/log/', os.getcwd() ]
-             if os.path.isdir(P) and os.access(P, os.W_OK)][0]
+        try:
+            return self.filecfg('thesplogd.cfg', None) or \
+                [P for P in [ 'C:\\Windows\\temp',
+                              '/var/log/',
+                              os.getcwd(), '/var/tmp', '/tmp' ]
+                 if os.path.isdir(P) and os.access(P, os.W_OK)][0]
+        except IndexError:
+            return os.getcwd()
 
     @property
     def asys(self):
