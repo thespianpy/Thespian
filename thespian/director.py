@@ -1217,6 +1217,20 @@ end script
                 # service name status|start|stop|restart
                 print('SystemV bootstart TBD')
                 return 1
+            if os.path.isdir('/Library/LaunchDaemons'):
+                properties = { 'Label': name,
+                               'ProgramArguments': [ sys.executable,
+                                                     '-m', 'thespian.director',
+                                                     'start', 'blocking'],
+                               'KeepAlive': True,
+                }
+                import plistlib
+                plistfile = os.path.join('/Library/LaunchDaemons',
+                                         name + '.plist')
+                plistlib.writePlist(properties, plistfile)
+                if nostart:
+                    return 0
+                return subprocess.call(['launchctl', 'load', plistfile])
 
         print('Unknown os type "%s", cannot create boot configuration.' %
               os.name)
