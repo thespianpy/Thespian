@@ -170,13 +170,6 @@ class UDPTransport(asyncTransportBase, wakeupTransportBase):
 
     def connectEndpoint(self, endPoint):
         pass
-        #KWQ: need to verify child is started here (message to host) so that the next step (ThespianStatusReq)?  But this would block the parent here waiting for the child when there's other work to be done.  Really want to handle this via run waiting for a natural response from the child.  Similar to MultiProcAdmin handling of h_EndpointConnected?  NEed to do that similar thing in systemBase?
-
-            # sresp, _ign1, _ign2 = select.select([self.socket.fileno()], [], [],
-            #                                     None if time_to_quit is None else
-            #                                     timePeriodSeconds(time_to_quit -
-            #                                                       datetime.now()))
-        # KWQ: not actually connected? waiting for child to callback and confirm?  happens automatically?  need this method really?
 
 
     def deadAddress(self, addressManager, childAddr):
