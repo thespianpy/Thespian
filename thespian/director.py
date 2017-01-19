@@ -1414,6 +1414,13 @@ with the highest version at the top of the list:
                            (' (%s)' % role) if role else ''))
 
 
+class ActorAddressLogFilter(logging.Filter):
+    def filter(self, record):
+        if not hasattr(record, 'actorAddress'):
+            record.actorAddress = '-not-actor-'
+        return True
+
+
 class SourceEncoding(object):
 
     @staticmethod
