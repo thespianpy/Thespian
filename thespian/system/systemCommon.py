@@ -63,6 +63,10 @@ class PendingTransmits(object):
                  level=logging.WARNING)
         return False
 
+    def update_status_response(self, status_rsp, myaddr):
+        for each in self._ftp:
+            status_rsp.addPendingMessage(myaddr, each[0], each[1].message)
+
 
 class AddressWaitTransmits(object):
     def __init__(self):
@@ -136,7 +140,7 @@ class systemCommonBase(object):
         for each in self._receiveQueue:
             resp.addReceivedMessage(each.sender, self.myAddress, each.message)
         self._sCBStats.copyToStatusResponse(resp)
-        # Need to show _finalTransmitPending?  where is head of chain? shown by transport? (no)
+        self._finalTransmitPending.update_status_response(resp, self.myAddress)
         resp.governer = str(self._governer)
         fmap(lambda x: resp.addTXPendingAddressCount(*len_second(x)),
              self._awaitingAddressUpdate)
