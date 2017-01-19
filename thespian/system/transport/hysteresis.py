@@ -107,6 +107,13 @@ class HysteresisDelaySender(object):
             for intent in self._keepIf(lambda M: False):
                 self._sender(intent)
 
+    @staticmethod
+    def safe_cmp(val1, val2):
+        try:
+            return val1 == val2
+        except Exception:
+            return False
+
     def sendWithHysteresis(self, intent):
         if self._hysteresis_until.expired():
             self._current_hysteresis = self._hysteresis_min_period
@@ -114,7 +121,8 @@ class HysteresisDelaySender(object):
         else:
             dups = self._keepIf(lambda M:
                                 (M.targetAddr != intent.targetAddr or
-                                 M.message != intent.message))
+                                 not HysteresisDelaySender
+                                 .safe_cmp(M.message, intent.message)))
             # The dups are duplicate sends to the new intent's target;
             # complete them when the actual message is finally sent
             # with the same result

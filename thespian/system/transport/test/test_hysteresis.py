@@ -232,8 +232,8 @@ class TestUnitHysteresis(object):
         sleep(hs.delay.remainingSeconds())
         hs.checkSends()
         # Only should have first message and last of each type
+        print('sends: %s' % [str(S.message) for S in self.sends])
         assert 3 == len(getattr(self, 'sends', []))
-        print('sends: %s', str(self.sends))
         assert intents[0] == self.sends[0]
         assert intents[-3] == self.sends[1]
         assert intents[-1] == self.sends[2]
