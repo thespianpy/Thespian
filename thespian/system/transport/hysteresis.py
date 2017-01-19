@@ -114,7 +114,7 @@ class HysteresisDelaySender(object):
         else:
             dups = self._keepIf(lambda M:
                                 (M.targetAddr != intent.targetAddr or
-                                 type(M.message) != type(intent.message)))
+                                 M.message != intent.message))
             # The dups are duplicate sends to the new intent's target;
             # complete them when the actual message is finally sent
             # with the same result
