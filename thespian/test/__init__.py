@@ -146,10 +146,12 @@ def get_free_admin_port():
         try:
             socket.socket(socket.AF_INET,
                           socket.SOCK_STREAM,
-                          socket.IPPROTO_TCP).bind(('',port))
+                          socket.IPPROTO_TCP).bind(('',port))\
+                  .close()
             socket.socket(socket.AF_INET,
                           socket.SOCK_DGRAM,
-                          socket.IPPROTO_UDP).bind(('',port))
+                          socket.IPPROTO_UDP).bind(('',port))\
+                  .close()
             return port
         except Exception:
             pass
