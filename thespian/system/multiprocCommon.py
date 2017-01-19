@@ -66,7 +66,7 @@ def get_multiproc_context(capabilities):
                     return multiprocessing.get_context(each)
                 except ValueError:
                     pass # invalid concurrency for this system
-    return multiprocessing
+    return None
 
 
 class multiprocessCommon(systemBase):
@@ -85,7 +85,7 @@ class multiprocessCommon(systemBase):
 
 
     def _startAdmin(self, adminAddr, addrOfStarter, capabilities, logDefs):
-        mp = self.mpcontext
+        mp = self.mpcontext if self.mpcontext else multiprocessing
         endpointPrep = self.transport.prepEndpoint(adminAddr, capabilities)
 
         multiprocessing.process._current_process._daemonic = False
@@ -97,7 +97,7 @@ class multiprocessCommon(systemBase):
                                               adminAddr,
                                               capabilities,
                                               logDefs,
-                                              mp),
+                                              self.mpcontext),
                                         name='ThespianAdmin')
         admin.start()
         # admin must be explicity shutdown and is not automatically
@@ -243,7 +243,7 @@ def startASLogger(loggerAddr, logDefs, transport, capabilities,
                   concurrency_context = None):
     endpointPrep = transport.prepEndpoint(loggerAddr, capabilities)
     multiprocessing.process._current_process._daemonic = False
-    NewProc = concurrency_context.Process if concurrency_context else Process
+    NewProc = concurrency_context.Process if concurrency_context else multiprocessing.Process
     logProc = NewProc(target=startupASLogger,
                       args = (transport.myAddress, endpointPrep,
                               logDefs,
@@ -325,7 +325,9 @@ class MultiProcReplicator(object):
         # is an argument passed to the child.
         fileNumsToClose = list(self.transport.childResetFileNumList())
 
-        child = self.mpcontext.Process(target=startChild,  #KWQ: instantiates module specified by sourceHash to create actor
+        mp = self.mpcontext if self.mpcontext else multiprocessing
+
+        child = mp.Process(target=startChild,  #KWQ: instantiates module specified by sourceHash to create actor
                                         args=(childClass,
                                               endpointPrep,
                                               self.transport.__class__,
