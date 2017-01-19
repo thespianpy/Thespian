@@ -330,9 +330,7 @@ class ActorManager(systemCommonBase):
                                                   actualAddress)
         if isMyChild: self._registerChild(actualAddress)
 
-        # Send any queued transmits for this child, and move the
-        # finalTransmit marker to use the new address.
-
+        # Send any queued transmits for this child.
         self._retryPendingChildOperations(childInstance, actualAddress)
 
 
@@ -357,6 +355,7 @@ class ActorManager(systemCommonBase):
                       envelope.message.forActor,
                       getattr(envelope.message, 'errorCode', '??'),
                       getattr(envelope.message, 'errorStr', '---'))
+        # Cancel any queued transmits for this child.
         self._retryPendingChildOperations(envelope.message.instanceNum, None)
         return True
 

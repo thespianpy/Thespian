@@ -173,7 +173,6 @@ class TransmitIntent(PauseWithBackoff):
         self._callbackTo = ResultCallback(onSuccess, onError)
         self._resultsts  = None
         self._quitTime   = ExpirationTimer(maxPeriod or DEFAULT_MAX_TRANSMIT_PERIOD)
-        self.nextIntent  = None
         self._attempts    = 0
         self.transmit_retry_period = retryPeriod
 
