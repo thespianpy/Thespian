@@ -19,6 +19,7 @@ class ConventionRegister(ActorSystemMessage):
         self.capabilities = capabilities
         self.firstTime = firstTime
         self.preRegister = preRegister  # n.b. added in 2.5.0; use getattr
+
     def __str__(self):
         return 'ConventionRegister(adminAddress=%(adminAddress)s' \
             ', firstTime=%(firstTime)s' \
@@ -27,10 +28,13 @@ class ConventionRegister(ActorSystemMessage):
             ')' % self.__dict__
 
     def __eq__(self, o):
-        return self.adminAddress == o.adminAddress and \
-            self.firstTime == o.firstTime and \
-            self.preRegister == o.preRegister and \
-            self.capabilities == o.capabilities
+        try:
+            return self.adminAddress == o.adminAddress and \
+                self.firstTime == o.firstTime and \
+                self.preRegister == o.preRegister and \
+                self.capabilities == o.capabilities
+        except Exception:
+            return False
 
     def __ne__(self, o):
         return not self.__eq__(o)
@@ -48,8 +52,11 @@ class ConventionDeRegister(ActorSystemMessage):
             ')' % self.__dict__
 
     def __eq__(self, o):
-        return self.adminAddress == o.adminAddress and \
-            self.preRegistered == o.preRegistered
+        try:
+            return self.adminAddress == o.adminAddress and \
+                self.preRegistered == o.preRegistered
+        except Exception:
+            return False
 
     def __ne__(self, o):
         return not self.__eq__(o)
