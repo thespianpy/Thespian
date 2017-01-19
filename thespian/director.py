@@ -1130,7 +1130,7 @@ the update.
                 r = b'no'
             if b'systemd' in r:
                 name = name.replace('.', '-')
-                with open(os.path.join('/usr/lib/systemd/system',
+                with open(os.path.join('/lib/systemd/system',
                                        name + '.service'), 'w') as sf:
                     sf.write('''# Thespian Director (http://thespianpy.org) system boot startup.
 
