@@ -27,7 +27,7 @@ class ActorLocalAddress:
         try:
             realized = self.addressManager.exportAddr(self)
             if realized:
-                return str(realized)
+                return '%d-%s' % (self.addressInstanceNum, str(realized))
         except Exception:
             pass
         return 'LocalAddr.%s'%self.addressInstanceNum
