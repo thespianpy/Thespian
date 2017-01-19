@@ -1054,7 +1054,7 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
                 errnum = getattr(ex, 'errno', ex.args[0])
                 if err_select_retry(errnum):
                     # probably a change in descriptors
-                    thesplog('select retry on %s', ex, level=logging.ERROR)
+                    thesplog('select retry on %s', ex, level=logging.DEBUG)
                     self._check_indicators()
                     continue
                 if err_bad_fileno(errnum):
