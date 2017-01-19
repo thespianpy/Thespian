@@ -348,11 +348,13 @@ class ActorManager(systemCommonBase):
                                     isMyChild = not envelope.message.globalName)
             return True
         # Pending Actor Creation failed, clean up all the stuff associated with the intended Actor
-        thesplog('Pending Actor create failed (%s): %s',
+        thesplog('Pending Actor create for %s failed (%s): %s',
+                 envelope.message.forActor,
                  getattr(envelope.message, 'errorCode', '??'),
                  getattr(envelope.message, 'errorStr', '---'))
         logging.getLogger(str(self._actorClass)) \
-               .error('Pending Actor create failed (%s): %s',
+               .error('Pending Actor create for %s failed (%s): %s',
+                      envelope.message.forActor,
                       getattr(envelope.message, 'errorCode', '??'),
                       getattr(envelope.message, 'errorStr', '---'))
         self._retryPendingChildOperations(envelope.message.instanceNum, None)
