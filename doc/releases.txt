@@ -11,6 +11,7 @@ Table of Contents
 
 3.x
 .. 3.6
+..... 3.6.1 <2017-01-18 Wed>
 ..... 3.6.0 <2017-01-02 Mon>
 .. 3.5
 ..... 3.5.2 <2016-12-12 Mon>
@@ -81,6 +82,49 @@ not change the API.
 
 3.6
 ───
+
+3.6.1 <2017-01-18 Wed>
+╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+
+  ‣ Updated Director to not require root permissions for writing log
+    files when no log files need to be written.
+
+  ‣ Update Director bootstart location for systemd to use a more common
+    location (adds support for Debian/Ubuntu).
+
+  ‣ Fix Director Python2.6 and Mac launchd compatibility.
+
+  ‣ Allow specification of format encoding for Director gensrc to
+    override default.
+
+  ‣ Added the ActorAddressLogFilter to the Director to allow logging
+    format specifications to show the actorAddress field even if it is
+    not originally present in the log message.
+
+  ‣ Fix from kwadl for ActorSystem initialization under Windows with
+    Python 2.7 ([Issue 32]).
+
+  ‣ Fix for arguments on logger restart conditions.
+
+  ‣ Make inter-convention hysteresis more careful about detecting
+    duplicate packets.
+
+  ‣ Logging updates, including reduction of severity to improve
+    signal-to-noise ratio for actual errors.
+
+  ‣ Show local instance number for ActorAddresses even when actual
+    translation is shown.
+
+  ‣ Fix for transmit queue to ensure messages are not stuck on the queue
+    if address updates are performed post-queueing.
+
+  ‣ Update setup in tests to ensure proper socket closure for re-use.
+
+  ‣ Improved status output for pending transmits.
+
+
+  [Issue 32] https://github.com/godaddy/Thespian/issues/32
+
 
 3.6.0 <2017-01-02 Mon>
 ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌

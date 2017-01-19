@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
 <title>Thespian Release Notes</title>
-<!-- 2017-01-02 Mon 22:39 -->
+<!-- 2017-01-18 Wed 23:11 -->
 <meta  http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta  name="generator" content="Org-mode" />
 <meta  name="author" content="Kevin Quick &lt;kquick@godaddy.com&gt;" />
@@ -159,7 +159,8 @@ for the JavaScript code in this tag.
 <ul>
 <li><a href="#sec-1-1">3.6</a>
 <ul>
-<li><a href="#sec-1-1-1">3.6.0 <span class="timestamp-wrapper"><span class="timestamp">&lt;2017-01-02 Mon&gt;</span></span></a></li>
+<li><a href="#sec-1-1-1">3.6.1 <span class="timestamp-wrapper"><span class="timestamp">&lt;2017-01-18 Wed&gt;</span></span></a></li>
+<li><a href="#sec-1-1-2">3.6.0 <span class="timestamp-wrapper"><span class="timestamp">&lt;2017-01-02 Mon&gt;</span></span></a></li>
 </ul>
 </li>
 <li><a href="#sec-1-2">3.5</a>
@@ -273,8 +274,64 @@ do not change the API.
 <h3 id="sec-1-1">3.6</h3>
 <div class="outline-text-3" id="text-1-1">
 </div><div id="outline-container-sec-1-1-1" class="outline-4">
-<h4 id="sec-1-1-1">3.6.0 <span class="timestamp-wrapper"><span class="timestamp">&lt;2017-01-02 Mon&gt;</span></span></h4>
+<h4 id="sec-1-1-1">3.6.1 <span class="timestamp-wrapper"><span class="timestamp">&lt;2017-01-18 Wed&gt;</span></span></h4>
 <div class="outline-text-4" id="text-1-1-1">
+<ul class="org-ul">
+<li>Updated Director to not require root permissions for writing log
+files when no log files need to be written.
+</li>
+
+<li>Update Director bootstart location for systemd to use a more
+common location (adds support for Debian/Ubuntu).
+</li>
+
+<li>Fix Director Python2.6 and Mac launchd compatibility.
+</li>
+
+<li>Allow specification of format encoding for Director gensrc to
+override default.
+</li>
+
+<li>Added the ActorAddressLogFilter to the Director to allow logging
+format specifications to show the actorAddress field even if it is
+not originally present in the log message.
+</li>
+
+<li>Fix from kwadl for ActorSystem initialization under Windows with
+Python 2.7 (<a href="https://github.com/godaddy/Thespian/issues/32">Issue 32</a>).
+</li>
+
+<li>Fix for arguments on logger restart conditions.
+</li>
+
+<li>Make inter-convention hysteresis more careful about detecting
+duplicate packets.
+</li>
+
+<li>Logging updates, including reduction of severity to improve
+signal-to-noise ratio for actual errors.
+</li>
+
+<li>Show local instance number for ActorAddresses even when actual
+translation is shown.
+</li>
+
+<li>Fix for transmit queue to ensure messages are not stuck on the
+queue if address updates are performed post-queueing.
+</li>
+
+<li>Update setup in tests to ensure proper socket closure for re-use.
+</li>
+
+<li>Improved status output for pending transmits.
+</li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-sec-1-1-2" class="outline-4">
+<h4 id="sec-1-1-2">3.6.0 <span class="timestamp-wrapper"><span class="timestamp">&lt;2017-01-02 Mon&gt;</span></span></h4>
+<div class="outline-text-4" id="text-1-1-2">
 <ul class="org-ul">
 <li>Enhancements
 
@@ -1789,7 +1846,7 @@ The 1.x Release series was developed and used internally by GoDaddy
 </div>
 <div id="postamble" class="status">
 <p class="author">Author: Kevin Quick &lt;kquick@godaddy.com&gt;</p>
-<p class="date">Created: 2017-01-02 Mon 22:39</p>
+<p class="date">Created: 2017-01-18 Wed 23:11</p>
 <p class="creator"><a href="http://www.gnu.org/software/emacs/">Emacs</a> 25.1.1 (<a href="http://orgmode.org">Org</a> mode 8.2.10)</p>
 <p class="validation"><a href="http://validator.w3.org/check?uri=referer">Validate</a></p>
 </div>
