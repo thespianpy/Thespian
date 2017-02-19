@@ -307,7 +307,8 @@ class LocalConventionState(object):
                                    ActorSystemConventionUpdate(M.remoteAddress,
                                                                M.remoteCapabilities,
                                                                True))
-                    for M in self._conventionMembers.values()]
+                    for M in self._conventionMembers.values()
+                    if not M.preRegOnly]
         return []
 
     def remove_notification_handler(self, addr):
