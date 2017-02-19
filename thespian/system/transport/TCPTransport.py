@@ -342,11 +342,28 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
                 self._incomingSockets[each].close()
             delattr(self, '_incomingSockets')
         if hasattr(self, 'socket'):
-            _safeSocketShutdown(getattr(self, 'socket', None))
+            self._safeSocketShutdown(getattr(self, 'socket', None))
             delattr(self, 'socket')
 
     def __del__(self):
         self.close()
+
+    @staticmethod
+    def _safeSocketShutdown(sock):
+        # n.b. _safeSocketShutdown is a static method instead of a
+        # global because if __del__ calls close, the
+        # _safeSocketShutdown may already have been unbound.  However,
+        # this still needs unusual protection to validate socket in
+        # case socket was already unloaded.
+        if sock and socket and isinstance(socket.error, Exception):
+            sock = getattr(sock, 'socket', sock)
+            try:
+                sock.shutdown(socket.SHUT_RDWR)
+            except socket.error as ex:
+                if ex.errno != errno.ENOTCONN:
+                    thesplog('Error during shutdown of socket %s: %s', sock, ex)
+            sock.close()
+
 
     def protectedFileNumList(self):
         return (list(self._transmitIntents.keys()) +
@@ -495,7 +512,7 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
         aged_keys = sorted([(self._openSockets[K].validity, K)
                             for K in self._openSockets])
         for _,oldkey in aged_keys[:num_to_close]:
-            _safeSocketShutdown(self._openSockets.pop(oldkey))
+            self._safeSocketShutdown(self._openSockets.pop(oldkey))
 
     def new_socket(self, op, *args, **kw):
         try:
@@ -539,7 +556,7 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
         if hasattr(self, '_openSockets'):
             opskey = opsKey(rmtaddr)
             if opskey in self._openSockets:
-                _safeSocketShutdown(self._openSockets[opskey])
+                self._safeSocketShutdown(self._openSockets[opskey])
                 del self._openSockets[opskey]
         for each in [i for i in self._transmitIntents
                      if self._transmitIntents[i].targetAddr == rmtaddr]:
@@ -633,7 +650,7 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
                         # the waitingIntents and find/start the next one
                         # automatically.
                     else:
-                        _safeSocketShutdown(intent)
+                        self._safeSocketShutdown(intent)
                         # Here waiting intents need to be re-queued
                         # since otherwise they won't run until timeout
                         runnable, waiting = partition(
@@ -650,7 +667,7 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
                                 else:
                                     self._waitingTransmits.append(R)
             else:
-                _safeSocketShutdown(intent)
+                self._safeSocketShutdown(intent)
             delattr(intent, 'socket')
         intent.tx_done(status)
         return False  # intent no longer needs to be attempted
@@ -945,7 +962,7 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
 
     def _next_XMIT_6(self, intent):
         if hasattr(intent, 'socket'):
-            _safeSocketShutdown(intent)
+            self._safeSocketShutdown(intent)
             delattr(intent, 'socket')
         if hasattr(intent, 'ackbuf'):
             delattr(intent, 'ackbuf')
@@ -1172,7 +1189,7 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
                         # duplicate sockets to remote, and this one is
                         # no longer tracked, so close it and keep
                         # existing openSocket.
-                        _safeSocketShutdown(idle)
+                        self._safeSocketShutdown(idle)
                     else:
                         fnum = None
                         try:
@@ -1189,7 +1206,7 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
                                 self._incomingSockets[
                                     incoming.socket.fileno()] = incoming
                         elif idle.expired():
-                            _safeSocketShutdown(idle)
+                            self._safeSocketShutdown(idle)
                             del self._openSockets[opsKey(rmtaddr)]
 
             # Handle timeouts
@@ -1298,7 +1315,7 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
         fromAddr = incomingSocket.fromAddress
         if fromAddr and isinstance(incomingSocket, TCPIncomingPersistent):
             opskey = opsKey(fromAddr)
-            _safeSocketShutdown(self._openSockets.get(opskey, None))
+            self._safeSocketShutdown(self._openSockets.get(opskey, None))
             self._openSockets[opskey] = IdleSocket(incomingSocket.socket,
                                                    fromAddr)
             for T in self._transmitIntents.values():
