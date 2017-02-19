@@ -276,3 +276,15 @@ import time
 
 inTestDelay = lambda period: time.sleep(timePeriodSeconds(period))
 
+
+def delay_for_next_of_kin_notification(system):
+    if system.base_name == 'multiprocQueueBase':
+        # The multiprocQueueBase signal processor cannot interrupt a
+        # sleeping Queue.get(), so for this base it is necessary to
+        # wait for the timeout on the Queue.get() to allow it time to
+        # notice and process the child exit.
+        time.sleep(2.5)
+    elif system.base_name == 'multiprocUDPBase':
+        time.sleep(0.4)
+    else:
+        time.sleep(0.1)

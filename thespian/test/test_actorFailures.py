@@ -9,16 +9,6 @@ max_replacement_delay = timedelta(seconds=0.35)
 max_response_delay = timedelta(seconds=1.0)
 max_no_response_delay = timedelta(seconds=0.50)
 
-def delay_for_next_of_kin_notification(system):
-    if system.base_name == 'multiprocQueueBase':
-        # The multiprocQueueBase signal processor cannot interrupt a
-        # sleeping Queue.get(), so for this base it is necessary to
-        # wait for the timeout on the Queue.get() to allow it time to
-        # notice and process the child exit.
-        time.sleep(2.5)
-    else:
-        time.sleep(0.1)
-
 
 class TellChild(object):
     def __init__(self, msg):
@@ -193,7 +183,6 @@ class TestFuncActorFailures(object):
             assert asys.ask(nonstarter, "anything", 0.3) is None
 
     def test02_NonStartingSubActorWithRestarts(self, asys):
-        unstable_test(asys, 'multiprocUDPBase', 'multiprocQueueBase')
         parent = asys.createActor(RestartParent)
 
         tellParent = lambda m: asys.tell(parent, m)
@@ -205,6 +194,7 @@ class TestFuncActorFailures(object):
         assert r == parent
         son = askParent('have a son?')
         assert son is not None
+        delay_for_next_of_kin_notification(asys)
         askParent('wait for replacement')
         r = askParent(TellSon('name?'), max_no_response_delay*5)
         assert r is None
@@ -217,7 +207,6 @@ class TestFuncActorFailures(object):
 
 
     def test03_NonStartingSubActorWithoutRestarts(self, asys):
-        unstable_test(asys, 'multiprocUDPBase')
         parent = asys.createActor(NoRestartParent)
 
         tellParent = lambda m: asys.tell(parent, m)
@@ -236,7 +225,6 @@ class TestFuncActorFailures(object):
 
 
     def test04_RestartedSubActorWithRestarts(self, asys):
-        unstable_test(asys, 'multiprocUDPBase', 'multiprocQueueBase')
         parent = asys.createActor(RestartParent)
         tellParent = lambda m: asys.tell(parent, m)
 
@@ -247,6 +235,7 @@ class TestFuncActorFailures(object):
 
         kid = askParent('have a daughter?')
         assert kid is not None
+        delay_for_next_of_kin_notification(asys)
         askParent('wait for replacement')
         assert askKid('name?') is not None
 
@@ -258,12 +247,12 @@ class TestFuncActorFailures(object):
 
         # root Actors are not restarted which should cause children to be shutdown.
         tellParent(ActorExitRequest())
+        delay_for_next_of_kin_notification(asys)
         assert askParent('name?') is None
         assert asys.ask(stableKid, 'name?', max_no_response_delay) is None
 
 
     def test05_RestartedSubActorWithoutRestarts(self, asys):
-        unstable_test(asys, 'multiprocUDPBase')
         parent = asys.createActor(NoRestartParent)
 
         askParent = lambda m: asys.ask(parent, m, max_response_delay)
@@ -273,12 +262,12 @@ class TestFuncActorFailures(object):
 
         kid = askParent('have a daughter?')
         assert kid is not None
+        delay_for_next_of_kin_notification(asys)
         askParent('name?')  # allow first failure and replacement to occur
         assert askKid('name?') is None  # dead-lettered, so no response
 
 
     def test06_ActorStackShutdown(self, asys):
-        unstable_test(asys, 'multiprocUDPBase', 'multiprocQueueBase')
         parent = asys.createActor(RestartParent)
 
         tellParent = lambda m: asys.tell(parent, m)
@@ -291,9 +280,10 @@ class TestFuncActorFailures(object):
         kid = askParent('have a daughter?')
         print('kid',kid)
         assert kid
+        delay_for_next_of_kin_notification(asys)
         askParent('wait for replacement')
         print('getting grandkid')
-        grandkid = askKid('have a daughter?') # KWQ: multiprocUDP fails here (sometimes) because the first kid fails and has to be re-created, but if the parent sends this grandkid message before the parent gets the child exited then the message just gets dropped because UDP doesn't have any confirmation.  Need to add confirmation to UDP (and can add large message handling at the same time?  Or is there a standard failure for "message too large" and that limit is different for different transports?)
+        grandkid = askKid('have a daughter?')
         print('grandkid',grandkid)
         askKid('wait for replacement')
         print('getting greatgrandkid')
@@ -311,6 +301,7 @@ class TestFuncActorFailures(object):
         assert askGreatGrandKid('name?') is not None
 
         tellParent(ActorExitRequest())
+        delay_for_next_of_kin_notification(asys)
 
         # False positive (success) if actor system is hung?  Need to
         # check deadletter delivery of these name queries to be sure
@@ -319,7 +310,6 @@ class TestFuncActorFailures(object):
 
 
     def test07_DeepActorShutdown(self, asys):
-        unstable_test(asys, 'multiprocUDPBase', 'multiprocQueueBase')
         parent = asys.createActor(RestartParent)
 
         tellParent        = lambda m: asys.tell(parent, m)
@@ -333,24 +323,25 @@ class TestFuncActorFailures(object):
         askGreatGrandKid = lambda m: askGrandKid(TellDaughter(m))
 
         kid = askParent('have a daughter?')
+        delay_for_next_of_kin_notification(asys)
         askParent('wait for replacement')
 
         grandkid = askKid('have a daughter?')
         askKid('wait for replacement')
 
         greatgrandkid = askGrandKid('have a daughter?')
+        delay_for_next_of_kin_notification(asys)
         askGrandKid('wait for replacement')
 
         # n.b. kid, grandkid, and greatgrandkid are not useable, see test06 above.
 
-        if asys.base_name == 'multiprocUDPBase':
-            time.sleep(0.4)  # see test06 note above; doesn't always work
         assert askParent('name?') is not None
         assert askKid('name?') is not None
         assert askGrandKid('name?') is not None
         assert askGreatGrandKid('name?') is not None
 
         tellGreatGrandKid(ActorExitRequest())
+        delay_for_next_of_kin_notification(asys)
         askGrandKid('wait for replacement')
 
         assert askParent('name?') is not None
@@ -359,6 +350,7 @@ class TestFuncActorFailures(object):
         assert askGreatGrandKid('name?') is not None
 
         tellGrandKid(ActorExitRequest())
+        delay_for_next_of_kin_notification(asys)
         askKid('wait for replacement')
 
         assert askParent('name?') is not None
@@ -368,7 +360,7 @@ class TestFuncActorFailures(object):
 
         # parent is Top Level Actor, so no restarts
         tellParent(ActorExitRequest())
-        time.sleep(0.2)  # allow propagation and completion
+        delay_for_next_of_kin_notification(asys)
 
         # False positive (success) if actor system is hung?  Need to
         # check deadletter delivery of these name queries to be sure
@@ -377,7 +369,6 @@ class TestFuncActorFailures(object):
 
 
     def test08_DeepActorInvoluntaryTermination(self, asys):
-        unstable_test(asys, 'multiprocUDPBase', 'multiprocQueueBase')
         parent = asys.createActor(RestartParent)
 
         tellParent        = lambda m: asys.tell(parent, m)
@@ -395,6 +386,7 @@ class TestFuncActorFailures(object):
         grandkid = askKid('have a daughter?')
         askKid('wait for replacement')
         greatgrandkid = askGrandKid('have a daughter?')
+        delay_for_next_of_kin_notification(asys)
         askGrandKid('wait for replacement')
 
         # n.b. kid, grandkid, and greatgrandkid are not useable, see test06 above.
@@ -422,6 +414,7 @@ class TestFuncActorFailures(object):
         assert not r
 
         tellParent(Deadly(3))  # kills greatgrandkid
+        delay_for_next_of_kin_notification(asys)
         askGrandKid('wait for replacement')
 
         r = askParent('name?')
@@ -445,6 +438,7 @@ class TestFuncActorFailures(object):
         tellParent(Deadly(1))  # kills kid
         # Kid can restart, but loses knowledge of grandkid or greatgrandkid...
         # looking at test09 below, this is as intended??
+        delay_for_next_of_kin_notification(asys)
         askParent('wait for replacement')
 
         r = askParent('name?')
@@ -466,6 +460,7 @@ class TestFuncActorFailures(object):
         assert not r
 
         tellParent(Deadly(0))  # kills parent
+        delay_for_next_of_kin_notification(asys)
 
         # First response from parent should be the
         # PoisonMessage(Deadly), the next should be the response to
@@ -495,7 +490,6 @@ class TestFuncActorFailures(object):
 
 
     def test09_DeepActorSuicideIsPermanent(self, asys):
-        unstable_test(asys, 'multiprocUDPBase', 'multiprocQueueBase')
         parent = asys.createActor(RestartParent)
 
         tellParent        = lambda m: asys.tell(parent, m)
@@ -524,7 +518,6 @@ class TestFuncActorFailures(object):
 
         r = askParent('name?')
         assert r is not None
-        #  KWQ: err on socket after receiving 24160's ChildActorExited caused closure of socket to Ext and it is not re-opened, so p24159 cannot send this response?
 
         r = askKid('name?')
         assert r is not None
@@ -547,6 +540,7 @@ class TestFuncActorFailures(object):
         greatgrandkid = askGreatGrandKid('name?')
 
         tellParent(KillReq(3))  # kills greatgrandkid
+        delay_for_next_of_kin_notification(asys)
 
         # Give time for the kill to propagate and the grandkid to
         # replace the greatgrandkid
@@ -587,6 +581,7 @@ class TestFuncActorFailures(object):
 
         # Give time for the kill to propagate and the parent to
         # replace the kid
+        delay_for_next_of_kin_notification(asys)
         askParent('wait for replacement')
 
         r = askParent('name?')
@@ -615,15 +610,15 @@ class TestFuncActorFailures(object):
         assert not r
 
         tellParent(KillReq(0))  # kills parent; no restarts for top level
+        delay_for_next_of_kin_notification(asys)
 
-        #askParent('name?')  # throw-away to allow KillReq to be processed.
+        askParent('name?')  # throw-away to allow KillReq to be processed.
 
         r = askParent('name?')
         assert r is None
 
 
     def test_confused_exit(self, asys):
-        unstable_test(asys, 'multiprocUDPBase')
         # Verify that even if an actor generates an exception on an
         # ActorExitRequest that it will notify the parent that it
         # exited permanently.
@@ -639,7 +634,6 @@ class TestFuncActorFailures(object):
         assert asys.ask(confused, 'name?', max_response_delay) is None
 
     def test_confused_msgfail(self, asys):
-        unstable_test(asys, 'multiprocUDPBase')
         # Verify that if an actor generates an exception on handling
         # an ordinary message that it will notify the parent that the
         # message was Poison but it can continue running.
@@ -651,7 +645,7 @@ class TestFuncActorFailures(object):
         asys.tell(confused2, Deadly(1))
         # Need to use actual time.sleep so that the poison message
         # response is still available.
-        time.sleep(0.05)  # Allow time for ActorExitRequest to be processed
+        delay_for_next_of_kin_notification(asys)
         #asys.ask(confused, 'subactor?', max_response_delay)
 
         r = asys.listen(max_response_delay)
@@ -664,7 +658,6 @@ class TestFuncActorFailures(object):
         assert asys.ask(confused, 'name?', max_response_delay) is None
 
     def test_abrupt_child_exit(self, asys):
-        unstable_test(asys, 'multiprocUDPBase')
         actor_system_unsupported(asys, 'simpleSystemBase')
         parent = asys.createActor(RestartParent)
 
