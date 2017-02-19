@@ -216,7 +216,7 @@ class TestFuncActorFailures(object):
         assert askParent('name?') == parent
         son = askParent('have a son?')
         assert son is not None  # got an Address back, but Son failed to start
-        askParent("wait for replacement")
+        delay_for_next_of_kin_notification(asys)
         assert askParent(TellSon('name?')) is None  # dead-lettered, so no response
 
         assert askParent('name?') == parent
