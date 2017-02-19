@@ -285,6 +285,6 @@ def delay_for_next_of_kin_notification(system):
         # notice and process the child exit.
         time.sleep(2.5)
     elif system.base_name == 'multiprocUDPBase':
-        time.sleep(0.4)
+        time.sleep(0.6)
     else:
         time.sleep(0.1)
