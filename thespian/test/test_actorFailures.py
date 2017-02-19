@@ -50,19 +50,21 @@ class Parent(Actor):
 
         elif isinstance(msg, TellChild):
             self.send(self.son if isinstance(msg, TellSon) else self.daughter,
+                      msg.msg if isinstance(msg.msg, ActorExitRequest) else
                       PassedMessage(msg.msg, sender))
 
         elif msg == 'name?':
             self.send(sender, self.myAddress)
 
-        elif isinstance(msg, (Deadly, Fatal)):
+        elif isinstance(msg, (BadFish, Fatal)):
             if msg.countdown:
-                self.send(self.son or self.daughter, Deadly(msg.countdown - 1))
+                msg.countdown -= 1
+                self.send(self.son or self.daughter, msg)
             else:
                 if isinstance(msg, Fatal):
                     sys.exit(0)
                 else:
-                    raise ValueError('Deadly value received!')
+                    raise ValueError('BadFish value received!')
         elif isinstance(msg, PoisonMessage):
             self.poisonedChild = True
             if hasattr(msg.poisonMessage, 'origSender'):
@@ -142,7 +144,7 @@ class Confused(Actor):
         self.name = 'dunno'
         super(Confused, self).__init__(*args, **kw)
     def receiveMessage(self, msg, sender):
-        if isinstance(msg, (ActorExitRequest, Deadly)):
+        if isinstance(msg, (ActorExitRequest, BadFish)):
             raise NameError("Who am I?")
         elif msg == "name?":
             self.send(sender, self.name)
@@ -152,11 +154,11 @@ class Confused(Actor):
             self.name = 'permanent'
 
 
-class Deadly(object):
+class BadFish(object):
     def __init__(self, v):
         self.countdown = v
 
-class Fatal(Deadly): pass
+class Fatal(BadFish): pass
 
 class KillReq(object):
     def __init__(self, v):
@@ -195,7 +197,8 @@ class TestFuncActorFailures(object):
         son = askParent('have a son?')
         assert son is not None
         delay_for_next_of_kin_notification(asys)
-        askParent('wait for replacement')
+        r = askParent('wait for replacement')
+        assert r == 'replaced'
         r = askParent(TellSon('name?'), max_no_response_delay*5)
         assert r is None
 
@@ -236,7 +239,8 @@ class TestFuncActorFailures(object):
         kid = askParent('have a daughter?')
         assert kid is not None
         delay_for_next_of_kin_notification(asys)
-        askParent('wait for replacement')
+        r = askParent('wait for replacement')
+        assert r == 'replaced'
         assert askKid('name?') is not None
 
         assert askParent('name?') == parent
@@ -281,15 +285,18 @@ class TestFuncActorFailures(object):
         print('kid',kid)
         assert kid
         delay_for_next_of_kin_notification(asys)
-        askParent('wait for replacement')
+        r = askParent('wait for replacement')
+        assert r == 'replaced'
         print('getting grandkid')
         grandkid = askKid('have a daughter?')
         print('grandkid',grandkid)
-        askKid('wait for replacement')
+        r = askKid('wait for replacement')
+        assert r == 'replaced'
         print('getting greatgrandkid')
         greatgrandkid = askGrandKid('have a daughter?')
         print('greatgrandkid',grandkid)
-        askGrandKid('wait for replacement')
+        r = askGrandKid('wait for replacement')
+        assert r == 'replaced'
         # n.b. kid, grandkid, and greatgrandkid are not likely
         # useable, because the initial instance of each was a
         # NonStarter and was then restarted and probably received a
@@ -324,14 +331,17 @@ class TestFuncActorFailures(object):
 
         kid = askParent('have a daughter?')
         delay_for_next_of_kin_notification(asys)
-        askParent('wait for replacement')
+        r = askParent('wait for replacement')
+        assert r == 'replaced'
 
         grandkid = askKid('have a daughter?')
-        askKid('wait for replacement')
+        r = askKid('wait for replacement')
+        assert r == 'replaced'
 
         greatgrandkid = askGrandKid('have a daughter?')
         delay_for_next_of_kin_notification(asys)
-        askGrandKid('wait for replacement')
+        r = askGrandKid('wait for replacement')
+        assert r == 'replaced'
 
         # n.b. kid, grandkid, and greatgrandkid are not useable, see test06 above.
 
@@ -342,7 +352,8 @@ class TestFuncActorFailures(object):
 
         tellGreatGrandKid(ActorExitRequest())
         delay_for_next_of_kin_notification(asys)
-        askGrandKid('wait for replacement')
+        r = askGrandKid('wait for replacement')
+        assert r == 'replaced'
 
         assert askParent('name?') is not None
         assert askKid('name?') is not None
@@ -351,7 +362,8 @@ class TestFuncActorFailures(object):
 
         tellGrandKid(ActorExitRequest())
         delay_for_next_of_kin_notification(asys)
-        askKid('wait for replacement')
+        r = askKid('wait for replacement')
+        assert r == 'replaced'
 
         assert askParent('name?') is not None
         assert askKid('name?') is not None
@@ -369,6 +381,7 @@ class TestFuncActorFailures(object):
 
 
     def test08_DeepActorInvoluntaryTermination(self, asys):
+        actor_system_unsupported(asys, "simpleSystemBase") # Fatal message causes sys.exit(0)
         parent = asys.createActor(RestartParent)
 
         tellParent        = lambda m: asys.tell(parent, m)
@@ -382,27 +395,30 @@ class TestFuncActorFailures(object):
         askGreatGrandKid = lambda m: askGrandKid(TellDaughter(m))
 
         kid = askParent('have a daughter?')
-        askParent('wait for replacement')
+        r = askParent('wait for replacement')
+        assert r == 'replaced'
         grandkid = askKid('have a daughter?')
-        askKid('wait for replacement')
+        r = askKid('wait for replacement')
+        assert r == 'replaced'
         greatgrandkid = askGrandKid('have a daughter?')
         delay_for_next_of_kin_notification(asys)
-        askGrandKid('wait for replacement')
+        r = askGrandKid('wait for replacement')
+        assert r == 'replaced'
 
         # n.b. kid, grandkid, and greatgrandkid are not useable, see test06 above.
 
         if asys.base_name == 'multiprocUDPBase' or 'TXRouting' in asys.base_name:
             time.sleep(0.4)  # see test06 note above; doesn't always work
-        r = askParent('name?')
-        assert r is not None
-        r = askKid('name?')
-        assert r is not None
-        r = askGrandKid('name?')
-        assert r is not None
+        name_parent = askParent('name?')
+        assert name_parent is not None
+        name_kid = askKid('name?')
+        assert name_kid is not None
+        name_grandkid = askGrandKid('name?')
+        assert name_grandkid is not None
         if asys.base_name == 'multiprocUDPBase':
             time.sleep(0.4)  # see test06 note above; doesn't always work
-        r = askGreatGrandKid('name?')
-        assert r is not None
+        name_great_grandkid = askGreatGrandKid('name?')
+        assert name_great_grandkid is not None
 
         r = askParent('poisoned child?')
         assert not r
@@ -413,18 +429,19 @@ class TestFuncActorFailures(object):
         r = askGreatGrandKid('poisoned child?')
         assert not r
 
-        tellParent(Deadly(3))  # kills greatgrandkid
+        tellParent(BadFish(3))  # does not kill, but causes poisonmessage rejection
         delay_for_next_of_kin_notification(asys)
-        askGrandKid('wait for replacement')
+        r = askGrandKid('wait for replacement')
+        assert r == 'not replaced'
 
         r = askParent('name?')
-        assert r is not None
+        assert r == name_parent
         r = askKid('name?')
-        assert r is not None
+        assert r == name_kid
         r = askGrandKid('name?')
-        assert r is not None
+        assert r == name_grandkid
         r = askGreatGrandKid('name?')
-        assert r is not None
+        assert r == name_great_grandkid
 
         r = askParent('poisoned child?')
         assert not r
@@ -435,11 +452,30 @@ class TestFuncActorFailures(object):
         r = askGreatGrandKid('poisoned child?')
         assert not r
 
-        tellParent(Deadly(1))  # kills kid
+        tellParent(Fatal(3))  # kills greatgrandkid
+        delay_for_next_of_kin_notification(asys)
+        r = askGrandKid('wait for replacement')
+        assert r == 'replaced'
+
+        r = askParent('name?')
+        assert r is not None
+        assert r == name_parent
+        r = askKid('name?')
+        assert r is not None
+        assert r == name_kid
+        r = askGrandKid('name?')
+        assert r is not None
+        assert r == name_grandkid
+        r = askGreatGrandKid('name?')
+        assert r is not None
+        assert r != name_great_grandkid
+
+        tellParent(Fatal(1))  # kills kid
         # Kid can restart, but loses knowledge of grandkid or greatgrandkid...
         # looking at test09 below, this is as intended??
         delay_for_next_of_kin_notification(asys)
-        askParent('wait for replacement')
+        r = askParent('wait for replacement')
+        assert r == 'replaced'
 
         r = askParent('name?')
         assert r is not None
@@ -450,26 +486,17 @@ class TestFuncActorFailures(object):
         r = askGreatGrandKid('name?')
         assert r is not None
 
-        r = askParent('poisoned child?')
-        assert r
-        r = askKid('poisoned child?')
-        assert not r
-        r = askGrandKid('poisoned child?')
-        assert r
-        r = askGreatGrandKid('poisoned child?')
-        assert not r
-
-        tellParent(Deadly(0))  # kills parent
+        tellParent(BadFish(0))  # poisons parent
         delay_for_next_of_kin_notification(asys)
 
         # First response from parent should be the
-        # PoisonMessage(Deadly), the next should be the response to
+        # PoisonMessage(BadFish), the next should be the response to
         # the 'name?' query.
         r = askParent('name?')
         print('init r is: %s'%str(r))
         while r:
             if isinstance(r, PoisonMessage):
-                assert isinstance(r.poisonMessage, Deadly)
+                assert isinstance(r.poisonMessage, BadFish)
                 r = askParent('')
                 print('next r is: %s'%str(r))
             else:
@@ -504,15 +531,18 @@ class TestFuncActorFailures(object):
 
         kid = askParent('have a daughter?')
         assert kid
-        askParent('wait for replacement')
+        r = askParent('wait for replacement')
+        assert r == 'replaced'
 
         grandkid = askKid('have a daughter?')
         assert grandkid
-        askKid('wait for replacement')
+        r = askKid('wait for replacement')
+        assert r == 'replaced'
 
         greatgrandkid = askGrandKid('have a daughter?')
         assert greatgrandkid
-        askGrandKid('wait for replacement')
+        r = askGrandKid('wait for replacement')
+        assert r == 'replaced'
 
         # n.b. kid, grandkid, and greatgrandkid are not useable, see test06 above.
 
@@ -544,7 +574,8 @@ class TestFuncActorFailures(object):
 
         # Give time for the kill to propagate and the grandkid to
         # replace the greatgrandkid
-        askGrandKid('wait for replacement')
+        r = askGrandKid('wait for replacement')
+        assert r == 'replaced'
 
         r = askParent('name?')
         assert r is not None
@@ -582,7 +613,8 @@ class TestFuncActorFailures(object):
         # Give time for the kill to propagate and the parent to
         # replace the kid
         delay_for_next_of_kin_notification(asys)
-        askParent('wait for replacement')
+        r = askParent('wait for replacement')
+        assert r == 'replaced'
 
         r = askParent('name?')
         assert r is not None
@@ -642,7 +674,7 @@ class TestFuncActorFailures(object):
         assert "dunno" == asys.ask(confused, 'name?', max_response_delay)
         confused2 = asys.ask(confused, 'subactor?', max_response_delay)
         assert "dunno" == asys.ask(confused2, 'name?', max_response_delay)
-        asys.tell(confused2, Deadly(1))
+        asys.tell(confused2, BadFish(1))
         # Need to use actual time.sleep so that the poison message
         # response is still available.
         delay_for_next_of_kin_notification(asys)
@@ -650,7 +682,7 @@ class TestFuncActorFailures(object):
 
         r = asys.listen(max_response_delay)
         assert isinstance(r, PoisonMessage)
-        assert isinstance(r.poisonMessage, Deadly)
+        assert isinstance(r.poisonMessage, BadFish)
 
         assert "dunno" == asys.ask(confused, 'name?', max_response_delay)
         assert "dunno" == asys.ask(confused2, 'name?', max_response_delay)
