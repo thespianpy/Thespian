@@ -2,11 +2,22 @@ from thespian.actors import *
 from thespian.test import *
 import time
 from datetime import timedelta
+import sys
 
 
-max_replacement_delay = timedelta(seconds=0.50)
-max_response_delay = timedelta(seconds=5.75)
-max_no_response_delay = timedelta(seconds=0.75)
+max_replacement_delay = timedelta(seconds=0.35)
+max_response_delay = timedelta(seconds=1.0)
+max_no_response_delay = timedelta(seconds=0.50)
+
+def delay_for_next_of_kin_notification(system):
+    if system.base_name == 'multiprocQueueBase':
+        # The multiprocQueueBase signal processor cannot interrupt a
+        # sleeping Queue.get(), so for this base it is necessary to
+        # wait for the timeout on the Queue.get() to allow it time to
+        # notice and process the child exit.
+        time.sleep(2.5)
+    else:
+        time.sleep(0.1)
 
 
 class TellChild(object):
@@ -54,11 +65,14 @@ class Parent(Actor):
         elif msg == 'name?':
             self.send(sender, self.myAddress)
 
-        elif isinstance(msg, Deadly):
+        elif isinstance(msg, (Deadly, Fatal)):
             if msg.countdown:
                 self.send(self.son or self.daughter, Deadly(msg.countdown - 1))
             else:
-                raise ValueError('Deadly value received!')
+                if isinstance(msg, Fatal):
+                    sys.exit(0)
+                else:
+                    raise ValueError('Deadly value received!')
         elif isinstance(msg, PoisonMessage):
             self.poisonedChild = True
             if hasattr(msg.poisonMessage, 'origSender'):
@@ -151,6 +165,8 @@ class Confused(Actor):
 class Deadly(object):
     def __init__(self, v):
         self.countdown = v
+
+class Fatal(Deadly): pass
 
 class KillReq(object):
     def __init__(self, v):
@@ -635,7 +651,6 @@ class TestFuncActorFailures(object):
         asys.tell(confused2, Deadly(1))
         # Need to use actual time.sleep so that the poison message
         # response is still available.
-        import time
         time.sleep(0.05)  # Allow time for ActorExitRequest to be processed
         #asys.ask(confused, 'subactor?', max_response_delay)
 
@@ -647,3 +662,30 @@ class TestFuncActorFailures(object):
         assert "dunno" == asys.ask(confused2, 'name?', max_response_delay)
         asys.tell(confused, ActorExitRequest())
         assert asys.ask(confused, 'name?', max_response_delay) is None
+
+    def test_abrupt_child_exit(self, asys):
+        unstable_test(asys, 'multiprocUDPBase')
+        actor_system_unsupported(asys, 'simpleSystemBase')
+        parent = asys.createActor(RestartParent)
+
+        kid = asys.ask(parent, 'have a daughter?', max_response_delay)
+
+        # n.b. first kid will die and be replaced by the parent, so
+        # the kid address here is dead and parent has a new one.
+
+        delay_for_next_of_kin_notification(asys)
+        kid = asys.ask(parent, 'have a daughter?', max_response_delay)
+
+
+        r1 = asys.ask(parent, TellDaughter('name?'), max_response_delay)
+        assert r1 is not None
+
+        asys.tell(kid, Fatal(0))
+        delay_for_next_of_kin_notification(asys)
+
+        # Parent should have been notified of child's exit and started
+        # another, so the following should succeed, but return a
+        # different value than previously.
+        r2 = asys.ask(parent, TellDaughter('name?'), max_response_delay)
+        assert r2 is not None
+        assert r1 != r2
