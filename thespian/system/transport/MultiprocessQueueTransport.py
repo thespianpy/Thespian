@@ -244,13 +244,8 @@ class MultiprocessQueueTransport(asyncTransportBase, wakeupTransportBase):
         # prevents hanging on queue full to dead children.
         addressManager.deadAddress(childAddr)
         self._queues.rmv(childAddr)
-        deadfwd, okfwd = ([],[]) if False else \
-                         partition(lambda i: i[0] == childAddr or i[1] == childAddr,
-                                   self._fwdvia.items())
-        if deadfwd:
-            self._fwdvia = AssocList()
-            for A,AQ in okfwd:
-                self._fwdvia.add(A,AQ)
+        self._fwdvia.rmv(childAddr)
+        self._fwdvia.rmv_value(childAddr)
         super(MultiprocessQueueTransport, self).deadAddress(addressManager, childAddr)
 
 
