@@ -264,7 +264,6 @@ class UDPTransport(asyncTransportBase, wakeupTransportBase):
                         msg = ActorExitRequest()
                     else:
                         return Thespian__UpdateWork()
-                    return Thespian__UpdateWork()
                 else:
                     sendAddr = ActorAddress(UDPv4ActorAddress(*sender, external=True))
                     try:
