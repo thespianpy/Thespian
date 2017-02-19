@@ -83,8 +83,26 @@ class UDPTransport(asyncTransportBase, wakeupTransportBase):
         self._shutdownSignalled = False
         self._pending_actions = [] # array of (ExpirationTimer, func)
 
+
+    def close(self):
+        """Releases all resources and terminates functionality.  This is
+           better done deterministically by explicitly calling this
+           method (although __del__ will attempt to perform similar
+           operations), but it has the unfortunate side-effect of
+           making this object modal: after the close it can be
+           referenced but not successfully used anymore, so it
+           explicitly nullifies its contents.
+        """
+        if hasattr(self, '_pending_actions'):
+            delattr(self, '_pending_actions')
+        if hasattr(self, 'socket'):
+            self.socket.close()
+            delattr(self, 'socket')
+
+
     def protectedFileNumList(self):
         return [self.socket.fileno()]
+
 
     def childResetFileNumList(self):
         return self.protectedFileNumList()

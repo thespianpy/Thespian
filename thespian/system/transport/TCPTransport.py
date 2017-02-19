@@ -270,11 +270,12 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
         elif isinstance(initType, TCPEndpoint):
             instanceNum, assignedAddr, self._parentAddr, self._adminAddr, adminRouting, self.txOnly = initType.args
             isAdmin = assignedAddr == self._adminAddr
-            templateAddr = assignedAddr or ActorAddress(TCPv4ActorAddress(None, 0,
-                                                                          external = (self._parentAddr or
-                                                                                      self._adminAddr or
-                                                                                      True)))
-
+            templateAddr = assignedAddr or \
+                           ActorAddress(
+                               TCPv4ActorAddress(None, 0,
+                                                 external=(self._parentAddr or
+                                                           self._adminAddr or
+                                                           True)))
         else:
             thesplog('TCPTransport init of type %s unsupported', type(initType), level=logging.ERROR)
             raise ActorSystemStartupFailure('Invalid TCPTransport init type (%s)'%type(initType))
@@ -319,8 +320,33 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
         self._checkChildren = False
         self._shutdownSignalled = False
 
+    def close(self):
+        """Releases all resources and terminates functionality.  This is
+           better done deterministically by explicitly calling this
+           method (although __del__ will attempt to perform similar
+           operations), but it has the unfortunate side-effect of
+           making this object modal: after the close it can be
+           referenced but not successfully used anymore, so it
+           explicitly nullifies its contents.
+        """
+        if hasattr(self, '_transmitIntents'):
+            for each in self._transmitIntents:
+                self._transmitIntents[each].tx_done(SendStatus.Failed)
+            delattr(self, '_transmitIntents')
+        if hasattr(self, '_waitingTransmits'):
+            for each in self._waitingTransmits:
+                each.tx_done(SendStatus.Failed)
+            delattr(self, '_waitingTransmits')
+        if hasattr(self, '_incomingSockets'):
+            for each in self._incomingSockets:
+                self._incomingSockets[each].close()
+            delattr(self, '_incomingSockets')
+        if hasattr(self, 'socket'):
+            _safeSocketShutdown(getattr(self, 'socket', None))
+            delattr(self, 'socket')
+
     def __del__(self):
-        _safeSocketShutdown(getattr(self, 'socket', None))
+        self.close()
 
     def protectedFileNumList(self):
         return (list(self._transmitIntents.keys()) +

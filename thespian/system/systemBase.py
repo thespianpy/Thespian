@@ -138,6 +138,7 @@ class systemBase(object):
             else:
                 thesplog('No response to Admin shutdown request; Actor system not completely shutdown',
                          level=logging.ERROR)
+        self.transport.close()
         thesplog('ActorSystem shutdown complete.')
 
     def _shutdownSendFailed(self, result, msg):

@@ -155,6 +155,10 @@ class MultiprocessQueueTransport(asyncTransportBase, wakeupTransportBase):
         self._shutdownSignalled = False
 
 
+    def close(self):
+        pass
+
+
     def protectedFileNumList(self):
         return foldl(lambda a, b: a+[b._reader.fileno(), b._writer.fileno()],
                      [self._myInputQ, self._parentQ, self._adminQ] +
