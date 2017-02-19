@@ -6,13 +6,7 @@ Base implementations.
 
 '''
 
-import logging, logging.handlers
-try:
-    from logging.config import dictConfig
-except ImportError:
-    # Old python that doesn't contain this...
-    from thespian.system.dictconfig import dictConfig
-
+import logging
 from thespian.actors import *
 from thespian.system import *
 from thespian.system.utilis import thesplog
