@@ -7,6 +7,8 @@ from thespian.actors import *
 from datetime import timedelta
 
 
+max_ask_wait = timedelta(seconds=2)
+
 def wait_for_things_to_happen():
     sleep(0.08)
 
@@ -376,7 +378,7 @@ class TestFuncMultiProcessSystem(object):
         actor_system_unsupported(asys, 'simpleSystemBase', 'multiprocQueueBase')
         pattinson = asys.createActor(Pattinson)
         asys.tell(pattinson, 'Best Friend')
-        r = asys.ask(pattinson, 'Best Friend Says', 2)
+        r = asys.ask(pattinson, 'Best Friend Says', max_ask_wait)
         assert r == 'woof!'
 
     def test13_CreateLocalChildOfRemoteActor(self, testsystems):
@@ -384,11 +386,11 @@ class TestFuncMultiProcessSystem(object):
         actor_system_unsupported(asys, 'simpleSystemBase', 'multiprocQueueBase')
         stewart = asys.createActor(Stewart)
         asys.tell(stewart, 'Best Friend')
-        r = asys.ask(stewart, 'Best Friend Says', 2)
+        r = asys.ask(stewart, 'Best Friend Says', max_ask_wait)
         assert r == 'woof!'
-        r = asys.ask(stewart, 'hello', 2)
+        r = asys.ask(stewart, 'hello', max_ask_wait)
         assert r == 'Greetings.'
-        r = asys.ask(stewart, 'Best Friend Says', 2)
+        r = asys.ask(stewart, 'Best Friend Says', max_ask_wait)
         assert r == 'woof!'
         wait_for_things_to_happen()
         asys.tell(stewart, ActorExitRequest())
@@ -400,15 +402,15 @@ class TestFuncMultiProcessSystem(object):
         actor_system_unsupported(asys, 'simpleSystemBase', 'multiprocQueueBase')
         stewart = asys.createActor(Stewart)
         asys.tell(stewart, 'Best Friend')
-        r = asys.ask(stewart, 'Best Friend Says', 2)
+        r = asys.ask(stewart, 'Best Friend Says', max_ask_wait)
         assert r == 'woof!'
-        r = asys.ask(stewart, 'cat says', 2)
+        r = asys.ask(stewart, 'cat says', max_ask_wait)
         assert r == 'Meow'
-        r = asys.ask(stewart, 'hello', 2)
+        r = asys.ask(stewart, 'hello', max_ask_wait)
         assert r == 'Greetings.'
-        r = asys.ask(stewart, 'cat says', 2)
+        r = asys.ask(stewart, 'cat says', max_ask_wait)
         assert r == 'Meow'
-        r = asys.ask(stewart, 'Best Friend Says', 2)
+        r = asys.ask(stewart, 'Best Friend Says', max_ask_wait)
         assert r == 'woof!'
         wait_for_things_to_happen()
         # No good way to verify at this stage...
@@ -419,20 +421,20 @@ class TestFuncMultiProcessSystem(object):
         pattinson = asys.createActor(Pattinson)
         r = asys.ask(pattinson, 'hello',2 )
         assert r == 'Greetings.'
-        r = asys.ask(pattinson, 'Girlfriend Says', 2)
+        r = asys.ask(pattinson, 'Girlfriend Says', max_ask_wait)
         assert r == 'no girlfriend'
-        stewart = asys.ask(pattinson, 'girlfriend?', 2)
-        r = asys.ask(stewart, 'hello', 2)
+        stewart = asys.ask(pattinson, 'girlfriend?', max_ask_wait)
+        r = asys.ask(stewart, 'hello', max_ask_wait)
         assert r == 'Greetings.'
         asys.tell(pattinson, 'Best Friend')
-        r = asys.ask(stewart, 'Best Friend Says', 2)
+        r = asys.ask(stewart, 'Best Friend Says', max_ask_wait)
         assert r == 'no best friend'
         asys.tell(stewart, 'Best Friend')
-        r = asys.ask(stewart, 'Best Friend Says', 2)
+        r = asys.ask(stewart, 'Best Friend Says', max_ask_wait)
         assert r == 'woof!'
-        r = asys.ask(pattinson, 'Girlfriend Says', 2)
+        r = asys.ask(pattinson, 'Girlfriend Says', max_ask_wait)
         assert r == 'She says hi'
-        r = asys.ask(pattinson, 'Girlfriend Best Friend Says', 2)
+        r = asys.ask(pattinson, 'Girlfriend Best Friend Says', max_ask_wait)
         assert r == 'She says woof!'
         asys.tell(stewart, ActorExitRequest())
         wait_for_things_to_happen()
@@ -442,26 +444,26 @@ class TestFuncMultiProcessSystem(object):
         asys, asys2 = testsystems
         actor_system_unsupported(asys, 'simpleSystemBase', 'multiprocQueueBase')
         pattinson = asys.createActor(Pattinson)
-        stewart = asys.ask(pattinson, 'girlfriend?', 2)
+        stewart = asys.ask(pattinson, 'girlfriend?', max_ask_wait)
         asys.tell(stewart, 'Best Friend')
         asys.tell(pattinson, 'Best Friend')
-        r = asys.ask(stewart, 'cat says', 2)
+        r = asys.ask(stewart, 'cat says', max_ask_wait)
         assert r == 'Meow'
 
-        r = asys.ask(pattinson, 'hello', 2)
+        r = asys.ask(pattinson, 'hello', max_ask_wait)
         assert r == 'Greetings.'
-        r = asys.ask(stewart, 'hello', 2)
+        r = asys.ask(stewart, 'hello', max_ask_wait)
         assert r == 'Greetings.'
         asys.tell(pattinson, 'Best Friend')
-        r = asys.ask(stewart, 'Best Friend Says', 2)
+        r = asys.ask(stewart, 'Best Friend Says', max_ask_wait)
         assert r == 'woof!'
-        r = asys.ask(pattinson, 'Best Friend Says', 2)
+        r = asys.ask(pattinson, 'Best Friend Says', max_ask_wait)
         assert r == 'woof!'
-        r = asys.ask(pattinson, 'Girlfriend Says', 2)
+        r = asys.ask(pattinson, 'Girlfriend Says', max_ask_wait)
         assert r == 'She says hi'
-        r = asys.ask(pattinson, 'Girlfriend Best Friend Says', 2)
+        r = asys.ask(pattinson, 'Girlfriend Best Friend Says', max_ask_wait)
         assert r == 'She says woof!'
-        r = asys.ask(stewart, 'cat says', 2)
+        r = asys.ask(stewart, 'cat says', max_ask_wait)
         assert r == 'Meow'
 
     def test17_CreateRemoteFriends(self, testsystems):
@@ -469,19 +471,19 @@ class TestFuncMultiProcessSystem(object):
         actor_system_unsupported(asys, 'simpleSystemBase', 'multiprocQueueBase')
         pattinson = asys.createActor(Pattinson)
         asys.tell(pattinson, 'Best Friend')
-        r = asys.ask(pattinson, 'Best Friend Says', 2)
+        r = asys.ask(pattinson, 'Best Friend Says', max_ask_wait)
         assert r == 'woof!'
-        r = asys.ask(pattinson, 'Hello', 2)
+        r = asys.ask(pattinson, 'Hello', max_ask_wait)
         assert r == 'Greetings.'
 
-        r = asys.ask(pattinson, 'allfriends?', 2)
+        r = asys.ask(pattinson, 'allfriends?', max_ask_wait)
         assert r == 'Pattinson:hi.Stewart:helloJolie:Bonjour'
-        r = asys.ask(pattinson, 'Goodbye', 2)
+        r = asys.ask(pattinson, 'Goodbye', max_ask_wait)
         assert r == 'Greetings.'
 
     def test18_CreateWithTargetActorRequirements(self, testsystems):
         asys, asys2 = testsystems
         actor_system_unsupported(asys, 'simpleSystemBase', 'multiprocQueueBase')
         jolie = asys.createActor(Jolie, 'Parent')
-        r = asys.ask(jolie, 'Hello', 2)
+        r = asys.ask(jolie, 'Hello', max_ask_wait)
         assert r == 'Yes, Hello'
