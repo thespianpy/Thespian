@@ -27,7 +27,10 @@ from thespian.system.addressManager import ActorLocalAddress
 import socket
 import select
 from datetime import timedelta
-import pickle
+try:
+    import cPickle as pickle
+except Exception:
+    import pickle
 from thespian.system.transport.asyncTransportBase import asyncTransportBase
 from thespian.system.transport.wakeupTransportBase import wakeupTransportBase
 

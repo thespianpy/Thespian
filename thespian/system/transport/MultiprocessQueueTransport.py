@@ -62,7 +62,10 @@ try:
 except ImportError:
     import queue as Q  # Python 3
 from datetime import datetime
-import pickle
+try:
+    import cPickle as pickle
+except Exception:
+    import pickle
 
 
 MAX_ADMIN_QUEUESIZE=40  # depth of Admin queue

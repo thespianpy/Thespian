@@ -97,7 +97,10 @@ from thespian.system.addressManager import ActorLocalAddress
 import socket
 import select
 from datetime import timedelta
-import pickle
+try:
+    import cPickle as pickle
+except Exception:
+    import pickle
 import errno
 from contextlib import closing
 
