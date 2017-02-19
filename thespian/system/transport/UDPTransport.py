@@ -54,35 +54,30 @@ class UDPTransport(asyncTransportBase, wakeupTransportBase):
     def __init__(self, initType, *args):
         super(UDPTransport, self).__init__()
 
+        templateAddr = None
         if isinstance(initType, ExternalInterfaceTransportInit):
             # External process that is going to talk "in".  There is
             # no parent, and the child is the systemAdmin.
             capabilities, logDefs, concurrency_context = args
-            templateAddr          = UDPv4ActorAddress(None, 0)
-            self.socket           = socket.socket(*templateAddr.socketArgs)
-            self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-            self.socket.bind(*templateAddr.bindArgs)
-            self.myAddress        = ActorAddress(UDPv4ActorAddress(*self.socket.getsockname(),
-                                                                   external=True))
-            thesplog('external template %s got actual %s', templateAddr, self.myAddress,
-                     level=logging.DEBUG)
             self._adminAddr       = self.getAdminAddr(capabilities)
             self._parentAddr      = None
         elif isinstance(initType, UDPEndpoint):
             instanceNum, assignedAddr, self._parentAddr, self._adminAddr = initType.args
-            templateAddr = assignedAddr or ActorAddress(UDPv4ActorAddress(None, 0))
-            self.socket           = socket.socket(*templateAddr.addressDetails.socketArgs)
-            self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-            self.socket.bind(*templateAddr.addressDetails.bindArgs)
+            templateAddr = assignedAddr
             # N.B.  myAddress is actually the address we will export
             # for others to talk to us, not the bind address.  The
             # difference is that we bind to '0.0.0.0' (inaddr_any),
             # but that's not a valid address for people to send stuff
             # to us.
-            self.myAddress = ActorAddress(UDPv4ActorAddress(*self.socket.getsockname(),
-                                                            external=True))
         else:
             thesplog('UDPTransport init of type %s unsupported', str(initType), level=logging.ERROR)
+        if not templateAddr:
+            templateAddr = ActorAddress(UDPv4ActorAddress(None, 0))
+        self.socket = socket.socket(*templateAddr.addressDetails.socketArgs)
+        self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        self.socket.bind(*templateAddr.addressDetails.bindArgs)
+        self.myAddress = ActorAddress(UDPv4ActorAddress(*self.socket.getsockname(),
+                                                        external=True))
         self._rcvd = []
         self._checkChildren = False
         self._shutdownSignalled = False
