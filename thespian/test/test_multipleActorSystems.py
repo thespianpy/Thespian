@@ -562,3 +562,21 @@ class TestFuncMultiProcessSystem(object):
         assert r == 'howdy'
         r = asys.ask(cheech, 'alone?', max_ask_wait)
         assert r is None
+
+    def test21_CreateRemoteFriendsShutdownActorSystem(self, testsystems):
+        asys, asys2 = testsystems
+        actor_system_unsupported(asys, 'simpleSystemBase', 'multiprocQueueBase')
+        cheech = asys2.createActor(Cheech)
+        r = asys2.ask(cheech, 'hello', max_ask_wait)
+        assert r == 'howdy'
+        r = asys2.ask(cheech, 'buddy', max_ask_wait)
+        assert r == 'heya'
+        r = asys2.ask(cheech, 'alone?', max_ask_wait)
+        assert r is not None
+
+        asys.shutdown()
+        delay_for_next_of_kin_notification(asys2)
+        r = asys2.ask(cheech, 'hello', max_ask_wait)
+        assert r == 'howdy'
+        r = asys2.ask(cheech, 'alone?', max_ask_wait)
+        assert r is None
