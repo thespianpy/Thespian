@@ -239,7 +239,7 @@ class TestUnitAddressManagerLocalAddressAssociations(object):
         mainAddr1_dup = ActorAddress(None)
         assert mainAddr1 == mainAddr1_dup
 
-        assert mainAddr1_dup != lclAddr
+        assert mainAddr1_dup == lclAddr
         assert lclAddr == mainAddr1_dup
 
         am.importAddr(mainAddr1_dup)

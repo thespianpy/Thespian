@@ -1,3 +1,4 @@
+import sys
 import pytest
 from pytest import raises
 from time import sleep
@@ -174,6 +175,44 @@ class Kilmer(Actor):
     @staticmethod
     def actorSystemCapabilityCheck(capabilities, actorRequirements):
         return False  # never satisfied
+
+
+@requireCapability('Humanitarian')
+class Cheech(Actor):
+    def chong(self):
+        if not getattr(self, 'buddy', None):
+            self.buddy = self.createActor(Chong)
+        return self.buddy
+
+    def receiveMessage(self, msg, sender):
+        if msg == 'hello':
+            self.send(sender, 'howdy')
+        elif msg == 'buddy':
+            self.send(self.chong(), sender)
+        elif msg == 'lose buddy':
+            self.send(self.chong(), ActorExitRequest())
+        elif msg == 'kill buddy':
+            self.send(self.chong(), 'take a hike')
+        elif msg == 'alone?':
+            self.send(sender, getattr(self, 'buddy', None))
+        elif isinstance(msg, ChildActorExited) and \
+             self.chong() == msg.childAddress and \
+             msg.childAddress == self.chong():
+            # n.b. the above ensures local addresses match
+            # remote-supplied addresses and vice-versa
+            self.buddy = None
+
+
+@requireCapability('Foo Allowed')
+class Chong(Actor):
+    def receiveMessage(self, msg, sender):
+        if isinstance(msg, ActorAddress):
+            self.send(msg, 'heya')
+        elif msg == 'take a hike':
+            sys.exit(0)
+        else:
+            self.send(sender, str(msg) + ' dude!')
+
 
 
 class TestFuncSolitaryActorSystem(object):
@@ -487,3 +526,39 @@ class TestFuncMultiProcessSystem(object):
         jolie = asys.createActor(Jolie, 'Parent')
         r = asys.ask(jolie, 'Hello', max_ask_wait)
         assert r == 'Yes, Hello'
+
+    def test19_CreateRemoteFriendsWhoExit(self, testsystems):
+        asys, asys2 = testsystems
+        actor_system_unsupported(asys, 'simpleSystemBase', 'multiprocQueueBase')
+        cheech = asys.createActor(Cheech)
+        r = asys.ask(cheech, 'hello', max_ask_wait)
+        assert r == 'howdy'
+        r = asys.ask(cheech, 'buddy', max_ask_wait)
+        assert r == 'heya'
+        r = asys.ask(cheech, 'alone?', max_ask_wait)
+        assert r is not None
+
+        asys.tell(cheech, 'lose buddy')
+        delay_for_next_of_kin_notification(asys)
+        r = asys.ask(cheech, 'hello', max_ask_wait)
+        assert r == 'howdy'
+        r = asys.ask(cheech, 'alone?', max_ask_wait)
+        assert r is None
+
+    def test20_CreateRemoteFriendsWhoDisappear(self, testsystems):
+        asys, asys2 = testsystems
+        actor_system_unsupported(asys, 'simpleSystemBase', 'multiprocQueueBase')
+        cheech = asys.createActor(Cheech)
+        r = asys.ask(cheech, 'hello', max_ask_wait)
+        assert r == 'howdy'
+        r = asys.ask(cheech, 'buddy', max_ask_wait)
+        assert r == 'heya'
+        r = asys.ask(cheech, 'alone?', max_ask_wait)
+        assert r is not None
+
+        asys.tell(cheech, 'kill buddy')
+        delay_for_next_of_kin_notification(asys)
+        r = asys.ask(cheech, 'hello', max_ask_wait)
+        assert r == 'howdy'
+        r = asys.ask(cheech, 'alone?', max_ask_wait)
+        assert r is None

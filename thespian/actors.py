@@ -96,12 +96,19 @@ class ActorAddress(object):
 
     def __str__(self): return 'ActorAddr-' + str(self._aaddr)
 
-    def __eq__(self, o):
+    def __eq__(self, o, flipped=False):
         if hasattr(self, 'eqOverride'):
             return self.eqOverride(o)
         try:
-            return self.addressDetails == o.addressDetails
-        except:
+            if self.addressDetails == o.addressDetails:
+                return True
+            if flipped:
+                return False
+        except Exception:
+            pass
+        try:
+            return o.__eq__(self, True)
+        except Exception:
             return False
 
     def __ne__(self, o): return not self.__eq__(o)
