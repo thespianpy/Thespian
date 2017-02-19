@@ -7,7 +7,7 @@
 #+LATEX_HEADER: \product{Thespian}
 #+LATEX_HEADER: \component{Python Actor System}
 #+LATEX_HEADER: \doctype{Release Notes}
-#+LATEX_HEADER: \docrev{3.6.1}{2017 Jan 18}
+#+LATEX_HEADER: \docrev{3.6.2}{2017 Feb 19}
 #+LATEX_HEADER: \docid{TheDoc-06}
 #+OPTIONS: ^:nil num:nil
 
@@ -19,6 +19,40 @@ do not change the API.
 * 3.x
 
 ** 3.6
+
+*** 3.6.2 <2017-02-19 Sun>
+
+  * Use cPickle when running under older python versions for improved
+    performance ([[https://github.com/godaddy/Thespian/issues/34][Issue 34]]).
+
+  * Update director bootstart for systemd to add "Want
+    network-online.target" as well as "After network-online.target" to
+    express dependency as well as ordering.
+
+  * Ensure address equality comparisons are commutative.
+
+  * Explicitly close transports on shutdown to avoid resource cleanup
+    issues.
+
+  * Fixed bug where convention notifications for remotes that had only
+    pre-registered could be delivered upon registration.
+
+  * Refactor external interface to use individual operation tracking
+    instead of globals.
+
+  * Improved detection of shutdown and associated cleanup status and
+    completion.
+
+  * Fix actor failure tests for more intentional testing of various
+    actor failure modes.
+
+  * Misc internal cleanups to Queue transport; fixes for timeouts and
+    dead target handling.
+
+  * Misc internal cleanups in UDP transport; fix handling of child
+    management interrupts and signals from exited children.
+
+  * Misc test cleanups.
 
 *** 3.6.1 <2017-01-18 Wed>
 
