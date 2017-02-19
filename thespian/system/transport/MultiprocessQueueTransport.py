@@ -249,8 +249,9 @@ class MultiprocessQueueTCore_Common(object):
             if self.isMyAddress(destAddr):
                 if incoming_handler is None:
                     return ReceiveEnvelope(sendAddr, msg)
-                if not incoming_handler(ReceiveEnvelope(sendAddr, msg)):
-                    return  # handler returned False, indicating run() should exit
+                r = incomingHandler(ReceiveEnvelope(sendAddr, msg))
+                if not r:
+                    return r  # handler returned False, indicating run() should exit
             else:
                 # Note: the following code has implicit knowledge of serialize() and xmit
                 putQValue = lambda relayer: (relayer, (sendAddr, destAddr, msg))

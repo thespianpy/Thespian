@@ -3,6 +3,7 @@
 import logging
 from thespian.actors import *
 from thespian.system.utilis import thesplog, StatsManager, AssocList
+from thespian.system.timing import ExpirationTimer
 from thespian.system.ratelimit import RateThrottle
 from thespian.system.addressManager import (ActorAddressManager,
                                             CannotPickleAddress,
@@ -12,6 +13,9 @@ from thespian.system.transport import *
 from thespian.system.utilis import fmap
 from itertools import chain
 import traceback
+
+
+MAX_SHUTDOWN_DRAIN_PERIOD=timedelta(seconds=7)
 
 # Assume a 2 KiB average packet size and a 100 Mb/s (12.5 MiB/s)
 # network link, the link could be saturated by transmitting N
@@ -182,6 +186,7 @@ class systemCommonBase(object):
                 self._exitedAlready = True
                 self._sayGoodbye()
                 self.transport.abort_run(drain=True)
+            return False
         return True
 
 
@@ -290,3 +295,10 @@ class systemCommonBase(object):
             next_intent = self._pendingTransmits.get_next(completedIntent)
             if next_intent:
                 self._send_intent_to_transport(next_intent)
+
+
+    def drainTransmits(self):
+        drainLimit = ExpirationTimer(MAX_SHUTDOWN_DRAIN_PERIOD)
+        while not drainLimit.expired():
+            if not self.transport.run(TransmitOnly, drainLimit.remaining()):
+                break  # no transmits left

@@ -1021,8 +1021,9 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
                     rEnv = self._incomingEnvelopes.pop(0)
                     if incomingHandler is None:
                         return rEnv
-                    if not incomingHandler(rEnv):
-                        return None
+                    r = incomingHandler(rEnv)
+                    if not r:
+                        return r
 
             wsend, wrecv = fmap(
                 TCPTransport._socketFile,
@@ -1229,8 +1230,9 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
                     rEnv = self._incomingEnvelopes.pop(0)
                     if incomingHandler is None:
                         return rEnv
-                    if not incomingHandler(rEnv):
-                        return None
+                    r = incomingHandler(rEnv)
+                    if not r:
+                        return r
 
         return None
 

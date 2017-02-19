@@ -21,9 +21,6 @@ from datetime import timedelta
 from functools import partial
 
 
-MAX_SHUTDOWN_DRAIN_PERIOD=timedelta(seconds=7)
-
-
 class ActorManager(systemCommonBase):
     def __init__(self, childClass, transport, sourceHash, sourceToLoad,
                  parentAddr, adminAddr,
@@ -89,6 +86,7 @@ class ActorManager(systemCommonBase):
                     # Expects that on completion of self.transport.run
                     # that the Actor is done processing and that it has
                     # been shutdown gracefully.
+                    self.drainTransmits()
                     break
             except Exception as ex:
                 # This is usually an internal problem, since the
@@ -104,13 +102,6 @@ class ActorManager(systemCommonBase):
         else:
             self.drainTransmits()
         thesplog('Run %s done', self._actorClass, level=logging.DEBUG)
-
-
-    def drainTransmits(self):
-        drainLimit = ExpiryTime(MAX_SHUTDOWN_DRAIN_PERIOD)
-        while not drainLimit.expired():
-            if not self.transport.run(TransmitOnly, drainLimit.remaining()):
-                break  # no transmits left
 
 
     def handleMessages(self, envelope):
@@ -235,7 +226,7 @@ class ActorManager(systemCommonBase):
             return True  # keep going
         # Don't need to wait for children, so exit as soon as transmit pipe drains.
         self.transport.abort_run(drain=True)
-        return True
+        return False
 
 
     def _sayGoodbye(self):
@@ -249,7 +240,7 @@ class ActorManager(systemCommonBase):
 
 
     def _childInaccessible(self, childAddress, exitRequestIntent):
-        self._handleChildExited(childAddress)
+        return self._handleChildExited(childAddress)
 
 
     def checkNewCapabilities(self, envelope):

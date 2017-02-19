@@ -79,8 +79,9 @@ class wakeupTransportBase(object):
                 w = self._activeWakeups.pop()
                 if incomingHandler in (None, TransmitOnly):
                     return w
-                if not incomingHandler(w):
-                    return None
+                r = incomingHandler(w)
+                if not r:
+                    return r
 
         return None
 

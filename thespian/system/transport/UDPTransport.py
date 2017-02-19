@@ -289,8 +289,9 @@ class UDPTransport(asyncTransportBase, wakeupTransportBase):
                 rcvdEnv = ReceiveEnvelope(sendAddr, msg)
             if incomingHandler is None:
                 return rcvdEnv
-            if not incomingHandler(rcvdEnv):
-                return  # handler returned False, indicating run() should exit
+            r = incomingHandler(rcvdEnv)
+            if not r:
+                return r # handler returned False, indicating run() should exit
 
         return None
 
