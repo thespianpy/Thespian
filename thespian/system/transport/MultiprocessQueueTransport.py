@@ -249,7 +249,7 @@ class MultiprocessQueueTCore_Common(object):
             if self.isMyAddress(destAddr):
                 if incoming_handler is None:
                     return ReceiveEnvelope(sendAddr, msg)
-                r = incomingHandler(ReceiveEnvelope(sendAddr, msg))
+                r = incoming_handler(ReceiveEnvelope(sendAddr, msg))
                 if not r:
                     return r  # handler returned False, indicating run() should exit
             else:
