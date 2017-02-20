@@ -14,6 +14,17 @@
 
   * createActor() always creates the actor instance immediately before returning.
 
+If used in a multi-threaded application, only the main thread will be
+used for Actor functionality (and thus requires the main thread to
+call ask(), tell(), or listen() (aka ATL) to enable the Actors to run.
+
+All threads other than the main thread should use a .private() context
+to call ATL; this simple system base is not re-entrant and calling ATL
+on the main actor system will cause indeterminate results and
+corrupted data.  When a non-main thread calls a context's ATL, that
+thread will block until the main thread makes an ATL call on the main
+ActorSystem.  A completion of a non-main thread's ATL will run in that
+thread, but the main thread will not exit the primary ATL completes.
 '''
 
 import logging, string, types, functools
@@ -30,6 +41,12 @@ from thespian.system.messages.status import *
 from thespian.system.sourceLoader import loadModuleFromHashSource, SourceHashFinder
 import time
 import traceback
+import threading
+try:
+    import queue as Queue
+except ImportError:
+    import Queue
+import weakref
 
 
 class ActorRef:
@@ -267,6 +284,8 @@ class ActorSystemBase(WakeupManager):
             'System:BadActor': badActor,
         }
         self._internalAddresses = list(self.actorRegistry.keys())
+        self._private_lock = threading.RLock()
+        self._private_count = 0
 
         system.capabilities['Python Version'] = tuple(sys.version_info)
         system.capabilities['Thespian Generation'] = ThespianGeneration
@@ -280,6 +299,11 @@ class ActorSystemBase(WakeupManager):
         while self._sources:
             self.unloadActorSource(list(self._sources.keys())[0])
 
+    def external_clone(self):
+        with self._private_lock:
+            self._private_count += 1
+            cnt = self._private_count
+        return ActorSystemPrivate(self, cnt)
 
     def _runSends(self, timeout=None, stop_on_available=False):
         numsends = 0
@@ -290,7 +314,13 @@ class ActorSystemBase(WakeupManager):
                 if self.procLimit and numsends > self.procLimit:
                     raise RuntimeError('Too many sends')
                 self._realizeWakeups()
-                self._runSingleSend(self._pendingSends.pop(0))
+                with self._private_lock:
+                    try:
+                        nextmsg = self._pendingSends.pop(0)
+                    except IndexError:
+                        pass
+                    else:
+                        self._runSingleSend(nextmsg)
                 if stop_on_available and \
                    any([not isInternalActorSystemMessage(M)
                         for M in getattr(stop_on_available.instance,
@@ -356,8 +386,9 @@ class ActorSystemBase(WakeupManager):
     def _realizeWakeups(self):
         "Find any expired wakeups and queue them to the send processing queue"
         for target_addr, expired in self._pop_expired_wakeups():
-            self._pendingSends.append(
-                PendingSend(target_addr, WakeupMessage(expired.duration), target_addr))
+            with self._private_lock:
+                self._pendingSends.append(
+                    PendingSend(target_addr, WakeupMessage(expired.duration), target_addr))
 
     def _callActorWithMessage(self, tgt, ps, msg, sndr):
         try:
@@ -371,7 +402,8 @@ class ActorSystemBase(WakeupManager):
                 exc_info = True)
             ps.attempts += 1
             ps.fail_details = traceback.format_exc()
-            self._pendingSends.append(ps)
+            with self._private_lock:
+                self._pendingSends.append(ps)
         else:
             if isinstance(ps.msg, ChildActorExited):
                 try:
@@ -405,10 +437,11 @@ class ActorSystemBase(WakeupManager):
                                        tgt._system.systemAddress)
         stsresp = self.add_wakeups_to_status(stsresp)
         for C in tgt._yung: stsresp.addChild(C)
-        for M in self._pendingSends:
-            if M[1] == tgt.address:
-                stsresp.addPendingMessage(self.address, M[0],M[2])
-        self._pendingSends.append(PendingSend(tgt.address, stsresp, sndr))
+        with self._private_lock:
+            for M in self._pendingSends:
+                if M[1] == tgt.address:
+                    stsresp.addPendingMessage(self.address, M[0],M[2])
+            self._pendingSends.append(PendingSend(tgt.address, stsresp, sndr))
 
     def _newRefAndActor(self, actorSystem, parentAddr, actorAddr, actorClass,
                         sourceHash = None,
@@ -455,22 +488,25 @@ class ActorSystemBase(WakeupManager):
         if globalName and globalName in self._globalNames:
             return self._globalNames[globalName]
         logger = logging.getLogger('Thespian')
-        naa = _newAddress("/A", self._primaryCount)
-        self._primaryCount = self._primaryCount + 1
+        with self._private_lock:
+            naa = _newAddress("/A", self._primaryCount)
+            self._primaryCount = self._primaryCount + 1
         nar = self._newRefAndActor(self.system, self.system.systemAddress, naa,
                                    actorClass, sourceHash,
                                    targetActorRequirements = targetActorRequirements,
                                    isTopLevel = True)
         if nar.instance:
             if globalName:
-                self._globalNames[globalName] = naa
+                with self._private_lock:
+                    self._globalNames[globalName] = naa
                 logger.info('Registered %s as global "%s" Primary Actor',
                             str(naa), globalName)
         if not nar.instance:
             logger.warning('Could not create primary Actor %s @ %s',
                            str(actorClass), str(naa))
             return self.actorRegistry['System:BadActor'].address
-        self.actorRegistry[naa.actorAddressString] = nar
+        with self._private_lock:
+            self.actorRegistry[naa.actorAddressString] = nar
         logger.debug('Created primary Actor %s @ %s', str(actorClass), str(naa))
         return naa
 
@@ -505,13 +541,17 @@ class ActorSystemBase(WakeupManager):
 
     def tell(self, anActor, msg):
         self._realizeWakeups()   # First, so that they "fire" between the last call and this one
-        self._pendingSends.append(PendingSend(self.actorRegistry['System:ExternalRequester'].address, msg, anActor))
+        with self._private_lock:
+            self._pendingSends.append(
+                PendingSend(self.actorRegistry['System:ExternalRequester'].address,
+                            msg, anActor))
         self._runSends()
 
     def ask(self, anActor, msg, timeout):
         self._realizeWakeups()   # First, so that they "fire" between the last call and this one
         sender = self.actorRegistry['System:ExternalRequester']
-        self._pendingSends.append(PendingSend(sender.address, msg, anActor))
+        with self._private_lock:
+            self._pendingSends.append(PendingSend(sender.address, msg, anActor))
         return self.listen(timeout)
 
     def listen(self, timeout):
@@ -531,7 +571,8 @@ class ActorSystemBase(WakeupManager):
         return None
 
     def actor_send(self, fromActor, toActor, msg):
-        self._pendingSends.append(PendingSend(fromActor, msg, toActor))
+        with self._private_lock:
+            self._pendingSends.append(PendingSend(fromActor, msg, toActor))
 
     def wakeupAfter(self, fromActor, timePeriod):
         self._add_wakeup(fromActor, timePeriod)
@@ -584,9 +625,10 @@ class ActorSystemBase(WakeupManager):
         logging.getLogger('Thespian').info('Loaded source %s hash %s', fname, hval)
 
         if self._sourceAuthority:
-            self._pendingSends.append(PendingSend(self.system.systemAddress,
-                                                  ValidateSource(hval, d),
-                                                  self._sourceAuthority))
+            with self._private_lock:
+                self._pendingSends.append(PendingSend(self.system.systemAddress,
+                                                      ValidateSource(hval, d),
+                                                      self._sourceAuthority))
             self._runSends()
         return hval
 
@@ -633,3 +675,56 @@ class ActorSystemBase(WakeupManager):
                     del sys.modules[each]
                 del sys.meta_path[pnum]
                 break
+
+
+class ExternalPrivate(Actor):
+    def __init__(self):
+        self.rcvq = Queue.Queue()
+
+    def receiveMessage(self, msg, sender):
+        self.rcvq.put(msg)
+
+    def get(self, timeout=None):
+        try:
+            return self.rcvq.get(timeout)
+        except Queue.Empty:
+            return None
+
+
+class ActorSystemPrivate(object):
+    def __init__(self, mainsys, private_idx):
+        self.mainsys = weakref.ref(mainsys)
+        self._myname = 'System:ExternalRequester:%d' % private_idx
+        self.my_ext_addr = ActorAddress(self._myname)
+        my_ext = mainsys._newRefAndActor(
+            mainsys.system, mainsys.system.systemAddress,
+            ActorAddress(self._myname),
+            ExternalPrivate)
+        mainsys.actorRegistry[self.my_ext_addr.actorAddressString] = my_ext
+        self.my_instance = my_ext.instance
+
+    def tell(self, anActor, msg):
+        with self.mainsys()._private_lock:
+            self.mainsys()._pendingSends.append(
+                PendingSend(self.my_ext_addr, msg, anActor))
+
+    def ask(self, anActor, msg, timeout):
+        self.tell(anActor, msg)
+        return self.listen(timeout)
+
+    def listen(self, timeout):
+        fulltime = ExpirationTimer(timeout)
+        while not fulltime.expired():
+            try:
+                response = self.my_instance.get(fulltime.remainingSeconds())
+            except Queue.Empty:
+                break
+            if not isInternalActorSystemMessage(response):
+                return response
+        return None
+
+    def newPrimaryActor(self, *args):
+        return self.mainsys().newPrimaryActor(*args)
+
+    def exit_context(self):
+        self.mainsys().actorRegistry[self.my_ext_addr.actorAddressString] = None

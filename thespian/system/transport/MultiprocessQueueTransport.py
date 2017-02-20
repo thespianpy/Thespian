@@ -46,7 +46,6 @@ testActorAdder.py:test07_LotsOfActorsEveryTenWithBackground (deadlocks
 
 """
 
-
 import logging
 from thespian.actors import *
 from thespian.system.utilis import thesplog, partition, foldl, AssocList
@@ -57,6 +56,7 @@ from thespian.system.transport.wakeupTransportBase import wakeupTransportBase
 from thespian.system.messages.multiproc import ChildMayHaveDied
 from thespian.system.addressManager import ActorLocalAddress
 from multiprocessing import Queue
+import threading
 try:
     import Queue as Q  # Python 2
 except ImportError:
@@ -87,6 +87,11 @@ class QueueActorAddress(object):  # internal use by this module only
         namegen = lambda v: addnext(*divmod(v, len(useable)))
         addnext = lambda x,y: useable[y] if 0 == x else (namegen(x) + useable[y])
         return self._qaddr + '.' + namegen(inst)
+
+
+class ReturnTargetAddressWithEnvelope(object): pass
+
+class ExternalQTransportCopy(object): pass
 
 
 class MpQTEndpoint(TransportInit__Base):  # internal use by this module only
@@ -187,7 +192,7 @@ class MultiprocessQueueTCore_Common(object):
             (ChildActorExited, ActorExitRequest)) else SendStatus.Failed)
 
 
-    def core_common_receive(self, incoming_handler, for_local_addr, run_time_f):
+    def core_common_receive(self, incoming_handler, local_routing_addr, run_time_f):
         """Core scheduling method; called by the current Actor process when
            idle to await new messages (or to do background
            processing).
@@ -195,7 +200,7 @@ class MultiprocessQueueTCore_Common(object):
         if incoming_handler == TransmitOnly or \
            isinstance(incoming_handler, TransmitOnly):
             # transmits are not queued/multistage in this transport, no waiting
-            return 0
+            return local_routing_addr, 0
 
         self._aborting_run = False
 
@@ -214,7 +219,7 @@ class MultiprocessQueueTCore_Common(object):
                     continue
                 rcvd = 'BuMP'
             if rcvd == 'BuMP':
-                relayAddr = sendAddr = destAddr = for_local_addr
+                relayAddr = sendAddr = destAddr = local_routing_addr
                 if self._checkChildren:
                     self._checkChildren = False
                     msg = ChildMayHaveDied()
@@ -222,7 +227,7 @@ class MultiprocessQueueTCore_Common(object):
                     self._shutdownSignalled = False
                     msg = ActorExitRequest()
                 else:
-                    return Thespian__UpdateWork()
+                    return local_routing_addr, Thespian__UpdateWork()
             else:
                 relayAddr, (sendAddr, destAddr, msg) = rcvd
             if not self._queues.find(sendAddr):
@@ -247,11 +252,13 @@ class MultiprocessQueueTCore_Common(object):
                 continue
 
             if self.isMyAddress(destAddr):
+                if isinstance(incoming_handler, ReturnTargetAddressWithEnvelope):
+                    return destAddr, ReceiveEnvelope(sendAddr, msg)
                 if incoming_handler is None:
-                    return ReceiveEnvelope(sendAddr, msg)
+                    return destAddr, ReceiveEnvelope(sendAddr, msg)
                 r = incoming_handler(ReceiveEnvelope(sendAddr, msg))
                 if not r:
-                    return r  # handler returned False, indicating run() should exit
+                    return destAddr, r  # handler returned False, indicating run() should exit
             else:
                 # Note: the following code has implicit knowledge of serialize() and xmit
                 putQValue = lambda relayer: (relayer, (sendAddr, destAddr, msg))
@@ -262,7 +269,7 @@ class MultiprocessQueueTCore_Common(object):
                 send_dead = False
                 tgtQ = self._queues.find(destAddr)
                 if tgtQ:
-                    sendArgs = putQValue(for_local_addr), True
+                    sendArgs = putQValue(local_routing_addr), True
                 if not tgtQ:
                     tgtA = self._fwdvia.find(destAddr)
                     if tgtA:
@@ -284,14 +291,13 @@ class MultiprocessQueueTCore_Common(object):
                 if send_dead:
                     try:
                         (self._parentQ or self._adminQ).put(
-                            deadQValue(for_local_addr if self._parentQ else None),
+                            deadQValue(local_routing_addr if self._parentQ else None),
                             True,
                             timePeriodSeconds(MAX_QUEUE_TRANSMIT_PERIOD))
                     except Q.Full:
                         thesplog('Unable to send deadmsg %s to %s or admin; discarding',
                                  msg, destAddr)
                     continue
-
                 # Not sure how to route this message yet.  It
                 # could be a heretofore silent child of one of our
                 # children, it could be our parent (whose address
@@ -323,7 +329,7 @@ class MultiprocessQueueTCore_Common(object):
                     # parent knows how to forward it
                     try:
                         (self._parentQ or self._adminQ).put(
-                            putQValue(for_local_addr if self._parentQ else None),
+                            putQValue(local_routing_addr if self._parentQ else None),
                             True,
                             timePeriodSeconds(MAX_QUEUE_TRANSMIT_PERIOD))
                     except Q.Full:
@@ -345,7 +351,7 @@ class MultiprocessQueueTCore_Common(object):
                                        timePeriodSeconds(MAX_QUEUE_TRANSMIT_PERIOD))
                             except Q.Full:
                                 pass
-        return None
+        return local_routing_addr, None
 
 
     def interrupt_run(self, signal_shutdown=False, check_children=False):
@@ -356,7 +362,13 @@ class MultiprocessQueueTCore_Common(object):
         # safe.  Instead, those will just have to depend on the short
         # maximum Queue get wait time.
         if not signal_shutdown and not check_children:
-            self._myInputQ.put_nowait('BuMP')
+            try:
+                self._myInputQ.put_nowait('BuMP')
+            except Q.Full:
+                # if the queue is full, it should be reading something
+                # off soon which will accomplish the same interrupt
+                # effect, so nothing else needs to be done here.
+                pass
 
 
 class MultiprocessQueueTCore_Actor(MultiprocessQueueTCore_Common):
@@ -372,11 +384,16 @@ class MultiprocessQueueTCore_Actor(MultiprocessQueueTCore_Common):
     def isMyAddress(self, addr):
         return addr == self._myAddr
 
-    def core_transmit(self, transmitIntent):
-        return self.core_common_transmit(transmitIntent, self._myAddr)
+    def core_transmit(self, transmit_intent, my_address):
+        # n.b. my_address == self._myAddr
+        return self.core_common_transmit(transmit_intent, my_address)
 
-    def core_receive(self, inc_handler, run_time_f):
-        return self.core_common_receive(inc_handler, self._myAddr, run_time_f)
+    def core_receive(self, incoming_handler, my_address, run_time_f):
+        # n.b. my_address == self._myAddr
+        return self.core_common_receive(incoming_handler, my_address, run_time_f)[1]
+
+    def core_close(self, _addr):
+        pass
 
 
 class MultiprocessQueueTCore_External(MultiprocessQueueTCore_Common):
@@ -392,18 +409,131 @@ class MultiprocessQueueTCore_External(MultiprocessQueueTCore_Common):
     # demultiplexes incoming messages to the correct threading.Queue.
 
     def __init__(self, myQueue, parentQ, adminQ, adminAddr, my_address):
-        super(MultiprocessQueueTCore_Actor, self).__init__(myQueue, parentQ,
-                                                           adminQ, adminAddr)
+        super(MultiprocessQueueTCore_External, self).__init__(myQueue, parentQ,
+                                                              adminQ, adminAddr)
         self._my_address = my_address
+        self.isMyAddress = self.simple_isMyAddress
+        self.core_transmit = self.simple_core_transmit
+        self.core_receive = self.simple_core_receive
+        self.core_close = self.simple_core_close
+        self.abort_run = self.abort_core_run
+        self.clone_lock = threading.Lock()
+        self.clone_count = 0
 
-    def isMyAddress(self, addr):
+    def new_clone_id(self):
+        with self.clone_lock:
+            self.clone_count += 1
+        return self.clone_count
+
+    # Initially, the following simple methods will be used (for better
+    # performance) when there are no multi-threaded contexts declared.
+
+    def simple_isMyAddress(self, addr):
         return addr == self._my_address
 
-    def core_transmit(self, transmitIntent):
-        return self.core_common_transmit(transmitIntent, self._myAddr)
+    def simple_core_transmit(self, transmit_intent, my_address):
+        # n.b. my_address == self._myAddr
+        return self.core_common_transmit(transmit_intent, my_address)
 
-    def core_receive(self, inc_handler, run_time_f):
-        return self.core_common_receive(inc_handler, self._myAddr, run_time_f)
+    def simple_core_receive(self, incoming_handler, my_address, run_time_f):
+        # n.b. my_address == self._myAddr
+        return self.core_common_receive(incoming_handler, my_address, run_time_f)[1]
+
+    def simple_core_close(self, _addr):
+        pass
+
+
+    # The following establishes additional external entrypoints, as
+    # well as switching from the simple direct calls to the underlying
+    # thread core over to thread-aware regulated calls.
+
+    def make_external_clone(self):
+        with self.clone_lock:
+            self.clone_count += 1
+            new_addr = ActorAddress(QueueActorAddress('~%d' % self.clone_count))
+            if self.isMyAddress == self.simple_isMyAddress:
+                self._my_tqueues = {str(self._my_address): Q.Queue()}
+                self._subthread = threading.Thread(target=self.subcontext,
+                                                   name='subcontext')
+                self._subthread.start()
+                self.isMyAddress = self.tsafe_isMyAddress
+                self.core_transmit = self.tsafe_core_transmit
+                self.core_receive = self.tsafe_core_receive
+                self.core_close = self.tsafe_core_close
+                self.abort_run = self.tsafe_abort_run
+            self._my_tqueues[str(new_addr)] = Q.Queue()
+        return new_addr
+
+    def tsafe_isMyAddress(self, addr):
+        return str(addr) in self._my_tqueues
+
+    def tsafe_core_close(self, address):
+        # Set to None so that this is recognized as a local address,
+        # but no longer valid.
+        self._my_tqueues[str(address)] = None
+        if address != self._my_address:
+            return
+        self._full_close = True
+        self.abort_core_run()
+        self.interrupt_run()
+        self._subthread.join()
+
+    def tsafe_core_transmit(self, transmit_intent, my_address):
+        # Transmit is already single-threaded in the asyncTransport
+        # portion, so it's sufficient to simply call-through to the
+        # lower layer.
+        return self.core_common_transmit(transmit_intent, my_address)
+
+    def tsafe_core_receive(self, incoming_handler, my_address, run_time_f):
+        # Only one thread should be allowed to run the lower-level
+        # receive; other threads will just wait on their local tqueue;
+        # when the lower-level receive obtains input for this process
+        # but a different thread, it is placed on the tqueue.
+        if incoming_handler == TransmitOnly or \
+           isinstance(incoming_handler, TransmitOnly):
+            # transmits are not queued/multistage in this transport, no waiting
+            return 0
+
+
+        self._abort_my_run = False
+        while not self._abort_my_run and not run_time_f().expired():
+            try:
+                rcv_envelope = self._my_tqueues[str(my_address)].get(
+                    True,
+                    run_time_f().remainingSeconds() or QUEUE_CHECK_PERIOD)
+            except Q.Empty:
+                # probably a timeout
+                continue
+            if rcv_envelope != None:
+                if incoming_handler is None:
+                    return rcv_envelope
+                r = incoming_handler(rcv_envelope)
+                if not r:
+                    return r
+            # else loop
+        return None
+
+
+    def tsafe_abort_run(self):
+        self._abort_my_run = True
+
+
+    def subcontext(self):
+        while not getattr(self, '_full_close', False):
+            rcv_addr_and_envelope = self.core_common_receive(
+                ReturnTargetAddressWithEnvelope(),
+                self._my_address,
+                lambda t=ExpirationTimer(): t) # forever
+            if self._aborting_run:
+                # Exit from this core thread
+                return
+            if rcv_addr_and_envelope is None:
+                continue
+            addr, env = rcv_addr_and_envelope
+            if env is None: # or isinstance(env, Thespian__UpdateWork):
+                continue
+            if str(addr) in self._my_tqueues and self._my_tqueues[str(addr)]:
+                self._my_tqueues[str(addr)].put(env)
 
 
 class MultiprocessQueueTransport(asyncTransportBase, wakeupTransportBase):
@@ -425,33 +555,23 @@ class MultiprocessQueueTransport(asyncTransportBase, wakeupTransportBase):
             # parent, and the child is the systemAdmin.
             capabilities, logDefs, self._concontext = args
             NewQ = self._concontext.Queue if self._concontext else Queue
-            self._parentQ    = None
             self._adminQ     = NewQ(MAX_ADMIN_QUEUESIZE)
             self._adminAddr  = self.getAdminAddr(capabilities)
             self._myQAddress = ActorAddress(QueueActorAddress('~'))
             self._myInputQ   = NewQ(MAX_ACTOR_QUEUESIZE)
-            self._QCore = MultiprocessQueueTCore_Actor(self._myInputQ, None, self._adminQ, self._adminAddr, self._myQAddress)
+            self._QCore = MultiprocessQueueTCore_External(self._myInputQ, None, self._adminQ, self._adminAddr, self._myQAddress)
         elif isinstance(initType, MpQTEndpoint):
             _addrInst, myAddr, myQueue, parentQ, adminQ, adminAddr, ccon = initType.args
             self._concontext = ccon
-            self._parentQ    = parentQ
             self._adminQ     = adminQ
             self._adminAddr  = adminAddr
             self._myQAddress = myAddr
-            #self._myInputQ   = myQueue
             self._QCore = MultiprocessQueueTCore_Actor(myQueue, parentQ, adminQ, myAddr, myAddr)
-            # _aborting_run
-            # _checkChildren
-            # _shutdownSignalled
         elif isinstance(initType, ExternalQTransportCopy):
             # External process that's going to talk "in".  There is no
             # parent, and the child is the systemAdmin.
-            cnum, self._adminQ, self._adminAddr, self._concontext, self._myInputQ, self._queues, self._fwdvia = args
-            #NewQ = self._concontext.Queue if self._concontext else Queue
-            self._parentQ    = None
-            self._myQAddress = ActorAddress(QueueActorAddress('~%d' % cnum))
-            #self._myInputQ   = NewQ(MAX_ACTOR_QUEUESIZE)
-            thesplog('CLONE %s is %s', self._myQAddress, self._myInputQ)
+            self._QCore, = args
+            self._myQAddress = self._QCore.make_external_clone()
         else:
             thesplog('MultiprocessQueueTransport init of type %s unsupported!', str(initType),
                      level=logging.ERROR)
@@ -460,8 +580,13 @@ class MultiprocessQueueTransport(asyncTransportBase, wakeupTransportBase):
 
 
     def close(self):
-        pass
+        self._QCore.core_close(self._myQAddress)
 
+
+    def external_transport_clone(self):
+        # Return a unique context for actor communication from external
+        return MultiprocessQueueTransport(ExternalQTransportCopy(),
+                                          self._QCore)
 
     def protectedFileNumList(self):
         return self._QCore.protectedFileNumList()
@@ -555,7 +680,7 @@ class MultiprocessQueueTransport(asyncTransportBase, wakeupTransportBase):
 
 
     def _runWithExpiry(self, incomingHandler):
-        return self._QCore.core_receive(incomingHandler,
+        return self._QCore.core_receive(incomingHandler, self.myAddress,
                                         lambda s=self: s.run_time)
 
     def abort_run(self, drain=False):
@@ -581,4 +706,4 @@ class MultiprocessQueueTransport(asyncTransportBase, wakeupTransportBase):
         self._QCore.interrupt_run(signal_shutdown, check_children)
 
     def _scheduleTransmitActual(self, transmitIntent):
-        self._QCore.core_transmit(transmitIntent)
+        self._QCore.core_transmit(transmitIntent, self.myAddress)
