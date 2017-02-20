@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
 <title>Thespian Release Notes</title>
-<!-- 2017-01-18 Wed 23:11 -->
+<!-- 2017-02-19 Sun 21:33 -->
 <meta  http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta  name="generator" content="Org-mode" />
 <meta  name="author" content="Kevin Quick &lt;kquick@godaddy.com&gt;" />
@@ -159,8 +159,9 @@ for the JavaScript code in this tag.
 <ul>
 <li><a href="#sec-1-1">3.6</a>
 <ul>
-<li><a href="#sec-1-1-1">3.6.1 <span class="timestamp-wrapper"><span class="timestamp">&lt;2017-01-18 Wed&gt;</span></span></a></li>
-<li><a href="#sec-1-1-2">3.6.0 <span class="timestamp-wrapper"><span class="timestamp">&lt;2017-01-02 Mon&gt;</span></span></a></li>
+<li><a href="#sec-1-1-1">3.6.2 <span class="timestamp-wrapper"><span class="timestamp">&lt;2017-02-19 Sun&gt;</span></span></a></li>
+<li><a href="#sec-1-1-2">3.6.1 <span class="timestamp-wrapper"><span class="timestamp">&lt;2017-01-18 Wed&gt;</span></span></a></li>
+<li><a href="#sec-1-1-3">3.6.0 <span class="timestamp-wrapper"><span class="timestamp">&lt;2017-01-02 Mon&gt;</span></span></a></li>
 </ul>
 </li>
 <li><a href="#sec-1-2">3.5</a>
@@ -274,8 +275,58 @@ do not change the API.
 <h3 id="sec-1-1">3.6</h3>
 <div class="outline-text-3" id="text-1-1">
 </div><div id="outline-container-sec-1-1-1" class="outline-4">
-<h4 id="sec-1-1-1">3.6.1 <span class="timestamp-wrapper"><span class="timestamp">&lt;2017-01-18 Wed&gt;</span></span></h4>
+<h4 id="sec-1-1-1">3.6.2 <span class="timestamp-wrapper"><span class="timestamp">&lt;2017-02-19 Sun&gt;</span></span></h4>
 <div class="outline-text-4" id="text-1-1-1">
+<ul class="org-ul">
+<li>Use cPickle when running under older python versions for improved
+performance (<a href="https://github.com/godaddy/Thespian/issues/34">Issue 34</a>).
+</li>
+
+<li>Update director bootstart for systemd to add "Want
+network-online.target" as well as "After network-online.target" to
+express dependency as well as ordering.
+</li>
+
+<li>Ensure address equality comparisons are commutative.
+</li>
+
+<li>Explicitly close transports on shutdown to avoid resource cleanup
+issues.
+</li>
+
+<li>Fixed bug where convention notifications for remotes that had only
+pre-registered could be delivered upon registration.
+</li>
+
+<li>Refactor external interface to use individual operation tracking
+instead of globals.
+</li>
+
+<li>Improved detection of shutdown and associated cleanup status and
+completion.
+</li>
+
+<li>Fix actor failure tests for more intentional testing of various
+actor failure modes.
+</li>
+
+<li>Misc internal cleanups to Queue transport; fixes for timeouts and
+dead target handling.
+</li>
+
+<li>Misc internal cleanups in UDP transport; fix handling of child
+management interrupts and signals from exited children.
+</li>
+
+<li>Misc test cleanups.
+</li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-sec-1-1-2" class="outline-4">
+<h4 id="sec-1-1-2">3.6.1 <span class="timestamp-wrapper"><span class="timestamp">&lt;2017-01-18 Wed&gt;</span></span></h4>
+<div class="outline-text-4" id="text-1-1-2">
 <ul class="org-ul">
 <li>Updated Director to not require root permissions for writing log
 files when no log files need to be written.
@@ -329,9 +380,9 @@ queue if address updates are performed post-queueing.
 </div>
 </div>
 
-<div id="outline-container-sec-1-1-2" class="outline-4">
-<h4 id="sec-1-1-2">3.6.0 <span class="timestamp-wrapper"><span class="timestamp">&lt;2017-01-02 Mon&gt;</span></span></h4>
-<div class="outline-text-4" id="text-1-1-2">
+<div id="outline-container-sec-1-1-3" class="outline-4">
+<h4 id="sec-1-1-3">3.6.0 <span class="timestamp-wrapper"><span class="timestamp">&lt;2017-01-02 Mon&gt;</span></span></h4>
+<div class="outline-text-4" id="text-1-1-3">
 <ul class="org-ul">
 <li>Enhancements
 
@@ -1846,7 +1897,7 @@ The 1.x Release series was developed and used internally by GoDaddy
 </div>
 <div id="postamble" class="status">
 <p class="author">Author: Kevin Quick &lt;kquick@godaddy.com&gt;</p>
-<p class="date">Created: 2017-01-18 Wed 23:11</p>
+<p class="date">Created: 2017-02-19 Sun 21:33</p>
 <p class="creator"><a href="http://www.gnu.org/software/emacs/">Emacs</a> 25.1.1 (<a href="http://orgmode.org">Org</a> mode 8.2.10)</p>
 <p class="validation"><a href="http://validator.w3.org/check?uri=referer">Validate</a></p>
 </div>
