@@ -7,7 +7,7 @@
 #+LATEX_HEADER: \product{Thespian}
 #+LATEX_HEADER: \component{Python Actor System}
 #+LATEX_HEADER: \doctype{Release Notes}
-#+LATEX_HEADER: \docrev{3.6.2}{2017 Feb 19}
+#+LATEX_HEADER: \docrev{3.6.3}{2017 Mar 02}
 #+LATEX_HEADER: \docid{TheDoc-06}
 #+OPTIONS: ^:nil num:nil
 
@@ -19,6 +19,11 @@ do not change the API.
 * 3.x
 
 ** 3.6
+
+*** 3.6.3 <2017-03-02 Thu>
+
+  * Revert changes causing a regression in 3.6.2 wherein messages are
+    dropped or not delivered ([[https://github.com/godaddy/Thespian/issues/37][Issue 37]]).
 
 *** 3.6.2 <2017-02-19 Sun>
 
