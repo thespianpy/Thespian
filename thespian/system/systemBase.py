@@ -250,12 +250,11 @@ class ExternalOpsToActors(object):
     def listen(self, timeout):
         while True:
             response = self._run_transport(toTimeDeltaOrNone(timeout))
-            if response is None: break
+            if not isinstance(response, ReceiveEnvelope):
+                break
             # Do not send miscellaneous ActorSystemMessages to the caller
             # that it might not recognize.
-            if response and \
-               hasattr(response, 'message') and \
-               not isInternalActorSystemMessage(response.message):
+            if not isInternalActorSystemMessage(response.message):
                 return response.message
         return None
 
@@ -275,15 +274,13 @@ class ExternalOpsToActors(object):
                 raise ActorSystemFailure('Transmit of ask message to %s failed (%s)'%(
                     str(anActor),
                     str(txwatch.failure)))
-            if response is None:
-                # Timed out, give up.
-                return None
+            if not isinstance(response, ReceiveEnvelope):
+                # Timed out or other failure, give up.
+                break
             # Do not send miscellaneous ActorSystemMessages to the
             # caller that it might not recognize.  If one of those was
             # recieved, loop to get another response.
-            if response and \
-               hasattr(response, 'message') and \
-               not isInternalActorSystemMessage(response.message):
+            if not isInternalActorSystemMessage(response.message):
                 return response.message
         return None
 
@@ -349,7 +346,7 @@ class systemBase(ExternalOpsToActors):
         txwatch = self._tx_to_admin(QueryExists())
         response = self._run_transport(MAX_ADMIN_STATUS_REQ_DELAY)
         return not txwatch.failed and \
-            response and \
+            isinstance(response, ReceiveEnvelope) and \
             isinstance(response.message, QueryAck) \
             and not response.message.inShutdown
 
@@ -368,12 +365,16 @@ class systemBase(ExternalOpsToActors):
                          '; aborting but not necessarily stopped',
                          level=logging.WARNING)
                 return
-            if response:
+            if isinstance(response, ReceiveEnvelope):
                 if isinstance(response.message, SystemShutdownCompleted):
                     break
                 else:
                     thesplog('Expected shutdown completed message, got: %s', response.message,
                              level=logging.WARNING)
+            elif isinstance(response, (Thespian__Run_Expired,
+                                       Thespian__Run_Terminated,
+                                       Thespian__Run_Expired)):
+                break
             else:
                 thesplog('No response to Admin shutdown request; Actor system not completely shutdown',
                          level=logging.ERROR)

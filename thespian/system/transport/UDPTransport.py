@@ -241,9 +241,9 @@ class UDPTransport(asyncTransportBase, wakeupTransportBase):
             # transmits are not queued/multistage in this transport, no waiting
             return 0
 
-        self._aborting_run = False
+        self._aborting_run = None
 
-        while not self.run_time.expired() and not self._aborting_run:
+        while not self.run_time.expired() and self._aborting_run is None:
             if self._rcvd:
                 rcvdEnv = self._rcvd.pop()
             else:
@@ -256,7 +256,7 @@ class UDPTransport(asyncTransportBase, wakeupTransportBase):
                     import errno
                     if se.args[0] != errno.EINTR:
                         thesplog('Error during select: %s', se)
-                        return None
+                        return Thespian__Run_Errored(se)
                     continue
                 except ValueError:
                     # self.run_time can expire between the while test
@@ -266,7 +266,7 @@ class UDPTransport(asyncTransportBase, wakeupTransportBase):
                 if [] == sresp:
                     if [] == _ign1 and [] == _ign2:
                         # Timeout, give up
-                        return None
+                        return Thespian__Run_Expired()
                     thesplog('Waiting for read event, but got %s %s', _ign1, _ign2, level=logging.WARNING)
                     continue
                 rawmsg, sender = self.socket.recvfrom(65535)
@@ -289,11 +289,16 @@ class UDPTransport(asyncTransportBase, wakeupTransportBase):
                 rcvdEnv = ReceiveEnvelope(sendAddr, msg)
             if incomingHandler is None:
                 return rcvdEnv
-            r = incomingHandler(rcvdEnv)
+            r = Thespian__Run_HandlerResult(incomingHandler(rcvdEnv))
             if not r:
-                return r # handler returned False, indicating run() should exit
+                # handler returned false-ish, indicating run() should exit
+                return r
 
-        return None
+        if self._aborting_run is not None:
+            return self._aborting_run
+
+        return Thespian__Run_Expired()
+
 
     def check_pending_actions(self):
         expired, remaining = partition(lambda E: E[0].expired(),
@@ -311,6 +316,6 @@ class UDPTransport(asyncTransportBase, wakeupTransportBase):
            before returning, otherwise run() will terminate as soon as
            control returns to it from this call.
         """
-        # UDPTransport does not queue transmits but handles them inline, so no draining required.
-        self._aborting_run = True
-
+        # UDPTransport does not queue transmits but handles them
+        # inline, so no draining required.
+        self._aborting_run = Thespian__Run_Terminated()

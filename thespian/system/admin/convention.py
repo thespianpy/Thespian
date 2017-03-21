@@ -7,7 +7,8 @@ from thespian.system.timing import ExpiryTime
 from thespian.system.logdirector import LogAggregator
 from thespian.system.admin.globalNames import GlobalNamesAdmin
 from thespian.system.admin.adminCore import PendingSource
-from thespian.system.transport import TransmitIntent, ReceiveEnvelope
+from thespian.system.transport import (TransmitIntent, ReceiveEnvelope,
+                                       Thespian__Run_Terminated)
 from thespian.system.messages.admin import PendingActorResponse
 from thespian.system.messages.convention import *
 from thespian.system.sourceLoader import loadModuleFromHashSource
@@ -605,8 +606,10 @@ class ConventioneerAdmin(GlobalNamesAdmin):
         # Main loop for convention management.  Wraps the lower-level
         # transport with a stop at the next needed convention
         # registration period to re-register.
+        transport_continue = True
         try:
-            while not getattr(self, 'shutdown_completed', False):
+            while not getattr(self, 'shutdown_completed', False) and \
+                  not isinstance(transport_continue, Thespian__Run_Terminated):
                 delay = min(self._cstate.convention_inattention_delay(),
                             ExpiryTime(None) if self._hysteresisSender.delay.expired() else
                             self._hysteresisSender.delay
@@ -615,13 +618,15 @@ class ConventioneerAdmin(GlobalNamesAdmin):
                 # pingValids, but since delay will not be longer than
                 # a CONVENTION_REREGISTRATION_PERIOD, the worst case
                 # is a doubling of a pingValid period (which should be fine).
-                r = self.transport.run(self.handleIncoming, delay.remaining())
+                transport_continue = self.transport.run(self.handleIncoming,
+                                                        delay.remaining())
 
                 # Check Convention status based on the elapsed time
                 self._performIO(self._cstate.check_convention())
 
                 self._hysteresisSender.checkSends()
                 self._remove_expired_sources()
+
         except Exception as ex:
             import traceback
             thesplog('ActorAdmin uncaught exception: %s', traceback.format_exc(),

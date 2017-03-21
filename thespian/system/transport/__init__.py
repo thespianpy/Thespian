@@ -26,6 +26,46 @@ class Thespian__UpdateWork(object):
     pass
 
 
+class Thespian__Run__Result(object):
+    """Base class for values returned from the transport run() method.  In
+       general, a truthy value means continue and a false-ish value
+       (the default) means halt.
+    """
+    def __nonzero__(self): return False
+    def __bool__(self): return False
+
+
+class Thespian__Run_Expired(Thespian__Run__Result):
+    """Returned from the transport run() method if the run time has expired."""
+    pass
+
+
+class Thespian__Run_Terminated(Thespian__Run__Result):
+    """Returned from the transport run() method if the transport has been
+       shutdown and terminated and is no longer functional."""
+    pass
+
+
+class Thespian__Run_Errored(Thespian__Run_Terminated):
+    """Returned from the transport run() method if an internal error has
+       occurred.  Usually terminal"""
+    def __init__(self, err):
+        self.error = err
+
+
+class Thespian__Run_HandlerResult(Thespian__Run__Result):
+    """Returned handler result (false-ish).  Individual handlers should
+       return a simple value that the transport's run method wraps in
+       this object.
+    """
+    def __init__(self, val):
+        self.return_value = val
+    def __nonzero__(self): return self.return_value != 0
+    def __bool__(self): return bool(self.return_value)
+
+
+# ----------------------------------------------------------------------
+
 class TransportInit__Base(object): pass
 class ExternalInterfaceTransportInit(TransportInit__Base):
     """Used as first argument to Transport __init__ to indicate that this
@@ -59,7 +99,7 @@ class TransmitOnly(object):
 
 # ----------------------------------------------------------------------
 
-class ReceiveEnvelope(object):
+class ReceiveEnvelope(Thespian__Run__Result):
     "Represents the message received along with the sender's address"
     def __init__(self, sender, msg):
         self._sender  = sender
@@ -78,6 +118,11 @@ class ReceiveEnvelope(object):
         return 'ReceiveEnvelope(from: %s, %s msg: %s)'%(self.sender, msgt, smsg)
     def __str__(self): return self.identify()
 
+    # As a Thespian__Run__Result, this is false-ish because the caller
+    # supplied no receive handler, so the run should stop looping and
+    # return this value to the caller.
+    def __nonzero__(self): return False
+    def __bool__(self): return False
 
 
 # ----------------------------------------------------------------------

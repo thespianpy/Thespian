@@ -107,8 +107,10 @@ class multiprocessCommon(systemBase):
         self.transport.connectEndpoint(endpointPrep)
 
         response = self.transport.run(None, MAX_ADMIN_STARTUP_DELAY)
-        if not response or not isinstance(response.message, EndpointConnected):
-            raise InvalidActorAddress(adminAddr, 'not a valid ActorSystem admin')
+        if not isinstance(response, ReceiveEnvelope) or \
+           not isinstance(response.message, EndpointConnected):
+            raise InvalidActorAddress(adminAddr,
+                                      'not a valid ActorSystem admin')
 
 
 def closeUnusedFiles(transport):

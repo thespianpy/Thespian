@@ -155,7 +155,7 @@ class MultiprocessQueueTCore_Common(object):
 
 
     def abort_core_run(self):
-        self._aborting_run = True
+        self._aborting_run = Thespian__Run_Terminated()
 
 
     def core_common_transmit(self, transmit_intent, from_addr):
@@ -197,9 +197,9 @@ class MultiprocessQueueTCore_Common(object):
             # transmits are not queued/multistage in this transport, no waiting
             return 0
 
-        self._aborting_run = False
+        self._aborting_run = None
 
-        while not run_time_f().expired() and not self._aborting_run:
+        while not run_time_f().expired() and self._aborting_run is None:
             try:
                 # Unfortunately, the Queue object is not signal-safe,
                 # so a frequent wakeup is needed to check
@@ -249,9 +249,11 @@ class MultiprocessQueueTCore_Common(object):
             if self.isMyAddress(destAddr):
                 if incoming_handler is None:
                     return ReceiveEnvelope(sendAddr, msg)
-                r = incoming_handler(ReceiveEnvelope(sendAddr, msg))
+                r = Thespian__Run_HandlerResult(
+                    incoming_handler(ReceiveEnvelope(sendAddr, msg)))
                 if not r:
-                    return r  # handler returned False, indicating run() should exit
+                    # handler returned False-ish, indicating run() should exit
+                    return r
             else:
                 # Note: the following code has implicit knowledge of serialize() and xmit
                 putQValue = lambda relayer: (relayer, (sendAddr, destAddr, msg))
@@ -345,7 +347,12 @@ class MultiprocessQueueTCore_Common(object):
                                        timePeriodSeconds(MAX_QUEUE_TRANSMIT_PERIOD))
                             except Q.Full:
                                 pass
-        return None
+
+        if self._aborting_run is not None:
+            return self._aborting_run
+
+        return Thespian__Run_Expired()
+
 
 
     def interrupt_run(self, signal_shutdown=False, check_children=False):
