@@ -124,6 +124,8 @@ class TestFuncThreadedExternal(object):
 
     @pytest.mark.parametrize('count', [1,2,5,10,100])
     def test_multiple_threads_private_context(self, asys, count):
+        # The Queue base has undiagnosed issues with threading shutdown
+        unstable_test(asys, 'multiprocQueueBase')
         # The simpleSystemBase is unsupported in this mode because the
         # main thread does not perform any ActorSystem operations, so
         # it never provides the context for the other threads to have
@@ -147,10 +149,12 @@ class TestFuncThreadedExternal(object):
 
     @pytest.mark.parametrize('count', [1,2,5,10,100])
     def test_multiple_threads_private_context_ask(self, asys, count):
+        # The Queue base has undiagnosed issues with threading shutdown
+        unstable_test(asys, 'multiprocQueueBase')
         # UDP does not have delivery confirmation, it is unreliable,
         # especially at higher counts.
         if count > 10:
-            unstable_test(asys, 'multiprocUDPBase', 'multiprocQueueBase')
+            unstable_test(asys, 'multiprocQueueBase')
         global finishes_lock, success_finishes, failure_finishes
         starting_successes = success_finishes
         transfer = asys.createActor(Transfer)
