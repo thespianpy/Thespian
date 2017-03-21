@@ -77,6 +77,7 @@ even between processes on separate systems.
 # transmit sequence (as opposed to a blocking transmit, which would
 # consume the processing budget for highly active scenarios).
 
+import threading
 
 import logging
 from thespian.system.utilis import (thesplog, fmap, partition)
@@ -103,7 +104,6 @@ except Exception:
     import pickle
 import errno
 from contextlib import closing
-
 
 DEFAULT_ADMIN_PORT = 1900
 
@@ -243,6 +243,10 @@ class TXOnlyAdminTCPv4ActorAddress(
     pass
 
 
+class ExternalTransportCopy(object): pass
+
+
+
 class TCPTransport(asyncTransportBase, wakeupTransportBase):
     "A transport using TCP IPv4 sockets for communications."
 
@@ -276,6 +280,12 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
                                                  external=(self._parentAddr or
                                                            self._adminAddr or
                                                            True)))
+        elif isinstance(initType, ExternalTransportCopy):
+            self._adminAddr, self.txOnly, adminRouting = args
+            self._parentAddr = None
+            isAdmin = False
+            templateAddr = ActorAddress(
+                TCPv4ActorAddress(None, 0, self._adminAddr))
         else:
             thesplog('TCPTransport init of type %s unsupported', type(initType), level=logging.ERROR)
             raise ActorSystemStartupFailure('Invalid TCPTransport init type (%s)'%type(initType))
@@ -411,6 +421,16 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
             thesplog('Invalid TCP convention address "%s": %s', convAddr, ex,
                      level=logging.ERROR)
             raise InvalidActorAddress(convAddr, str(ex))
+
+    def external_transport_clone(self):
+        # An external process wants a unique context for communicating
+        # with Actors.
+        return TCPTransport(ExternalTransportCopy(),
+                            self._adminAddr,
+                            self.txOnly,
+                            isinstance(self.myAddress.addressDetails,
+                                       RoutedTCPv4ActorAddress))
+
 
     def _updateStatusResponse(self, resp):
         """Called to update a Thespian_SystemStatus or Thespian_ActorStatus

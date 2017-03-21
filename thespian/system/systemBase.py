@@ -15,6 +15,7 @@ from thespian.system.messages.admin import *
 from thespian.system.messages.status import *
 from thespian.system.transport import *
 import threading
+from contextlib import closing
 from datetime import timedelta
 import os
 
@@ -167,27 +168,26 @@ class ExternalOpsToActors(object):
         self._numPrimaries = self._numPrimaries + 1
         actorClassName = '%s.%s'%(actorClass.__module__, actorClass.__name__) \
                          if hasattr(actorClass, '__name__') else actorClass
-        response = NewActorResponse(self.transport, self.adminAddr)
-        self.transport.scheduleTransmit(
-            None,
-            TransmitIntent(self.adminAddr,
-                           PendingActor(actorClassName,
-                                        None, self._numPrimaries,
-                                        targetActorRequirements,
-                                        globalName=globalName,
-                                        sourceHash=sourceHash),
-                           onError=response.transmit_failed))
-        endwait = ExpirationTimer(MAX_CHILD_ACTOR_CREATE_DELAY)
-        # Do not use _run_transport: the tx_external transport
-        # context acquired above is unique to this thread and
-        # should not be synchronized/restricted by other threads.
-        self._run_transport(MAX_CHILD_ACTOR_CREATE_DELAY,
-                            incomingHandler=response)
-        # Other items might abort the transport run... like transmit
-        # failures on a previous ask() that itself already timed out.
-        while response.pending and not endwait.expired():
-            self._run_transport(MAX_CHILD_ACTOR_CREATE_DELAY,
-                                incomingHandler=response)
+        with closing(self.transport.external_transport_clone()) as tx_external:
+            response = NewActorResponse(tx_external, self.adminAddr)
+            tx_external.scheduleTransmit(
+                None,
+                TransmitIntent(self.adminAddr,
+                               PendingActor(actorClassName,
+                                            None, self._numPrimaries,
+                                            targetActorRequirements,
+                                            globalName=globalName,
+                                            sourceHash=sourceHash),
+                               onError=response.transmit_failed))
+            endwait = ExpirationTimer(MAX_CHILD_ACTOR_CREATE_DELAY)
+            # Do not use _run_transport: the tx_external transport
+            # context acquired above is unique to this thread and
+            # should not be synchronized/restricted by other threads.
+            tx_external.run(response, MAX_CHILD_ACTOR_CREATE_DELAY)
+            # Other items might abort the transport run... like transmit
+            # failures on a previous ask() that itself already timed out.
+            while response.pending and not endwait.expired():
+                tx_external.run(response, MAX_CHILD_ACTOR_CREATE_DELAY)
 
         if response.failed:
             if response.failure == PendingActorResponse.ERROR_Invalid_SourceHash:
@@ -438,6 +438,15 @@ class systemBase(ExternalOpsToActors):
                                         str(loadLimit))
 
 
+    def external_clone(self):
+        """Get a separate local endpoint that does not commingle traffic with
+           the the main ActorSystem or other contexts.  Makes internal
+           blocking calls, so primarily appropriate for a
+           multi-threaded client environment.
+        """
+        return BaseContext(self.adminAddr, self.transport)
+
+
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     # Actors that involve themselves in topology
 
@@ -455,3 +464,11 @@ class systemBase(ExternalOpsToActors):
                 remoteAddress
                 if isinstance(remoteAddress, ActorAddress) else
                 self.transport.getAddressFromString(remoteAddress)))
+
+
+class BaseContext(ExternalOpsToActors):
+    def __init__(self, adminAddr, transport):
+        super(BaseContext, self).__init__(adminAddr,
+                                          transport.external_transport_clone())
+    def exit_context(self):
+        self.transport.close()

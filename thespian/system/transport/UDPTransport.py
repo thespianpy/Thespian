@@ -48,6 +48,9 @@ class UDPEndpoint(TransportInit__Base):  # internal use by this module only
     def addrInst(self): return self.args[0]
 
 
+class UDPTransportCopy(object): pass
+
+
 class UDPTransport(asyncTransportBase, wakeupTransportBase):
     "A transport using UDP IPv4 sockets for communications."
 
@@ -69,6 +72,9 @@ class UDPTransport(asyncTransportBase, wakeupTransportBase):
             # difference is that we bind to '0.0.0.0' (inaddr_any),
             # but that's not a valid address for people to send stuff
             # to us.
+        elif isinstance(initType, UDPTransportCopy):
+            self._adminAddr = args[0]
+            self._parentAddr = None
         else:
             thesplog('UDPTransport init of type %s unsupported', str(initType), level=logging.ERROR)
         if not templateAddr:
@@ -98,6 +104,11 @@ class UDPTransport(asyncTransportBase, wakeupTransportBase):
         if hasattr(self, 'socket'):
             self.socket.close()
             delattr(self, 'socket')
+
+
+    def external_transport_clone(self):
+        # Return a unique context for actor communication from external
+        return UDPTransport(UDPTransportCopy(), self._adminAddr)
 
 
     def protectedFileNumList(self):
