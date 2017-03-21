@@ -76,7 +76,7 @@ Table of Contents
 
   [Python language] http://python.org
 
-  [Thespian library] http://github.com/godaddy/Thespian
+  [Thespian library] http://github.com/kquick/Thespian
 
 
 1.1 The Actor Model
@@ -123,6 +123,9 @@ Table of Contents
 2 Thespian Features
 ═══════════════════
 
+
+
+
 2.1 Thespian Walk-Through
 ─────────────────────────
 
@@ -147,9 +150,9 @@ Table of Contents
 ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 
   The Thespian Python library is available on github at
-  [http://github.com/godaddy/Thespian], from [http://pypi.python.org],
-  or possibly via a package provided for your OS.  You should probably
-  use the latter if it's available, but otherwise just use `pip' for
+  [http://github.com/kquick/Thespian], from [http://pypi.python.org], or
+  possibly via a package provided for your OS.  You should probably use
+  the latter if it's available, but otherwise just use `pip' for
   simplicity:
 
   ┌────
@@ -714,7 +717,10 @@ Table of Contents
 
   This however will stop all other Actors that are currently running in
   that system base.  The alternative is to dynamically load the new
-  source code as described in Dynamic Source Loading.
+  source code as described in [Dynamic Source Loading].
+
+
+  [Dynamic Source Loading] See section 3
 
 
 2.4 Logging
@@ -1072,11 +1078,14 @@ Table of Contents
   available environment as appropriate… again without any changes to the
   Actor application code itself.
 
-  The combination of location independence and Horizontal Scalability
+  The combination of location independence and [Horizontal Scalability]
   means that Actor-based applications are particularly well suited to
   *cloud-based solutions* where changes in the relative size of the
   cloud deployment can be realized through duplicating, moving, or
   de-duplicating Actors.
+
+
+  [Horizontal Scalability] See section 2.2.1
 
 
 2.6.1 Capability-based Location Selection
@@ -1279,7 +1288,7 @@ Table of Contents
   Actors are created.  This can be useful in several ways:
 
   ‣ Updating source code running in persistent ActorSystem base
-    instances (as described in Base Persistence).
+    instances (as described in [Base Persistence]).
 
   ‣ Ensuring that the same version of Actor sources are running
     throughout the environment.
@@ -1391,6 +1400,9 @@ Table of Contents
 
   The sources loaded remain loaded until unloaded via a call to
   `unloadActorSource()' or until the Actor System exits.
+
+
+  [Base Persistence] See section 2.3.1
 
 
 4 Shell

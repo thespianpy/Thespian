@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
 <title>Thespian Developer's Notes</title>
-<!-- 2017-01-02 Mon 22:38 -->
+<!-- 2017-03-20 Mon 17:11 -->
 <meta  http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta  name="generator" content="Org-mode" />
 <meta  name="author" content="Kevin Quick &lt;kquick@godaddy.com&gt;" />
@@ -101,6 +101,7 @@
 <script type="text/javascript" src="styles/bigblow/js/hideshow.js"></script>
 <script type="text/javascript" src="styles/lib/js/jquery.stickytableheaders.min.js"></script>
 <link href="thespian.css" rel="stylesheet" type="text/css"/>
+<base href="http://thespianpy.com/developer.html">
 <script type="text/javascript">
 /*
 @licstart  The following is the entire license notice for the
@@ -155,33 +156,36 @@ for the JavaScript code in this tag.
 <h2>Table of Contents</h2>
 <div id="text-table-of-contents">
 <ul>
-<li><a href="#sec-1">1. Source</a>
+<li><a href="#h:851aafed-d085-49ed-b189-3bfd90a8e573">1. Source</a>
 <ul>
-<li><a href="#sec-1-1">1.1. Availability</a></li>
-<li><a href="#sec-1-2">1.2. Documentation</a></li>
-<li><a href="#sec-1-3">1.3. Issues</a></li>
-<li><a href="#sec-1-4">1.4. Contributions</a></li>
+<li><a href="#h:273880cf-f38b-40bd-8ea0-95d03d668b29">1.1. Availability</a></li>
+<li><a href="#h:9ebe8005-1460-4634-bead-237826702ea2">1.2. Documentation</a></li>
+<li><a href="#h:e9695953-86ef-420c-a33a-4a0db2455a04">1.3. Issues</a></li>
+<li><a href="#h:a0f114cf-cfc2-4ae6-a852-a4db84986f57">1.4. Contributions</a></li>
 </ul>
 </li>
-<li><a href="#sec-2">2. Testing</a>
+<li><a href="#h:701a67c8-8882-49ff-928c-14ae0b663cbf">2. Testing</a>
 <ul>
-<li><a href="#sec-2-1">2.1. Approach</a></li>
-<li><a href="#sec-2-2">2.2. Test Duration</a></li>
-<li><a href="#sec-2-3">2.3. Testing System Bases</a></li>
-<li><a href="#sec-2-4">2.4. Running Tests</a></li>
-<li><a href="#sec-2-5">2.5. Writing Tests</a></li>
+<li><a href="#h:1c7bb213-1e22-455e-b767-c9a6a1a5cd68">2.1. Approach</a></li>
+<li><a href="#h:f099ef66-5ab1-45d7-a700-b065f885ca75">2.2. Test Duration</a></li>
+<li><a href="#h:1dfd22a5-0c88-4d8e-8e0d-5383a503678a">2.3. Testing System Bases</a></li>
+<li><a href="#h:a992a85a-623f-47c8-a810-deefcb82a521">2.4. Running Tests</a></li>
+<li><a href="#h:bf031295-256d-471e-922a-808a77c3fbec">2.5. Writing Tests</a></li>
 </ul>
 </li>
 </ul>
 </div>
 </div>
 
-<div id="outline-container-sec-1" class="outline-2">
-<h2 id="sec-1"><span class="section-number-2">1</span> Source</h2>
-<div class="outline-text-2" id="text-1">
-</div><div id="outline-container-sec-1-1" class="outline-3">
-<h3 id="sec-1-1"><span class="section-number-3">1.1</span> Availability</h3>
-<div class="outline-text-3" id="text-1-1">
+<div id="outline-container-h:851aafed-d085-49ed-b189-3bfd90a8e573" class="outline-2">
+<h2 id="h:851aafed-d085-49ed-b189-3bfd90a8e573"><a id="sec-1" name="sec-1"></a><span class="section-number-2">1</span> Source</h2>
+<div class="outline-text-2" id="text-h:851aafed-d085-49ed-b189-3bfd90a8e573">
+</div>
+
+<div id="outline-container-h:273880cf-f38b-40bd-8ea0-95d03d668b29" class="outline-3">
+<h3 id="h:273880cf-f38b-40bd-8ea0-95d03d668b29"><a id="sec-1-1" name="sec-1-1"></a><span class="section-number-3">1.1</span> Availability</h3>
+<div class="outline-text-3" id="text-h:273880cf-f38b-40bd-8ea0-95d03d668b29">
+
 <p>
 Source code for Thespian is available at
 <a href="https://github.com/godaddy/Thespian">https://github.com/godaddy/Thespian</a> under the MIT license.
@@ -189,9 +193,10 @@ Source code for Thespian is available at
 </div>
 </div>
 
-<div id="outline-container-sec-1-2" class="outline-3">
-<h3 id="sec-1-2"><span class="section-number-3">1.2</span> Documentation</h3>
-<div class="outline-text-3" id="text-1-2">
+<div id="outline-container-h:9ebe8005-1460-4634-bead-237826702ea2" class="outline-3">
+<h3 id="h:9ebe8005-1460-4634-bead-237826702ea2"><a id="sec-1-2" name="sec-1-2"></a><span class="section-number-3">1.2</span> Documentation</h3>
+<div class="outline-text-3" id="text-h:9ebe8005-1460-4634-bead-237826702ea2">
+
 <p>
 Thespian documentation is maintained in the source tree under the
 <code>doc/</code> directory.  Documentation is written in Emacs orgmode,
@@ -217,18 +222,20 @@ $ bash doc/gen_html.sh doc/using.org
 </div>
 </div>
 
-<div id="outline-container-sec-1-3" class="outline-3">
-<h3 id="sec-1-3"><span class="section-number-3">1.3</span> Issues</h3>
-<div class="outline-text-3" id="text-1-3">
+<div id="outline-container-h:e9695953-86ef-420c-a33a-4a0db2455a04" class="outline-3">
+<h3 id="h:e9695953-86ef-420c-a33a-4a0db2455a04"><a id="sec-1-3" name="sec-1-3"></a><span class="section-number-3">1.3</span> Issues</h3>
+<div class="outline-text-3" id="text-h:e9695953-86ef-420c-a33a-4a0db2455a04">
+
 <p>
 Any issues should be posted via the <a href="https://github.com/godaddy/Thespian">main Thespian github page</a>.
 </p>
 </div>
 </div>
 
-<div id="outline-container-sec-1-4" class="outline-3">
-<h3 id="sec-1-4"><span class="section-number-3">1.4</span> Contributions</h3>
-<div class="outline-text-3" id="text-1-4">
+<div id="outline-container-h:a0f114cf-cfc2-4ae6-a852-a4db84986f57" class="outline-3">
+<h3 id="h:a0f114cf-cfc2-4ae6-a852-a4db84986f57"><a id="sec-1-4" name="sec-1-4"></a><span class="section-number-3">1.4</span> Contributions</h3>
+<div class="outline-text-3" id="text-h:a0f114cf-cfc2-4ae6-a852-a4db84986f57">
+
 <p>
 Contributions (both source and documentation) should be in the
 form of pull requests.  Contributions will not be accepted until
@@ -242,12 +249,15 @@ to sign the agreement when you make your contribution.
 </div>
 </div>
 
-<div id="outline-container-sec-2" class="outline-2">
-<h2 id="sec-2"><span class="section-number-2">2</span> Testing</h2>
-<div class="outline-text-2" id="text-2">
-</div><div id="outline-container-sec-2-1" class="outline-3">
-<h3 id="sec-2-1"><span class="section-number-3">2.1</span> Approach</h3>
-<div class="outline-text-3" id="text-2-1">
+<div id="outline-container-h:701a67c8-8882-49ff-928c-14ae0b663cbf" class="outline-2">
+<h2 id="h:701a67c8-8882-49ff-928c-14ae0b663cbf"><a id="sec-2" name="sec-2"></a><span class="section-number-2">2</span> Testing</h2>
+<div class="outline-text-2" id="text-h:701a67c8-8882-49ff-928c-14ae0b663cbf">
+</div>
+
+<div id="outline-container-h:1c7bb213-1e22-455e-b767-c9a6a1a5cd68" class="outline-3">
+<h3 id="h:1c7bb213-1e22-455e-b767-c9a6a1a5cd68"><a id="sec-2-1" name="sec-2-1"></a><span class="section-number-3">2.1</span> Approach</h3>
+<div class="outline-text-3" id="text-h:1c7bb213-1e22-455e-b767-c9a6a1a5cd68">
+
 <p>
 While there are some Thespian tests that use mocking to reduce the
 effects of external elements, the main focus of Thespian testing is
@@ -265,9 +275,10 @@ systembases are tested on the same set of tests.
 </div>
 </div>
 
-<div id="outline-container-sec-2-2" class="outline-3">
-<h3 id="sec-2-2"><span class="section-number-3">2.2</span> Test Duration</h3>
-<div class="outline-text-3" id="text-2-2">
+<div id="outline-container-h:f099ef66-5ab1-45d7-a700-b065f885ca75" class="outline-3">
+<h3 id="h:f099ef66-5ab1-45d7-a700-b065f885ca75"><a id="sec-2-2" name="sec-2-2"></a><span class="section-number-3">2.2</span> Test Duration</h3>
+<div class="outline-text-3" id="text-h:f099ef66-5ab1-45d7-a700-b065f885ca75">
+
 <p>
 Because of the approach above running the tests can take some time.
 Test can even can hang if there is bad code or if system resources
@@ -282,15 +293,16 @@ validating functionality is the most important goal.
 </p>
 
 <p>
-As of Thespian 2.1.5, the <code>run_main_functional_tests.sh</code> duration is
-430&#x2013;650 seconds.
+As of Thespian 3.7.0, the full test suite duration is approximately
+1500 seconds.
 </p>
 </div>
 </div>
 
-<div id="outline-container-sec-2-3" class="outline-3">
-<h3 id="sec-2-3"><span class="section-number-3">2.3</span> Testing System Bases</h3>
-<div class="outline-text-3" id="text-2-3">
+<div id="outline-container-h:1dfd22a5-0c88-4d8e-8e0d-5383a503678a" class="outline-3">
+<h3 id="h:1dfd22a5-0c88-4d8e-8e0d-5383a503678a"><a id="sec-2-3" name="sec-2-3"></a><span class="section-number-3">2.3</span> Testing System Bases</h3>
+<div class="outline-text-3" id="text-h:1dfd22a5-0c88-4d8e-8e0d-5383a503678a">
+
 <p>
 Because all systembases are tested, it is necessary to accomodate
 the differences between those system bases.  For most Actors, there
@@ -310,13 +322,15 @@ this in the Running Tests section below.
 </div>
 </div>
 
-<div id="outline-container-sec-2-4" class="outline-3">
-<h3 id="sec-2-4"><span class="section-number-3">2.4</span> Running Tests</h3>
-<div class="outline-text-3" id="text-2-4">
+<div id="outline-container-h:a992a85a-623f-47c8-a810-deefcb82a521" class="outline-3">
+<h3 id="h:a992a85a-623f-47c8-a810-deefcb82a521"><a id="sec-2-4" name="sec-2-4"></a><span class="section-number-3">2.4</span> Running Tests</h3>
+<div class="outline-text-3" id="text-h:a992a85a-623f-47c8-a810-deefcb82a521">
+
 <p>
 Tests are written to fairly conventional Python unittest standards
-without relying on plugins.  Tests are normally run via <code>nose</code>, and
-the latter provides various testing controls.
+without relying on plugins.  Tests are normally run via the pytest
+package (run via <code>$ py.test</code>), and the latter provides various
+testing controls.
 </p>
 
 <p>
@@ -325,7 +339,7 @@ those tests is usually sufficient:
 </p>
 
 <pre class="example">
-$ nosetests thespian/test/testSimpleActor.py:TestASimpleSystem
+$ py.test thespian/test/testSimpleActor.py::TestASimpleSystem
 </pre>
 
 <p>
@@ -337,121 +351,41 @@ bases (due to alphabetically appearing first).
 
 <p>
 The viability and focus of individual testcases is specified using
-member attributes on those test case classes.
+methods from the <code>thespian/test/__init__.py</code> file:
 </p>
 
-<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+<dl class="org-dl">
+<dt> unstable_test </dt><dd>     Specifies that the test is unstable for the specified base and
+should be skipped. The features tested may usually work, but are
+not reliably supported by the underlying base (e.g. the UDP
+transport does not provide delivery guarantees, so hi-traffic
+tests are marked with <code>unstable_test("multiprocUDPBase")</code>
 
-
-<colgroup>
-<col  class="left" />
-
-<col  class="left" />
-
-<col  class="left" />
-</colgroup>
-<thead>
-<tr>
-<th scope="col" class="left">Attribute</th>
-<th scope="col" class="left">Values</th>
-<th scope="col" class="left">Usage</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td class="left"><code>testbase</code></td>
-<td class="left">"<code>Simple</code>"</td>
-<td class="left">Specifies which System Base is being used.</td>
-</tr>
-
-<tr>
-<td class="left">&#xa0;</td>
-<td class="left">"<code>MultiprocUDP</code>"</td>
-<td class="left">&#xa0;</td>
-</tr>
-
-<tr>
-<td class="left">&#xa0;</td>
-<td class="left">"<code>MultiprocTCP</code>"</td>
-<td class="left">&#xa0;</td>
-</tr>
-
-<tr>
-<td class="left">&#xa0;</td>
-<td class="left">"<code>MultiprocQueue</code>"</td>
-<td class="left">&#xa0;</td>
-</tr>
-</tbody>
-<tbody>
-<tr>
-<td class="left"><code>unstable</code></td>
-<td class="left"><code>False</code> / <code>True</code></td>
-<td class="left">True if the test does not provide stable results.</td>
-</tr>
-
-<tr>
-<td class="left">&#xa0;</td>
-<td class="left">&#xa0;</td>
-<td class="left">This usually indicates that the transport or</td>
-</tr>
-
-<tr>
-<td class="left">&#xa0;</td>
-<td class="left">&#xa0;</td>
-<td class="left">services used by this system base are not reliable.</td>
-</tr>
-</tbody>
-<tbody>
-<tr>
-<td class="left"><code>scope</code></td>
-<td class="left">"<code>unit</code>" / "<code>func</code>"</td>
-<td class="left">Scope of this test.  The expectation is that unit tests</td>
-</tr>
-
-<tr>
-<td class="left">&#xa0;</td>
-<td class="left">&#xa0;</td>
-<td class="left">will exercise internal code only and not affect/utilize</td>
-</tr>
-
-<tr>
-<td class="left">&#xa0;</td>
-<td class="left">&#xa0;</td>
-<td class="left">system resources such as creating processes, using sockets, etc.</td>
-</tr>
-</tbody>
-</table>
-
-<p>
-These attributes should be specified on the class itself:
-</p>
-
-<div class="org-src-container">
-
-<pre class="src src-python"><span class="linenr"> 1: </span>class TestASimpleSystem(ActorSystemTestCase):
-<span class="linenr"> 2: </span>    testbase = 'Simple'
-<span class="linenr"> 3: </span>    scope = 'func'
-<span class="linenr"> 4: </span>
-<span class="linenr"> 5: </span>    def test_something(self):
-<span class="linenr"> 6: </span>        "insert test here"
-<span class="linenr"> 7: </span>
-<span class="linenr"> 8: </span>    def test06_frobnicator(self):
-<span class="linenr"> 9: </span>        "verify the frobnicator functionality"
-<span class="linenr">10: </span>
-<span class="linenr">11: </span>class TestMultiprocUDPSystem(TestASimpleSystem):
-<span class="linenr">12: </span>    testbase = 'MultiprocUDP'
-<span class="linenr">13: </span>    unstable = True # see note in test06
+<pre class="example">
+unstable_test(asys, basename[, ...])
 </pre>
-</div>
+</dd>
+
+<dt> actor_system_unsupported </dt><dd>     Specifies that the functionality being tested is not supported by
+this particular system base and the test should be skipped for
+the indicated base(s).
+
+<pre class="example">
+actor_system_unsupported(asys, basename [,...])
+</pre>
+</dd>
+</dl>
+
 
 <p>
 When running the tests from the command line, the normal
-nosetest-based commands can be used, with optional attribute
-specifiers.  For example, to run all stable unit tests:
+pytest-based commands can be used, with optional attribute
+specifiers to identify tests, categories ("Func" or "Unit"), and
+system bases.  For example, to run all unit tests:
 </p>
 
 <pre class="example">
-$ nosetests -A 'unstable != 1 and scope == "unit"'
+$ py.test -k Unit
 </pre>
 
 <p>
@@ -462,22 +396,20 @@ stable functional tests for the standard set of testbases:
 </p>
 
 <pre class="example">
-$ nosetests -A 'unstable != 1 and scope == "func" and testbase in ["Simple", "MultiprocTCP"]'
+$ py.test -k Func
 </pre>
 </div>
 </div>
 
-<div id="outline-container-sec-2-5" class="outline-3">
-<h3 id="sec-2-5"><span class="section-number-3">2.5</span> Writing Tests</h3>
-<div class="outline-text-3" id="text-2-5">
+<div id="outline-container-h:bf031295-256d-471e-922a-808a77c3fbec" class="outline-3">
+<h3 id="h:bf031295-256d-471e-922a-808a77c3fbec"><a id="sec-2-5" name="sec-2-5"></a><span class="section-number-3">2.5</span> Writing Tests</h3>
+<div class="outline-text-3" id="text-h:bf031295-256d-471e-922a-808a77c3fbec">
+
 <p>
-When writing tests for Thespian, the <code>ActorSystemTestCase</code> as imported
-from <code>thespian.test</code> is recommended as a base class for tests using
-actors.  This base class provides a <code>setUp()</code> method that establishes
-the system base to utilize, and a <code>tearDown()</code> method that shuts down
-the Actor System automatically.  It also provides a <code>setSystemBase()</code>
-method that can be used to specify which system base is to be used for
-testing.
+When writing tests for Thespian, there is an <code>asys</code> fixture for pytest
+that provides an initialized ActorSystem for each system base.
+Writing the test to accept <code>asys</code> as a parameter will cause pytest to
+run the test once for each system base type.
 </p>
 </div>
 </div>
@@ -485,7 +417,7 @@ testing.
 </div>
 <div id="postamble" class="status">
 <p class="author">Author: Kevin Quick &lt;kquick@godaddy.com&gt;</p>
-<p class="date">Created: 2017-01-02 Mon 22:38</p>
+<p class="date">Created: 2017-03-20 Mon 17:11</p>
 <p class="creator"><a href="http://www.gnu.org/software/emacs/">Emacs</a> 25.1.1 (<a href="http://orgmode.org">Org</a> mode 8.2.10)</p>
 <p class="validation"><a href="http://validator.w3.org/check?uri=referer">Validate</a></p>
 </div>

@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
 <title>Thespian Actors User's Guide</title>
-<!-- 2017-01-02 Mon 22:39 -->
+<!-- 2017-03-20 Mon 17:11 -->
 <meta  http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta  name="generator" content="Org-mode" />
 <meta  name="author" content="Kevin Quick &lt;kquick@godaddy.com&gt;" />
@@ -101,6 +101,7 @@
 <script type="text/javascript" src="styles/bigblow/js/hideshow.js"></script>
 <script type="text/javascript" src="styles/lib/js/jquery.stickytableheaders.min.js"></script>
 <link href="thespian.css" rel="stylesheet" type="text/css"/>
+<base href="http://thespianpy.com/using.html">
 <script type="text/javascript">
 /*
 @licstart  The following is the entire license notice for the
@@ -155,223 +156,224 @@ for the JavaScript code in this tag.
 <h2>Table of Contents</h2>
 <div id="text-table-of-contents">
 <ul>
-<li><a href="#sec-1">1. Actor Overview</a>
+<li><a href="#h:f23d674d-ce24-48b4-8ad8-be8eb299e89e">1. Actor Overview</a>
 <ul>
-<li><a href="#sec-1-1">1.1. Actors</a></li>
-<li><a href="#sec-1-2">1.2. Actor Addresses</a></li>
-<li><a href="#sec-1-3">1.3. ActorSystem</a>
+<li><a href="#h:2889c112-6505-4b32-9dce-ac3e4a16ad11">1.1. Actors</a></li>
+<li><a href="#h:1348ab18-1a45-495b-ad27-84810a0b42f4">1.2. Actor Addresses</a></li>
+<li><a href="#h:4adf735c-f237-4a8e-98db-ec52567353ac">1.3. ActorSystem</a>
 <ul>
-<li><a href="#sec-1-3-1">1.3.1. Different Implementations</a></li>
-<li><a href="#sec-1-3-2">1.3.2. Multiple Systems</a></li>
+<li><a href="#h:27f1994d-f66e-4be7-a671-8eeeb81bbd4b">1.3.1. Different Implementations</a></li>
+<li><a href="#h:461f4dc3-4bd6-46fe-a33e-2ad2a8d82d53">1.3.2. Multiple Systems</a></li>
 </ul>
 </li>
-<li><a href="#sec-1-4">1.4. External Communications</a></li>
-<li><a href="#sec-1-5">1.5. Effects</a></li>
-<li><a href="#sec-1-6">1.6. Comparisons</a>
+<li><a href="#h:c183ae4b-b397-433f-aa4e-69a6838ece38">1.4. External Communications</a></li>
+<li><a href="#h:f9386620-2d2e-4f28-b971-0f106881f583">1.5. Effects</a></li>
+<li><a href="#h:4f420b34-24a5-49a0-b70b-e34a925e7c17">1.6. Comparisons</a>
 <ul>
-<li><a href="#sec-1-6-1">1.6.1. Message Bus (Pub/Sub) Architecture</a></li>
-<li><a href="#sec-1-6-2">1.6.2. Logging Systems</a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li><a href="#sec-2">2. Using Thespian</a>
-<ul>
-<li><a href="#sec-2-1">2.1. Starting an Actor System</a></li>
-<li><a href="#sec-2-2">2.2. Actor Lifecycle</a>
-<ul>
-<li><a href="#sec-2-2-1">2.2.1. Creating a Top-Level Actor</a></li>
-<li><a href="#sec-2-2-2">2.2.2. Creating an Actor</a></li>
-<li><a href="#sec-2-2-3">2.2.3. Killing an Actor</a></li>
-<li><a href="#sec-2-2-4">2.2.4. Parent Actor</a></li>
-<li><a href="#sec-2-2-5">2.2.5. Actor Failure</a></li>
+<li><a href="#h:357ddb80-542c-47d6-aa68-1964639777e9">1.6.1. Message Bus (Pub/Sub) Architecture</a></li>
+<li><a href="#h:aeed6732-198c-41a6-8d2b-45c3b57a120f">1.6.2. Logging Systems</a></li>
 </ul>
 </li>
 </ul>
 </li>
-<li><a href="#sec-3">3. Guidelines for Actors and their messages</a></li>
-<li><a href="#sec-4">4. Thespian Actor Feature Extensions</a>
+<li><a href="#h:bfd7e2ce-64cc-4267-85ce-091a3fd29a8b">2. Using Thespian</a>
 <ul>
-<li><a href="#sec-4-1">4.1. Message Delivery</a>
+<li><a href="#h:0c5d14ea-e462-4a9c-b078-58341cc70e6d">2.1. Starting an Actor System</a></li>
+<li><a href="#h:41cd5450-c34f-4672-aafa-c96ed29c3f01">2.2. Actor Lifecycle</a>
 <ul>
-<li><a href="#sec-4-1-1">4.1.1. Message Mutability</a></li>
-</ul>
-</li>
-<li><a href="#sec-4-2">4.2. Dead Letter Handling</a></li>
-<li><a href="#sec-4-3">4.3. Non-startable Actors</a></li>
-<li><a href="#sec-4-4">4.4. PoisonMessage Returns</a></li>
-<li><a href="#sec-4-5">4.5. Top-Level Actors</a></li>
-<li><a href="#sec-4-6">4.6. Named Actors</a></li>
-<li><a href="#sec-4-7">4.7. Timer Messages</a></li>
-<li><a href="#sec-4-8">4.8. Watching File Descriptors</a>
-<ul>
-<li><a href="#sec-4-8-1">4.8.1. Blocking Actors</a></li>
-</ul>
-</li>
-<li><a href="#sec-4-9">4.9. Actor Troupes</a></li>
-<li><a href="#sec-4-10">4.10. ActorSystem Capabilities</a></li>
-<li><a href="#sec-4-11">4.11. Other Actor Systems</a>
-<ul>
-<li><a href="#sec-4-11-1">4.11.1. Convention Establishment</a></li>
-<li><a href="#sec-4-11-2">4.11.2. Convention Administrator Communications</a></li>
-</ul>
-</li>
-<li><a href="#sec-4-12">4.12. Performance</a></li>
-<li><a href="#sec-4-13">4.13. Logging</a>
-<ul>
-<li><a href="#sec-4-13-1">4.13.1. Thespian Internals Logging</a></li>
-</ul>
-</li>
-<li><a href="#sec-4-14">4.14. Actor Code Distribution</a></li>
-</ul>
-</li>
-<li><a href="#sec-5">5. Actor API</a>
-<ul>
-<li><a href="#sec-5-1">5.1. myAddress</a></li>
-<li><a href="#sec-5-2">5.2. receiveMessage</a>
-<ul>
-<li><a href="#sec-5-2-1">5.2.1. Return Value</a></li>
-</ul>
-</li>
-<li><a href="#sec-5-3">5.3. createActor</a>
-<ul>
-<li><a href="#sec-5-3-1">5.3.1. globalName</a></li>
-<li><a href="#sec-5-3-2">5.3.2. Actor Creation Gotchas</a></li>
-</ul>
-</li>
-<li><a href="#sec-5-4">5.4. send</a></li>
-<li><a href="#sec-5-5">5.5. wakeupAfter</a></li>
-<li><a href="#sec-5-6">5.6. handleDeadLetters</a></li>
-<li><a href="#sec-5-7">5.7. notifyOnSystemRegistrationChanges</a></li>
-<li><a href="#sec-5-8">5.8. registerSourceAuthority</a></li>
-<li><a href="#sec-5-9">5.9. loadActorSource</a></li>
-<li><a href="#sec-5-10">5.10. unloadActorSource</a></li>
-<li><a href="#sec-5-11">5.11. notifyOnSourceAvailability</a></li>
-<li><a href="#sec-5-12">5.12. actorSystemCapabilityCheck</a>
-<ul>
-<li><a href="#sec-5-12-1">5.12.1. requireCapability decorator</a></li>
-</ul>
-</li>
-<li><a href="#sec-5-13">5.13. updateCapability</a></li>
-<li><a href="#sec-5-14">5.14. preRegisterRemoteSystem</a></li>
-<li><a href="#sec-5-15">5.15. deRegisterRemoteSystem</a></li>
-<li><a href="#sec-5-16">5.16. actorSystemShutdown</a></li>
-<li><a href="#sec-5-17">5.17. ActorTypeDispatcher</a>
-<ul>
-<li><a href="#sec-5-17-1">5.17.1. Type Handling Deferral</a></li>
+<li><a href="#h:df9e99d0-dac0-4cbb-8852-6a3bb95c68f9">2.2.1. Creating a Top-Level Actor</a></li>
+<li><a href="#h:de8ad884-0d69-4734-abf5-eb3f1e4a8723">2.2.2. Creating an Actor</a></li>
+<li><a href="#h:e1d97e35-1d26-4277-b06b-239b6ab4d5d3">2.2.3. Killing an Actor</a></li>
+<li><a href="#h:3868571d-e754-42a2-840e-6629e817903b">2.2.4. Parent Actor</a></li>
+<li><a href="#h:fb0eba5e-9d12-4cfe-8e8c-fe77b6658065">2.2.5. Actor Failure</a></li>
 </ul>
 </li>
 </ul>
 </li>
-<li><a href="#sec-6">6. ActorSystem API</a>
+<li><a href="#h:bb3655d6-66df-42d5-9486-e81c8687e9d6">3. Guidelines for Actors and their messages</a></li>
+<li><a href="#h:330e09d9-4a98-4814-8a1c-6003ce6a7995">4. Thespian Actor Feature Extensions</a>
 <ul>
-<li><a href="#sec-6-1">6.1. Exceptions</a></li>
-<li><a href="#sec-6-2">6.2. ActorSystem</a></li>
-<li><a href="#sec-6-3">6.3. ActorSystem.shutdown</a></li>
-<li><a href="#sec-6-4">6.4. ActorSystem.createActor</a></li>
-<li><a href="#sec-6-5">6.5. tell</a></li>
-<li><a href="#sec-6-6">6.6. ask</a>
+<li><a href="#h:3d280f21-4a99-416f-8cd7-9c9380a1c86c">4.1. Message Delivery</a>
 <ul>
-<li><a href="#sec-6-6-1">6.6.1. Gotchas</a></li>
+<li><a href="#h:23ac66d7-ba55-40dc-ade8-a71e51c7a404">4.1.1. Message Mutability</a></li>
 </ul>
 </li>
-<li><a href="#sec-6-7">6.7. listen</a></li>
-<li><a href="#sec-6-8">6.8. updateCapability</a></li>
-<li><a href="#sec-6-9">6.9. loadActorSource</a>
+<li><a href="#h:5af075c1-73b1-4f7c-8515-e55ed96c03a9">4.2. Dead Letter Handling</a></li>
+<li><a href="#h:badcba33-bc39-4009-833f-07617ec72e12">4.3. Non-startable Actors</a></li>
+<li><a href="#h:62e20202-9bff-4455-968e-73fee0b9f66a">4.4. PoisonMessage Returns</a></li>
+<li><a href="#h:91e3dc4e-af22-4076-94ee-43f60458f0e0">4.5. Top-Level Actors</a></li>
+<li><a href="#h:2d5ef9c7-2132-45f9-b6eb-6f2729f5b232">4.6. Named Actors</a></li>
+<li><a href="#h:9cc1acd4-7f35-44ac-94fc-0326dc87a7a5">4.7. Timer Messages</a></li>
+<li><a href="#h:94edef18-154e-4847-864f-027dff4f6e0a">4.8. Watching File Descriptors</a>
 <ul>
-<li><a href="#sec-6-9-1">6.9.1. Source Loading Issues</a></li>
-<li><a href="#sec-6-9-2">6.9.2. Security Considerations</a></li>
+<li><a href="#h:df96b2ed-e292-4ded-a614-30cfa1557858">4.8.1. Blocking Actors</a></li>
 </ul>
 </li>
-<li><a href="#sec-6-10">6.10. unloadActorSource</a></li>
+<li><a href="#h:19cf92bf-a6ae-492c-844c-b0831c108a3a">4.9. Actor Troupes</a></li>
+<li><a href="#h:a17e6c70-5592-4d06-b818-bd25350c4c53">4.10. ActorSystem Capabilities</a></li>
+<li><a href="#h:3c8aa454-9a21-4d24-a623-ad86bfd4f5a7">4.11. Other Actor Systems</a>
+<ul>
+<li><a href="#h:bd57f29e-4a5e-4725-9ced-7e0c5fa5bcbd">4.11.1. Convention Establishment</a></li>
+<li><a href="#h:0500ead3-28ea-440c-9ad6-56cb9fbdd648">4.11.2. Convention Administrator Communications</a></li>
 </ul>
 </li>
-<li><a href="#sec-7">7. ActorSystem Messages</a>
+<li><a href="#h:5e670e59-8334-477e-a9d2-0c2dc39d82dd">4.12. Performance</a></li>
+<li><a href="#h:ce55494c-dd7a-4258-a1e8-b090c3bbb1e6">4.13. Logging</a>
 <ul>
-<li><a href="#sec-7-1">7.1. PoisonMessage</a>
-<ul>
-<li><a href="#sec-7-1-1">7.1.1. Attributes</a></li>
+<li><a href="#h:856a7ffe-676b-42a9-95eb-bd89a5810f53">4.13.1. Thespian Internals Logging</a></li>
 </ul>
 </li>
-<li><a href="#sec-7-2">7.2. WakeupMessage</a>
-<ul>
-<li><a href="#sec-7-2-1">7.2.1. Attributes</a></li>
+<li><a href="#h:955ec990-a267-4d08-8f4d-5f980c777173">4.14. Actor Code Distribution</a></li>
 </ul>
 </li>
-<li><a href="#sec-7-3">7.3. WatchMessage</a>
+<li><a href="#h:c3ba9430-5229-44ad-bbd5-ff5426e03e5e">5. Actor API</a>
 <ul>
-<li><a href="#sec-7-3-1">7.3.1. Attributes</a></li>
+<li><a href="#h:584dd408-9496-4f6f-8a86-0f0236f73893">5.1. myAddress</a></li>
+<li><a href="#h:f89540de-f853-42e3-9d52-23b1f84a251e">5.2. receiveMessage</a>
+<ul>
+<li><a href="#h:c7c7275c-fa32-4466-9d1a-e888f993e67c">5.2.1. Return Value</a></li>
 </ul>
 </li>
-<li><a href="#sec-7-4">7.4. ActorExitRequest</a>
+<li><a href="#h:3663d87d-8a2f-485b-aeef-c6e9cf418b4c">5.3. createActor</a>
 <ul>
-<li><a href="#sec-7-4-1">7.4.1. Attributes</a></li>
+<li><a href="#h:c5ae8d61-9358-463d-b0f0-d15ae0246059">5.3.1. globalName</a></li>
+<li><a href="#h:57dd8b71-0f60-4ad2-9628-08edf2c5b00c">5.3.2. Actor Creation Gotchas</a></li>
 </ul>
 </li>
-<li><a href="#sec-7-5">7.5. ChildActorExited</a>
+<li><a href="#h:28cb6d46-fa93-4efd-bc83-88bbbd50df66">5.4. send</a></li>
+<li><a href="#h:b2b4b63a-c256-4793-8591-1ce8dbd87131">5.5. wakeupAfter</a></li>
+<li><a href="#h:4022d522-cdc6-487a-b5d5-5d992572c531">5.6. handleDeadLetters</a></li>
+<li><a href="#h:b9f7a2f0-7d2a-4cc0-8241-1fee7c62c44e">5.7. notifyOnSystemRegistrationChanges</a></li>
+<li><a href="#h:5ae05479-5a6d-4f01-bd7d-c4f544f7b98a">5.8. registerSourceAuthority</a></li>
+<li><a href="#h:731cff6e-674d-4341-bd92-80a08113d5df">5.9. loadActorSource</a></li>
+<li><a href="#h:02eaa317-996a-419b-b9e5-462a28a749c0">5.10. unloadActorSource</a></li>
+<li><a href="#h:460d04d8-3961-43c4-a4c3-8282c2e4a892">5.11. notifyOnSourceAvailability</a></li>
+<li><a href="#h:0e9f4a6a-3083-40fa-a75b-ced37d70eef0">5.12. actorSystemCapabilityCheck</a>
 <ul>
-<li><a href="#sec-7-5-1">7.5.1. Attributes</a></li>
+<li><a href="#h:3bafc1e2-9e3d-4073-8e75-c01ad792b5be">5.12.1. requireCapability decorator</a></li>
 </ul>
 </li>
-<li><a href="#sec-7-6">7.6. DeadEnvelope</a>
+<li><a href="#h:1dc4362f-78dd-4adf-833c-d7bebda07ef8">5.13. updateCapability</a></li>
+<li><a href="#h:956e30d5-c035-4e1e-86cb-73332e28d8d4">5.14. preRegisterRemoteSystem</a></li>
+<li><a href="#h:ce801678-bcff-497d-be2a-439cb34fc519">5.15. deRegisterRemoteSystem</a></li>
+<li><a href="#h:9e800ed1-ed40-4ff3-8445-f795719f6218">5.16. actorSystemShutdown</a></li>
+<li><a href="#h:2f5b52bd-72b8-41eb-b879-809d174c0e30">5.17. ActorTypeDispatcher</a>
 <ul>
-<li><a href="#sec-7-6-1">7.6.1. Attributes</a></li>
+<li><a href="#h:e58ce3a1-df40-4d3f-bc1f-e7743e3c1dc1">5.17.1. Type Handling Deferral</a></li>
 </ul>
 </li>
-<li><a href="#sec-7-7">7.7. ActorSystemConventionUpdate</a>
-<ul>
-<li><a href="#sec-7-7-1">7.7.1. Attributes</a></li>
 </ul>
 </li>
-<li><a href="#sec-7-8">7.8. ValidateSource</a>
+<li><a href="#h:7d2b4986-95d3-4460-9d19-ea0dcdb34fca">6. ActorSystem API</a>
 <ul>
-<li><a href="#sec-7-8-1">7.8.1. Attributes</a></li>
+<li><a href="#h:a91e6169-660d-4df0-af13-15b3ad5e63bc">6.1. Exceptions</a></li>
+<li><a href="#h:f71b7bfa-c57b-4716-a2c7-ad83a2ed3582">6.2. ActorSystem</a></li>
+<li><a href="#h:654a6c81-b326-4c0a-98bc-638ac5ce631f">6.3. ActorSystem.shutdown</a></li>
+<li><a href="#h:a565af1b-aabb-4336-a51d-7505c072c319">6.4. ActorSystem.createActor</a></li>
+<li><a href="#h:a5dcf9d2-7bda-43c7-ab44-86265992e972">6.5. tell</a></li>
+<li><a href="#h:8e52624b-cda1-4218-bc9f-693cf06b0758">6.6. ask</a>
+<ul>
+<li><a href="#h:b660216f-003b-4041-93cb-566be7edf72c">6.6.1. Gotchas</a></li>
 </ul>
 </li>
-<li><a href="#sec-7-9">7.9. ValidatedSource</a>
+<li><a href="#h:c68f8ef8-94e9-46d6-8e67-634d04c16562">6.7. listen</a></li>
+<li><a href="#actorsystem.private">6.8. private</a></li>
+<li><a href="#h:bf228654-b542-48f0-a5b5-78bc883528b9">6.9. updateCapability</a></li>
+<li><a href="#h:73b564d2-faa3-4fc8-bfdf-5362626c03be">6.10. loadActorSource</a>
 <ul>
-<li><a href="#sec-7-9-1">7.9.1. Attributes</a></li>
+<li><a href="#h:e23490e4-d720-4e84-9b9a-e768fa3e717d">6.10.1. Source Loading Issues</a></li>
+<li><a href="#h:b26e4f60-d3fa-40b1-bc33-bb20b61ff2d4">6.10.2. Security Considerations</a></li>
 </ul>
 </li>
-<li><a href="#sec-7-10">7.10. LoadedSource</a>
-<ul>
-<li><a href="#sec-7-10-1">7.10.1. Attributes</a></li>
+<li><a href="#h:3e2f292f-2797-46d7-9fc6-48c1619d4bec">6.11. unloadActorSource</a></li>
 </ul>
 </li>
-<li><a href="#sec-7-11">7.11. UnloadedSource</a>
+<li><a href="#h:b889aca8-b50d-4920-8496-34b1420cf664">7. ActorSystem Messages</a>
 <ul>
-<li><a href="#sec-7-11-1">7.11.1. Attributes</a></li>
+<li><a href="#h:407c4c79-2a05-442d-b6e8-5bf7c2f2d068">7.1. PoisonMessage</a>
+<ul>
+<li><a href="#h:7655532a-ec5a-49c0-9f4e-0b4207f21080">7.1.1. Attributes</a></li>
 </ul>
 </li>
-<li><a href="#sec-7-12">7.12. Thespian_StatusReq</a>
+<li><a href="#h:32b3df34-552e-4398-83bb-b78f3f6483bc">7.2. WakeupMessage</a>
 <ul>
-<li><a href="#sec-7-12-1">7.12.1. Attributes</a></li>
+<li><a href="#h:865814f4-6d08-4657-bb89-c3be8b8a9453">7.2.1. Attributes</a></li>
 </ul>
 </li>
-<li><a href="#sec-7-13">7.13. Thespian_SystemStatus</a></li>
-<li><a href="#sec-7-14">7.14. Thespian_ActorStatus</a></li>
+<li><a href="#h:8a46cfae-7ccc-407a-91c1-d4301b7a653c">7.3. WatchMessage</a>
+<ul>
+<li><a href="#h:a4719aee-2054-466c-a013-03b6938b084e">7.3.1. Attributes</a></li>
 </ul>
 </li>
-<li><a href="#sec-8">8. Patterns and Helpers</a>
+<li><a href="#h:7e6106e4-a631-47a4-9d22-3fd63f7e1951">7.4. ActorExitRequest</a>
 <ul>
-<li><a href="#sec-8-1">8.1. Actor Troupe Support</a></li>
-<li><a href="#sec-8-2">8.2. Transient Actors</a></li>
+<li><a href="#h:8155fe0d-ad17-4677-b606-f830c6f9f249">7.4.1. Attributes</a></li>
 </ul>
 </li>
-<li><a href="#sec-9">9. ActorSystem Implementations</a>
+<li><a href="#h:ed408390-5a74-4955-9f7d-a84e87595459">7.5. ChildActorExited</a>
 <ul>
-<li><a href="#sec-9-1">9.1. Common Capabilities</a></li>
-<li><a href="#sec-9-2">9.2. simpleSystemBase</a></li>
-<li><a href="#sec-9-3">9.3. multiprocQueueBase</a></li>
-<li><a href="#sec-9-4">9.4. multiprocTCPBase</a></li>
-<li><a href="#sec-9-5">9.5. multiprocUDPBase</a></li>
+<li><a href="#h:c32348b6-fed3-4ff1-bf95-3cf491049518">7.5.1. Attributes</a></li>
 </ul>
 </li>
-<li><a href="#sec-10">10. Deploying Actor-based Projects</a>
+<li><a href="#h:e3d4bfa0-7fad-4622-b707-8f67e4f75d5c">7.6. DeadEnvelope</a>
 <ul>
-<li><a href="#sec-10-1">10.1. Overall Security Considerations</a>
+<li><a href="#h:fc0fb45a-a981-42ce-9922-705dabbbda37">7.6.1. Attributes</a></li>
+</ul>
+</li>
+<li><a href="#h:f311fc02-d355-4d68-b9af-958404637e57">7.7. ActorSystemConventionUpdate</a>
 <ul>
-<li><a href="#sec-10-1-1">10.1.1. Security Scenarios</a></li>
+<li><a href="#h:a1cda86c-ca86-4aaa-bcb5-935e92435647">7.7.1. Attributes</a></li>
+</ul>
+</li>
+<li><a href="#h:3119580d-80a6-4061-a217-1b2b21014172">7.8. ValidateSource</a>
+<ul>
+<li><a href="#h:d6db3148-7664-4e50-9061-6733fe5d3a3f">7.8.1. Attributes</a></li>
+</ul>
+</li>
+<li><a href="#h:1db8e94e-ca54-4817-b120-b4c51c680cdd">7.9. ValidatedSource</a>
+<ul>
+<li><a href="#h:92e91efa-fdc2-42bb-94f8-8a329618214c">7.9.1. Attributes</a></li>
+</ul>
+</li>
+<li><a href="#h:7cc41555-6b60-4844-8cea-0ec3714cf8f8">7.10. LoadedSource</a>
+<ul>
+<li><a href="#h:54e4613a-3c85-4d1e-a81d-0dd348af4199">7.10.1. Attributes</a></li>
+</ul>
+</li>
+<li><a href="#h:72c2180e-97c4-4209-9f09-031069cb5cbe">7.11. UnloadedSource</a>
+<ul>
+<li><a href="#h:3b58b48d-4d73-45c1-9486-3f6b8eb80d59">7.11.1. Attributes</a></li>
+</ul>
+</li>
+<li><a href="#h:6428fa90-8749-4777-a0b1-752ec5eb1650">7.12. Thespian_StatusReq</a>
+<ul>
+<li><a href="#h:02212902-4a42-4f1e-ae6a-59464043ff50">7.12.1. Attributes</a></li>
+</ul>
+</li>
+<li><a href="#h:704cb0e0-30c0-4e30-82cb-52718839704f">7.13. Thespian_SystemStatus</a></li>
+<li><a href="#h:1a0b5d02-e4b6-4c8c-9687-6e5f939d3827">7.14. Thespian_ActorStatus</a></li>
+</ul>
+</li>
+<li><a href="#h:d4e592db-8bab-45bd-9643-e952510bd7dc">8. Patterns and Helpers</a>
+<ul>
+<li><a href="#h:c796bc0d-a150-4fb9-8918-58f470813175">8.1. Actor Troupe Support</a></li>
+<li><a href="#h:99783a4a-183f-4b69-8910-014d01edbf1c">8.2. Transient Actors</a></li>
+</ul>
+</li>
+<li><a href="#h:2a5fa63d-e6eb-43b9-bea8-47223b27544e">9. ActorSystem Implementations</a>
+<ul>
+<li><a href="#h:2a4bcad4-9fe0-4399-86d4-4bbf0ba0acb7">9.1. Common Capabilities</a></li>
+<li><a href="#h:924dc0fe-c15b-491e-a6d1-8b88683d4c0d">9.2. simpleSystemBase</a></li>
+<li><a href="#h:59ea5ca7-a167-4d51-bd1b-78119eab6df6">9.3. multiprocQueueBase</a></li>
+<li><a href="#h:9d33a877-b4f0-4012-9510-442d81b0837c">9.4. multiprocTCPBase</a></li>
+<li><a href="#h:25cfa213-13a6-4265-8828-86ffffed0e12">9.5. multiprocUDPBase</a></li>
+</ul>
+</li>
+<li><a href="#h:23bdc6e2-a5c4-4228-a75c-fb213f537732">10. Deploying Actor-based Projects</a>
+<ul>
+<li><a href="#h:7e109f00-76ff-49a1-b307-2166154c3921">10.1. Overall Security Considerations</a>
+<ul>
+<li><a href="#h:fcabc7dd-327f-47cf-bcb7-5dd4d202ebdc">10.1.1. Security Scenarios</a></li>
 </ul>
 </li>
 </ul>
@@ -381,12 +383,15 @@ for the JavaScript code in this tag.
 </div>
 
 
-<div id="outline-container-sec-1" class="outline-2">
-<h2 id="sec-1"><span class="section-number-2">1</span> Actor Overview</h2>
-<div class="outline-text-2" id="text-1">
-</div><div id="outline-container-sec-1-1" class="outline-3">
-<h3 id="sec-1-1"><span class="section-number-3">1.1</span> Actors</h3>
-<div class="outline-text-3" id="text-1-1">
+<div id="outline-container-h:f23d674d-ce24-48b4-8ad8-be8eb299e89e" class="outline-2">
+<h2 id="h:f23d674d-ce24-48b4-8ad8-be8eb299e89e"><a id="sec-1" name="sec-1"></a><span class="section-number-2">1</span> Actor Overview</h2>
+<div class="outline-text-2" id="text-h:f23d674d-ce24-48b4-8ad8-be8eb299e89e">
+</div>
+
+<div id="outline-container-h:2889c112-6505-4b32-9dce-ac3e4a16ad11" class="outline-3">
+<h3 id="h:2889c112-6505-4b32-9dce-ac3e4a16ad11"><a id="sec-1-1" name="sec-1-1"></a><span class="section-number-3">1.1</span> Actors</h3>
+<div class="outline-text-3" id="text-h:2889c112-6505-4b32-9dce-ac3e4a16ad11">
+
 <p>
 At the core, an Actor system is very simple.  An Actor is a standalone
 entity that receives messages from other Actors and does one of three
@@ -429,9 +434,10 @@ processing when a message is received.
 </div>
 </div>
 
-<div id="outline-container-sec-1-2" class="outline-3">
-<h3 id="sec-1-2"><span class="section-number-3">1.2</span> Actor Addresses</h3>
-<div class="outline-text-3" id="text-1-2">
+<div id="outline-container-h:1348ab18-1a45-495b-ad27-84810a0b42f4" class="outline-3">
+<h3 id="h:1348ab18-1a45-495b-ad27-84810a0b42f4"><a id="sec-1-2" name="sec-1-2"></a><span class="section-number-3">1.2</span> Actor Addresses</h3>
+<div class="outline-text-3" id="text-h:1348ab18-1a45-495b-ad27-84810a0b42f4">
+
 <p>
 All Actors have an Address which identifies them uniquely within the
 ActorSystem.  The Address of an Actor is assigned by the ActorSystem
@@ -468,9 +474,10 @@ property.
 </div>
 </div>
 
-<div id="outline-container-sec-1-3" class="outline-3">
-<h3 id="sec-1-3"><span class="section-number-3">1.3</span> ActorSystem</h3>
-<div class="outline-text-3" id="text-1-3">
+<div id="outline-container-h:4adf735c-f237-4a8e-98db-ec52567353ac" class="outline-3">
+<h3 id="h:4adf735c-f237-4a8e-98db-ec52567353ac"><a id="sec-1-3" name="sec-1-3"></a><span class="section-number-3">1.3</span> ActorSystem</h3>
+<div class="outline-text-3" id="text-h:4adf735c-f237-4a8e-98db-ec52567353ac">
+
 <p>
 The ActorSystem is the framework within which the Actors reside.  The
 ActorSystem is responsible for Actor lifecycle management (creating
@@ -485,9 +492,10 @@ and terminating Actors) and message delivery functions.
 </div>
 
 
-<div id="outline-container-sec-1-3-1" class="outline-4">
-<h4 id="sec-1-3-1"><span class="section-number-4">1.3.1</span> Different Implementations</h4>
-<div class="outline-text-4" id="text-1-3-1">
+<div id="outline-container-h:27f1994d-f66e-4be7-a671-8eeeb81bbd4b" class="outline-4">
+<h4 id="h:27f1994d-f66e-4be7-a671-8eeeb81bbd4b"><a id="sec-1-3-1" name="sec-1-3-1"></a><span class="section-number-4">1.3.1</span> Different Implementations</h4>
+<div class="outline-text-4" id="text-h:27f1994d-f66e-4be7-a671-8eeeb81bbd4b">
+
 <p>
 There maybe several different types of ActorSystem implementations.
 Switching from one system to another can be done without requiring
@@ -498,7 +506,7 @@ Actors to be oblivious to those elements.
 
 <p>
 Each implementation may require a different type of addressing, but
-as described previously in <a href="#sec-1-2">Actor Addresses</a> the Actors themselves
+as described previously in <a href="#h:1348ab18-1a45-495b-ad27-84810a0b42f4">Actor Addresses</a> the Actors themselves
 should treat the ActorAddress objects as opaque.  In addition, an
 Actor cannot generate an ActorAddress; it must be given to the Actor
 as a result of creating an Actor or in a message passed by another
@@ -526,16 +534,17 @@ shared-memory queue structures.
 </p>
 
 <p>
-The <a href="#sec-9">ActorSystem Implementations</a> section provides detailed
+The <a href="#h:2a5fa63d-e6eb-43b9-bea8-47223b27544e">ActorSystem Implementations</a> section provides detailed
 information about the known ActorSystem implementations including
 their level of feature support and any known issues.
 </p>
 </div>
 </div>
 
-<div id="outline-container-sec-1-3-2" class="outline-4">
-<h4 id="sec-1-3-2"><span class="section-number-4">1.3.2</span> Multiple Systems</h4>
-<div class="outline-text-4" id="text-1-3-2">
+<div id="outline-container-h:461f4dc3-4bd6-46fe-a33e-2ad2a8d82d53" class="outline-4">
+<h4 id="h:461f4dc3-4bd6-46fe-a33e-2ad2a8d82d53"><a id="sec-1-3-2" name="sec-1-3-2"></a><span class="section-number-4">1.3.2</span> Multiple Systems</h4>
+<div class="outline-text-4" id="text-h:461f4dc3-4bd6-46fe-a33e-2ad2a8d82d53">
+
 <p>
 There can be more than one ActorSystem running on the current host
 system, and there can be ActorSystems running on other host systems
@@ -564,9 +573,10 @@ essentially unlimited scalability of the underlying support environment.
 </div>
 </div>
 
-<div id="outline-container-sec-1-4" class="outline-3">
-<h3 id="sec-1-4"><span class="section-number-3">1.4</span> External Communications</h3>
-<div class="outline-text-3" id="text-1-4">
+<div id="outline-container-h:c183ae4b-b397-433f-aa4e-69a6838ece38" class="outline-3">
+<h3 id="h:c183ae4b-b397-433f-aa4e-69a6838ece38"><a id="sec-1-4" name="sec-1-4"></a><span class="section-number-3">1.4</span> External Communications</h3>
+<div class="outline-text-3" id="text-h:c183ae4b-b397-433f-aa4e-69a6838ece38">
+
 <p>
 Actors run in an ActorSystem and communicate with each other using the
 message sending capability, but it is also typically necessary for the
@@ -585,7 +595,7 @@ target Actor's ActorAddress)
 message to be sent back.
 </li>
 
-<li><b>createActor</b> &#x2013; creates a new Actor.  There is no <a href="#sec-2-2-4">Parent Actor</a>
+<li><b>createActor</b> &#x2013; creates a new Actor.  There is no <a href="#h:3868571d-e754-42a2-840e-6629e817903b">Parent Actor</a>
 for the newly created Actor, so it is referred to as a "top-level
 Actor" and it will be managed by the ActorSystem itself and no
 other Actor will be notified if the top-level Actor exits.
@@ -608,14 +618,15 @@ from external code.
 
 <p>
 More details on the ActorSystem operations can be found in the
-<i>ActorSystem API</i> section.
+<a href="#h:7d2b4986-95d3-4460-9d19-ea0dcdb34fca">ActorSystem API</a> section.
 </p>
 </div>
 </div>
 
-<div id="outline-container-sec-1-5" class="outline-3">
-<h3 id="sec-1-5"><span class="section-number-3">1.5</span> Effects</h3>
-<div class="outline-text-3" id="text-1-5">
+<div id="outline-container-h:f9386620-2d2e-4f28-b971-0f106881f583" class="outline-3">
+<h3 id="h:f9386620-2d2e-4f28-b971-0f106881f583"><a id="sec-1-5" name="sec-1-5"></a><span class="section-number-3">1.5</span> Effects</h3>
+<div class="outline-text-3" id="text-h:f9386620-2d2e-4f28-b971-0f106881f583">
+
 <p>
 Using an Actor system like Thespian tends to be a transformative
 experience in code generation.  Aspects which were previously
@@ -628,12 +639,15 @@ itself.
 </div>
 </div>
 
-<div id="outline-container-sec-1-6" class="outline-3">
-<h3 id="sec-1-6"><span class="section-number-3">1.6</span> Comparisons</h3>
-<div class="outline-text-3" id="text-1-6">
-</div><div id="outline-container-sec-1-6-1" class="outline-4">
-<h4 id="sec-1-6-1"><span class="section-number-4">1.6.1</span> Message Bus (Pub/Sub) Architecture</h4>
-<div class="outline-text-4" id="text-1-6-1">
+<div id="outline-container-h:4f420b34-24a5-49a0-b70b-e34a925e7c17" class="outline-3">
+<h3 id="h:4f420b34-24a5-49a0-b70b-e34a925e7c17"><a id="sec-1-6" name="sec-1-6"></a><span class="section-number-3">1.6</span> Comparisons</h3>
+<div class="outline-text-3" id="text-h:4f420b34-24a5-49a0-b70b-e34a925e7c17">
+</div>
+
+<div id="outline-container-h:357ddb80-542c-47d6-aa68-1964639777e9" class="outline-4">
+<h4 id="h:357ddb80-542c-47d6-aa68-1964639777e9"><a id="sec-1-6-1" name="sec-1-6-1"></a><span class="section-number-4">1.6.1</span> Message Bus (Pub/Sub) Architecture</h4>
+<div class="outline-text-4" id="text-h:357ddb80-542c-47d6-aa68-1964639777e9">
+
 <p>
 The Actor model provides a higher level of abstraction than a Message
 Bus architecture (also known as a "pub/sub" architecture).  An Actor
@@ -644,13 +658,14 @@ method.
 </div>
 </div>
 
-<div id="outline-container-sec-1-6-2" class="outline-4">
-<h4 id="sec-1-6-2"><span class="section-number-4">1.6.2</span> Logging Systems</h4>
-<div class="outline-text-4" id="text-1-6-2">
+<div id="outline-container-h:aeed6732-198c-41a6-8d2b-45c3b57a120f" class="outline-4">
+<h4 id="h:aeed6732-198c-41a6-8d2b-45c3b57a120f"><a id="sec-1-6-2" name="sec-1-6-2"></a><span class="section-number-4">1.6.2</span> Logging Systems</h4>
+<div class="outline-text-4" id="text-h:aeed6732-198c-41a6-8d2b-45c3b57a120f">
+
 <p>
 Log-based architectures (e.g. Kafka) are fundamentally "pub/sub"
 architectures that use persistent storage for the published messages.
-As noted in the <a href="#sec-1-6-1">Message Bus (Pub/Sub) Architecture</a>, the Actor model is
+As noted in the <a href="#h:357ddb80-542c-47d6-aa68-1964639777e9">Message Bus (Pub/Sub) Architecture</a>, the Actor model is
 a higher-level abstraction layer that encompasses the pub/sub
 functionality. The Actor model therefore also abstracts a Logging
 System with the exception of the persistent storage/replay
@@ -669,9 +684,10 @@ easily be extended to mimic a Logging System.
 </div>
 
 
-<div id="outline-container-sec-2" class="outline-2">
-<h2 id="sec-2"><span class="section-number-2">2</span> Using Thespian</h2>
-<div class="outline-text-2" id="text-2">
+<div id="outline-container-h:bfd7e2ce-64cc-4267-85ce-091a3fd29a8b" class="outline-2">
+<h2 id="h:bfd7e2ce-64cc-4267-85ce-091a3fd29a8b"><a id="sec-2" name="sec-2"></a><span class="section-number-2">2</span> Using Thespian</h2>
+<div class="outline-text-2" id="text-h:bfd7e2ce-64cc-4267-85ce-091a3fd29a8b">
+
 <p>
 In order to use Thespian, it must be installed in the current Python
 environment.  Once installed, all Thespian features are available
@@ -686,9 +702,10 @@ package:
 </div>
 </div>
 
-<div id="outline-container-sec-2-1" class="outline-3">
-<h3 id="sec-2-1"><span class="section-number-3">2.1</span> Starting an Actor System</h3>
-<div class="outline-text-3" id="text-2-1">
+<div id="outline-container-h:0c5d14ea-e462-4a9c-b078-58341cc70e6d" class="outline-3">
+<h3 id="h:0c5d14ea-e462-4a9c-b078-58341cc70e6d"><a id="sec-2-1" name="sec-2-1"></a><span class="section-number-3">2.1</span> Starting an Actor System</h3>
+<div class="outline-text-3" id="text-h:0c5d14ea-e462-4a9c-b078-58341cc70e6d">
+
 <p>
 An ActorSystem is created simply by instantiating an <code>ActorSystem()</code>
 object and specifying the type or "base" of the ActorSystem, as well
@@ -704,8 +721,7 @@ an ActorSystem using the "multiprocTCPBase":
 
 <p>
 More details on the explicit parameters for this call are found in
-<a href="#sec-1-3">ActorSystem</a>, and the known system bases are describe in <a href="#sec-9">ActorSystem
-Implementations</a>.
+<a href="#h:f71b7bfa-c57b-4716-a2c7-ad83a2ed3582">ActorSystem</a>, and the known system bases are describe in <a href="#h:2a5fa63d-e6eb-43b9-bea8-47223b27544e">ActorSystem Implementations</a>.
 </p>
 
 <p>
@@ -719,9 +735,10 @@ parameters.
 </div>
 
 
-<div id="outline-container-sec-2-2" class="outline-3">
-<h3 id="sec-2-2"><span class="section-number-3">2.2</span> Actor Lifecycle</h3>
-<div class="outline-text-3" id="text-2-2">
+<div id="outline-container-h:41cd5450-c34f-4672-aafa-c96ed29c3f01" class="outline-3">
+<h3 id="h:41cd5450-c34f-4672-aafa-c96ed29c3f01"><a id="sec-2-2" name="sec-2-2"></a><span class="section-number-3">2.2</span> Actor Lifecycle</h3>
+<div class="outline-text-3" id="text-h:41cd5450-c34f-4672-aafa-c96ed29c3f01">
+
 <p>
 Actors are created on demand and then persist until they are requested
 to exit.  Actors in a multiprocess System Base are independent of the
@@ -736,19 +753,20 @@ itself is shutdown.
 </p>
 </div>
 
-<div id="outline-container-sec-2-2-1" class="outline-4">
-<h4 id="sec-2-2-1"><span class="section-number-4">2.2.1</span> Creating a Top-Level Actor</h4>
-<div class="outline-text-4" id="text-2-2-1">
+<div id="outline-container-h:df9e99d0-dac0-4cbb-8852-6a3bb95c68f9" class="outline-4">
+<h4 id="h:df9e99d0-dac0-4cbb-8852-6a3bb95c68f9"><a id="sec-2-2-1" name="sec-2-2-1"></a><span class="section-number-4">2.2.1</span> Creating a Top-Level Actor</h4>
+<div class="outline-text-4" id="text-h:df9e99d0-dac0-4cbb-8852-6a3bb95c68f9">
+
 <p>
 Actors can be created by other Actors or by external applications
 making a request to the running ActorSystem.  In the former case, the
-Actor making the request becomes the "<a href="#sec-2-2-4">Parent Actor</a>" of the newly
+Actor making the request becomes the "<a href="#h:3868571d-e754-42a2-840e-6629e817903b">Parent Actor</a>" of the newly
 created Actor, whereas there is no parent in the latter case and the
 newly created actor is therefore referred to as a "Top-Level" Actor.
 </p>
 
 <p>
-A Top-Level Actor is created via the <a href="#sec-6-4">ActorSystem.createActor</a> call:
+A Top-Level Actor is created via the <a href="#h:a565af1b-aabb-4336-a51d-7505c072c319">ActorSystem.createActor</a> call:
 </p>
 
 <div class="org-src-container">
@@ -763,18 +781,19 @@ A Top-Level Actor is created via the <a href="#sec-6-4">ActorSystem.createActor<
 
 <p>
 The result of the call is the ActorAddress which can be used with the
-ActorSystem's <a href="#sec-6-6">ask</a>() or <a href="#sec-6-5">tell</a>() methods to communicate with the created
+ActorSystem's <a href="#h:8e52624b-cda1-4218-bc9f-693cf06b0758">ask</a>() or <a href="#h:a5dcf9d2-7bda-43c7-ab44-86265992e972">tell</a>() methods to communicate with the created
 Actor.
 </p>
 </div>
 </div>
 
-<div id="outline-container-sec-2-2-2" class="outline-4">
-<h4 id="sec-2-2-2"><span class="section-number-4">2.2.2</span> Creating an Actor</h4>
-<div class="outline-text-4" id="text-2-2-2">
+<div id="outline-container-h:de8ad884-0d69-4734-abf5-eb3f1e4a8723" class="outline-4">
+<h4 id="h:de8ad884-0d69-4734-abf5-eb3f1e4a8723"><a id="sec-2-2-2" name="sec-2-2-2"></a><span class="section-number-4">2.2.2</span> Creating an Actor</h4>
+<div class="outline-text-4" id="text-h:de8ad884-0d69-4734-abf5-eb3f1e4a8723">
+
 <p>
 Within the ActorSystem, and Actor can create another Actor by making
-the request to the ActorSystem through the <a href="#sec-5-3">createActor</a>() method on its
+the request to the ActorSystem through the <a href="#h:3663d87d-8a2f-485b-aeef-c6e9cf418b4c">createActor</a>() method on its
 own instance:
 </p>
 
@@ -794,18 +813,19 @@ own instance:
 <p>
 As with the creation of a Top-Level actor, the <code>createActor()</code> method
 returns an ActorAddress that can be used to communicate with the
-created Actor (using the current Actor's <a href="#sec-5-4">send</a>() method).
+created Actor (using the current Actor's <a href="#h:28cb6d46-fa93-4efd-bc83-88bbbd50df66">send</a>() method).
 </p>
 </div>
 </div>
 
-<div id="outline-container-sec-2-2-3" class="outline-4">
-<h4 id="sec-2-2-3"><span class="section-number-4">2.2.3</span> Killing an Actor</h4>
-<div class="outline-text-4" id="text-2-2-3">
+<div id="outline-container-h:e1d97e35-1d26-4277-b06b-239b6ab4d5d3" class="outline-4">
+<h4 id="h:e1d97e35-1d26-4277-b06b-239b6ab4d5d3"><a id="sec-2-2-3" name="sec-2-2-3"></a><span class="section-number-4">2.2.3</span> Killing an Actor</h4>
+<div class="outline-text-4" id="text-h:e1d97e35-1d26-4277-b06b-239b6ab4d5d3">
+
 <p>
 Actors normally continue to exist and handle messages until they are
 explicitly killed.  To kill an Actor, it should be sent an
-<a href="#sec-7-4">ActorExitRequest</a> message.
+<a href="#h:7e6106e4-a631-47a4-9d22-3fd63f7e1951">ActorExitRequest</a> message.
 </p>
 
 <p>
@@ -819,18 +839,19 @@ ActorSystem.
 <p>
 After the Actor has been killed, the Actor's Address is dead-lettered;
 any subsequent messages sent to the Actor's address will be handled as
-described in <a href="#sec-4-2">Dead Letter Handling</a>.
+described in <a href="#h:5af075c1-73b1-4f7c-8515-e55ed96c03a9">Dead Letter Handling</a>.
 </p>
 </div>
 </div>
 
 
-<div id="outline-container-sec-2-2-4" class="outline-4">
-<h4 id="sec-2-2-4"><span class="section-number-4">2.2.4</span> Parent Actor</h4>
-<div class="outline-text-4" id="text-2-2-4">
+<div id="outline-container-h:3868571d-e754-42a2-840e-6629e817903b" class="outline-4">
+<h4 id="h:3868571d-e754-42a2-840e-6629e817903b"><a id="sec-2-2-4" name="sec-2-2-4"></a><span class="section-number-4">2.2.4</span> Parent Actor</h4>
+<div class="outline-text-4" id="text-h:3868571d-e754-42a2-840e-6629e817903b">
+
 <p>
 An Actor which creates other Actors automatically becomes the
-"Parent" of the created Actor(s).  In the example in the <a href="#sec-2-2-2">Creating
+"Parent" of the created Actor(s).  In the example in the <a href="#h:de8ad884-0d69-4734-abf5-eb3f1e4a8723">Creating
 an Actor</a> section above, the MyFirstActor Actor is the parent of
 any created Supporting Actor.
 </p>
@@ -853,9 +874,10 @@ message.  This message has the following attributes:
 </div>
 </div>
 
-<div id="outline-container-sec-2-2-5" class="outline-4">
-<h4 id="sec-2-2-5"><span class="section-number-4">2.2.5</span> Actor Failure</h4>
-<div class="outline-text-4" id="text-2-2-5">
+<div id="outline-container-h:fb0eba5e-9d12-4cfe-8e8c-fe77b6658065" class="outline-4">
+<h4 id="h:fb0eba5e-9d12-4cfe-8e8c-fe77b6658065"><a id="sec-2-2-5" name="sec-2-2-5"></a><span class="section-number-4">2.2.5</span> Actor Failure</h4>
+<div class="outline-text-4" id="text-h:fb0eba5e-9d12-4cfe-8e8c-fe77b6658065">
+
 <p>
 If the Actor code handling a message fails, the ActorSystem will
 automatically handle that failure and restart the Actor.  For this
@@ -868,16 +890,17 @@ exception checking and error condition handling.
 When writing Actor code, the general philosophy is "fail early";
 the ActorSystem itself will restart the Actor in the event of a
 failure and possibly retry the message or abort that specific
-message.  See <a href="#sec-4-4">PoisonMessage Returns</a> for more details.
+message.  See <a href="#h:62e20202-9bff-4455-968e-73fee0b9f66a">PoisonMessage Returns</a> for more details.
 </p>
 </div>
 </div>
 </div>
 </div>
 
-<div id="outline-container-sec-3" class="outline-2">
-<h2 id="sec-3"><span class="section-number-2">3</span> Guidelines for Actors and their messages</h2>
-<div class="outline-text-2" id="text-3">
+<div id="outline-container-h:bb3655d6-66df-42d5-9486-e81c8687e9d6" class="outline-2">
+<h2 id="h:bb3655d6-66df-42d5-9486-e81c8687e9d6"><a id="sec-3" name="sec-3"></a><span class="section-number-2">3</span> Guidelines for Actors and their messages</h2>
+<div class="outline-text-2" id="text-h:bb3655d6-66df-42d5-9486-e81c8687e9d6">
+
 <ul class="org-ul">
 <li>All ActorSystem internal messages are derived from
 ActorSystemMessage.  Messages sent by Actors should not subclass
@@ -900,15 +923,15 @@ the ActorSystemMessage base class.  The messages that an
 ActorSystem can deliver to an Actor are:
 
 <ul class="org-ul">
-<li>ActorExitRequest   (see <a href="#sec-2-2-3">Killing an Actor</a>)
+<li>ActorExitRequest   (see <a href="#h:e1d97e35-1d26-4277-b06b-239b6ab4d5d3">Killing an Actor</a>)
 </li>
-<li>ChildActorExited   (see <a href="#sec-2-2-4">Parent Actor</a>)
+<li>ChildActorExited   (see <a href="#h:3868571d-e754-42a2-840e-6629e817903b">Parent Actor</a>)
 </li>
-<li>PoisonMessage      (see <a href="#sec-4-4">PoisonMessage Returns</a>)
+<li>PoisonMessage      (see <a href="#h:62e20202-9bff-4455-968e-73fee0b9f66a">PoisonMessage Returns</a>)
 </li>
-<li>ActorSystemConventionUpdate  (see <a href="#sec-4-11">Other Actor Systems</a>)
+<li>ActorSystemConventionUpdate  (see <a href="#h:3c8aa454-9a21-4d24-a623-ad86bfd4f5a7">Other Actor Systems</a>)
 </li>
-<li>WakeupMessage      (see <a href="#sec-4-7">Timer Messages</a>)
+<li>WakeupMessage      (see <a href="#h:9cc1acd4-7f35-44ac-94fc-0326dc87a7a5">Timer Messages</a>)
 </li>
 </ul>
 <p>
@@ -927,7 +950,7 @@ processes to ensure Actor isolation.
 <li>It is a common practice to have an Actor probe for functional
 aspects of the current environment and update the ActorSystem
 capabilities based on the results of the probing (see
-<a href="#sec-5-13">updateCapability</a>).  Changing the existing capabilities <b>may</b>
+<a href="#h:1dc4362f-78dd-4adf-833c-d7bebda07ef8">updateCapability</a>).  Changing the existing capabilities <b>may</b>
 result in all existing actors being killed, including the Actor
 initiating the change.
 
@@ -975,9 +998,10 @@ for the expected utilization.
 </div>
 </div>
 
-<div id="outline-container-sec-4" class="outline-2">
-<h2 id="sec-4"><span class="section-number-2">4</span> Thespian Actor Feature Extensions</h2>
-<div class="outline-text-2" id="text-4">
+<div id="outline-container-h:330e09d9-4a98-4814-8a1c-6003ce6a7995" class="outline-2">
+<h2 id="h:330e09d9-4a98-4814-8a1c-6003ce6a7995"><a id="sec-4" name="sec-4"></a><span class="section-number-2">4</span> Thespian Actor Feature Extensions</h2>
+<div class="outline-text-2" id="text-h:330e09d9-4a98-4814-8a1c-6003ce6a7995">
+
 <p>
 The Thespian system provides several extended features not present
 in a simple definition of an Actor environment.  These features
@@ -986,9 +1010,10 @@ scalability, and enterprise-level deployment of Thespian-based code.
 </p>
 </div>
 
-<div id="outline-container-sec-4-1" class="outline-3">
-<h3 id="sec-4-1"><span class="section-number-3">4.1</span> Message Delivery</h3>
-<div class="outline-text-3" id="text-4-1">
+<div id="outline-container-h:3d280f21-4a99-416f-8cd7-9c9380a1c86c" class="outline-3">
+<h3 id="h:3d280f21-4a99-416f-8cd7-9c9380a1c86c"><a id="sec-4-1" name="sec-4-1"></a><span class="section-number-3">4.1</span> Message Delivery</h3>
+<div class="outline-text-3" id="text-h:3d280f21-4a99-416f-8cd7-9c9380a1c86c">
+
 <p>
 Messages are delivered to Actors on a <i>best-effort</i> basis.  This
 means that under normal or even most abnormal circumstances, the
@@ -1015,13 +1040,14 @@ prevent too many messages being held in limbo.
 
 <p>
 If the recipient exits before the send can be completed, the message
-is redirected to <a href="#sec-4-2">Dead Letter Handling</a>.
+is redirected as described in <a href="#h:5af075c1-73b1-4f7c-8515-e55ed96c03a9">Dead Letter Handling</a>.
 </p>
 </div>
 
-<div id="outline-container-sec-4-1-1" class="outline-4">
-<h4 id="sec-4-1-1"><span class="section-number-4">4.1.1</span> Message Mutability</h4>
-<div class="outline-text-4" id="text-4-1-1">
+<div id="outline-container-h:23ac66d7-ba55-40dc-ade8-a71e51c7a404" class="outline-4">
+<h4 id="h:23ac66d7-ba55-40dc-ade8-a71e51c7a404"><a id="sec-4-1-1" name="sec-4-1-1"></a><span class="section-number-4">4.1.1</span> Message Mutability</h4>
+<div class="outline-text-4" id="text-h:23ac66d7-ba55-40dc-ade8-a71e51c7a404">
+
 <p>
 Thespian does not automatically generate copies of messages that are
 sent, but sends the original directly.  This covers most use cases
@@ -1076,7 +1102,7 @@ based on timing of execution between the two actors, and also on the
 system Base that is used.  When using a multi-process system base,
 ActorA's version will not be modified because the two Actors run as
 separate processes and so ActorB has a separate copy of the message,
-but the <a href="#sec-9-2">simpleSystemBase</a> (for example) is exposed to this modification.
+but the <a href="#h:924dc0fe-c15b-491e-a6d1-8b88683d4c0d">simpleSystemBase</a> (for example) is exposed to this modification.
 </p>
 
 <p>
@@ -1092,14 +1118,15 @@ this copy).
 </div>
 
 
-<div id="outline-container-sec-4-2" class="outline-3">
-<h3 id="sec-4-2"><span class="section-number-3">4.2</span> Dead Letter Handling</h3>
-<div class="outline-text-3" id="text-4-2">
+<div id="outline-container-h:5af075c1-73b1-4f7c-8515-e55ed96c03a9" class="outline-3">
+<h3 id="h:5af075c1-73b1-4f7c-8515-e55ed96c03a9"><a id="sec-4-2" name="sec-4-2"></a><span class="section-number-3">4.2</span> Dead Letter Handling</h3>
+<div class="outline-text-3" id="text-h:5af075c1-73b1-4f7c-8515-e55ed96c03a9">
+
 <p>
 If the ActorSystem is unable to deliver a message to the target
 Actor (usually because the target Actor has been killed or otherwise
 exited), the ActorSystem will route that message to Dead Letter
-handling.  The routed message will be wrapped in a <a href="#sec-7-6">DeadEnvelope</a>
+handling.  The routed message will be wrapped in a <a href="#h:e3d4bfa0-7fad-4622-b707-8f67e4f75d5c">DeadEnvelope</a>
 message to indicate it's disposition.
 </p>
 
@@ -1128,27 +1155,29 @@ which would undoubtably cause confusion.
 </div>
 </div>
 
-<div id="outline-container-sec-4-3" class="outline-3">
-<h3 id="sec-4-3"><span class="section-number-3">4.3</span> Non-startable Actors</h3>
-<div class="outline-text-3" id="text-4-3">
+<div id="outline-container-h:badcba33-bc39-4009-833f-07617ec72e12" class="outline-3">
+<h3 id="h:badcba33-bc39-4009-833f-07617ec72e12"><a id="sec-4-3" name="sec-4-3"></a><span class="section-number-3">4.3</span> Non-startable Actors</h3>
+<div class="outline-text-3" id="text-h:badcba33-bc39-4009-833f-07617ec72e12">
+
 <p>
 Actors that cannot be started at all will be Dead Lettered by the
 ActorSystem.  If an Actor has registered for receiving Dead Letters
-(see <a href="#sec-4-2">Dead Letter Handling</a>) then it can perform special actions to
+(see <a href="#h:5af075c1-73b1-4f7c-8515-e55ed96c03a9">Dead Letter Handling</a>) then it can perform special actions to
 handle the non-starting Actor, but by default all messages sent to a
 non-starting Actor are discarded by the default Dead Letter Handling.
 </p>
 </div>
 </div>
 
-<div id="outline-container-sec-4-4" class="outline-3">
-<h3 id="sec-4-4"><span class="section-number-3">4.4</span> PoisonMessage Returns</h3>
-<div class="outline-text-3" id="text-4-4">
+<div id="outline-container-h:62e20202-9bff-4455-968e-73fee0b9f66a" class="outline-3">
+<h3 id="h:62e20202-9bff-4455-968e-73fee0b9f66a"><a id="sec-4-4" name="sec-4-4"></a><span class="section-number-3">4.4</span> PoisonMessage Returns</h3>
+<div class="outline-text-3" id="text-h:62e20202-9bff-4455-968e-73fee0b9f66a">
+
 <p>
 If an Actor experiences a failure (an uncaught exception) when
 processing a message, the ActorSystem will catch the exception and
 retry delivery of the message to the target Actor (as describe in
-<a href="#sec-2-2-5">Actor Failure</a>).
+<a href="#h:fb0eba5e-9d12-4cfe-8e8c-fe77b6658065">Actor Failure</a>).
 </p>
 
 <p>
@@ -1161,32 +1190,34 @@ still live, and other messages will still be delivered to it.
 </p>
 
 <p>
-See <a href="#sec-7-1">PoisonMessage</a> for details on the <code>PoisonMessage</code> object.
+See <a href="#h:407c4c79-2a05-442d-b6e8-5bf7c2f2d068">PoisonMessage</a> for details on the <code>PoisonMessage</code> object.
 </p>
 </div>
 </div>
 
-<div id="outline-container-sec-4-5" class="outline-3">
-<h3 id="sec-4-5"><span class="section-number-3">4.5</span> Top-Level Actors</h3>
-<div class="outline-text-3" id="text-4-5">
+<div id="outline-container-h:91e3dc4e-af22-4076-94ee-43f60458f0e0" class="outline-3">
+<h3 id="h:91e3dc4e-af22-4076-94ee-43f60458f0e0"><a id="sec-4-5" name="sec-4-5"></a><span class="section-number-3">4.5</span> Top-Level Actors</h3>
+<div class="outline-text-3" id="text-h:91e3dc4e-af22-4076-94ee-43f60458f0e0">
+
 <p>
 Actors created by the external environment are called "Top-Level
 Actors" and are unique in that they have no "parent" Actor (see
-<a href="#sec-2-2-4">Parent Actor</a>).  Since there is no Parent Actor, there is nowhere to
+<a href="#h:3868571d-e754-42a2-840e-6629e817903b">Parent Actor</a>).  Since there is no Parent Actor, there is nowhere to
 send a ChildActorExited message when the Actor dies and therefore
 there is no allowance for restarting Top Level Actors.
 </p>
 
 <p>
 Messages sent to a Top Level Actor that has died will still be
-redirected to the Dead Letter Handler (see <a href="#sec-4-2">Dead Letter Handling</a>).
+redirected to the Dead Letter Handler (see <a href="#h:5af075c1-73b1-4f7c-8515-e55ed96c03a9">Dead Letter Handling</a>).
 </p>
 </div>
 </div>
 
-<div id="outline-container-sec-4-6" class="outline-3">
-<h3 id="sec-4-6"><span class="section-number-3">4.6</span> Named Actors</h3>
-<div class="outline-text-3" id="text-4-6">
+<div id="outline-container-h:2d5ef9c7-2132-45f9-b6eb-6f2729f5b232" class="outline-3">
+<h3 id="h:2d5ef9c7-2132-45f9-b6eb-6f2729f5b232"><a id="sec-4-6" name="sec-4-6"></a><span class="section-number-3">4.6</span> Named Actors</h3>
+<div class="outline-text-3" id="text-h:2d5ef9c7-2132-45f9-b6eb-6f2729f5b232">
+
 <p>
 Most Actors are created and subsequently referenced by the
 ActorAddress. This ActorAddress can be used by any Actor in the
@@ -1206,8 +1237,8 @@ The initial Actor creation request with the name will create the
 requested Actor, but the ActorSystem will remember the Actor
 associated with that name andall subsequent Actor creation requests
 with the same name will return the originally created Actor (see the
-<code>globalName</code> parameter to the ActorSystem's <a href="#sec-6-4">createActor</a> call or the
-Actor's <a href="#sec-5-3">createActor</a> call).
+<code>globalName</code> parameter to the ActorSystem's <a href="#h:a565af1b-aabb-4336-a51d-7505c072c319">createActor</a> call or the
+Actor's <a href="#h:3663d87d-8a2f-485b-aeef-c6e9cf418b4c">createActor</a> call).
 </p>
 
 <p>
@@ -1222,7 +1253,7 @@ considered relative to their convenience:
 </p>
 
 <ol class="org-ol">
-<li>All Named Actors are similar to <a href="#sec-4-5">Top-Level Actors</a> in that they
+<li>All Named Actors are similar to <a href="#h:91e3dc4e-af22-4076-94ee-43f60458f0e0">Top-Level Actors</a> in that they
 are managed by the ActorSystem itself rather than a Parent
 Actor and therefore there is no notification when a Named Actor
 exits, and any messages sent to a Named Actor that has exited
@@ -1243,15 +1274,16 @@ system be
 </div>
 </div>
 
-<div id="outline-container-sec-4-7" class="outline-3">
-<h3 id="sec-4-7"><span class="section-number-3">4.7</span> Timer Messages</h3>
-<div class="outline-text-3" id="text-4-7">
+<div id="outline-container-h:9cc1acd4-7f35-44ac-94fc-0326dc87a7a5" class="outline-3">
+<h3 id="h:9cc1acd4-7f35-44ac-94fc-0326dc87a7a5"><a id="sec-4-7" name="sec-4-7"></a><span class="section-number-3">4.7</span> Timer Messages</h3>
+<div class="outline-text-3" id="text-h:9cc1acd4-7f35-44ac-94fc-0326dc87a7a5">
+
 <p>
 Normally Actors respond to messages sent to them by other Actors,
 but sometimes an Actor would like to run again after a timed delay.
 While it is possible for the Actor to sleep internally, this will
 prevent it from responding to other messages and cause messages to
-be queued causing eventual delivery failure (see <a href="#sec-4-1">Message Delivery</a>).
+be queued causing eventual delivery failure (see <a href="#h:3d280f21-4a99-416f-8cd7-9c9380a1c86c">Message Delivery</a>).
 </p>
 
 <p>
@@ -1270,9 +1302,10 @@ should simply ignore the <code>WakeupMessage</code> when it is received.
 </div>
 </div>
 
-<div id="outline-container-sec-4-8" class="outline-3">
-<h3 id="sec-4-8"><span class="section-number-3">4.8</span> Watching File Descriptors</h3>
-<div class="outline-text-3" id="text-4-8">
+<div id="outline-container-h:94edef18-154e-4847-864f-027dff4f6e0a" class="outline-3">
+<h3 id="h:94edef18-154e-4847-864f-027dff4f6e0a"><a id="sec-4-8" name="sec-4-8"></a><span class="section-number-3">4.8</span> Watching File Descriptors</h3>
+<div class="outline-text-3" id="text-h:94edef18-154e-4847-864f-027dff4f6e0a">
+
 <p>
 The Actor model itself is a pure specification that is good for
 concurrent computational tasks, but real-world Actors must often
@@ -1288,7 +1321,7 @@ for these interface elements.  Each interface element should be
 accessed in "non-blocking" mode so that the Actor itself can exit
 immediately if there is no work to be done (thereby allowing the
 Actor to process new messages as soon as they are received).  The
-<a href="https://github.com/godaddy/Thespian/blobl/master/examples/httpserver/http_server1.py">http_server1.py</a> file is an example of a simple HTTP server based on
+<a href="https://github.com/kquick/Thespian/blobl/master/examples/httpserver/http_server1.py">http_server1.py</a> file is an example of a simple HTTP server based on
 this model.
 </p>
 
@@ -1317,7 +1350,7 @@ invocation.
 </p>
 
 <p>
-The <a href="https://github.com/godaddy/Thespian/blobl/master/examples/httpserver/http_server2.py">http_server2.py</a> file is an example of a simple HTTP server that
+The <a href="https://github.com/kquick/Thespian/blobl/master/examples/httpserver/http_server2.py">http_server2.py</a> file is an example of a simple HTTP server that
 is similar to the http_server1.py but this example is modified to
 use the Watch extension.
 </p>
@@ -1353,16 +1386,17 @@ limit the portability of these Actors.
 </p>
 </div>
 
-<div id="outline-container-sec-4-8-1" class="outline-4">
-<h4 id="sec-4-8-1"><span class="section-number-4">4.8.1</span> Blocking Actors</h4>
-<div class="outline-text-4" id="text-4-8-1">
+<div id="outline-container-h:df96b2ed-e292-4ded-a614-30cfa1557858" class="outline-4">
+<h4 id="h:df96b2ed-e292-4ded-a614-30cfa1557858"><a id="sec-4-8-1" name="sec-4-8-1"></a><span class="section-number-4">4.8.1</span> Blocking Actors</h4>
+<div class="outline-text-4" id="text-h:df96b2ed-e292-4ded-a614-30cfa1557858">
+
 <p>
 There are some cases where the desired functionality of the Actor is
 to actually block on external operations.  For example, an Actor
 that acts as a client making calls to an external service might be
 best written to block on those external calls.  When the Actor
 blocks, other Actors cannot deliver messages to that Actor and
-backpressure builds (see <a href="#sec-4-1">Message Delivery</a> for more details).
+backpressure builds (see <a href="#h:3d280f21-4a99-416f-8cd7-9c9380a1c86c">Message Delivery</a> for more details).
 </p>
 
 <p>
@@ -1382,9 +1416,10 @@ be used as well.
 </div>
 </div>
 
-<div id="outline-container-sec-4-9" class="outline-3">
-<h3 id="sec-4-9"><span class="section-number-3">4.9</span> Actor Troupes</h3>
-<div class="outline-text-3" id="text-4-9">
+<div id="outline-container-h:19cf92bf-a6ae-492c-844c-b0831c108a3a" class="outline-3">
+<h3 id="h:19cf92bf-a6ae-492c-844c-b0831c108a3a"><a id="sec-4-9" name="sec-4-9"></a><span class="section-number-3">4.9</span> Actor Troupes</h3>
+<div class="outline-text-3" id="text-h:19cf92bf-a6ae-492c-844c-b0831c108a3a">
+
 <p>
 If specified appropriately, multiple instances of an Actor can be
 created which share the same ActorAddress; this is known as an
@@ -1411,14 +1446,15 @@ handling of messages for that Actor.
 </p>
 
 <p>
-See <a href="#sec-8-1">Actor Troupe Support</a> for more details.
+See <a href="#h:c796bc0d-a150-4fb9-8918-58f470813175">Actor Troupe Support</a> for more details.
 </p>
 </div>
 </div>
 
-<div id="outline-container-sec-4-10" class="outline-3">
-<h3 id="sec-4-10"><span class="section-number-3">4.10</span> ActorSystem Capabilities</h3>
-<div class="outline-text-3" id="text-4-10">
+<div id="outline-container-h:a17e6c70-5592-4d06-b818-bd25350c4c53" class="outline-3">
+<h3 id="h:a17e6c70-5592-4d06-b818-bd25350c4c53"><a id="sec-4-10" name="sec-4-10"></a><span class="section-number-3">4.10</span> ActorSystem Capabilities</h3>
+<div class="outline-text-3" id="text-h:a17e6c70-5592-4d06-b818-bd25350c4c53">
+
 <p>
 Actors can stipulate the requirements of the ActorSystem that they
 will run in by matching "Capabilities" of the ActorSystem.  Each
@@ -1443,23 +1479,24 @@ specifies them.
 
 <p>
 All Thespian ActorSystem instances automatically supply a set of
-common capabilities described in the <a href="#sec-9-1">Common Capabilities</a> section.
+common capabilities described in the <a href="#h:2a4bcad4-9fe0-4399-86d4-4bbf0ba0acb7">Common Capabilities</a> section.
 </p>
 </div>
 </div>
 
-<div id="outline-container-sec-4-11" class="outline-3">
-<h3 id="sec-4-11"><span class="section-number-3">4.11</span> Other Actor Systems</h3>
-<div class="outline-text-3" id="text-4-11">
+<div id="outline-container-h:3c8aa454-9a21-4d24-a623-ad86bfd4f5a7" class="outline-3">
+<h3 id="h:3c8aa454-9a21-4d24-a623-ad86bfd4f5a7"><a id="sec-4-11" name="sec-4-11"></a><span class="section-number-3">4.11</span> Other Actor Systems</h3>
+<div class="outline-text-3" id="text-h:3c8aa454-9a21-4d24-a623-ad86bfd4f5a7">
+
 <p>
 The current ActorSystem can communicate with other ActorSystems to
-coordinate Actor activities as described in <a href="#sec-1-3-2">Multiple Systems</a>.  To
+coordinate Actor activities as described in <a href="#h:461f4dc3-4bd6-46fe-a33e-2ad2a8d82d53">Multiple Systems</a>.  To
 support this, the ActorSystems communicate on known transport
 addresses to form a "Convention" of ActorSystems.
 </p>
 
 <p>
-When new Actors are created, the <a href="#sec-4-10">ActorSystem Capabilities</a> of the
+When new Actors are created, the <a href="#h:a17e6c70-5592-4d06-b818-bd25350c4c53">ActorSystem Capabilities</a> of the
 ActorSystems that are part of the Convention are used to determine
 where to start up the requested new Actor.
 </p>
@@ -1473,9 +1510,9 @@ the two ActorSystems and the Actors contained therein.
 <p>
 Actors can also register to be aware of when remote ActorSystems
 enter or exit the convention.  Registered Actors will receive an
-<a href="#sec-7-7">ActorSystemConventionUpdate</a> message for these events.  Actors
+<a href="#h:f311fc02-d355-4d68-b9af-958404637e57">ActorSystemConventionUpdate</a> message for these events.  Actors
 register for these updates using the
-<a href="#sec-5-7">notifyOnSystemRegistrationChanges</a> API call.
+<a href="#h:b9f7a2f0-7d2a-4cc0-8241-1fee7c62c44e">notifyOnSystemRegistrationChanges</a> API call.
 </p>
 
 <p>
@@ -1484,9 +1521,10 @@ that do are normally of the multi-process variety.
 </p>
 </div>
 
-<div id="outline-container-sec-4-11-1" class="outline-4">
-<h4 id="sec-4-11-1"><span class="section-number-4">4.11.1</span> Convention Establishment</h4>
-<div class="outline-text-4" id="text-4-11-1">
+<div id="outline-container-h:bd57f29e-4a5e-4725-9ced-7e0c5fa5bcbd" class="outline-4">
+<h4 id="h:bd57f29e-4a5e-4725-9ced-7e0c5fa5bcbd"><a id="sec-4-11-1" name="sec-4-11-1"></a><span class="section-number-4">4.11.1</span> Convention Establishment</h4>
+<div class="outline-text-4" id="text-h:bd57f29e-4a5e-4725-9ced-7e0c5fa5bcbd">
+
 <p>
 The ActorSystem implementation determines the manner in which
 Conventions are established and should be consulted for details and
@@ -1503,14 +1541,14 @@ membership.
 
 <li>The Convention Leader is told about members and actively attempts
 to establish communications with those members.  This is done
-using the <a href="#sec-5-14">preRegisterRemoteSystem()</a> call.  In this mode, the
+using the <a href="#h:956e30d5-c035-4e1e-86cb-73332e28d8d4">preRegisterRemoteSystem()</a> call.  In this mode, the
 Convention Leader will actively connect to the remote to
 establish or re-establish connectivity (until the membership is
-cancelled, for example, with the <a href="#sec-5-15">deRegisterRemoteSystem()</a> call).
+cancelled, for example, with the <a href="#h:ce801678-bcff-497d-be2a-439cb34fc519">deRegisterRemoteSystem()</a> call).
 
 <p>
 This latter method is particularly suited to configurations using
-the "Outbound Only" connectivity mode (see <a href="#sec-9-4">multiprocTCPBase</a> for
+the "Outbound Only" connectivity mode (see <a href="#h:9d33a877-b4f0-4012-9510-442d81b0837c">multiprocTCPBase</a> for
 example) where the Convention Leader is behind a firewall and can
 initiate outbound connections to members but those members cannot
 initiate inbound connections to the Leader.
@@ -1520,9 +1558,10 @@ initiate inbound connections to the Leader.
 </div>
 </div>
 
-<div id="outline-container-sec-4-11-2" class="outline-4">
-<h4 id="sec-4-11-2"><span class="section-number-4">4.11.2</span> Convention Administrator Communications</h4>
-<div class="outline-text-4" id="text-4-11-2">
+<div id="outline-container-h:0500ead3-28ea-440c-9ad6-56cb9fbdd648" class="outline-4">
+<h4 id="h:0500ead3-28ea-440c-9ad6-56cb9fbdd648"><a id="sec-4-11-2" name="sec-4-11-2"></a><span class="section-number-4">4.11.2</span> Convention Administrator Communications</h4>
+<div class="outline-text-4" id="text-h:0500ead3-28ea-440c-9ad6-56cb9fbdd648">
+
 <p>
 The communications between the Convention Leader admin process and the
 Convention Member admin process is handled internally by Thespian.
@@ -1544,9 +1583,10 @@ utilization of Thespian.
 </div>
 </div>
 
-<div id="outline-container-sec-4-12" class="outline-3">
-<h3 id="sec-4-12"><span class="section-number-3">4.12</span> Performance</h3>
-<div class="outline-text-3" id="text-4-12">
+<div id="outline-container-h:5e670e59-8334-477e-a9d2-0c2dc39d82dd" class="outline-3">
+<h3 id="h:5e670e59-8334-477e-a9d2-0c2dc39d82dd"><a id="sec-4-12" name="sec-4-12"></a><span class="section-number-3">4.12</span> Performance</h3>
+<div class="outline-text-3" id="text-h:5e670e59-8334-477e-a9d2-0c2dc39d82dd">
+
 <p>
 The Thespian implementation is design principles are: correctness,
 reliability, responsiveness, and performance &#x2014; in that order.  In
@@ -1571,9 +1611,10 @@ is adversely affecting your Actor-base application.
 </div>
 </div>
 
-<div id="outline-container-sec-4-13" class="outline-3">
-<h3 id="sec-4-13"><span class="section-number-3">4.13</span> Logging</h3>
-<div class="outline-text-3" id="text-4-13">
+<div id="outline-container-h:ce55494c-dd7a-4258-a1e8-b090c3bbb1e6" class="outline-3">
+<h3 id="h:ce55494c-dd7a-4258-a1e8-b090c3bbb1e6"><a id="sec-4-13" name="sec-4-13"></a><span class="section-number-3">4.13</span> Logging</h3>
+<div class="outline-text-3" id="text-h:ce55494c-dd7a-4258-a1e8-b090c3bbb1e6">
+
 <p>
 The standard Python logging can be used with the Thespian Actor
 system, although there are some Thespian modifications to logging that
@@ -1590,7 +1631,7 @@ where the logger is obtained).
 <p>
 The functionality provided by logging in the Thespian environment
 possibly includes sending log messages to a central Logging actor (as
-explicitly indicated in the <a href="#sec-9">ActorSystem Implementations</a> section).
+explicitly indicated in the <a href="#h:2a5fa63d-e6eb-43b9-bea8-47223b27544e">ActorSystem Implementations</a> section).
 This is needed because the standard Python logging is not
 multi-process safe and attempts to use it as-is will result in missing
 or duplicated log messages.
@@ -1661,9 +1702,10 @@ captured in an auxiliary file and is only needed for passing to the
 </p>
 </div>
 
-<div id="outline-container-sec-4-13-1" class="outline-4">
-<h4 id="sec-4-13-1"><span class="section-number-4">4.13.1</span> Thespian Internals Logging</h4>
-<div class="outline-text-4" id="text-4-13-1">
+<div id="outline-container-h:856a7ffe-676b-42a9-95eb-bd89a5810f53" class="outline-4">
+<h4 id="h:856a7ffe-676b-42a9-95eb-bd89a5810f53"><a id="sec-4-13-1" name="sec-4-13-1"></a><span class="section-number-4">4.13.1</span> Thespian Internals Logging</h4>
+<div class="outline-text-4" id="text-h:856a7ffe-676b-42a9-95eb-bd89a5810f53">
+
 <p>
 Because Thespian instruments the standard logging functionality to
 provide the Convention forwarding ability, it is not possible to use
@@ -1698,9 +1740,10 @@ developers modifying Thespian internals.
 </div>
 </div>
 
-<div id="outline-container-sec-4-14" class="outline-3">
-<h3 id="sec-4-14"><span class="section-number-3">4.14</span> Actor Code Distribution</h3>
-<div class="outline-text-3" id="text-4-14">
+<div id="outline-container-h:955ec990-a267-4d08-8f4d-5f980c777173" class="outline-3">
+<h3 id="h:955ec990-a267-4d08-8f4d-5f980c777173"><a id="sec-4-14" name="sec-4-14"></a><span class="section-number-3">4.14</span> Actor Code Distribution</h3>
+<div class="outline-text-3" id="text-h:955ec990-a267-4d08-8f4d-5f980c777173">
+
 <p>
 The Thespian ActorSystem provides an feature to specify the code
 used for Actor implementations.
@@ -1788,16 +1831,17 @@ encounter version-related problems.
 </ul>
 
 <p>
-The <a href="#sec-5-9">loadActorSource</a> operation describes this capability in more
+The <a href="#h:731cff6e-674d-4341-bd92-80a08113d5df">loadActorSource</a> operation describes this capability in more
 detail, including security protections associated with this feature.
 </p>
 </div>
 </div>
 </div>
 
-<div id="outline-container-sec-5" class="outline-2">
-<h2 id="sec-5"><span class="section-number-2">5</span> Actor API</h2>
-<div class="outline-text-2" id="text-5">
+<div id="outline-container-h:c3ba9430-5229-44ad-bbd5-ff5426e03e5e" class="outline-2">
+<h2 id="h:c3ba9430-5229-44ad-bbd5-ff5426e03e5e"><a id="sec-5" name="sec-5"></a><span class="section-number-2">5</span> Actor API</h2>
+<div class="outline-text-2" id="text-h:c3ba9430-5229-44ad-bbd5-ff5426e03e5e">
+
 <p>
 The Actor API is the set of operations that a running Actor can
 perform.  Thespian implements this API as a set of methods on an
@@ -1823,13 +1867,14 @@ Each Actor is represented by an Actor baseclass:
 
 <p>
 Versioning of the Actor API and the ActorSystem are described in
-<a href="#sec-4-10">ActorSystem Capabilities</a>.
+<a href="#h:a17e6c70-5592-4d06-b818-bd25350c4c53">ActorSystem Capabilities</a>.
 </p>
 </div>
 
-<div id="outline-container-sec-5-1" class="outline-3">
-<h3 id="sec-5-1"><span class="section-number-3">5.1</span> myAddress</h3>
-<div class="outline-text-3" id="text-5-1">
+<div id="outline-container-h:584dd408-9496-4f6f-8a86-0f0236f73893" class="outline-3">
+<h3 id="h:584dd408-9496-4f6f-8a86-0f0236f73893"><a id="sec-5-1" name="sec-5-1"></a><span class="section-number-3">5.1</span> myAddress</h3>
+<div class="outline-text-3" id="text-h:584dd408-9496-4f6f-8a86-0f0236f73893">
+
 <div class="org-src-container">
 
 <pre class="src src-python">    self.myAddress
@@ -1842,9 +1887,10 @@ This property is the ActorAddress of this Actor.
 </div>
 </div>
 
-<div id="outline-container-sec-5-2" class="outline-3">
-<h3 id="sec-5-2"><span class="section-number-3">5.2</span> receiveMessage</h3>
-<div class="outline-text-3" id="text-5-2">
+<div id="outline-container-h:f89540de-f853-42e3-9d52-23b1f84a251e" class="outline-3">
+<h3 id="h:f89540de-f853-42e3-9d52-23b1f84a251e"><a id="sec-5-2" name="sec-5-2"></a><span class="section-number-3">5.2</span> receiveMessage</h3>
+<div class="outline-text-3" id="text-h:f89540de-f853-42e3-9d52-23b1f84a251e">
+
 <div class="org-src-container">
 
 <pre class="src src-python">    def receiveMessage(self, message, sender): ...
@@ -1856,13 +1902,13 @@ This method is the primary entry point into the Actor to handle
 received messages.  Each subclass should override the base Actor
 receiveMessage() method as appropriate.  The <code>message</code> argument is
 the message being received, and the <code>sender</code> is the ActorAddress of
-the Actor (or <a href="#sec-1-4">External Communications</a> endpoint) sending the
+the Actor (or <a href="#h:c183ae4b-b397-433f-aa4e-69a6838ece38">External Communications</a> endpoint) sending the
 message.
 </p>
 
 <p>
 The message can be discarded once it has been handled.  As
-described previously in <a href="#sec-1-1">Actors</a>, there are three things an Actor can
+described previously in <a href="#h:2889c112-6505-4b32-9dce-ac3e4a16ad11">Actors</a>, there are three things an Actor can
 do when handling a message:
 </p>
 <ol class="org-ol">
@@ -1877,7 +1923,7 @@ do when handling a message:
 <p>
 If the processing of the message causes an exception, the failure
 will be caught by the ActorSystem and the message may be retried or
-returned to the sender as described in <a href="#sec-4-4">PoisonMessage Returns</a>.  Note
+returned to the sender as described in <a href="#h:62e20202-9bff-4455-968e-73fee0b9f66a">PoisonMessage Returns</a>.  Note
 that the <i>original</i> copy of the receive message is passed to the
 Actor with each attempt; if the Actor modifies the message before
 failing with an exception, the retried or Poison-returned version
@@ -1885,17 +1931,18 @@ will contain the modifications made by the original attempt.
 </p>
 </div>
 
-<div id="outline-container-sec-5-2-1" class="outline-4">
-<h4 id="sec-5-2-1"><span class="section-number-4">5.2.1</span> Return Value</h4>
-<div class="outline-text-4" id="text-5-2-1">
+<div id="outline-container-h:c7c7275c-fa32-4466-9d1a-e888f993e67c" class="outline-4">
+<h4 id="h:c7c7275c-fa32-4466-9d1a-e888f993e67c"><a id="sec-5-2-1" name="sec-5-2-1"></a><span class="section-number-4">5.2.1</span> Return Value</h4>
+<div class="outline-text-4" id="text-h:c7c7275c-fa32-4466-9d1a-e888f993e67c">
+
 <p>
 Ordinarily the return value from an Actor's <code>receiveMessage()</code>
 method is ignored, but if the underlying ActorSystem implementation
-supports the Thespian Watch extension (see <a href="#sec-4-8">Watching File
+supports the Thespian Watch extension (see <a href="#h:94edef18-154e-4847-864f-027dff4f6e0a">Watching File
 Descriptors</a>) then the Actor may return a ThespianWatch object which
 specifies a list of the file numbers to watch for incoming data;
 the Actor's <code>receiveMessage()</code> will subsequently be passed a
-<a href="#sec-7-3">WatchMessage</a> with the file number(s) for which data is available.
+<a href="#h:8a46cfae-7ccc-407a-91c1-d4301b7a653c">WatchMessage</a> with the file number(s) for which data is available.
 </p>
 
 <p>
@@ -1930,9 +1977,10 @@ the set of file descriptors that should be watched when it exits.
 </div>
 </div>
 
-<div id="outline-container-sec-5-3" class="outline-3">
-<h3 id="sec-5-3"><span class="section-number-3">5.3</span> createActor</h3>
-<div class="outline-text-3" id="text-5-3">
+<div id="outline-container-h:3663d87d-8a2f-485b-aeef-c6e9cf418b4c" class="outline-3">
+<h3 id="h:3663d87d-8a2f-485b-aeef-c6e9cf418b4c"><a id="sec-5-3" name="sec-5-3"></a><span class="section-number-3">5.3</span> createActor</h3>
+<div class="outline-text-3" id="text-h:3663d87d-8a2f-485b-aeef-c6e9cf418b4c">
+
 <div class="org-src-container">
 
 <pre class="src src-python">    newAddress = self.createActor(self, actorClass,
@@ -1953,9 +2001,9 @@ valid manner.
 
 <p>
 The optional <code>targetActorRequirements</code> argument is a value that
-will be passed passed to the <a href="#sec-5-12">actorSystemCapabilityCheck</a> to use for
+will be passed passed to the <a href="#h:0e9f4a6a-3083-40fa-a75b-ced37d70eef0">actorSystemCapabilityCheck</a> to use for
 validating whether the Actor can be started within the current
-ActorSystem environment (see <a href="#sec-4-10">ActorSystem Capabilities</a>).  The value
+ActorSystem environment (see <a href="#h:a17e6c70-5592-4d06-b818-bd25350c4c53">ActorSystem Capabilities</a>).  The value
 specified for this argument can be anything the target Actor's
 <code>actorSystemCapabilityCheck()</code> method can understand, although
 typically it is a Python dictionary.
@@ -1964,7 +2012,7 @@ typically it is a Python dictionary.
 <p>
 The <code>globalName</code> argument, if specified, should be a string
 specifying the "name" of the Actor within the ActorSystem.  As
-describe in <a href="#sec-4-6">Named Actors</a>, this name allows the Actor to be a
+describe in <a href="#h:2d5ef9c7-2132-45f9-b6eb-6f2729f5b232">Named Actors</a>, this name allows the Actor to be a
 system-wide singleton and to be uniquely identified and referenced
 in a manner additional to the ActorAddress of the actor.
 </p>
@@ -1977,7 +2025,7 @@ system was started as root, then all Actors will run as root.</span>
 
 <p>
 The source for the <code>actorClass</code> to be created is established by
-the current Actor, relative to any <a href="#sec-5-9">loadActorSource</a> operation that
+the current Actor, relative to any <a href="#h:731cff6e-674d-4341-bd92-80a08113d5df">loadActorSource</a> operation that
 apply to the creating Actor itself:
 </p>
 
@@ -2021,14 +2069,15 @@ and does not need to be concerned with the asynchronous startup
 aspect of the target Actor.  However, due to this asynchronous
 startup, it is possible that the new Actor cannot be started at
 all; in this event all messages intended for the new target Actor
-will be handled as described in the <a href="#sec-4-2">Dead Letter Handling</a> section.
+will be handled as described in the <a href="#h:5af075c1-73b1-4f7c-8515-e55ed96c03a9">Dead Letter Handling</a> section.
 </p>
 </div>
 
 
-<div id="outline-container-sec-5-3-1" class="outline-4">
-<h4 id="sec-5-3-1"><span class="section-number-4">5.3.1</span> globalName</h4>
-<div class="outline-text-4" id="text-5-3-1">
+<div id="outline-container-h:c5ae8d61-9358-463d-b0f0-d15ae0246059" class="outline-4">
+<h4 id="h:c5ae8d61-9358-463d-b0f0-d15ae0246059"><a id="sec-5-3-1" name="sec-5-3-1"></a><span class="section-number-4">5.3.1</span> globalName</h4>
+<div class="outline-text-4" id="text-h:c5ae8d61-9358-463d-b0f0-d15ae0246059">
+
 <p>
 The parent for a Named Actor (created when the <code>globalName</code> argument
 is specified) is the ActorSystem itself, rather than the requesting
@@ -2045,15 +2094,16 @@ create with the same globalName.
 
 <p>
 When a Named Actor exits, only the ActorSystem is aware of the
-exit; there is no <a href="#sec-7-5">ChildActorExited</a> notification sent to any Actors
+exit; there is no <a href="#h:ed408390-5a74-4955-9f7d-a84e87595459">ChildActorExited</a> notification sent to any Actors
 that requested the creation of the Named Actor.
 </p>
 </div>
 </div>
 
-<div id="outline-container-sec-5-3-2" class="outline-4">
-<h4 id="sec-5-3-2"><span class="section-number-4">5.3.2</span> Actor Creation Gotchas</h4>
-<div class="outline-text-4" id="text-5-3-2">
+<div id="outline-container-h:57dd8b71-0f60-4ad2-9628-08edf2c5b00c" class="outline-4">
+<h4 id="h:57dd8b71-0f60-4ad2-9628-08edf2c5b00c"><a id="sec-5-3-2" name="sec-5-3-2"></a><span class="section-number-4">5.3.2</span> Actor Creation Gotchas</h4>
+<div class="outline-text-4" id="text-h:57dd8b71-0f60-4ad2-9628-08edf2c5b00c">
+
 <p>
 There are a few issues to be aware of when creating Actors:
 </p>
@@ -2078,7 +2128,7 @@ actorClass is not specified in a valid manner.
 
 <li>Actor classes must either have been in the system path when the
 ActorSystem was created, or they must exist in a loaded Actor
-Source (see <a href="#sec-5-9">loadActorSource</a>).  Many ActorSystems use separate
+Source (see <a href="#h:731cff6e-674d-4341-bd92-80a08113d5df">loadActorSource</a>).  Many ActorSystems use separate
 processes to manage and create new Actors, so any changes in the
 current process after the ActorSystem process is started up will
 not be visible to the latter.
@@ -2114,9 +2164,10 @@ a name/import-path string.
 </div>
 </div>
 
-<div id="outline-container-sec-5-4" class="outline-3">
-<h3 id="sec-5-4"><span class="section-number-3">5.4</span> send</h3>
-<div class="outline-text-3" id="text-5-4">
+<div id="outline-container-h:28cb6d46-fa93-4efd-bc83-88bbbd50df66" class="outline-3">
+<h3 id="h:28cb6d46-fa93-4efd-bc83-88bbbd50df66"><a id="sec-5-4" name="sec-5-4"></a><span class="section-number-3">5.4</span> send</h3>
+<div class="outline-text-3" id="text-h:28cb6d46-fa93-4efd-bc83-88bbbd50df66">
+
 <div class="org-src-container">
 
 <pre class="src src-python">    self.send(targetAddress, message)
@@ -2136,15 +2187,16 @@ There is no response to the send, and the message is delivered to
 the target asynchronously.  There is no guarantee that the target
 has received the message by the time the <code>.send()</code> method returns.
 The ActorSystem delivers the message at some point by best-effort,
-sending the message to <a href="#sec-4-2">Dead Letter Handling</a> if it cannot be
+sending the message to <a href="#h:5af075c1-73b1-4f7c-8515-e55ed96c03a9">Dead Letter Handling</a> if it cannot be
 delivered.
 </p>
 </div>
 </div>
 
-<div id="outline-container-sec-5-5" class="outline-3">
-<h3 id="sec-5-5"><span class="section-number-3">5.5</span> wakeupAfter</h3>
-<div class="outline-text-3" id="text-5-5">
+<div id="outline-container-h:b2b4b63a-c256-4793-8591-1ce8dbd87131" class="outline-3">
+<h3 id="h:b2b4b63a-c256-4793-8591-1ce8dbd87131"><a id="sec-5-5" name="sec-5-5"></a><span class="section-number-3">5.5</span> wakeupAfter</h3>
+<div class="outline-text-3" id="text-h:b2b4b63a-c256-4793-8591-1ce8dbd87131">
+
 <div class="org-src-container">
 
 <pre class="src src-python">    self.wakeupAfter(timePeriod)
@@ -2155,15 +2207,16 @@ delivered.
 The <code>timePeriod</code> specifies a Python <code>datetime.timedelta</code> period.
 When this time period has expired, the ActorSystem will deliver a
 <code>WakeupMessage</code> to the Actor via the normal <code>.receiveMessage()</code>
-entrypoint (the sender will be the Actor itself).  See <a href="#sec-4-7">Timer
+entrypoint (the sender will be the Actor itself).  See <a href="#h:9cc1acd4-7f35-44ac-94fc-0326dc87a7a5">Timer
 Messages</a> for more information.
 </p>
 </div>
 </div>
 
-<div id="outline-container-sec-5-6" class="outline-3">
-<h3 id="sec-5-6"><span class="section-number-3">5.6</span> handleDeadLetters</h3>
-<div class="outline-text-3" id="text-5-6">
+<div id="outline-container-h:4022d522-cdc6-487a-b5d5-5d992572c531" class="outline-3">
+<h3 id="h:4022d522-cdc6-487a-b5d5-5d992572c531"><a id="sec-5-6" name="sec-5-6"></a><span class="section-number-3">5.6</span> handleDeadLetters</h3>
+<div class="outline-text-3" id="text-h:4022d522-cdc6-487a-b5d5-5d992572c531">
+
 <div class="org-src-container">
 
 <pre class="src src-python">    self.handleDeadLetters(startHandling=True)
@@ -2177,9 +2230,10 @@ handling Dead Letters.
 </div>
 </div>
 
-<div id="outline-container-sec-5-7" class="outline-3">
-<h3 id="sec-5-7"><span class="section-number-3">5.7</span> notifyOnSystemRegistrationChanges</h3>
-<div class="outline-text-3" id="text-5-7">
+<div id="outline-container-h:b9f7a2f0-7d2a-4cc0-8241-1fee7c62c44e" class="outline-3">
+<h3 id="h:b9f7a2f0-7d2a-4cc0-8241-1fee7c62c44e"><a id="sec-5-7" name="sec-5-7"></a><span class="section-number-3">5.7</span> notifyOnSystemRegistrationChanges</h3>
+<div class="outline-text-3" id="text-h:b9f7a2f0-7d2a-4cc0-8241-1fee7c62c44e">
+
 <div class="org-src-container">
 
 <pre class="src src-python">    self.notifyOnSystemRegistrationChanges(startHandling=True)
@@ -2189,14 +2243,15 @@ handling Dead Letters.
 <p>
 This method can be called to register or de-register this Actor for
 handling system registration events from other ActorSystems (see
-<a href="#sec-4-11">Other Actor Systems</a>) via <a href="#sec-7-7">ActorSystemConventionUpdate</a> messages.
+<a href="#h:3c8aa454-9a21-4d24-a623-ad86bfd4f5a7">Other Actor Systems</a>) via <a href="#h:f311fc02-d355-4d68-b9af-958404637e57">ActorSystemConventionUpdate</a> messages.
 </p>
 </div>
 </div>
 
-<div id="outline-container-sec-5-8" class="outline-3">
-<h3 id="sec-5-8"><span class="section-number-3">5.8</span> registerSourceAuthority</h3>
-<div class="outline-text-3" id="text-5-8">
+<div id="outline-container-h:5ae05479-5a6d-4f01-bd7d-c4f544f7b98a" class="outline-3">
+<h3 id="h:5ae05479-5a6d-4f01-bd7d-c4f544f7b98a"><a id="sec-5-8" name="sec-5-8"></a><span class="section-number-3">5.8</span> registerSourceAuthority</h3>
+<div class="outline-text-3" id="text-h:5ae05479-5a6d-4f01-bd7d-c4f544f7b98a">
+
 <div class="org-src-container">
 
 <pre class="src src-python">    self.registerSourceAuthority()
@@ -2205,8 +2260,8 @@ handling system registration events from other ActorSystems (see
 
 <p>
 This method registers the current Actor as the Source Authority
-handler for the current ActorSystem as described in the <a href="#sec-6-9-2">Security Considerations</a> section of the <a href="#sec-5-9">loadActorSource</a> ActorSystem API
-call.  Once registered, this Actor will receive <a href="#sec-7-8">ValidateSource</a>
+handler for the current ActorSystem as described in the <a href="#h:b26e4f60-d3fa-40b1-bc33-bb20b61ff2d4">Security Considerations</a> section of the <a href="#h:731cff6e-674d-4341-bd92-80a08113d5df">loadActorSource</a> ActorSystem API
+call.  Once registered, this Actor will receive <a href="#h:3119580d-80a6-4061-a217-1b2b21014172">ValidateSource</a>
 messages and be responsible for decrypting (if necessary) and
 determining authorization for loaded sources to run.
 </p>
@@ -2218,9 +2273,10 @@ Actor registers for this role.
 </div>
 </div>
 
-<div id="outline-container-sec-5-9" class="outline-3">
-<h3 id="sec-5-9"><span class="section-number-3">5.9</span> loadActorSource</h3>
-<div class="outline-text-3" id="text-5-9">
+<div id="outline-container-h:731cff6e-674d-4341-bd92-80a08113d5df" class="outline-3">
+<h3 id="h:731cff6e-674d-4341-bd92-80a08113d5df"><a id="sec-5-9" name="sec-5-9"></a><span class="section-number-3">5.9</span> loadActorSource</h3>
+<div class="outline-text-3" id="text-h:731cff6e-674d-4341-bd92-80a08113d5df">
+
 <div class="org-src-container">
 
 <pre class="src src-python">    sourceHash = self.loadActorSource(fileref)
@@ -2232,27 +2288,28 @@ The <code>loadActorSource()</code> method is used to load a (possibly
 encrypted) zipfile containing Python source code in standard Python
 zipimport format (via PEP302<sup><a id="fnr.1" name="fnr.1" class="footref" href="#fn.1">1</a></sup> methodologies).  The return value
 is an internally-generated hash value identifying that loaded source
-zipfile that can be used in subsequent <a href="#sec-5-3">createActor</a> calls to
+zipfile that can be used in subsequent <a href="#h:3663d87d-8a2f-485b-aeef-c6e9cf418b4c">createActor</a> calls to
 instantiate Actors found in that sourcefile.
 </p>
 
 <p>
 There must be a valid Source Authority registered (via the
-<a href="#sec-5-8">registerSourceAuthority</a> method) to validate the loaded source; by
+<a href="#h:5ae05479-5a6d-4f01-bd7d-c4f544f7b98a">registerSourceAuthority</a> method) to validate the loaded source; by
 default this method does nothing if no Source Authority has been
-loaded.  See <a href="#sec-6-9-2">Security Considerations</a> for more information.
+loaded.  See <a href="#h:b26e4f60-d3fa-40b1-bc33-bb20b61ff2d4">Security Considerations</a> for more information.
 </p>
 
 <p>
-See the description of the same function in the <a href="#sec-6">ActorSystem API</a>
+See the description of the same function in the <a href="#h:7d2b4986-95d3-4460-9d19-ea0dcdb34fca">ActorSystem API</a>
 section for more details.
 </p>
 </div>
 </div>
 
-<div id="outline-container-sec-5-10" class="outline-3">
-<h3 id="sec-5-10"><span class="section-number-3">5.10</span> unloadActorSource</h3>
-<div class="outline-text-3" id="text-5-10">
+<div id="outline-container-h:02eaa317-996a-419b-b9e5-462a28a749c0" class="outline-3">
+<h3 id="h:02eaa317-996a-419b-b9e5-462a28a749c0"><a id="sec-5-10" name="sec-5-10"></a><span class="section-number-3">5.10</span> unloadActorSource</h3>
+<div class="outline-text-3" id="text-h:02eaa317-996a-419b-b9e5-462a28a749c0">
+
 <div class="org-src-container">
 
 <pre class="src src-python">    self.unloadActorSource(sourceHash)
@@ -2261,19 +2318,20 @@ section for more details.
 
 <p>
 The <code>unloadActorSource()</code> method is used to unload a source zipfile
-previously loaded by the <a href="#sec-5-9">loadActorSource</a> operation.
+previously loaded by the <a href="#h:731cff6e-674d-4341-bd92-80a08113d5df">loadActorSource</a> operation.
 </p>
 
 <p>
-See the description of the same function in the <a href="#sec-6">ActorSystem API</a>
+See the description of the same function in the <a href="#h:7d2b4986-95d3-4460-9d19-ea0dcdb34fca">ActorSystem API</a>
 section for more details.
 </p>
 </div>
 </div>
 
-<div id="outline-container-sec-5-11" class="outline-3">
-<h3 id="sec-5-11"><span class="section-number-3">5.11</span> notifyOnSourceAvailability</h3>
-<div class="outline-text-3" id="text-5-11">
+<div id="outline-container-h:460d04d8-3961-43c4-a4c3-8282c2e4a892" class="outline-3">
+<h3 id="h:460d04d8-3961-43c4-a4c3-8282c2e4a892"><a id="sec-5-11" name="sec-5-11"></a><span class="section-number-3">5.11</span> notifyOnSourceAvailability</h3>
+<div class="outline-text-3" id="text-h:460d04d8-3961-43c4-a4c3-8282c2e4a892">
+
 <div class="org-src-container">
 
 <pre class="src src-python">    self.notifyOnSourceAvailability(enable=True)
@@ -2284,7 +2342,7 @@ section for more details.
 This method can be called to register or de-register (based on the
 <code>enable</code> argument) this Actor for being informed of loaded or
 unloaded source loads.  Load notifications are delivered via the
-<a href="#sec-7-10">LoadedSource</a> message and source unloads generate <a href="#sec-7-11">UnloadedSource</a>
+<a href="#h:7cc41555-6b60-4844-8cea-0ec3714cf8f8">LoadedSource</a> message and source unloads generate <a href="#h:2a5fa63d-e6eb-43b9-bea8-47223b27544e">UnloadedSource</a>
 messages to the notification registrant.
 </p>
 
@@ -2297,9 +2355,10 @@ available, but are not triggered by local load or unload events.
 </div>
 </div>
 
-<div id="outline-container-sec-5-12" class="outline-3">
-<h3 id="sec-5-12"><span class="section-number-3">5.12</span> actorSystemCapabilityCheck</h3>
-<div class="outline-text-3" id="text-5-12">
+<div id="outline-container-h:0e9f4a6a-3083-40fa-a75b-ced37d70eef0" class="outline-3">
+<h3 id="h:0e9f4a6a-3083-40fa-a75b-ced37d70eef0"><a id="sec-5-12" name="sec-5-12"></a><span class="section-number-3">5.12</span> actorSystemCapabilityCheck</h3>
+<div class="outline-text-3" id="text-h:0e9f4a6a-3083-40fa-a75b-ced37d70eef0">
+
 <div class="org-src-container">
 
 <pre class="src src-python">    def actorSystemCapabilityCheck(capabilities, requirements=None):
@@ -2317,7 +2376,7 @@ current ActorSystem.
 The <code>capabilities</code> argument specifies the key/value dictionary of
 capabilities of the current ActorSystem.  ActorSystem capabilities
 are free-form and are determined solely by agents specifying those
-capabilities (see <a href="#sec-4-10">ActorSystem Capabilities</a>).
+capabilities (see <a href="#h:a17e6c70-5592-4d06-b818-bd25350c4c53">ActorSystem Capabilities</a>).
 </p>
 
 <p>
@@ -2336,15 +2395,16 @@ all, or none of the capabilities or requirements provided.
 <p>
 This static method may also be called to re-validate the Actor's
 viability if the capabilities of its ActorSystem are updated (as
-described in the <a href="#sec-5-13">updateCapability</a> section), and if it returns False
-then the existing Actor will be killed with an <a href="#sec-7-4">ActorExitRequest</a>
+described in the <a href="#h:1dc4362f-78dd-4adf-833c-d7bebda07ef8">updateCapability</a> section), and if it returns False
+then the existing Actor will be killed with an <a href="#h:7e6106e4-a631-47a4-9d22-3fd63f7e1951">ActorExitRequest</a>
 message.
 </p>
 </div>
 
-<div id="outline-container-sec-5-12-1" class="outline-4">
-<h4 id="sec-5-12-1"><span class="section-number-4">5.12.1</span> requireCapability decorator</h4>
-<div class="outline-text-4" id="text-5-12-1">
+<div id="outline-container-h:3bafc1e2-9e3d-4073-8e75-c01ad792b5be" class="outline-4">
+<h4 id="h:3bafc1e2-9e3d-4073-8e75-c01ad792b5be"><a id="sec-5-12-1" name="sec-5-12-1"></a><span class="section-number-4">5.12.1</span> requireCapability decorator</h4>
+<div class="outline-text-4" id="text-h:3bafc1e2-9e3d-4073-8e75-c01ad792b5be">
+
 <p>
 To facilitate easy specification of requirements, there is a
 <code>requireCapability</code> class decorator defined which can be used to
@@ -2474,14 +2534,15 @@ is equivalent to:
 </div>
 </div>
 </div>
-<div id="outline-container-sec-5-13" class="outline-3">
-<h3 id="sec-5-13"><span class="section-number-3">5.13</span> updateCapability</h3>
-<div class="outline-text-3" id="text-5-13">
+<div id="outline-container-h:1dc4362f-78dd-4adf-833c-d7bebda07ef8" class="outline-3">
+<h3 id="h:1dc4362f-78dd-4adf-833c-d7bebda07ef8"><a id="sec-5-13" name="sec-5-13"></a><span class="section-number-3">5.13</span> updateCapability</h3>
+<div class="outline-text-3" id="text-h:1dc4362f-78dd-4adf-833c-d7bebda07ef8">
+
 <p>
 The <code>updateCapability()</code> method is used update the capabilities of
 the current ActorSystem this Actor is running in (there is a
 corresponding method on the ActorSystem for externally-specified
-updates; see the <a href="#sec-6">ActorSystem API</a> for that version).
+updates; see the <a href="#h:7d2b4986-95d3-4460-9d19-ea0dcdb34fca">ActorSystem API</a> for that version).
 </p>
 
 <div class="org-src-container">
@@ -2505,7 +2566,7 @@ capability is removed from the ActorSystem if it exists.
 If the capabilities of the ActorSystem are modified by this method
 (i.e. the capability value is not already set as requested) then
 all Actors within that ActorSystem are re-validated by calling
-their <a href="#sec-5-12">actorSystemCapabilityCheck</a> static method and sending them an
+their <a href="#h:0e9f4a6a-3083-40fa-a75b-ced37d70eef0">actorSystemCapabilityCheck</a> static method and sending them an
 ActorExitRequest if the capability check call returns false.  This
 could result in killing the Actor that initiated the capability
 exchange, even if new capabilities are added.  Actors may be
@@ -2515,14 +2576,15 @@ set of capabilities.
 
 <p>
 The current set of ActorSystem capabilities can be obtained by
-issuing a <a href="#sec-7-12">Thespian_StatusReq</a> to the ActorSystem.
+issuing a <a href="#h:6428fa90-8749-4777-a0b1-752ec5eb1650">Thespian_StatusReq</a> to the ActorSystem.
 </p>
 </div>
 </div>
 
-<div id="outline-container-sec-5-14" class="outline-3">
-<h3 id="sec-5-14"><span class="section-number-3">5.14</span> preRegisterRemoteSystem</h3>
-<div class="outline-text-3" id="text-5-14">
+<div id="outline-container-h:956e30d5-c035-4e1e-86cb-73332e28d8d4" class="outline-3">
+<h3 id="h:956e30d5-c035-4e1e-86cb-73332e28d8d4"><a id="sec-5-14" name="sec-5-14"></a><span class="section-number-3">5.14</span> preRegisterRemoteSystem</h3>
+<div class="outline-text-3" id="text-h:956e30d5-c035-4e1e-86cb-73332e28d8d4">
+
 <p>
 The <code>preRegisterRemoteSystem()</code> method is used to inform the local
 ActorSystem about a remote ActorSystem.
@@ -2544,7 +2606,7 @@ However, there are certain transport configurations where this
 auto-discovery is not possible.  In these configurations, this
 method can be used to initiate communications between the two
 ActorSystems.  This method will only work for ActorSystem bases
-that support Conventions (as describe in the <a href="#sec-4-11">Other Actor Systems</a>
+that support Conventions (as describe in the <a href="#h:3c8aa454-9a21-4d24-a623-ad86bfd4f5a7">Other Actor Systems</a>
 section).
 </p>
 
@@ -2585,9 +2647,10 @@ established communications.
 </div>
 </div>
 
-<div id="outline-container-sec-5-15" class="outline-3">
-<h3 id="sec-5-15"><span class="section-number-3">5.15</span> deRegisterRemoteSystem</h3>
-<div class="outline-text-3" id="text-5-15">
+<div id="outline-container-h:ce801678-bcff-497d-be2a-439cb34fc519" class="outline-3">
+<h3 id="h:ce801678-bcff-497d-be2a-439cb34fc519"><a id="sec-5-15" name="sec-5-15"></a><span class="section-number-3">5.15</span> deRegisterRemoteSystem</h3>
+<div class="outline-text-3" id="text-h:ce801678-bcff-497d-be2a-439cb34fc519">
+
 <p>
 The <code>deRegisterRemoteSystem()</code> method is used to unregister a
 previously registered remote system.  This method is the
@@ -2619,14 +2682,15 @@ manner as for the <code>preRegisterRemoteSystem()</code> and is usually the
 same value that was originally passed to the latter method.  The
 <code>remoteSystemAddress</code> parameter may also be an actual ActorAddress
 (e.g. the same address that would be provided in the
-<a href="#sec-7-7">ActorSystemConventionUpdate</a> messages).
+<a href="#h:f311fc02-d355-4d68-b9af-958404637e57">ActorSystemConventionUpdate</a> messages).
 </p>
 </div>
 </div>
 
-<div id="outline-container-sec-5-16" class="outline-3">
-<h3 id="sec-5-16"><span class="section-number-3">5.16</span> actorSystemShutdown</h3>
-<div class="outline-text-3" id="text-5-16">
+<div id="outline-container-h:9e800ed1-ed40-4ff3-8445-f795719f6218" class="outline-3">
+<h3 id="h:9e800ed1-ed40-4ff3-8445-f795719f6218"><a id="sec-5-16" name="sec-5-16"></a><span class="section-number-3">5.16</span> actorSystemShutdown</h3>
+<div class="outline-text-3" id="text-h:9e800ed1-ed40-4ff3-8445-f795719f6218">
+
 <p>
 The <code>actorSystemShutdown()</code> method can be called by an actor to
 shutdown the <b>entire</b> local ActorSystem, including all Actors
@@ -2652,9 +2716,10 @@ Use this method with caution.
 </div>
 </div>
 
-<div id="outline-container-sec-5-17" class="outline-3">
-<h3 id="sec-5-17"><span class="section-number-3">5.17</span> ActorTypeDispatcher</h3>
-<div class="outline-text-3" id="text-5-17">
+<div id="outline-container-h:2f5b52bd-72b8-41eb-b879-809d174c0e30" class="outline-3">
+<h3 id="h:2f5b52bd-72b8-41eb-b879-809d174c0e30"><a id="sec-5-17" name="sec-5-17"></a><span class="section-number-3">5.17</span> ActorTypeDispatcher</h3>
+<div class="outline-text-3" id="text-h:2f5b52bd-72b8-41eb-b879-809d174c0e30">
+
 <p>
 An alternative base class for creating Actors is the
 <code>ActorTypeDispatcher</code> which extends the <code>Actor</code> base class.  The
@@ -2783,9 +2848,10 @@ Did not recognize the message type: &lt;type 'float'&gt;
 </pre>
 </div>
 
-<div id="outline-container-sec-5-17-1" class="outline-4">
-<h4 id="sec-5-17-1"><span class="section-number-4">5.17.1</span> Type Handling Deferral</h4>
-<div class="outline-text-4" id="text-5-17-1">
+<div id="outline-container-h:e58ce3a1-df40-4d3f-bc1f-e7743e3c1dc1" class="outline-4">
+<h4 id="h:e58ce3a1-df40-4d3f-bc1f-e7743e3c1dc1"><a id="sec-5-17-1" name="sec-5-17-1"></a><span class="section-number-4">5.17.1</span> Type Handling Deferral</h4>
+<div class="outline-text-4" id="text-h:e58ce3a1-df40-4d3f-bc1f-e7743e3c1dc1">
+
 <p>
 In a normal Python subclass, it is possible for a method in the
 subclass to call a method in the base class by using the <code>super()</code>
@@ -2865,9 +2931,10 @@ Got a message
 </div>
 </div>
 
-<div id="outline-container-sec-6" class="outline-2">
-<h2 id="sec-6"><span class="section-number-2">6</span> ActorSystem API</h2>
-<div class="outline-text-2" id="text-6">
+<div id="outline-container-h:7d2b4986-95d3-4460-9d19-ea0dcdb34fca" class="outline-2">
+<h2 id="h:7d2b4986-95d3-4460-9d19-ea0dcdb34fca"><a id="sec-6" name="sec-6"></a><span class="section-number-2">6</span> ActorSystem API</h2>
+<div class="outline-text-2" id="text-h:7d2b4986-95d3-4460-9d19-ea0dcdb34fca">
+
 <p>
 The ActorSystem is created or connected-to by instantiating the
 ActorSystem object.  External applications use the ActorSystem API
@@ -2886,9 +2953,10 @@ The ActorSystem API is made available by importing the
 </div>
 </div>
 
-<div id="outline-container-sec-6-1" class="outline-3">
-<h3 id="sec-6-1"><span class="section-number-3">6.1</span> Exceptions</h3>
-<div class="outline-text-3" id="text-6-1">
+<div id="outline-container-h:a91e6169-660d-4df0-af13-15b3ad5e63bc" class="outline-3">
+<h3 id="h:a91e6169-660d-4df0-af13-15b3ad5e63bc"><a id="sec-6-1" name="sec-6-1"></a><span class="section-number-3">6.1</span> Exceptions</h3>
+<div class="outline-text-3" id="text-h:a91e6169-660d-4df0-af13-15b3ad5e63bc">
+
 <p>
 All exceptions generated by the ActorSystem itself are based on the
 <code>ActorSystemException</code> base class.
@@ -2931,9 +2999,10 @@ The following shows the heirarchy of defined Thespian exceptions:
 </div>
 </div>
 
-<div id="outline-container-sec-6-2" class="outline-3">
-<h3 id="sec-6-2"><span class="section-number-3">6.2</span> ActorSystem</h3>
-<div class="outline-text-3" id="text-6-2">
+<div id="outline-container-h:f71b7bfa-c57b-4716-a2c7-ad83a2ed3582" class="outline-3">
+<h3 id="h:f71b7bfa-c57b-4716-a2c7-ad83a2ed3582"><a id="sec-6-2" name="sec-6-2"></a><span class="section-number-3">6.2</span> ActorSystem</h3>
+<div class="outline-text-3" id="text-h:f71b7bfa-c57b-4716-a2c7-ad83a2ed3582">
+
 <div class="org-src-container">
 
 <pre class="src src-python">actorSys = ActorSystem(systemBase = None,
@@ -2946,17 +3015,16 @@ The following shows the heirarchy of defined Thespian exceptions:
 <p>
 The <code>systemBase</code> argument should specify which ActorSystem
 implementation base should be used for this ActorSystem, as
-selected from those systems describe in the <a href="#sec-9">ActorSystem
-Implementations</a> section. If <code>systemBase</code> is None, this call will
+selected from those systems describe in the <a href="#h:2a5fa63d-e6eb-43b9-bea8-47223b27544e">ActorSystem Implementations</a> section. If <code>systemBase</code> is None, this call will
 check to see if there was a previous call to ActorSystem in the
 current process and if so, re-use the <code>systemBase</code> from the
 previous call. If there is no previous call, the default system
-base is the <code>simpleSystemBase</code> (see <a href="#sec-9-2">simpleSystemBase</a>).
+base is the <code>simpleSystemBase</code> (see <a href="#h:924dc0fe-c15b-491e-a6d1-8b88683d4c0d">simpleSystemBase</a>).
 </p>
 
 <p>
 The <code>capabilities</code> argument should be a dictionary of capability
-keys and values as describe in the <a href="#sec-4-10">ActorSystem Capabilities</a>
+keys and values as describe in the <a href="#h:a17e6c70-5592-4d06-b818-bd25350c4c53">ActorSystem Capabilities</a>
 section.  These capabilities form the initial set of capabilities
 for the ActorSystem if it is started; the capabilities are ignored
 if an ActorSystem is already running.
@@ -2969,7 +3037,7 @@ default logging configuration is usually supplied.  If specified
 as <code>False</code>, then no logging configuration is supplied; this latter
 is useful in situations where another component is attempting to
 establish a logging configuration (e.g. nosetest logcapture).  As
-described in the <a href="#sec-4-13">Logging</a> section, the Convention Leader will
+described in the <a href="#h:ce55494c-dd7a-4258-a1e8-b090c3bbb1e6">Logging</a> section, the Convention Leader will
 receive forwarding of log messages at Warning level or higher,
 providing a centralized logging capability.
 </p>
@@ -2988,9 +3056,10 @@ specified for non-singleton creations.
 </div>
 </div>
 
-<div id="outline-container-sec-6-3" class="outline-3">
-<h3 id="sec-6-3"><span class="section-number-3">6.3</span> ActorSystem.shutdown</h3>
-<div class="outline-text-3" id="text-6-3">
+<div id="outline-container-h:654a6c81-b326-4c0a-98bc-638ac5ce631f" class="outline-3">
+<h3 id="h:654a6c81-b326-4c0a-98bc-638ac5ce631f"><a id="sec-6-3" name="sec-6-3"></a><span class="section-number-3">6.3</span> ActorSystem.shutdown</h3>
+<div class="outline-text-3" id="text-h:654a6c81-b326-4c0a-98bc-638ac5ce631f">
+
 <div class="org-src-container">
 
 <pre class="src src-python">    actorSys.shutdown()
@@ -3008,7 +3077,7 @@ notified (but they continue to exist).
 <p>
 As described previously, the ActorSystem is a process-global
 singleton that may be a system-wide singleton, depending on the
-system base used (see <a href="#sec-9">ActorSystem Implementations</a> for details).
+system base used (see <a href="#h:2a5fa63d-e6eb-43b9-bea8-47223b27544e">ActorSystem Implementations</a> for details).
 The <code>shutdown()</code> method is the proper way to stop those
 process-wide or system-wide ActorSystems when they are no longer
 needed.  The decision of when to do this is left to the user; in
@@ -3025,9 +3094,10 @@ unaffected by stopping the transient unique ActorSystem.
 </div>
 </div>
 
-<div id="outline-container-sec-6-4" class="outline-3">
-<h3 id="sec-6-4"><span class="section-number-3">6.4</span> ActorSystem.createActor</h3>
-<div class="outline-text-3" id="text-6-4">
+<div id="outline-container-h:a565af1b-aabb-4336-a51d-7505c072c319" class="outline-3">
+<h3 id="h:a565af1b-aabb-4336-a51d-7505c072c319"><a id="sec-6-4" name="sec-6-4"></a><span class="section-number-3">6.4</span> ActorSystem.createActor</h3>
+<div class="outline-text-3" id="text-h:a565af1b-aabb-4336-a51d-7505c072c319">
+
 <div class="org-src-container">
 
 <pre class="src src-python">    actorAddr = actorSys.createActor(actorClass,
@@ -3040,7 +3110,7 @@ unaffected by stopping the transient unique ActorSystem.
 <p>
 The <code>createActor()</code> method is used by external applications to
 request the creation of an Actor in the ActorSystem environment.
-This call is very similar to the <a href="#sec-5-3">createActor</a> Actor API call except
+This call is very similar to the <a href="#h:3663d87d-8a2f-485b-aeef-c6e9cf418b4c">createActor</a> Actor API call except
 that this version creates "Top-Level" Actors and will block until
 the Actor is created and throw an exception on failures.
 </p>
@@ -3054,9 +3124,9 @@ or as a module-qualified string identifying a class object
 
 <p>
 The <code>targetActorRequirements</code> argument is a value that will be
-passed to the <a href="#sec-5-12">actorSystemCapabilityCheck</a> to use for validating
+passed to the <a href="#h:0e9f4a6a-3083-40fa-a75b-ced37d70eef0">actorSystemCapabilityCheck</a> to use for validating
 whether the Actor can be started within the current ActorSystem
-environment (see <a href="#sec-4-10">ActorSystem Capabilities</a>).  The value specified
+environment (see <a href="#h:a17e6c70-5592-4d06-b818-bd25350c4c53">ActorSystem Capabilities</a>).  The value specified
 for this argument can be anything the target Actor's
 <code>actorSystemCapabilityCheck()</code> method can understand, although
 typically it is a Python dictionary.
@@ -3065,7 +3135,7 @@ typically it is a Python dictionary.
 <p>
 The <code>globalName</code> argument, if specified, should be a string
 specifying the "name" of the Actor within the ActorSystem.  As
-describe in <a href="#sec-4-6">Named Actors</a>, this name allows the Actor to be a
+describe in <a href="#h:2d5ef9c7-2132-45f9-b6eb-6f2729f5b232">Named Actors</a>, this name allows the Actor to be a
 system-wide singleton and to be uniquely identified and referenced
 in a manner additional to the ActorAddress of the actor.
 </p>
@@ -3077,7 +3147,7 @@ load the <code>actorClass</code> source and start the Actor.
 </p>
 <ul class="org-ul">
 <li>The source file must previously have been loaded by the
-<a href="#sec-6-9">loadActorSource</a> operation.
+<a href="#h:73b564d2-faa3-4fc8-bfdf-5362626c03be">loadActorSource</a> operation.
 </li>
 <li>If not specified, then the <code>actorClass</code> is expected to be found
 on the standard path.  If the <code>sourceHash</code> value does not match
@@ -3121,9 +3191,10 @@ not match any currently loaded source.
 </div>
 </div>
 
-<div id="outline-container-sec-6-5" class="outline-3">
-<h3 id="sec-6-5"><span class="section-number-3">6.5</span> tell</h3>
-<div class="outline-text-3" id="text-6-5">
+<div id="outline-container-h:a5dcf9d2-7bda-43c7-ab44-86265992e972" class="outline-3">
+<h3 id="h:a5dcf9d2-7bda-43c7-ab44-86265992e972"><a id="sec-6-5" name="sec-6-5"></a><span class="section-number-3">6.5</span> tell</h3>
+<div class="outline-text-3" id="text-h:a5dcf9d2-7bda-43c7-ab44-86265992e972">
+
 <p>
 Tell is used to inject a message into the Actor system (targeting a
 specific Actor) without waiting for any response message.
@@ -3152,9 +3223,10 @@ until the send is completed.
 </div>
 </div>
 
-<div id="outline-container-sec-6-6" class="outline-3">
-<h3 id="sec-6-6"><span class="section-number-3">6.6</span> ask</h3>
-<div class="outline-text-3" id="text-6-6">
+<div id="outline-container-h:8e52624b-cda1-4218-bc9f-693cf06b0758" class="outline-3">
+<h3 id="h:8e52624b-cda1-4218-bc9f-693cf06b0758"><a id="sec-6-6" name="sec-6-6"></a><span class="section-number-3">6.6</span> ask</h3>
+<div class="outline-text-3" id="text-h:8e52624b-cda1-4218-bc9f-693cf06b0758">
+
 <p>
 Ask is used to send a message to an Actor (injecting it into the
 Actor system) and wait for a response message.
@@ -3189,9 +3261,10 @@ value will be accepted as a specification of a number of seconds.
 </p>
 </div>
 
-<div id="outline-container-sec-6-6-1" class="outline-4">
-<h4 id="sec-6-6-1"><span class="section-number-4">6.6.1</span> Gotchas</h4>
-<div class="outline-text-4" id="text-6-6-1">
+<div id="outline-container-h:b660216f-003b-4041-93cb-566be7edf72c" class="outline-4">
+<h4 id="h:b660216f-003b-4041-93cb-566be7edf72c"><a id="sec-6-6-1" name="sec-6-6-1"></a><span class="section-number-4">6.6.1</span> Gotchas</h4>
+<div class="outline-text-4" id="text-h:b660216f-003b-4041-93cb-566be7edf72c">
+
 <ul class="org-ul">
 <li>The response may come from a previous <code>tell()</code> (or <code>ask()</code> if that
 ask caused the Actor to send multiple messages to the requestor,
@@ -3216,9 +3289,10 @@ the application must be prepared to use techniques like no-response
 </div>
 </div>
 
-<div id="outline-container-sec-6-7" class="outline-3">
-<h3 id="sec-6-7"><span class="section-number-3">6.7</span> listen</h3>
-<div class="outline-text-3" id="text-6-7">
+<div id="outline-container-h:c68f8ef8-94e9-46d6-8e67-634d04c16562" class="outline-3">
+<h3 id="h:c68f8ef8-94e9-46d6-8e67-634d04c16562"><a id="sec-6-7" name="sec-6-7"></a><span class="section-number-3">6.7</span> listen</h3>
+<div class="outline-text-3" id="text-h:c68f8ef8-94e9-46d6-8e67-634d04c16562">
+
 <p>
 Listen is used to wait for a message.
 </p>
@@ -3249,9 +3323,61 @@ seconds.
 </div>
 </div>
 
-<div id="outline-container-sec-6-8" class="outline-3">
-<h3 id="sec-6-8"><span class="section-number-3">6.8</span> updateCapability</h3>
-<div class="outline-text-3" id="text-6-8">
+<div id="outline-container-actorsystem.private" class="outline-3">
+<h3 id="actorsystem.private"><a id="sec-6-8" name="sec-6-8"></a><span class="section-number-3">6.8</span> private</h3>
+<div class="outline-text-3" id="text-actorsystem.private">
+
+<p>
+The <code>tell()</code>, <code>ask()</code>, and <code>listen()</code> operations are used by external
+applications to communicate with Actors, but they only provide a
+single "address" for the external application.  If the external
+application is multi-threaded, and different threads wish to
+communicate with actors, some mechanism to route responses to the
+proper thread is needed.
+</p>
+
+<p>
+To accomplish this, the <code>ActorSystem.private()</code> method can be used to
+obtain a "private" context for a particular thread.  While it exists,
+this context creates a unique endpoint for the external application's
+threads and ensures that response messages sent by actors are sent to
+the proper initiating thread.
+</p>
+
+<p>
+The <code>private()</code> context is easy to use along with the <code>with</code> statement:
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-python">...
+asys = ActorSystem()
+...
+[thread1:]
+with asys.private() as mysys:
+    r = mysys.ask(addr, message, timeout)
+    if r is not None:
+        mysys.tell(addr2, 'completed')
+...
+[thread2:]
+with asys.private() as sys2:
+    resp = sys2.ask(addr5, msg, timeout)
+    print(resp)
+</pre>
+</div>
+
+<p>
+In the above example, the response message sent by the actor at <code>addr</code>
+will properly be directed to thread1, and the response message sent by
+the actor at <code>addr5</code> will only be sent to thread2.
+</p>
+</div>
+</div>
+
+<div id="outline-container-h:bf228654-b542-48f0-a5b5-78bc883528b9" class="outline-3">
+<h3 id="h:bf228654-b542-48f0-a5b5-78bc883528b9"><a id="sec-6-9" name="sec-6-9"></a><span class="section-number-3">6.9</span> updateCapability</h3>
+<div class="outline-text-3" id="text-h:bf228654-b542-48f0-a5b5-78bc883528b9">
+
 <p>
 The <code>updateCapability()</code> method is used update the capabilities of
 the ActorSystem.  This is the external interface to updating
@@ -3279,7 +3405,7 @@ capability is removed from the ActorSystem if it exists.
 If the capabilities of the ActorSystem are modified by this method
 (i.e. the capability value is not already set as requested) then
 all Actors within that ActorSystem are re-validated by calling
-their <a href="#sec-5-12">actorSystemCapabilityCheck</a> static method and sending them an
+their <a href="#h:0e9f4a6a-3083-40fa-a75b-ced37d70eef0">actorSystemCapabilityCheck</a> static method and sending them an
 ActorExitRequest if the capability check call returns false.  _This
 could result in killing the Actor that initiated the capability
 exchange, even if new capabilities are added._ Actors may be
@@ -3289,15 +3415,16 @@ set of capabilities.
 
 <p>
 The current set of ActorSystem capabilities can be obtained by
-issuing a <a href="#sec-7-12">Thespian_StatusReq</a> to the ActorSystem.
+issuing a <a href="#h:6428fa90-8749-4777-a0b1-752ec5eb1650">Thespian_StatusReq</a> to the ActorSystem.
 </p>
 </div>
 </div>
 
 
-<div id="outline-container-sec-6-9" class="outline-3">
-<h3 id="sec-6-9"><span class="section-number-3">6.9</span> loadActorSource</h3>
-<div class="outline-text-3" id="text-6-9">
+<div id="outline-container-h:73b564d2-faa3-4fc8-bfdf-5362626c03be" class="outline-3">
+<h3 id="h:73b564d2-faa3-4fc8-bfdf-5362626c03be"><a id="sec-6-10" name="sec-6-10"></a><span class="section-number-3">6.10</span> loadActorSource</h3>
+<div class="outline-text-3" id="text-h:73b564d2-faa3-4fc8-bfdf-5362626c03be">
+
 <div class="org-src-container">
 
 <pre class="src src-python">    sourceHash = actorSys.loadActorSource(fileref)
@@ -3309,22 +3436,22 @@ The <code>loadActorSource()</code> method is used to load a (possibly
 encrypted) zipfile containing Python source code in standard Python
 zipimport format (via PEP302<sup><a id="fnr.1.100" name="fnr.1.100" class="footref" href="#fn.1">1</a></sup> methodologies).  The return value
 is an internally-generated hash value identifying that loaded source
-zipfile that can be used in subsequent <a href="#sec-5-3">createActor</a> calls to
+zipfile that can be used in subsequent <a href="#h:0e9f4a6a-3083-40fa-a75b-ced37d70eef0">createActor</a> calls to
 instantiate Actors found in that sourcefile.
 </p>
 
 <p>
 There must be a valid Source Authority registered (via the
-<a href="#sec-5-8">registerSourceAuthority</a> method) to validate the loaded source; by
+<a href="#h:5ae05479-5a6d-4f01-bd7d-c4f544f7b98a">registerSourceAuthority</a> method) to validate the loaded source; by
 default this method does nothing if no Source Authority has been
-loaded.  See <a href="#sec-6-9-2">Security Considerations</a> for more information.
+loaded.  See <a href="#h:b26e4f60-d3fa-40b1-bc33-bb20b61ff2d4">Security Considerations</a> for more information.
 </p>
 
 <p>
 Although a plaintext zipfile may be loaded, it is highly recommended
 that production environments encrypt the zipFile using some sort of
 encryption methodology.  The reasons for this are discussed in the
-<a href="#sec-6-9-2">Security Considerations</a> section below; when an encrypted zipfile is
+<a href="#h:b26e4f60-d3fa-40b1-bc33-bb20b61ff2d4">Security Considerations</a> section below; when an encrypted zipfile is
 loaded it is first decrypted and/or authorized as described therein.
 </p>
 
@@ -3337,9 +3464,10 @@ feedback (excepting perhaps the <code>/tmp/Thespian.log</code> logfile).
 </p>
 </div>
 
-<div id="outline-container-sec-6-9-1" class="outline-4">
-<h4 id="sec-6-9-1"><span class="section-number-4">6.9.1</span> Source Loading Issues</h4>
-<div class="outline-text-4" id="text-6-9-1">
+<div id="outline-container-h:e23490e4-d720-4e84-9b9a-e768fa3e717d" class="outline-4">
+<h4 id="h:e23490e4-d720-4e84-9b9a-e768fa3e717d"><a id="sec-6-10-1" name="sec-6-10-1"></a><span class="section-number-4">6.10.1</span> Source Loading Issues</h4>
+<div class="outline-text-4" id="text-h:e23490e4-d720-4e84-9b9a-e768fa3e717d">
+
 <p>
 Although the <code>loadActorSource()</code> functionality works quite well,
 there are a few scenarios that can cause difficulties:
@@ -3411,9 +3539,10 @@ conventional format (e.g. JSON).
 </div>
 </div>
 
-<div id="outline-container-sec-6-9-2" class="outline-4">
-<h4 id="sec-6-9-2"><span class="section-number-4">6.9.2</span> Security Considerations</h4>
-<div class="outline-text-4" id="text-6-9-2">
+<div id="outline-container-h:b26e4f60-d3fa-40b1-bc33-bb20b61ff2d4" class="outline-4">
+<h4 id="h:b26e4f60-d3fa-40b1-bc33-bb20b61ff2d4"><a id="sec-6-10-2" name="sec-6-10-2"></a><span class="section-number-4">6.10.2</span> Security Considerations</h4>
+<div class="outline-text-4" id="text-h:b26e4f60-d3fa-40b1-bc33-bb20b61ff2d4">
+
 <p>
 When <code>loadActorSource()</code> is not used, the source for all
 instantiated Actors must come from the existing Python import path
@@ -3486,19 +3615,20 @@ Authority that will reject all loaded sources.
 </p>
 </div>
 
-<ol class="org-ol"><li><a id="sec-6-9-2-1" name="sec-6-9-2-1"></a>Multi-System Source Authorization<br  /><div class="outline-text-5" id="text-6-9-2-1">
+<ol class="org-ol"><li><a id="h:059157fd-4272-4d2e-a1c8-aa0069e5b1f5" name="h:059157fd-4272-4d2e-a1c8-aa0069e5b1f5"></a><a id="sec-6-10-2-1" name="sec-6-10-2-1"></a>Multi-System Source Authorization<br  /><div class="outline-text-5" id="text-h:059157fd-4272-4d2e-a1c8-aa0069e5b1f5">
+
 <p>
 The Source Authority registration is unique to an ActorSystem.
-Different ActorSystems in a <a href="#sec-1-3-2">Multiple Systems</a> configuration can each
+Different ActorSystems in a <a href="#h:461f4dc3-4bd6-46fe-a33e-2ad2a8d82d53">Multiple Systems</a> configuration can each
 have a separate Source Authority that may perform different
-authorization techniques.  However, as described in <a href="#sec-4-14">Actor Code
+authorization techniques.  However, as described in <a href="#h:955ec990-a267-4d08-8f4d-5f980c777173">Actor Code
 Distribution</a>, ActorSystems joined together in a Convention can
 exchange sources on demand to satisfy Actor creation requests.
 sources exchanged between ActorSystems in this manner are not
 subject to further <b>validation</b> after the initial load on the
 original system (although the local ActorSystem can choose the level
 of sharing it wishes to perform; see the <b>AllowRemoteActorSources</b>
-capability setting in the <a href="#sec-9-1">Common Capabilities</a> section).
+capability setting in the <a href="#h:2a4bcad4-9fe0-4399-86d4-4bbf0ba0acb7">Common Capabilities</a> section).
 </p>
 
 <p>
@@ -3542,9 +3672,10 @@ running Actor in the other source load via independent means.
 </div>
 </div>
 
-<div id="outline-container-sec-6-10" class="outline-3">
-<h3 id="sec-6-10"><span class="section-number-3">6.10</span> unloadActorSource</h3>
-<div class="outline-text-3" id="text-6-10">
+<div id="outline-container-h:3e2f292f-2797-46d7-9fc6-48c1619d4bec" class="outline-3">
+<h3 id="h:3e2f292f-2797-46d7-9fc6-48c1619d4bec"><a id="sec-6-11" name="sec-6-11"></a><span class="section-number-3">6.11</span> unloadActorSource</h3>
+<div class="outline-text-3" id="text-h:3e2f292f-2797-46d7-9fc6-48c1619d4bec">
+
 <div class="org-src-container">
 
 <pre class="src src-python">    actorSys.unloadActorSource(sourceHash)
@@ -3553,7 +3684,7 @@ running Actor in the other source load via independent means.
 
 <p>
 The <code>unloadActorSource()</code> method is used to unload a source zipfile
-previously loaded by the <a href="#sec-6-9">loadActorSource</a> operation.
+previously loaded by the <a href="#h:731cff6e-674d-4341-bd92-80a08113d5df">loadActorSource</a> operation.
 </p>
 
 <p>
@@ -3579,9 +3710,10 @@ that sourceHash this request does nothing silently.
 </div>
 </div>
 
-<div id="outline-container-sec-7" class="outline-2">
-<h2 id="sec-7"><span class="section-number-2">7</span> ActorSystem Messages</h2>
-<div class="outline-text-2" id="text-7">
+<div id="outline-container-h:b889aca8-b50d-4920-8496-34b1420cf664" class="outline-2">
+<h2 id="h:b889aca8-b50d-4920-8496-34b1420cf664"><a id="sec-7" name="sec-7"></a><span class="section-number-2">7</span> ActorSystem Messages</h2>
+<div class="outline-text-2" id="text-h:b889aca8-b50d-4920-8496-34b1420cf664">
+
 <p>
 The following Messages can be delivered to Actors by the ActorSystem
 as a result of events within the ActorSystem itself.  All of these
@@ -3597,22 +3729,24 @@ returned to an <code>ask()</code> or <code>tell()</code> call.
 </p>
 </div>
 
-<div id="outline-container-sec-7-1" class="outline-3">
-<h3 id="sec-7-1"><span class="section-number-3">7.1</span> PoisonMessage</h3>
-<div class="outline-text-3" id="text-7-1">
+<div id="outline-container-h:407c4c79-2a05-442d-b6e8-5bf7c2f2d068" class="outline-3">
+<h3 id="h:407c4c79-2a05-442d-b6e8-5bf7c2f2d068"><a id="sec-7-1" name="sec-7-1"></a><span class="section-number-3">7.1</span> PoisonMessage</h3>
+<div class="outline-text-3" id="text-h:407c4c79-2a05-442d-b6e8-5bf7c2f2d068">
+
 <p>
 The <code>PoisonMessage</code> object is delivered to an Actor or to external
 code when message sent to an Actor has caused the target Actor to
 fail.  The <code>PoisonMessage</code> is a wrapper around the original message
 that caused the failure.  The originating sender receives this
 poison message indication to allow it to perform any desired
-cleanup or alternative work based on the target Actor failure (see <a href="#sec-4-4">PoisonMessage Returns</a>).
+cleanup or alternative work based on the target Actor failure (see <a href="#h:62e20202-9bff-4455-968e-73fee0b9f66a">PoisonMessage Returns</a>).
 </p>
 </div>
 
-<div id="outline-container-sec-7-1-1" class="outline-4">
-<h4 id="sec-7-1-1"><span class="section-number-4">7.1.1</span> Attributes</h4>
-<div class="outline-text-4" id="text-7-1-1">
+<div id="outline-container-h:7655532a-ec5a-49c0-9f4e-0b4207f21080" class="outline-4">
+<h4 id="h:7655532a-ec5a-49c0-9f4e-0b4207f21080"><a id="sec-7-1-1" name="sec-7-1-1"></a><span class="section-number-4">7.1.1</span> Attributes</h4>
+<div class="outline-text-4" id="text-h:7655532a-ec5a-49c0-9f4e-0b4207f21080">
+
 <ul class="org-ul">
 <li><code>.poisonMessage</code> is the original message causing the target Actor
 failures.
@@ -3627,19 +3761,21 @@ exception stack trace).
 </div>
 </div>
 
-<div id="outline-container-sec-7-2" class="outline-3">
-<h3 id="sec-7-2"><span class="section-number-3">7.2</span> WakeupMessage</h3>
-<div class="outline-text-3" id="text-7-2">
+<div id="outline-container-h:32b3df34-552e-4398-83bb-b78f3f6483bc" class="outline-3">
+<h3 id="h:32b3df34-552e-4398-83bb-b78f3f6483bc"><a id="sec-7-2" name="sec-7-2"></a><span class="section-number-3">7.2</span> WakeupMessage</h3>
+<div class="outline-text-3" id="text-h:32b3df34-552e-4398-83bb-b78f3f6483bc">
+
 <p>
 The <code>WakeupMessage</code> is delivered to the Actor by the ActorSystem as
 a result of a previous call to the Actor's <code>.wakeupAfter()</code> method
-call (see <a href="#sec-4-7">Timer Messages</a>).
+call (see <a href="#h:9cc1acd4-7f35-44ac-94fc-0326dc87a7a5">Timer Messages</a>).
 </p>
 </div>
 
-<div id="outline-container-sec-7-2-1" class="outline-4">
-<h4 id="sec-7-2-1"><span class="section-number-4">7.2.1</span> Attributes</h4>
-<div class="outline-text-4" id="text-7-2-1">
+<div id="outline-container-h:865814f4-6d08-4657-bb89-c3be8b8a9453" class="outline-4">
+<h4 id="h:865814f4-6d08-4657-bb89-c3be8b8a9453"><a id="sec-7-2-1" name="sec-7-2-1"></a><span class="section-number-4">7.2.1</span> Attributes</h4>
+<div class="outline-text-4" id="text-h:865814f4-6d08-4657-bb89-c3be8b8a9453">
+
 <ul class="org-ul">
 <li><code>.delayPeriod</code> which is the python <code>datetime.timedelta</code> value of
 the delay period that has expired.
@@ -3649,9 +3785,10 @@ the delay period that has expired.
 </div>
 </div>
 
-<div id="outline-container-sec-7-3" class="outline-3">
-<h3 id="sec-7-3"><span class="section-number-3">7.3</span> WatchMessage</h3>
-<div class="outline-text-3" id="text-7-3">
+<div id="outline-container-h:8a46cfae-7ccc-407a-91c1-d4301b7a653c" class="outline-3">
+<h3 id="h:8a46cfae-7ccc-407a-91c1-d4301b7a653c"><a id="sec-7-3" name="sec-7-3"></a><span class="section-number-3">7.3</span> WatchMessage</h3>
+<div class="outline-text-3" id="text-h:8a46cfae-7ccc-407a-91c1-d4301b7a653c">
+
 <p>
 The <code>WatchMessage</code> is delivered to the Actor by the ActorSystem when
 one or more file descriptors has available data.  The WatchMessage
@@ -3660,14 +3797,15 @@ specifies which file numbers have data vailable.
 
 <p>
 This functionality is not available from all ActorSystem
-implementations.  See <a href="#sec-4-8">Watching File Descriptors</a> for more
+implementations.  See <a href="#h:94edef18-154e-4847-864f-027dff4f6e0a">Watching File Descriptors</a> for more
 information.
 </p>
 </div>
 
-<div id="outline-container-sec-7-3-1" class="outline-4">
-<h4 id="sec-7-3-1"><span class="section-number-4">7.3.1</span> Attributes</h4>
-<div class="outline-text-4" id="text-7-3-1">
+<div id="outline-container-h:a4719aee-2054-466c-a013-03b6938b084e" class="outline-4">
+<h4 id="h:a4719aee-2054-466c-a013-03b6938b084e"><a id="sec-7-3-1" name="sec-7-3-1"></a><span class="section-number-4">7.3.1</span> Attributes</h4>
+<div class="outline-text-4" id="text-h:a4719aee-2054-466c-a013-03b6938b084e">
+
 <ul class="org-ul">
 <li><code>.ready</code> specifies a list of file numbers for which data is
 available.  This will be a subset of the original set of file
@@ -3679,9 +3817,10 @@ numbers returned from the Actor's <code>receiveMessage()</code> method in the
 </div>
 </div>
 
-<div id="outline-container-sec-7-4" class="outline-3">
-<h3 id="sec-7-4"><span class="section-number-3">7.4</span> ActorExitRequest</h3>
-<div class="outline-text-3" id="text-7-4">
+<div id="outline-container-h:7e6106e4-a631-47a4-9d22-3fd63f7e1951" class="outline-3">
+<h3 id="h:7e6106e4-a631-47a4-9d22-3fd63f7e1951"><a id="sec-7-4" name="sec-7-4"></a><span class="section-number-3">7.4</span> ActorExitRequest</h3>
+<div class="outline-text-3" id="text-h:7e6106e4-a631-47a4-9d22-3fd63f7e1951">
+
 <p>
 The <code>ActorExitRequest</code> object is sent to any Actor to request that
 Actor to exit.  The Actor's <code>receiveMessage()</code> is invoked with the
@@ -3699,9 +3838,10 @@ Actor within the system.
 </p>
 </div>
 
-<div id="outline-container-sec-7-4-1" class="outline-4">
-<h4 id="sec-7-4-1"><span class="section-number-4">7.4.1</span> Attributes</h4>
-<div class="outline-text-4" id="text-7-4-1">
+<div id="outline-container-h:8155fe0d-ad17-4677-b606-f830c6f9f249" class="outline-4">
+<h4 id="h:8155fe0d-ad17-4677-b606-f830c6f9f249"><a id="sec-7-4-1" name="sec-7-4-1"></a><span class="section-number-4">7.4.1</span> Attributes</h4>
+<div class="outline-text-4" id="text-h:8155fe0d-ad17-4677-b606-f830c6f9f249">
+
 <ul class="org-ul">
 <li><code>.isRecursive</code> indicates that this ActorExitRequest will
 automatically be propagated to all children of the current Actor
@@ -3716,18 +3856,19 @@ propagation to all child Actors.
 </div>
 </div>
 
-<div id="outline-container-sec-7-5" class="outline-3">
-<h3 id="sec-7-5"><span class="section-number-3">7.5</span> ChildActorExited</h3>
-<div class="outline-text-3" id="text-7-5">
+<div id="outline-container-h:ed408390-5a74-4955-9f7d-a84e87595459" class="outline-3">
+<h3 id="h:ed408390-5a74-4955-9f7d-a84e87595459"><a id="sec-7-5" name="sec-7-5"></a><span class="section-number-3">7.5</span> ChildActorExited</h3>
+<div class="outline-text-3" id="text-h:ed408390-5a74-4955-9f7d-a84e87595459">
+
 <p>
 The <code>ChildActorExited</code> object is delivered to the Parent Actor of
 an Actor when that Actor has exited.  This is delivered regardless
-of whether the exit was due to the receipt of an <a href="#sec-7-4">ActorExitRequest</a>
+of whether the exit was due to the receipt of an <a href="#h:7e6106e4-a631-47a4-9d22-3fd63f7e1951">ActorExitRequest</a>
 message or if the Actor was killed by other means.
 </p>
 
 <p>
-The Parent of <a href="#sec-4-6">Named Actors</a> is the ActorSystem itself; no
+The Parent of <a href="#h:2d5ef9c7-2132-45f9-b6eb-6f2729f5b232">Named Actors</a> is the ActorSystem itself; no
 other Actor will receive a <code>ChildActorExited</code> message when a
 Named Actor exits.
 </p>
@@ -3739,9 +3880,10 @@ unremarked.
 </p>
 </div>
 
-<div id="outline-container-sec-7-5-1" class="outline-4">
-<h4 id="sec-7-5-1"><span class="section-number-4">7.5.1</span> Attributes</h4>
-<div class="outline-text-4" id="text-7-5-1">
+<div id="outline-container-h:c32348b6-fed3-4ff1-bf95-3cf491049518" class="outline-4">
+<h4 id="h:c32348b6-fed3-4ff1-bf95-3cf491049518"><a id="sec-7-5-1" name="sec-7-5-1"></a><span class="section-number-4">7.5.1</span> Attributes</h4>
+<div class="outline-text-4" id="text-h:c32348b6-fed3-4ff1-bf95-3cf491049518">
+
 <ul class="org-ul">
 <li><code>.childAddress</code> is the address of the child Actor that exited.
 Note that this <code>.childAddress</code> may be different than the <code>sender</code>
@@ -3752,20 +3894,22 @@ argument passed to the current Actor's <code>.receiveMessage()</code> method.
 </div>
 </div>
 
-<div id="outline-container-sec-7-6" class="outline-3">
-<h3 id="sec-7-6"><span class="section-number-3">7.6</span> DeadEnvelope</h3>
-<div class="outline-text-3" id="text-7-6">
+<div id="outline-container-h:e3d4bfa0-7fad-4622-b707-8f67e4f75d5c" class="outline-3">
+<h3 id="h:e3d4bfa0-7fad-4622-b707-8f67e4f75d5c"><a id="sec-7-6" name="sec-7-6"></a><span class="section-number-3">7.6</span> DeadEnvelope</h3>
+<div class="outline-text-3" id="text-h:e3d4bfa0-7fad-4622-b707-8f67e4f75d5c">
+
 <p>
 The <code>DeadEnvelope</code> object is delivered to the Dead Letter handler as
-described in <a href="#sec-4-2">Dead Letter Handling</a>.  The <code>DeadEnvelope</code> is a wrapper
+described in <a href="#h:5af075c1-73b1-4f7c-8515-e55ed96c03a9">Dead Letter Handling</a>.  The <code>DeadEnvelope</code> is a wrapper
 around the original message that could not be delivered to the
 target Actor because the target is no longer running.
 </p>
 </div>
 
-<div id="outline-container-sec-7-6-1" class="outline-4">
-<h4 id="sec-7-6-1"><span class="section-number-4">7.6.1</span> Attributes</h4>
-<div class="outline-text-4" id="text-7-6-1">
+<div id="outline-container-h:fc0fb45a-a981-42ce-9922-705dabbbda37" class="outline-4">
+<h4 id="h:fc0fb45a-a981-42ce-9922-705dabbbda37"><a id="sec-7-6-1" name="sec-7-6-1"></a><span class="section-number-4">7.6.1</span> Attributes</h4>
+<div class="outline-text-4" id="text-h:fc0fb45a-a981-42ce-9922-705dabbbda37">
+
 <ul class="org-ul">
 <li><code>.deadMessage</code> &#x2013; the original, undeliverable message
 </li>
@@ -3776,20 +3920,22 @@ target Actor because the target is no longer running.
 </div>
 </div>
 
-<div id="outline-container-sec-7-7" class="outline-3">
-<h3 id="sec-7-7"><span class="section-number-3">7.7</span> ActorSystemConventionUpdate</h3>
-<div class="outline-text-3" id="text-7-7">
+<div id="outline-container-h:f311fc02-d355-4d68-b9af-958404637e57" class="outline-3">
+<h3 id="h:f311fc02-d355-4d68-b9af-958404637e57"><a id="sec-7-7" name="sec-7-7"></a><span class="section-number-3">7.7</span> ActorSystemConventionUpdate</h3>
+<div class="outline-text-3" id="text-h:f311fc02-d355-4d68-b9af-958404637e57">
+
 <p>
 The <code>ActorSystemConventionUpdate</code> object is delivered to an Actor
 that has registered to be notified on changes in ActorSystem
-convention membership (as described in <a href="#sec-4-11">Other Actor Systems</a>).  This
+convention membership (as described in <a href="#h:955ec990-a267-4d08-8f4d-5f980c777173">Other Actor Systems</a>).  This
 message is generated by the ActorSystem itself.
 </p>
 </div>
 
-<div id="outline-container-sec-7-7-1" class="outline-4">
-<h4 id="sec-7-7-1"><span class="section-number-4">7.7.1</span> Attributes</h4>
-<div class="outline-text-4" id="text-7-7-1">
+<div id="outline-container-h:a1cda86c-ca86-4aaa-bcb5-935e92435647" class="outline-4">
+<h4 id="h:a1cda86c-ca86-4aaa-bcb5-935e92435647"><a id="sec-7-7-1" name="sec-7-7-1"></a><span class="section-number-4">7.7.1</span> Attributes</h4>
+<div class="outline-text-4" id="text-h:a1cda86c-ca86-4aaa-bcb5-935e92435647">
+
 <ul class="org-ul">
 <li><code>.remoteAdminAddress</code> &#x2013; Address of the Admin for the remote ActorSystem.
 </li>
@@ -3806,13 +3952,14 @@ de-registered for failing to checkin.
 </div>
 </div>
 
-<div id="outline-container-sec-7-8" class="outline-3">
-<h3 id="sec-7-8"><span class="section-number-3">7.8</span> ValidateSource</h3>
-<div class="outline-text-3" id="text-7-8">
+<div id="outline-container-h:3119580d-80a6-4061-a217-1b2b21014172" class="outline-3">
+<h3 id="h:3119580d-80a6-4061-a217-1b2b21014172"><a id="sec-7-8" name="sec-7-8"></a><span class="section-number-3">7.8</span> ValidateSource</h3>
+<div class="outline-text-3" id="text-h:3119580d-80a6-4061-a217-1b2b21014172">
+
 <p>
 The <code>ValidateSource</code> object is delivered to the registered Source
 Authority.  The contents are the source file provided via the
-<a href="#sec-5-9">loadActorSource</a> call to the ActorSystem.  The Actor receiving this
+<a href="#h:731cff6e-674d-4341-bd92-80a08113d5df">loadActorSource</a> call to the ActorSystem.  The Actor receiving this
 message should decrypt and validate the source to ensure that the
 source is authorized to run in the context of the current
 ActorSystem.
@@ -3822,7 +3969,7 @@ ActorSystem.
 If the specified source is not authorized to run in the current
 ActorSystem, the Source Authority may either simply discard this
 message and take no further action, or it may send a
-<a href="#sec-7-9">ValidatedSource</a> message specifying None as the validated source.
+<a href="#h:1db8e94e-ca54-4817-b120-b4c51c680cdd">ValidatedSource</a> message specifying None as the validated source.
 The latter is recommended since it allows immediate response
 handling for pending actors for that source; otherwise a source
 load timeout must expire before rejecting actor create requests for
@@ -3832,7 +3979,7 @@ the rejected source load attempt.
 <p>
 If the specified source is valid for running in the current
 ActorSystem, the Source Authority should return a zipfile
-containing the sources to the sender in a <a href="#sec-7-9">ValidatedSource</a> message.
+containing the sources to the sender in a <i>ValidatedSource</i> message.
 </p>
 
 <p>
@@ -3849,31 +3996,33 @@ Authority will experience delays in validating the source, or that
 the attempts to use the loaded source will immediately follow the
 <code>loadActorSource()</code> call, the code calling the latter should
 implement a delay or an explicit validation of the results of the
-load via the <a href="#sec-7-12">Thespian_StatusReq</a> operation.
+load via the <a href="#h:6428fa90-8749-4777-a0b1-752ec5eb1650">Thespian_StatusReq</a> operation.
 </p>
 </div>
 
-<div id="outline-container-sec-7-8-1" class="outline-4">
-<h4 id="sec-7-8-1"><span class="section-number-4">7.8.1</span> Attributes</h4>
-<div class="outline-text-4" id="text-7-8-1">
+<div id="outline-container-h:d6db3148-7664-4e50-9061-6733fe5d3a3f" class="outline-4">
+<h4 id="h:d6db3148-7664-4e50-9061-6733fe5d3a3f"><a id="sec-7-8-1" name="sec-7-8-1"></a><span class="section-number-4">7.8.1</span> Attributes</h4>
+<div class="outline-text-4" id="text-h:d6db3148-7664-4e50-9061-6733fe5d3a3f">
+
 <ul class="org-ul">
 <li><code>.sourceHash</code> &#x2013; the hash associated with this loaded source.
 </li>
 <li><code>.sourceData</code> &#x2013; the input data (file contents) provided to the
-<a href="#sec-5-9">loadActorSource</a> call to the ActorSystem.
+<a href="#h:731cff6e-674d-4341-bd92-80a08113d5df">loadActorSource</a> call to the ActorSystem.
 </li>
 </ul>
 </div>
 </div>
 </div>
 
-<div id="outline-container-sec-7-9" class="outline-3">
-<h3 id="sec-7-9"><span class="section-number-3">7.9</span> ValidatedSource</h3>
-<div class="outline-text-3" id="text-7-9">
+<div id="outline-container-h:1db8e94e-ca54-4817-b120-b4c51c680cdd" class="outline-3">
+<h3 id="h:1db8e94e-ca54-4817-b120-b4c51c680cdd"><a id="sec-7-9" name="sec-7-9"></a><span class="section-number-3">7.9</span> ValidatedSource</h3>
+<div class="outline-text-3" id="text-h:1db8e94e-ca54-4817-b120-b4c51c680cdd">
+
 <p>
 This message is not sent by the ActorSystem to an Actor, but is
 instead sent by the Source Authority Actor back to the system as
-the response to a <a href="#sec-7-8">ValidateSource</a> message.  The data associated with
+the response to a <a href="#h:3119580d-80a6-4061-a217-1b2b21014172">ValidateSource</a> message.  The data associated with
 this response is a zipfile in zipimport format providing the source
 file tree of <code>.py</code> files that were extracted from the input data
 sent via the <code>ValidateSource</code> message.  By sending this message
@@ -3895,9 +4044,9 @@ is being actively rejected.
 </p>
 </div>
 
-<div id="outline-container-sec-7-9-1" class="outline-4">
-<h4 id="sec-7-9-1"><span class="section-number-4">7.9.1</span> Attributes</h4>
-<div class="outline-text-4" id="text-7-9-1">
+<div id="outline-container-h:92e91efa-fdc2-42bb-94f8-8a329618214c" class="outline-4">
+<h4 id="h:92e91efa-fdc2-42bb-94f8-8a329618214c"><a id="sec-7-9-1" name="sec-7-9-1"></a><span class="section-number-4">7.9.1</span> Attributes</h4>
+<div class="outline-text-4" id="text-h:92e91efa-fdc2-42bb-94f8-8a329618214c">
 <ul class="org-ul">
 <li><code>.sourceHash</code> &#x2013; the hash associated with the loaded source as
 provided in the <code>ValidateSource</code> input message.
@@ -3911,9 +4060,10 @@ the load attempt.
 </div>
 </div>
 
-<div id="outline-container-sec-7-10" class="outline-3">
-<h3 id="sec-7-10"><span class="section-number-3">7.10</span> LoadedSource</h3>
-<div class="outline-text-3" id="text-7-10">
+<div id="outline-container-h:7cc41555-6b60-4844-8cea-0ec3714cf8f8" class="outline-3">
+<h3 id="h:7cc41555-6b60-4844-8cea-0ec3714cf8f8"><a id="sec-7-10" name="sec-7-10"></a><span class="section-number-3">7.10</span> LoadedSource</h3>
+<div class="outline-text-3" id="text-h:7cc41555-6b60-4844-8cea-0ec3714cf8f8">
+
 <p>
 The <code>LoadedSource</code> object is delivered to an Actor that has
 registered to be notified on changes in the loaded sources
@@ -3924,7 +4074,7 @@ the ActorSystem itself.
 <p>
 This message indicates that the associated source module has been
 loaded successfully and is now available for creating new actors.
-This message is delivered to each <a href="#sec-5-11">notifyOnSourceAvailability</a>
+This message is delivered to each <a href="#h:460d04d8-3961-43c4-a4c3-8282c2e4a892">notifyOnSourceAvailability</a>
 registered notification target on the <span class="underline">local</span> system when the
 source has been loaded on that system; remote loads will cause
 corresponding notifications to registrants on those systems at such
@@ -3938,9 +4088,10 @@ present at the time of the registration (via the
 </p>
 </div>
 
-<div id="outline-container-sec-7-10-1" class="outline-4">
-<h4 id="sec-7-10-1"><span class="section-number-4">7.10.1</span> Attributes</h4>
-<div class="outline-text-4" id="text-7-10-1">
+<div id="outline-container-h:54e4613a-3c85-4d1e-a81d-0dd348af4199" class="outline-4">
+<h4 id="h:54e4613a-3c85-4d1e-a81d-0dd348af4199"><a id="sec-7-10-1" name="sec-7-10-1"></a><span class="section-number-4">7.10.1</span> Attributes</h4>
+<div class="outline-text-4" id="text-h:54e4613a-3c85-4d1e-a81d-0dd348af4199">
+
 <ul class="org-ul">
 <li><code>.sourceHash</code> &#x2013; The hash value of the source that has been loaded
 and successfully registered.
@@ -3955,9 +4106,10 @@ no specific format or content dictated.
 </div>
 </div>
 
-<div id="outline-container-sec-7-11" class="outline-3">
-<h3 id="sec-7-11"><span class="section-number-3">7.11</span> UnloadedSource</h3>
-<div class="outline-text-3" id="text-7-11">
+<div id="outline-container-h:72c2180e-97c4-4209-9f09-031069cb5cbe" class="outline-3">
+<h3 id="h:72c2180e-97c4-4209-9f09-031069cb5cbe"><a id="sec-7-11" name="sec-7-11"></a><span class="section-number-3">7.11</span> UnloadedSource</h3>
+<div class="outline-text-3" id="text-h:72c2180e-97c4-4209-9f09-031069cb5cbe">
+
 <p>
 The <code>UnloadedSource</code> object is delivered to an Actor that has
 registered to be notified on changes in the loaded sources
@@ -3971,9 +4123,10 @@ unloaded and is therefore unavailable for creating new actors.
 </p>
 </div>
 
-<div id="outline-container-sec-7-11-1" class="outline-4">
-<h4 id="sec-7-11-1"><span class="section-number-4">7.11.1</span> Attributes</h4>
-<div class="outline-text-4" id="text-7-11-1">
+<div id="outline-container-h:3b58b48d-4d73-45c1-9486-3f6b8eb80d59" class="outline-4">
+<h4 id="h:3b58b48d-4d73-45c1-9486-3f6b8eb80d59"><a id="sec-7-11-1" name="sec-7-11-1"></a><span class="section-number-4">7.11.1</span> Attributes</h4>
+<div class="outline-text-4" id="text-h:3b58b48d-4d73-45c1-9486-3f6b8eb80d59">
+
 <ul class="org-ul">
 <li><code>.sourceHash</code> &#x2013; The hash value of the source that has been unloaded
 and de-registered.
@@ -3988,9 +4141,9 @@ no specific format or content dictated.
 </div>
 </div>
 
-<div id="outline-container-sec-7-12" class="outline-3">
-<h3 id="sec-7-12"><span class="section-number-3">7.12</span> Thespian_StatusReq</h3>
-<div class="outline-text-3" id="text-7-12">
+<div id="outline-container-h:6428fa90-8749-4777-a0b1-752ec5eb1650" class="outline-3">
+<h3 id="h:6428fa90-8749-4777-a0b1-752ec5eb1650"><a id="sec-7-12" name="sec-7-12"></a><span class="section-number-3">7.12</span> Thespian_StatusReq</h3>
+<div class="outline-text-3" id="text-h:6428fa90-8749-4777-a0b1-752ec5eb1650">
 <p>
 The <code>Thespian_StatusReq</code> object can be sent to any Actor (or to the
 ActorSystem&#x2026;e.g. the Admin if the ActorSystem has one) to request
@@ -4001,15 +4154,15 @@ or provide handling of this message itself.
 
 <p>
 The response to the <code>Thespian_StatusReq</code> is either a
-<a href="#sec-7-13">Thespian_SystemStatus</a> or a <a href="#sec-7-14">Thespian_ActorStatus</a>
+<a href="#h:704cb0e0-30c0-4e30-82cb-52718839704f">Thespian_SystemStatus</a> or a <a href="#h:1a0b5d02-e4b6-4c8c-9687-6e5f939d3827">Thespian_ActorStatus</a>
 message, depending on whether the <code>Thespian_StatusReq</code> was sent to
 an Actor or the ActorSystem.
 </p>
 </div>
 
-<div id="outline-container-sec-7-12-1" class="outline-4">
-<h4 id="sec-7-12-1"><span class="section-number-4">7.12.1</span> Attributes</h4>
-<div class="outline-text-4" id="text-7-12-1">
+<div id="outline-container-h:02212902-4a42-4f1e-ae6a-59464043ff50" class="outline-4">
+<h4 id="h:02212902-4a42-4f1e-ae6a-59464043ff50"><a id="sec-7-12-1" name="sec-7-12-1"></a><span class="section-number-4">7.12.1</span> Attributes</h4>
+<div class="outline-text-4" id="text-h:02212902-4a42-4f1e-ae6a-59464043ff50">
 <p>
 The <code>Thespian_StatusReq</code> object has no attributes.
 </p>
@@ -4017,9 +4170,9 @@ The <code>Thespian_StatusReq</code> object has no attributes.
 </div>
 </div>
 
-<div id="outline-container-sec-7-13" class="outline-3">
-<h3 id="sec-7-13"><span class="section-number-3">7.13</span> Thespian_SystemStatus</h3>
-<div class="outline-text-3" id="text-7-13">
+<div id="outline-container-h:704cb0e0-30c0-4e30-82cb-52718839704f" class="outline-3">
+<h3 id="h:704cb0e0-30c0-4e30-82cb-52718839704f"><a id="sec-7-13" name="sec-7-13"></a><span class="section-number-3">7.13</span> Thespian_SystemStatus</h3>
+<div class="outline-text-3" id="text-h:704cb0e0-30c0-4e30-82cb-52718839704f">
 <p>
 The <code>Thespian_SystemStatus</code> object is returned by the
 ActorSystem with status information about that ActorSystem.  The
@@ -4030,9 +4183,9 @@ recommended.
 </div>
 </div>
 
-<div id="outline-container-sec-7-14" class="outline-3">
-<h3 id="sec-7-14"><span class="section-number-3">7.14</span> Thespian_ActorStatus</h3>
-<div class="outline-text-3" id="text-7-14">
+<div id="outline-container-h:1a0b5d02-e4b6-4c8c-9687-6e5f939d3827" class="outline-3">
+<h3 id="h:1a0b5d02-e4b6-4c8c-9687-6e5f939d3827"><a id="sec-7-14" name="sec-7-14"></a><span class="section-number-3">7.14</span> Thespian_ActorStatus</h3>
+<div class="outline-text-3" id="text-h:1a0b5d02-e4b6-4c8c-9687-6e5f939d3827">
 <p>
 The <code>Thespian_ActorStatus</code> object is returned by the
 ActorSystem with status information about that ActorSystem.  The
@@ -4044,9 +4197,10 @@ recommended.
 </div>
 </div>
 
-<div id="outline-container-sec-8" class="outline-2">
-<h2 id="sec-8"><span class="section-number-2">8</span> Patterns and Helpers</h2>
-<div class="outline-text-2" id="text-8">
+<div id="outline-container-h:d4e592db-8bab-45bd-9643-e952510bd7dc" class="outline-2">
+<h2 id="h:d4e592db-8bab-45bd-9643-e952510bd7dc"><a id="sec-8" name="sec-8"></a><span class="section-number-2">8</span> Patterns and Helpers</h2>
+<div class="outline-text-2" id="text-h:d4e592db-8bab-45bd-9643-e952510bd7dc">
+
 <p>
 The elements described in this section is supplemental to the base
 Thespian functionality.  It is entirely possible to use Thespian
@@ -4056,11 +4210,12 @@ actor-based application.
 </p>
 </div>
 
-<div id="outline-container-sec-8-1" class="outline-3">
-<h3 id="sec-8-1"><span class="section-number-3">8.1</span> Actor Troupe Support</h3>
-<div class="outline-text-3" id="text-8-1">
+<div id="outline-container-h:c796bc0d-a150-4fb9-8918-58f470813175" class="outline-3">
+<h3 id="h:c796bc0d-a150-4fb9-8918-58f470813175"><a id="sec-8-1" name="sec-8-1"></a><span class="section-number-3">8.1</span> Actor Troupe Support</h3>
+<div class="outline-text-3" id="text-h:c796bc0d-a150-4fb9-8918-58f470813175">
+
 <p>
-The use of <a href="#sec-4-9">Actor Troupes</a> is supported by importing the
+The use of <a href="#h:19cf92bf-a6ae-492c-844c-b0831c108a3a">Actor Troupes</a> is supported by importing the
 <code>thespian.troupe</code> file and adding a <code>@troupe()</code> decorator to the Actor
 definition.   This decorator turns a regular Actor into a dynamic
 Actor Troupe, where multiple Actors are spun up on-demand to handle
@@ -4115,7 +4270,7 @@ However, an actor which must interact with other actors to process the
 work requires additional modifications to allow the troupe manager to
 know when the actor has finished performing the work.  A troupe member
 that has not fully performed the work and is exchanging messages with
-other actors to complete the work (or awaiting <a href="#sec-4-7">WakeupMessages</a>) must
+other actors to complete the work (or awaiting <a href="#h:9cc1acd4-7f35-44ac-94fc-0326dc87a7a5">WakeupMessages</a>) must
 set the <code>troupe_work_in_progress</code> attribute on self to <code>True</code>.  Once the
 work is completed by a subsequent message delivery, it should set this
 attribute to <code>False</code>, which will cause the troupe manager to be notified
@@ -4146,9 +4301,10 @@ non-troupe actors has no effect on their behavior and is safe to do.
 </div>
 </div>
 
-<div id="outline-container-sec-8-2" class="outline-3">
-<h3 id="sec-8-2"><span class="section-number-3">8.2</span> Transient Actors</h3>
-<div class="outline-text-3" id="text-8-2">
+<div id="outline-container-h:99783a4a-183f-4b69-8910-014d01edbf1c" class="outline-3">
+<h3 id="h:99783a4a-183f-4b69-8910-014d01edbf1c"><a id="sec-8-2" name="sec-8-2"></a><span class="section-number-3">8.2</span> Transient Actors</h3>
+<div class="outline-text-3" id="text-h:99783a4a-183f-4b69-8910-014d01edbf1c">
+
 <p>
 Some actors should automatically die at some period after they are
 initially used, or after they are last used.  These actors are
@@ -4204,9 +4360,10 @@ started after receipt of the actor's first message.
 </div>
 
 
-<div id="outline-container-sec-9" class="outline-2">
-<h2 id="sec-9"><span class="section-number-2">9</span> ActorSystem Implementations</h2>
-<div class="outline-text-2" id="text-9">
+<div id="outline-container-h:2a5fa63d-e6eb-43b9-bea8-47223b27544e" class="outline-2">
+<h2 id="h:2a5fa63d-e6eb-43b9-bea8-47223b27544e"><a id="sec-9" name="sec-9"></a><span class="section-number-2">9</span> ActorSystem Implementations</h2>
+<div class="outline-text-2" id="text-h:2a5fa63d-e6eb-43b9-bea8-47223b27544e">
+
 <p>
 One of the convenient aspects of an Actor architecture is that the
 Actors themselves are insulated from and agnostic to any particular
@@ -4241,12 +4398,12 @@ ActorSystem is started if one is not already running.
 </p>
 
 <p>
-An argument may be passed to the <a href="#sec-1-3">ActorSystem</a> constructor to specify
+An argument may be passed to the <a href="#h:4adf735c-f237-4a8e-98db-ec52567353ac">ActorSystem</a> constructor to specify
 the systemBase (a.k.a ActorSystem implementation) that should be used
 for starting the ActorSystem if one is not already running; if an
 ActorSystem is already running, this argument is ignored.  If no
 argument is specified and no ActorSystem is running, the default
-<a href="#sec-9-2">simpleSystemBase</a> ActorSystem will be started.
+<a href="#h:924dc0fe-c15b-491e-a6d1-8b88683d4c0d">simpleSystemBase</a> ActorSystem will be started.
 </p>
 
 <p>
@@ -4294,16 +4451,17 @@ details are available in each section:
 
 
 
-<div id="outline-container-sec-9-1" class="outline-3">
-<h3 id="sec-9-1"><span class="section-number-3">9.1</span> Common Capabilities</h3>
-<div class="outline-text-3" id="text-9-1">
+<div id="outline-container-h:2a4bcad4-9fe0-4399-86d4-4bbf0ba0acb7" class="outline-3">
+<h3 id="h:2a4bcad4-9fe0-4399-86d4-4bbf0ba0acb7"><a id="sec-9-1" name="sec-9-1"></a><span class="section-number-3">9.1</span> Common Capabilities</h3>
+<div class="outline-text-3" id="text-h:2a4bcad4-9fe0-4399-86d4-4bbf0ba0acb7">
+
 <p>
-As described in <a href="#sec-4-10">ActorSystem Capabilities</a> each ActorSystem has a set of
+As described in <a href="#h:a17e6c70-5592-4d06-b818-bd25350c4c53">ActorSystem Capabilities</a> each ActorSystem has a set of
 capabilities that describe that ActorSystem and which can be audited
-by the Actor's <a href="#sec-5-12">actorSystemCapabilityCheck</a> method to determine if the
+by the Actor's <a href="#h:0e9f4a6a-3083-40fa-a75b-ced37d70eef0">actorSystemCapabilityCheck</a> method to determine if the
 Actor is compatible with the ActorSystem.  Many capabilities can be
-set when the ActorSystem is started (see <a href="#sec-1-3">ActorSystem</a>), or updated at
-run-time (see <a href="#sec-5-13">updateCapability</a> for either the Actor or the ActorSystem
+set when the ActorSystem is started (see <a href="#h:4adf735c-f237-4a8e-98db-ec52567353ac">ActorSystem</a>), or updated at
+run-time (see <a href="#h:1dc4362f-78dd-4adf-833c-d7bebda07ef8">updateCapability</a> for either the Actor or the ActorSystem
 API); those marked <i>read-only</i> below may only be viewed, but not set
 or changed when the ActorSystem is started.
 </p>
@@ -4367,7 +4525,7 @@ that the ActorSystem version will increment.
 
 <dt> <b>AllowRemoteActorSources</b> </dt><dd>This capability specifies whether or
 not this ActorSystem will accept sources loaded via remote
-ActorSystems as described in the <a href="#sec-4-14">Actor Code Distribution</a>
+ActorSystems as described in the <a href="#h:955ec990-a267-4d08-8f4d-5f980c777173">Actor Code Distribution</a>
 section.  Valid values for this capability are:
 
 <dl class="org-dl">
@@ -4395,9 +4553,10 @@ remote ActorSystems that are part of the Convention.
 </div>
 </div>
 
-<div id="outline-container-sec-9-2" class="outline-3">
-<h3 id="sec-9-2"><span class="section-number-3">9.2</span> simpleSystemBase</h3>
-<div class="outline-text-3" id="text-9-2">
+<div id="outline-container-h:924dc0fe-c15b-491e-a6d1-8b88683d4c0d" class="outline-3">
+<h3 id="h:924dc0fe-c15b-491e-a6d1-8b88683d4c0d"><a id="sec-9-2" name="sec-9-2"></a><span class="section-number-3">9.2</span> simpleSystemBase</h3>
+<div class="outline-text-3" id="text-h:924dc0fe-c15b-491e-a6d1-8b88683d4c0d">
+
 <p>
 The simpleSystemBase implementation is primarily designed for Unit
 Testing and other very simplistic Actor environments:
@@ -4412,13 +4571,13 @@ other Actors (as a matter of principal, accessing global state
 is an anti-pattern for the Actor Model).
 </li>
 <li>It is possible for an Actor to modify the caller's version of
-the message (see <i>Message Mutability</i>).
+the message (see <a href="#h:23ac66d7-ba55-40dc-ade8-a71e51c7a404">Message Mutability</a>).
 </li>
-<li>The <a href="#sec-5-12">actorSystemCapabilityCheck</a> is not called for any Actors: all
+<li>The <a href="#h:0e9f4a6a-3083-40fa-a75b-ced37d70eef0">actorSystemCapabilityCheck</a> is not called for any Actors: all
 actors are created in the current ActorSystem regardless of
 their capability requirements.
 </li>
-<li>No support for <a href="#sec-1-3-2">Multiple Systems</a> (e.g. Conventions)
+<li>No support for <a href="#h:461f4dc3-4bd6-46fe-a33e-2ad2a8d82d53">Multiple Systems</a> (e.g. Conventions)
 </li>
 </ul>
 
@@ -4432,7 +4591,7 @@ through the system and it has reached equilibrium.
 </p>
 
 <p>
-There is one exception to the equilibrium state: pending <a href="#sec-5-5">wakeupAfter</a>
+There is one exception to the equilibrium state: pending <a href="#h:b2b4b63a-c256-4793-8591-1ce8dbd87131">wakeupAfter</a>
 wakeups.  These wakups may still be pending when the <code>.tell()</code> or
 <code>.ask()</code> returns, and will not be delivered in the background
 subsequent to that return.  If the wakeup time period expires during
@@ -4452,7 +4611,7 @@ framework (e.g. nosetest logcapture).
 </p>
 
 <p>
-The simpleSystemBase uses the following <a href="#sec-4-10">ActorSystem Capabilities</a>:
+The simpleSystemBase uses the following <a href="#h:a17e6c70-5592-4d06-b818-bd25350c4c53">ActorSystem Capabilities</a>:
 </p>
 
 <dl class="org-dl">
@@ -4462,9 +4621,10 @@ The simpleSystemBase uses the following <a href="#sec-4-10">ActorSystem Capabili
 </div>
 </div>
 
-<div id="outline-container-sec-9-3" class="outline-3">
-<h3 id="sec-9-3"><span class="section-number-3">9.3</span> multiprocQueueBase</h3>
-<div class="outline-text-3" id="text-9-3">
+<div id="outline-container-h:59ea5ca7-a167-4d51-bd1b-78119eab6df6" class="outline-3">
+<h3 id="h:59ea5ca7-a167-4d51-bd1b-78119eab6df6"><a id="sec-9-3" name="sec-9-3"></a><span class="section-number-3">9.3</span> multiprocQueueBase</h3>
+<div class="outline-text-3" id="text-h:59ea5ca7-a167-4d51-bd1b-78119eab6df6">
+
 <p>
 The multiprocQueueBase runs each Actor in its own separate process
 for a truly asynchronous system.  The default Actor communication
@@ -4497,11 +4657,11 @@ destination.
 The multiprocQueueBase can only be used for communications on the
 current system and not for inter-system communications.  The
 multiprocQueueBase does not support the use of multiple ActorSystems
-in a Convention as described in <a href="#sec-1-3-2">Multiple Systems</a>.
+in a Convention as described in <a href="#h:461f4dc3-4bd6-46fe-a33e-2ad2a8d82d53">Multiple Systems</a>.
 </p>
 
 <p>
-The multiprocQueueBase uses the following <a href="#sec-4-10">ActorSystem Capabilities</a>:
+The multiprocQueueBase uses the following <a href="#h:a17e6c70-5592-4d06-b818-bd25350c4c53">ActorSystem Capabilities</a>:
 </p>
 
 <dl class="org-dl">
@@ -4529,9 +4689,10 @@ method, but this multiprocQueueBase does not support the
 </div>
 
 
-<div id="outline-container-sec-9-4" class="outline-3">
-<h3 id="sec-9-4"><span class="section-number-3">9.4</span> multiprocTCPBase</h3>
-<div class="outline-text-3" id="text-9-4">
+<div id="outline-container-h:9d33a877-b4f0-4012-9510-442d81b0837c" class="outline-3">
+<h3 id="h:9d33a877-b4f0-4012-9510-442d81b0837c"><a id="sec-9-4" name="sec-9-4"></a><span class="section-number-3">9.4</span> multiprocTCPBase</h3>
+<div class="outline-text-3" id="text-h:9d33a877-b4f0-4012-9510-442d81b0837c">
+
 <p>
 The multiprocTCPBase runs each Actor in its own separate process
 for a truly asynchronous system.  The default Actor communication
@@ -4558,7 +4719,7 @@ configuration.
 </p>
 
 <p>
-The multiprocTCPBase uses the following <a href="#sec-4-10">ActorSystem Capabilities</a>:
+The multiprocTCPBase uses the following <i>ActorSystem Capabilities</i>:
 </p>
 
 <dl class="org-dl">
@@ -4668,9 +4829,10 @@ performance of the "spawn" method.
 </div>
 
 
-<div id="outline-container-sec-9-5" class="outline-3">
-<h3 id="sec-9-5"><span class="section-number-3">9.5</span> multiprocUDPBase</h3>
-<div class="outline-text-3" id="text-9-5">
+<div id="outline-container-h:25cfa213-13a6-4265-8828-86ffffed0e12" class="outline-3">
+<h3 id="h:25cfa213-13a6-4265-8828-86ffffed0e12"><a id="sec-9-5" name="sec-9-5"></a><span class="section-number-3">9.5</span> multiprocUDPBase</h3>
+<div class="outline-text-3" id="text-h:25cfa213-13a6-4265-8828-86ffffed0e12">
+
 <p>
 The multiprocUDPBase runs each Actor in its own separate process
 for a truly asynchronous system.  The default Actor communication
@@ -4709,7 +4871,7 @@ configuration.
 </p>
 
 <p>
-The multiprocUDPBase uses the following <a href="#sec-4-10">ActorSystem Capabilities</a>:
+The multiprocUDPBase uses the following <a href="#h:a17e6c70-5592-4d06-b818-bd25350c4c53">ActorSystem Capabilities</a>:
 </p>
 
 <dl class="org-dl">
@@ -4735,7 +4897,7 @@ If not specified, the default Admin Port of 1029 is used.
 
 <dt> <b>Convention Address.IPv4</b> </dt><dd>the IPv4 address of the convention
 leader's Admin.  See the description of the same capability in the
-<a href="#sec-9-4">multiprocTCPBase</a> for more details.
+<a href="#h:9d33a877-b4f0-4012-9510-442d81b0837c">multiprocTCPBase</a> for more details.
 </dd>
 
 <dt> <b>Process Startup Method</b> </dt><dd><i>optional</i> specifies the
@@ -4755,9 +4917,10 @@ performance of the "spawn" method.
 </div>
 
 
-<div id="outline-container-sec-10" class="outline-2">
-<h2 id="sec-10"><span class="section-number-2">10</span> Deploying Actor-based Projects</h2>
-<div class="outline-text-2" id="text-10">
+<div id="outline-container-h:23bdc6e2-a5c4-4228-a75c-fb213f537732" class="outline-2">
+<h2 id="h:23bdc6e2-a5c4-4228-a75c-fb213f537732"><a id="sec-10" name="sec-10"></a><span class="section-number-2">10</span> Deploying Actor-based Projects</h2>
+<div class="outline-text-2" id="text-h:23bdc6e2-a5c4-4228-a75c-fb213f537732">
+
 <p>
 Possible Methods for deployment:
 </p>
@@ -4791,9 +4954,10 @@ sources can be running simultaneously).
 </p>
 </div>
 
-<div id="outline-container-sec-10-1" class="outline-3">
-<h3 id="sec-10-1"><span class="section-number-3">10.1</span> Overall Security Considerations</h3>
-<div class="outline-text-3" id="text-10-1">
+<div id="outline-container-h:7e109f00-76ff-49a1-b307-2166154c3921" class="outline-3">
+<h3 id="h:7e109f00-76ff-49a1-b307-2166154c3921"><a id="sec-10-1" name="sec-10-1"></a><span class="section-number-3">10.1</span> Overall Security Considerations</h3>
+<div class="outline-text-3" id="text-h:7e109f00-76ff-49a1-b307-2166154c3921">
+
 <dl class="org-dl">
 <dt> <b>ActorSystem Startup</b> </dt><dd>ActorSystem startup will inherit the
 permissions of the starting user.  In many cases this is root
@@ -4814,7 +4978,7 @@ not an effective attack vector for the ActorSystem.
 </dd>
 
 <dt> <b>Actor Injection</b> </dt><dd>the use of the Source Authority (see
-<a href="#sec-5-8">registerSourceAuthority</a>) and associated sourceHash values
+<a href="#h:5ae05479-5a6d-4f01-bd7d-c4f544f7b98a">registerSourceAuthority</a>) and associated sourceHash values
 prevent the ability to inject bad actors into the ActorSystem.
 </dd>
 
@@ -4852,9 +5016,10 @@ remember the guideline: "Fail Early, Fail Often."
 </dl>
 </div>
 
-<div id="outline-container-sec-10-1-1" class="outline-4">
-<h4 id="sec-10-1-1"><span class="section-number-4">10.1.1</span> Security Scenarios</h4>
-<div class="outline-text-4" id="text-10-1-1">
+<div id="outline-container-h:fcabc7dd-327f-47cf-bcb7-5dd4d202ebdc" class="outline-4">
+<h4 id="h:fcabc7dd-327f-47cf-bcb7-5dd4d202ebdc"><a id="sec-10-1-1" name="sec-10-1-1"></a><span class="section-number-4">10.1.1</span> Security Scenarios</h4>
+<div class="outline-text-4" id="text-h:fcabc7dd-327f-47cf-bcb7-5dd4d202ebdc">
+
 <p>
 On any particular host where an ActorSystem is running, the primary
 focus is on protecting that ActorSystem to prevent injection of code
@@ -4901,7 +5066,7 @@ difference will remain unaddressed.
 </div></div>
 <div id="postamble" class="status">
 <p class="author">Author: Kevin Quick &lt;kquick@godaddy.com&gt;</p>
-<p class="date">Created: 2017-01-02 Mon 22:39</p>
+<p class="date">Created: 2017-03-20 Mon 17:11</p>
 <p class="creator"><a href="http://www.gnu.org/software/emacs/">Emacs</a> 25.1.1 (<a href="http://orgmode.org">Org</a> mode 8.2.10)</p>
 <p class="validation"><a href="http://validator.w3.org/check?uri=referer">Validate</a></p>
 </div>

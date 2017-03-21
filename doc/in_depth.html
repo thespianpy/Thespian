@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
 <title>Thespian In-Depth Introduction</title>
-<!-- 2017-01-02 Mon 22:38 -->
+<!-- 2017-03-20 Mon 17:11 -->
 <meta  http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta  name="generator" content="Org-mode" />
 <meta  name="author" content="Kevin Quick &lt;kquick@godaddy.com&gt;" />
@@ -101,6 +101,7 @@
 <script type="text/javascript" src="styles/bigblow/js/hideshow.js"></script>
 <script type="text/javascript" src="styles/lib/js/jquery.stickytableheaders.min.js"></script>
 <link href="thespian.css" rel="stylesheet" type="text/css"/>
+<base href="http://thespianpy.com/in_depth.html">
 <script type="text/javascript">
 /*
 @licstart  The following is the entire license notice for the
@@ -155,66 +156,67 @@ for the JavaScript code in this tag.
 <h2>Table of Contents</h2>
 <div id="text-table-of-contents">
 <ul>
-<li><a href="#sec-1">1. Background</a>
+<li><a href="#h:2755875e-6956-405e-8be2-cfc2ea596f63">1. Background</a>
 <ul>
-<li><a href="#sec-1-1">1.1. The Actor Model</a></li>
+<li><a href="#h:53c50716-fdfa-4b6e-91d0-ed0313de1b4a">1.1. The Actor Model</a></li>
 </ul>
 </li>
-<li><a href="#sec-2">2. Thespian Features</a>
+<li><a href="#h:1b595f63-447b-40d1-ad52-582e4ac7a536">2. Thespian Features</a>
 <ul>
-<li><a href="#sec-2-1">2.1. Thespian Walk-Through</a>
+<li><a href="#h:0a2f4dce-a031-4631-8270-267fa1956ead">2.1. Thespian Walk-Through</a>
 <ul>
-<li><a href="#sec-2-1-1">2.1.1. Installation of Thespian</a></li>
-<li><a href="#sec-2-1-2">2.1.2. Hello World</a></li>
+<li><a href="#h:b974440c-2d2e-4bc0-be71-1f85ca4d397e">2.1.1. Installation of Thespian</a></li>
+<li><a href="#h:2b0d0d3f-4752-4adc-aa3e-db0b46c5739e">2.1.2. Hello World</a></li>
 </ul>
 </li>
-<li><a href="#sec-2-2">2.2. Dynamic Actor Creation</a>
+<li><a href="#h:fc4f8ecb-3a8d-40d9-afbb-2a2a2ff28680">2.2. Dynamic Actor Creation</a>
 <ul>
-<li><a href="#sec-2-2-1">2.2.1. Horizontal Scalability</a></li>
-<li><a href="#sec-2-2-2">2.2.2. Modularity and Extensibility</a></li>
+<li><a href="#h:015afee7-1483-44d0-bb06-f9d464c842a8">2.2.1. Horizontal Scalability</a></li>
+<li><a href="#h:1ff47ec9-6caa-4a8b-8209-2d75c6214728">2.2.2. Modularity and Extensibility</a></li>
 </ul>
 </li>
-<li><a href="#sec-2-3">2.3. Different ActorSystem Bases</a>
+<li><a href="#h:b2414e9c-4cec-46e7-8d53-80008f2c9498">2.3. Different ActorSystem Bases</a>
 <ul>
-<li><a href="#sec-2-3-1">2.3.1. Base Persistence</a></li>
+<li><a href="#h:5edfee1e-c49b-40bf-8fa5-970a0d1ee5f5">2.3.1. Base Persistence</a></li>
 </ul>
 </li>
-<li><a href="#sec-2-4">2.4. Logging</a>
+<li><a href="#h:ff59a149-101e-4e09-8552-81b155d06d72">2.4. Logging</a>
 <ul>
-<li><a href="#sec-2-4-1">2.4.1. Source Actor Address Logging</a></li>
+<li><a href="#h:bb02d15f-a0a3-456f-93df-64ee2712bd89">2.4.1. Source Actor Address Logging</a></li>
 </ul>
 </li>
-<li><a href="#sec-2-5">2.5. Concurrency</a>
+<li><a href="#h:e01f8b46-7c4d-4740-a2c5-b74380f18875">2.5. Concurrency</a>
 <ul>
-<li><a href="#sec-2-5-1">2.5.1. Debugging</a></li>
+<li><a href="#h:786634c3-1045-41a3-9354-fe5123fb6508">2.5.1. Debugging</a></li>
 </ul>
 </li>
-<li><a href="#sec-2-6">2.6. Location Independence</a>
+<li><a href="#h:4d0d08fe-d96a-4937-8bca-2a9b2588bb4c">2.6. Location Independence</a>
 <ul>
-<li><a href="#sec-2-6-1">2.6.1. Capability-based Location Selection</a></li>
-<li><a href="#sec-2-6-2">2.6.2. Multiple Cooperating Actor Systems</a></li>
+<li><a href="#h:b6f32db8-fb0e-4110-95c0-c745ab5b730e">2.6.1. Capability-based Location Selection</a></li>
+<li><a href="#h:1ab869b1-c7be-4dce-8346-d4b3a78cb2ba">2.6.2. Multiple Cooperating Actor Systems</a></li>
 </ul>
 </li>
-<li><a href="#sec-2-7">2.7. Fault Tolerance</a></li>
+<li><a href="#h:8835eec5-eb65-4899-ab80-1f861bb5f52c">2.7. Fault Tolerance</a></li>
 </ul>
 </li>
-<li><a href="#sec-3">3. Dynamic Source Loading</a></li>
-<li><a href="#sec-4">4. Shell</a>
+<li><a href="#h:7b9dbba0-c492-48db-ad43-a94d3e1bef8d">3. Dynamic Source Loading</a></li>
+<li><a href="#h:058d8939-b973-4270-975b-3afd9c607176">4. Shell</a>
 <ul>
-<li><a href="#sec-4-1">4.1. Starting the Shell</a></li>
-<li><a href="#sec-4-2">4.2. Address Management in the Shell</a></li>
-<li><a href="#sec-4-3">4.3. Shell Test Actor</a></li>
-<li><a href="#sec-4-4">4.4. Actor Status Requests</a></li>
+<li><a href="#h:654845ce-3c0f-4fe8-892a-5ff5d12f5ca0">4.1. Starting the Shell</a></li>
+<li><a href="#h:092b8ae6-ec6c-4729-9505-8dbd32284d02">4.2. Address Management in the Shell</a></li>
+<li><a href="#h:c0bca217-9bbe-4d44-b322-a51b86f2ee93">4.3. Shell Test Actor</a></li>
+<li><a href="#h:efd0ab30-ef4e-4105-b4b6-4831afc5d3de">4.4. Actor Status Requests</a></li>
 </ul>
 </li>
-<li><a href="#sec-5">5. Conclusion</a></li>
+<li><a href="#h:2827218b-828e-4d59-9b08-153d46b02134">5. Conclusion</a></li>
 </ul>
 </div>
 </div>
 
-<div id="outline-container-sec-1" class="outline-2">
-<h2 id="sec-1"><span class="section-number-2">1</span> Background</h2>
-<div class="outline-text-2" id="text-1">
+<div id="outline-container-h:2755875e-6956-405e-8be2-cfc2ea596f63" class="outline-2">
+<h2 id="h:2755875e-6956-405e-8be2-cfc2ea596f63"><a id="sec-1" name="sec-1"></a><span class="section-number-2">1</span> Background</h2>
+<div class="outline-text-2" id="text-h:2755875e-6956-405e-8be2-cfc2ea596f63">
+
 <p>
 How do you design an application using Agile methodologies that will
 be capable of scaling to become a distributed application running
@@ -247,14 +249,15 @@ in-depth introduction to writing Actor-based applications
 GoDaddy uses the <a href="http://python.org">Python language</a> for many of it's internal systems and
 has developed an Actor library for Python called <b>Thespian</b> to support
 this highly-scalable architecture.  GoDaddy has open-sourced the
-<a href="http://github.com/godaddy/Thespian">Thespian library</a> itself to share it with the community and allow
+<a href="http://github.com/kquick/Thespian">Thespian library</a> itself to share it with the community and allow
 others to leverage the Actor Model architecture for Python.
 </p>
 </div>
 
-<div id="outline-container-sec-1-1" class="outline-3">
-<h3 id="sec-1-1"><span class="section-number-3">1.1</span> The Actor Model</h3>
-<div class="outline-text-3" id="text-1-1">
+<div id="outline-container-h:53c50716-fdfa-4b6e-91d0-ed0313de1b4a" class="outline-3">
+<h3 id="h:53c50716-fdfa-4b6e-91d0-ed0313de1b4a"><a id="sec-1-1" name="sec-1-1"></a><span class="section-number-3">1.1</span> The Actor Model</h3>
+<div class="outline-text-3" id="text-h:53c50716-fdfa-4b6e-91d0-ed0313de1b4a">
+
 <p>
 The Actor Model itself is pretty simple, but it's the way that it
 frames the problem that creates big advantages.  A program's code is
@@ -320,12 +323,15 @@ different Actors.
 </div>
 
 
-<div id="outline-container-sec-2" class="outline-2">
-<h2 id="sec-2"><span class="section-number-2">2</span> Thespian Features</h2>
-<div class="outline-text-2" id="text-2">
-</div><div id="outline-container-sec-2-1" class="outline-3">
-<h3 id="sec-2-1"><span class="section-number-3">2.1</span> Thespian Walk-Through</h3>
-<div class="outline-text-3" id="text-2-1">
+<div id="outline-container-h:1b595f63-447b-40d1-ad52-582e4ac7a536" class="outline-2">
+<h2 id="h:1b595f63-447b-40d1-ad52-582e4ac7a536"><a id="sec-2" name="sec-2"></a><span class="section-number-2">2</span> Thespian Features</h2>
+<div class="outline-text-2" id="text-h:1b595f63-447b-40d1-ad52-582e4ac7a536">
+</div>
+
+<div id="outline-container-h:0a2f4dce-a031-4631-8270-267fa1956ead" class="outline-3">
+<h3 id="h:0a2f4dce-a031-4631-8270-267fa1956ead"><a id="sec-2-1" name="sec-2-1"></a><span class="section-number-3">2.1</span> Thespian Walk-Through</h3>
+<div class="outline-text-3" id="text-h:0a2f4dce-a031-4631-8270-267fa1956ead">
+
 <p>
 One of the first things you'll notice when writing Actor-based code is
 how easy it is to write code for.
@@ -353,12 +359,13 @@ To demonstrate how easy this is, let's look at an example using the
 </p>
 </div>
 
-<div id="outline-container-sec-2-1-1" class="outline-4">
-<h4 id="sec-2-1-1"><span class="section-number-4">2.1.1</span> Installation of Thespian</h4>
-<div class="outline-text-4" id="text-2-1-1">
+<div id="outline-container-h:b974440c-2d2e-4bc0-be71-1f85ca4d397e" class="outline-4">
+<h4 id="h:b974440c-2d2e-4bc0-be71-1f85ca4d397e"><a id="sec-2-1-1" name="sec-2-1-1"></a><span class="section-number-4">2.1.1</span> Installation of Thespian</h4>
+<div class="outline-text-4" id="text-h:b974440c-2d2e-4bc0-be71-1f85ca4d397e">
+
 <p>
 The Thespian Python library is available on github at
-<a href="http://github.com/godaddy/Thespian">http://github.com/godaddy/Thespian</a>, from <a href="http://pypi.python.org">http://pypi.python.org</a>, or possibly
+<a href="http://github.com/kquick/Thespian">http://github.com/kquick/Thespian</a>, from <a href="http://pypi.python.org">http://pypi.python.org</a>, or possibly
 via a package provided for your OS.  You should probably use the
 latter if it's available, but otherwise just use <code>pip</code> for simplicity:
 </p>
@@ -382,9 +389,10 @@ them in `ps' output.
 </div>
 </div>
 
-<div id="outline-container-sec-2-1-2" class="outline-4">
-<h4 id="sec-2-1-2"><span class="section-number-4">2.1.2</span> Hello World</h4>
-<div class="outline-text-4" id="text-2-1-2">
+<div id="outline-container-h:2b0d0d3f-4752-4adc-aa3e-db0b46c5739e" class="outline-4">
+<h4 id="h:2b0d0d3f-4752-4adc-aa3e-db0b46c5739e"><a id="sec-2-1-2" name="sec-2-1-2"></a><span class="section-number-4">2.1.2</span> Hello World</h4>
+<div class="outline-text-4" id="text-h:2b0d0d3f-4752-4adc-aa3e-db0b46c5739e">
+
 <p>
 Let's start with the typical example of Hello World.  In this case,
 we'll create an Actor, send it a message, wait for a response message,
@@ -470,7 +478,8 @@ Actors running, but lets keep it simple for the moment.
 </p>
 </div>
 
-<ol class="org-ol"><li><a id="sec-2-1-2-1" name="sec-2-1-2-1"></a>Actor System Interaction<br  /><div class="outline-text-5" id="text-2-1-2-1">
+<ol class="org-ol"><li><a id="h:dcc3fb43-fa1f-47df-9eb0-aff3eaa093aa" name="h:dcc3fb43-fa1f-47df-9eb0-aff3eaa093aa"></a><a id="sec-2-1-2-1" name="sec-2-1-2-1"></a>Actor System Interaction<br  /><div class="outline-text-5" id="text-h:dcc3fb43-fa1f-47df-9eb0-aff3eaa093aa">
+
 <p>
 The next couple of lines in the Hello World example are a little
 different though.  The Actors operate within the Actor System, but the
@@ -626,9 +635,10 @@ System is shutdown.
 </div>
 </div>
 
-<div id="outline-container-sec-2-2" class="outline-3">
-<h3 id="sec-2-2"><span class="section-number-3">2.2</span> Dynamic Actor Creation</h3>
-<div class="outline-text-3" id="text-2-2">
+<div id="outline-container-h:fc4f8ecb-3a8d-40d9-afbb-2a2a2ff28680" class="outline-3">
+<h3 id="h:fc4f8ecb-3a8d-40d9-afbb-2a2a2ff28680"><a id="sec-2-2" name="sec-2-2"></a><span class="section-number-3">2.2</span> Dynamic Actor Creation</h3>
+<div class="outline-text-3" id="text-h:fc4f8ecb-3a8d-40d9-afbb-2a2a2ff28680">
+
 <p>
 In the Hello World example above, only a single Actor was created and
 used.  It's actually possible to create any number of Actors (subject
@@ -804,9 +814,10 @@ functionality is needed or desired.
 </p>
 </div>
 
-<div id="outline-container-sec-2-2-1" class="outline-4">
-<h4 id="sec-2-2-1"><span class="section-number-4">2.2.1</span> Horizontal Scalability</h4>
-<div class="outline-text-4" id="text-2-2-1">
+<div id="outline-container-h:015afee7-1483-44d0-bb06-f9d464c842a8" class="outline-4">
+<h4 id="h:015afee7-1483-44d0-bb06-f9d464c842a8"><a id="sec-2-2-1" name="sec-2-2-1"></a><span class="section-number-4">2.2.1</span> Horizontal Scalability</h4>
+<div class="outline-text-4" id="text-h:015afee7-1483-44d0-bb06-f9d464c842a8">
+
 <p>
 As the <i>hellogoodbye</i> example above demonstrates, Actors can easily be
 created (and destroyed) on an as-needed basis.  This offers
@@ -818,9 +829,10 @@ messages across those instances (e.g. round-robin).
 </div>
 </div>
 
-<div id="outline-container-sec-2-2-2" class="outline-4">
-<h4 id="sec-2-2-2"><span class="section-number-4">2.2.2</span> Modularity and Extensibility</h4>
-<div class="outline-text-4" id="text-2-2-2">
+<div id="outline-container-h:1ff47ec9-6caa-4a8b-8209-2d75c6214728" class="outline-4">
+<h4 id="h:1ff47ec9-6caa-4a8b-8209-2d75c6214728"><a id="sec-2-2-2" name="sec-2-2-2"></a><span class="section-number-4">2.2.2</span> Modularity and Extensibility</h4>
+<div class="outline-text-4" id="text-h:1ff47ec9-6caa-4a8b-8209-2d75c6214728">
+
 <p>
 Just as the Actor model supports Horizontal Scalability, it's also
 naturally promoting a highly-modular <a href="https://en.wikipedia.org/wiki/Separation_of_concerns"><b>Separation of Concerns</b></a>
@@ -843,9 +855,10 @@ perturbing the existing Actors and their functionality.
 </div>
 
 
-<div id="outline-container-sec-2-3" class="outline-3">
-<h3 id="sec-2-3"><span class="section-number-3">2.3</span> Different ActorSystem Bases</h3>
-<div class="outline-text-3" id="text-2-3">
+<div id="outline-container-h:b2414e9c-4cec-46e7-8d53-80008f2c9498" class="outline-3">
+<h3 id="h:b2414e9c-4cec-46e7-8d53-80008f2c9498"><a id="sec-2-3" name="sec-2-3"></a><span class="section-number-3">2.3</span> Different ActorSystem Bases</h3>
+<div class="outline-text-3" id="text-h:b2414e9c-4cec-46e7-8d53-80008f2c9498">
+
 <p>
 The ActorSystem Base determines how the Actor System implements the
 Actor concurrency and transport elements for supporting the Actors.
@@ -983,9 +996,10 @@ similar configurability.
 </p>
 </div>
 
-<div id="outline-container-sec-2-3-1" class="outline-4">
-<h4 id="sec-2-3-1"><span class="section-number-4">2.3.1</span> Base Persistence</h4>
-<div class="outline-text-4" id="text-2-3-1">
+<div id="outline-container-h:5edfee1e-c49b-40bf-8fa5-970a0d1ee5f5" class="outline-4">
+<h4 id="h:5edfee1e-c49b-40bf-8fa5-970a0d1ee5f5"><a id="sec-2-3-1" name="sec-2-3-1"></a><span class="section-number-4">2.3.1</span> Base Persistence</h4>
+<div class="outline-text-4" id="text-h:5edfee1e-c49b-40bf-8fa5-970a0d1ee5f5">
+
 <p>
 One of the trickiest parts of using Thespian is in properly starting
 and/or using the desired SystemBase.  For process-local bases (like
@@ -1012,7 +1026,8 @@ running Actor System.
 </ul>
 </div>
 
-<ol class="org-ol"><li><a id="sec-2-3-1-1" name="sec-2-3-1-1"></a>Code Updates<br  /><div class="outline-text-5" id="text-2-3-1-1">
+<ol class="org-ol"><li><a id="h:7dffe41e-27cd-4b56-bc6a-017add7b2c34" name="h:7dffe41e-27cd-4b56-bc6a-017add7b2c34"></a><a id="sec-2-3-1-1" name="sec-2-3-1-1"></a>Code Updates<br  /><div class="outline-text-5" id="text-h:7dffe41e-27cd-4b56-bc6a-017add7b2c34">
+
 <p>
 Because the persistent base's admin process continues to exist,
 whatever code that was part of the admin process remains unchanged.
@@ -1093,16 +1108,17 @@ $ python
 <p>
 This however will stop all other Actors that are currently running
 in that system base.  The alternative is to dynamically load the new
-source code as described in <i>Dynamic Source Loading</i>.
+source code as described in <a href="#h:7b9dbba0-c492-48db-ad43-a94d3e1bef8d">Dynamic Source Loading</a>.
 </p>
 </div>
 </li></ol>
 </div>
 </div>
 
-<div id="outline-container-sec-2-4" class="outline-3">
-<h3 id="sec-2-4"><span class="section-number-3">2.4</span> Logging</h3>
-<div class="outline-text-3" id="text-2-4">
+<div id="outline-container-h:ff59a149-101e-4e09-8552-81b155d06d72" class="outline-3">
+<h3 id="h:ff59a149-101e-4e09-8552-81b155d06d72"><a id="sec-2-4" name="sec-2-4"></a><span class="section-number-3">2.4</span> Logging</h3>
+<div class="outline-text-3" id="text-h:ff59a149-101e-4e09-8552-81b155d06d72">
+
 <p>
 Thespian supports the standard <code>logging</code> library, but provides some
 enhanced handling of log messages to accomodate the different system
@@ -1259,9 +1275,10 @@ configuration which overrides the default.
 </p>
 </div>
 
-<div id="outline-container-sec-2-4-1" class="outline-4">
-<h4 id="sec-2-4-1"><span class="section-number-4">2.4.1</span> Source Actor Address Logging</h4>
-<div class="outline-text-4" id="text-2-4-1">
+<div id="outline-container-h:bb02d15f-a0a3-456f-93df-64ee2712bd89" class="outline-4">
+<h4 id="h:bb02d15f-a0a3-456f-93df-64ee2712bd89"><a id="sec-2-4-1" name="sec-2-4-1"></a><span class="section-number-4">2.4.1</span> Source Actor Address Logging</h4>
+<div class="outline-text-4" id="text-h:bb02d15f-a0a3-456f-93df-64ee2712bd89">
+
 <p>
 Some system bases are capable of specifying the current Actor's
 address when generating log output lines by setting the "actorAddress"
@@ -1345,9 +1362,10 @@ this attribute:
 </div>
 </div>
 
-<div id="outline-container-sec-2-5" class="outline-3">
-<h3 id="sec-2-5"><span class="section-number-3">2.5</span> Concurrency</h3>
-<div class="outline-text-3" id="text-2-5">
+<div id="outline-container-h:e01f8b46-7c4d-4740-a2c5-b74380f18875" class="outline-3">
+<h3 id="h:e01f8b46-7c4d-4740-a2c5-b74380f18875"><a id="sec-2-5" name="sec-2-5"></a><span class="section-number-3">2.5</span> Concurrency</h3>
+<div class="outline-text-3" id="text-h:e01f8b46-7c4d-4740-a2c5-b74380f18875">
+
 <p>
 In the examples shown above, messages were delivered to the
 different Actors and those Actors processed those messages.  One of
@@ -1418,9 +1436,10 @@ different concurrency type is needed later on.
 </p>
 </div>
 
-<div id="outline-container-sec-2-5-1" class="outline-4">
-<h4 id="sec-2-5-1"><span class="section-number-4">2.5.1</span> Debugging</h4>
-<div class="outline-text-4" id="text-2-5-1">
+<div id="outline-container-h:786634c3-1045-41a3-9354-fe5123fb6508" class="outline-4">
+<h4 id="h:786634c3-1045-41a3-9354-fe5123fb6508"><a id="sec-2-5-1" name="sec-2-5-1"></a><span class="section-number-4">2.5.1</span> Debugging</h4>
+<div class="outline-text-4" id="text-h:786634c3-1045-41a3-9354-fe5123fb6508">
+
 <p>
 Multi-threaded applications are very difficult to debug, and
 multi-process applications are even worse.  Stepping through code,
@@ -1477,9 +1496,10 @@ argument will be discussed in the next section.
 </div>
 </div>
 
-<div id="outline-container-sec-2-6" class="outline-3">
-<h3 id="sec-2-6"><span class="section-number-3">2.6</span> Location Independence</h3>
-<div class="outline-text-3" id="text-2-6">
+<div id="outline-container-h:4d0d08fe-d96a-4937-8bca-2a9b2588bb4c" class="outline-3">
+<h3 id="h:4d0d08fe-d96a-4937-8bca-2a9b2588bb4c"><a id="sec-2-6" name="sec-2-6"></a><span class="section-number-3">2.6</span> Location Independence</h3>
+<div class="outline-text-3" id="text-h:4d0d08fe-d96a-4937-8bca-2a9b2588bb4c">
+
 <p>
 When an Actor wishes to send a message to another Actor, it uses the
 <code>self.send()</code> method and specifies the Address of the target Actor.
@@ -1512,7 +1532,7 @@ code itself.
 </p>
 
 <p>
-The combination of location independence and <a href="#sec-2-2-1">Horizontal Scalability</a>
+The combination of location independence and <a href="#h:015afee7-1483-44d0-bb06-f9d464c842a8">Horizontal Scalability</a>
 means that Actor-based applications are particularly well suited to
 <b>cloud-based solutions</b> where changes in the relative size of the
 cloud deployment can be realized through duplicating, moving, or
@@ -1520,9 +1540,10 @@ de-duplicating Actors.
 </p>
 </div>
 
-<div id="outline-container-sec-2-6-1" class="outline-4">
-<h4 id="sec-2-6-1"><span class="section-number-4">2.6.1</span> Capability-based Location Selection</h4>
-<div class="outline-text-4" id="text-2-6-1">
+<div id="outline-container-h:b6f32db8-fb0e-4110-95c0-c745ab5b730e" class="outline-4">
+<h4 id="h:b6f32db8-fb0e-4110-95c0-c745ab5b730e"><a id="sec-2-6-1" name="sec-2-6-1"></a><span class="section-number-4">2.6.1</span> Capability-based Location Selection</h4>
+<div class="outline-text-4" id="text-h:b6f32db8-fb0e-4110-95c0-c745ab5b730e">
+
 <p>
 Thespian allows different Actor Systems to identify what
 capabilities are present in the current environment.  These
@@ -1606,9 +1627,10 @@ method:
 </div>
 </div>
 
-<div id="outline-container-sec-2-6-2" class="outline-4">
-<h4 id="sec-2-6-2"><span class="section-number-4">2.6.2</span> Multiple Cooperating Actor Systems</h4>
-<div class="outline-text-4" id="text-2-6-2">
+<div id="outline-container-h:1ab869b1-c7be-4dce-8346-d4b3a78cb2ba" class="outline-4">
+<h4 id="h:1ab869b1-c7be-4dce-8346-d4b3a78cb2ba"><a id="sec-2-6-2" name="sec-2-6-2"></a><span class="section-number-4">2.6.2</span> Multiple Cooperating Actor Systems</h4>
+<div class="outline-text-4" id="text-h:1ab869b1-c7be-4dce-8346-d4b3a78cb2ba">
+
 <p>
 When Thespian Actor Systems are started on each host node, they can
 specify the capabilities of the current system at that startup time.
@@ -1688,9 +1710,10 @@ failures.
 </div>
 </div>
 
-<div id="outline-container-sec-2-7" class="outline-3">
-<h3 id="sec-2-7"><span class="section-number-3">2.7</span> Fault Tolerance</h3>
-<div class="outline-text-3" id="text-2-7">
+<div id="outline-container-h:8835eec5-eb65-4899-ab80-1f861bb5f52c" class="outline-3">
+<h3 id="h:8835eec5-eb65-4899-ab80-1f861bb5f52c"><a id="sec-2-7" name="sec-2-7"></a><span class="section-number-3">2.7</span> Fault Tolerance</h3>
+<div class="outline-text-3" id="text-h:8835eec5-eb65-4899-ab80-1f861bb5f52c">
+
 <p>
 Any modern application must be capable of dealing with faults, and
 this is definitely true of a distributed system which has by its very
@@ -1756,9 +1779,10 @@ interfering with concurrency.
 </div>
 </div>
 
-<div id="outline-container-sec-3" class="outline-2">
-<h2 id="sec-3"><span class="section-number-2">3</span> Dynamic Source Loading</h2>
-<div class="outline-text-2" id="text-3">
+<div id="outline-container-h:7b9dbba0-c492-48db-ad43-a94d3e1bef8d" class="outline-2">
+<h2 id="h:7b9dbba0-c492-48db-ad43-a94d3e1bef8d"><a id="sec-3" name="sec-3"></a><span class="section-number-2">3</span> Dynamic Source Loading</h2>
+<div class="outline-text-2" id="text-h:7b9dbba0-c492-48db-ad43-a94d3e1bef8d">
+
 <p>
 Thespian's ability to perform <a href="#sec-2-2">Dynamic Actor Creation</a> can be logically
 extended to be able to dynamically load the sources from which these
@@ -1767,7 +1791,7 @@ Actors are created.  This can be useful in several ways:
 
 <ul class="org-ul">
 <li>Updating source code running in persistent ActorSystem base
-instances (as described in <i>Base Persistence</i>).
+instances (as described in <a href="#h:5edfee1e-c49b-40bf-8fa5-970a0d1ee5f5">Base Persistence</a>).
 </li>
 
 <li>Ensuring that the same version of Actor sources are running
@@ -1880,8 +1904,7 @@ sdist</code> or something similar.
 </p>
 
 <p>
-The zipfile is loaded into the currently running Actor System in <a href="#coderef-loadSource"class="coderef" onmouseover="CodeHighlightOn(this, 'coderef-loadSource');" onmouseout="CodeHighlightOff(this, 'coderef-loadSource');">line
-17</a> and then the creation of the Actor in <a href="#coderef-hashCreate"class="coderef" onmouseover="CodeHighlightOn(this, 'coderef-hashCreate');" onmouseout="CodeHighlightOff(this, 'coderef-hashCreate');">line 19</a>
+The zipfile is loaded into the currently running Actor System in <a href="#coderef-loadSource"class="coderef" onmouseover="CodeHighlightOn(this, 'coderef-loadSource');" onmouseout="CodeHighlightOff(this, 'coderef-loadSource');">line 17</a> and then the creation of the Actor in <a href="#coderef-hashCreate"class="coderef" onmouseover="CodeHighlightOn(this, 'coderef-hashCreate');" onmouseout="CodeHighlightOff(this, 'coderef-hashCreate');">line 19</a>
 uses the hash value obtained from loading the source to specify which
 source the Actor should be created from.  Note also that the Actor to
 be created is referred to by name instead of by reference, and that
@@ -1911,9 +1934,10 @@ The sources loaded remain loaded until unloaded via a call to
 </div>
 </div>
 
-<div id="outline-container-sec-4" class="outline-2">
-<h2 id="sec-4"><span class="section-number-2">4</span> Shell</h2>
-<div class="outline-text-2" id="text-4">
+<div id="outline-container-h:058d8939-b973-4270-975b-3afd9c607176" class="outline-2">
+<h2 id="h:058d8939-b973-4270-975b-3afd9c607176"><a id="sec-4" name="sec-4"></a><span class="section-number-2">4</span> Shell</h2>
+<div class="outline-text-2" id="text-h:058d8939-b973-4270-975b-3afd9c607176">
+
 <p>
 Thespian comes with a command-line application called the
 <code>thespianShell.py</code> which can be used to interact with existing Actor
@@ -1922,9 +1946,10 @@ Systems to obtain information and perform manual testing.
 </p>
 </div>
 
-<div id="outline-container-sec-4-1" class="outline-3">
-<h3 id="sec-4-1"><span class="section-number-3">4.1</span> Starting the Shell</h3>
-<div class="outline-text-3" id="text-4-1">
+<div id="outline-container-h:654845ce-3c0f-4fe8-892a-5ff5d12f5ca0" class="outline-3">
+<h3 id="h:654845ce-3c0f-4fe8-892a-5ff5d12f5ca0"><a id="sec-4-1" name="sec-4-1"></a><span class="section-number-3">4.1</span> Starting the Shell</h3>
+<div class="outline-text-3" id="text-h:654845ce-3c0f-4fe8-892a-5ff5d12f5ca0">
+
 <p>
 At startup, the <code>start</code> command should be used to specify which Actor
 System base and parameters should be used.  This command internally
@@ -1949,9 +1974,10 @@ $
 </div>
 </div>
 
-<div id="outline-container-sec-4-2" class="outline-3">
-<h3 id="sec-4-2"><span class="section-number-3">4.2</span> Address Management in the Shell</h3>
-<div class="outline-text-3" id="text-4-2">
+<div id="outline-container-h:092b8ae6-ec6c-4729-9505-8dbd32284d02" class="outline-3">
+<h3 id="h:092b8ae6-ec6c-4729-9505-8dbd32284d02"><a id="sec-4-2" name="sec-4-2"></a><span class="section-number-3">4.2</span> Address Management in the Shell</h3>
+<div class="outline-text-3" id="text-h:092b8ae6-ec6c-4729-9505-8dbd32284d02">
+
 <p>
 The thespianShell provides special handling for Actor Addresses.
 Rather than being required to type the full Actor Address each time,
@@ -1973,9 +1999,10 @@ thespian&gt;
 </div>
 </div>
 
-<div id="outline-container-sec-4-3" class="outline-3">
-<h3 id="sec-4-3"><span class="section-number-3">4.3</span> Shell Test Actor</h3>
-<div class="outline-text-3" id="text-4-3">
+<div id="outline-container-h:c0bca217-9bbe-4d44-b322-a51b86f2ee93" class="outline-3">
+<h3 id="h:c0bca217-9bbe-4d44-b322-a51b86f2ee93"><a id="sec-4-3" name="sec-4-3"></a><span class="section-number-3">4.3</span> Shell Test Actor</h3>
+<div class="outline-text-3" id="text-h:c0bca217-9bbe-4d44-b322-a51b86f2ee93">
+
 <p>
 There is also a test Actor that is part of the shell.  The test Actor
 simply sends back anything it gets with a message that it received it,
@@ -2001,9 +2028,10 @@ Response: TestActor @ ActorAddr-(TCP|10.56.10.5:54991) got: hi
 </div>
 </div>
 
-<div id="outline-container-sec-4-4" class="outline-3">
-<h3 id="sec-4-4"><span class="section-number-3">4.4</span> Actor Status Requests</h3>
-<div class="outline-text-3" id="text-4-4">
+<div id="outline-container-h:efd0ab30-ef4e-4105-b4b6-4831afc5d3de" class="outline-3">
+<h3 id="h:efd0ab30-ef4e-4105-b4b6-4831afc5d3de"><a id="sec-4-4" name="sec-4-4"></a><span class="section-number-3">4.4</span> Actor Status Requests</h3>
+<div class="outline-text-3" id="text-h:efd0ab30-ef4e-4105-b4b6-4831afc5d3de">
+
 <p>
 The shell also supports issuing status queries to Actors.  The status
 query returns various information about the Actor.
@@ -2052,9 +2080,10 @@ programmatically relied upon at this time.
 </div>
 
 
-<div id="outline-container-sec-5" class="outline-2">
-<h2 id="sec-5"><span class="section-number-2">5</span> Conclusion</h2>
-<div class="outline-text-2" id="text-5">
+<div id="outline-container-h:2827218b-828e-4d59-9b08-153d46b02134" class="outline-2">
+<h2 id="h:2827218b-828e-4d59-9b08-153d46b02134"><a id="sec-5" name="sec-5"></a><span class="section-number-2">5</span> Conclusion</h2>
+<div class="outline-text-2" id="text-h:2827218b-828e-4d59-9b08-153d46b02134">
+
 <p>
 The Actor model is a powerful and yet simple tool for the modern
 software developer.  Actor libraries like Thespian enable the
@@ -2092,7 +2121,7 @@ cloud-based applications.
 </div>
 <div id="postamble" class="status">
 <p class="author">Author: Kevin Quick &lt;kquick@godaddy.com&gt;</p>
-<p class="date">Created: 2017-01-02 Mon 22:38</p>
+<p class="date">Created: 2017-03-20 Mon 17:11</p>
 <p class="creator"><a href="http://www.gnu.org/software/emacs/">Emacs</a> 25.1.1 (<a href="http://orgmode.org">Org</a> mode 8.2.10)</p>
 <p class="validation"><a href="http://validator.w3.org/check?uri=referer">Validate</a></p>
 </div>

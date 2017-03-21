@@ -89,6 +89,9 @@ Table of Contents
 2 Quick Start
 ═════════════
 
+
+
+
 2.1 Simple Installation
 ───────────────────────
 
@@ -222,13 +225,16 @@ Table of Contents
   utilization document.
 
 
-  [Thespian In-Depth Introduction] file:in_depth.org
+  [Thespian In-Depth Introduction] http://thespianpy.com/in_depth
 
-  [Using Thespian] file:using.html
+  [Using Thespian] http://thespian.py/using
 
 
 3 Documentation
 ═══════════════
+
+
+
 
 3.1 Thespian Documentation
 ──────────────────────────
@@ -333,7 +339,7 @@ Table of Contents
   [https://pypi.python.org/pypi/thespian]
 
   Thespian source and releases are also available from the
-  [https://github.com/godaddy/Thespian] github source maintenance
+  [https://github.com/kquick/Thespian] github source maintenance
   location.
 
   Thespian may also be provided by your system's packaging tools
@@ -347,9 +353,9 @@ Table of Contents
   welcomed.  The [Thespian Developer's Notes] document provides more
   details on how to get involved.
 
-  ‣ Source Code: [https://github.com/godaddy/Thespian]
+  ‣ Source Code: [https://github.com/kquick/Thespian]
   ‣ Mailing List: thespianpy@googlegroups.com
-  ‣ Report a Bug: [https://github.com/godaddy/Thespian/issues]
+  ‣ Report a Bug: [https://github.com/kquick/Thespian/issues]
 
 
   [Thespian Developer's Notes] file:developer.org

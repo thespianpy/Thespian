@@ -10,6 +10,8 @@ Table of Contents
 ─────────────────
 
 3.x
+.. 3.7
+..... 3.7.0 <2017-03-19 Sun>
 .. 3.6
 ..... 3.6.3 <2017-03-02 Thu>
 ..... 3.6.2 <2017-02-19 Sun>
@@ -81,6 +83,68 @@ not change the API.
 
 3.x
 ═══
+
+3.7
+───
+
+3.7.0 <2017-03-19 Sun>
+╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+
+  ‣ The major enhancement in this release is the `ActorSystem.private()'
+    method, which can be used by external applications to get a unique
+    endpoint for communicating with actors.  This is especially helpful
+    for multi-threaded external applications ([Issue 35]).
+
+    Note that this is not fully supported for the MultiprocQueueBase at
+    this time.  The MultiprocQueueBase usually works, but there are
+    unresolved corner cases at this time.
+
+    See [the description of the private method in the Using Thespian
+    document] for more details.
+
+  ‣ Fixes a bug where internal transmit events were not completed
+    properly and blocked subsequent transmits.
+
+  ‣ Cleaner ActorSystem shutdown, driven by responses rather than timed,
+    recursive transport runs.
+
+  ‣ Fixed amount of time reported in `ActorSystem.tell()' timeouts.
+
+  ‣ Retry TCP transmits immediately on slot availability instead of
+    waiting a delay period.
+
+  ‣ Fixed bugs in ReceiveBuffer when additional unexpected data is
+    received.
+
+  ‣ Consolidated on using ExpirationTimer and removed ExpiryTime.
+
+  ‣ Fixed statistics report of any transmits pending address resolution.
+
+  ‣ Write logdirector exceptions to thesp and fix logdirector's
+    exception recurrence detection.
+
+  ‣ Ensure convention registration timer is always refreshed if expired.
+
+  ‣ Upgrade UDP transport `select()' error log message to critical
+    level.
+
+  ‣ Internally updated transport run method return values for more
+    explicit exit information.
+
+  ‣ Internal refactoring, cleanup, and updates.
+
+  ‣ Stable documentation hyperlink targets (based on [Lee Hinman's
+    article]).
+
+
+  [Issue 35] https://github.com/godaddy/Thespian/issues/35
+
+  [the description of the private method in the Using Thespian document]
+  http://thespianpy.com/using#actorsystem.private
+
+  [Lee Hinman's article]
+  https://writequit.org/articles/emacs-org-mode-generate-ids.html
+
 
 3.6
 ───
@@ -490,7 +554,8 @@ not change the API.
     conventionally serialized (see [Source Loading Issues]).
 
 
-  [Source Loading Issues] file:using.org::*Source Loading Issues
+  [Source Loading Issues]
+  http://thespianpy.com/using#h:e23490e4-d720-4e84-9b9a-e768fa3e717d
 
 
 3.2.1 <2016-09-08 Thu>
