@@ -361,52 +361,68 @@ class LocalConventionState(object):
 
     def check_convention(self):
         rmsgs = []
-        if not self._has_been_activated:
-            return rmsgs
-        if self.isConventionLeader() or not self.conventionLeaderAddr:
-            missing = [ each
-                        for each in self._conventionMembers.values()
-                        if each.registryValid.expired() ]
-            for each in missing:
-                thesplog('%s missed %d checkins (%s); assuming it has died',
-                         str(each),
-                         CONVENTION_REGISTRATION_MISS_MAX,
-                         str(each.registryValid),
-                         level=logging.WARNING, primary=True)
-                rmsgs.extend(self._remote_system_cleanup(each.remoteAddress))
-            self._conventionRegistration = ExpiryTime(CONVENTION_REREGISTRATION_PERIOD)
-        else:
-            # Re-register with the Convention if it's time
-            if self.conventionLeaderAddr and self._conventionRegistration.expired():
-                if getattr(self, '_conventionLeaderMissCount', 0) >= \
-                   CONVENTION_REGISTRATION_MISS_MAX:
-                    thesplog('Admin convention registration lost @ %s (miss %d)',
-                             self.conventionLeaderAddr,
-                             self._conventionLeaderMissCount,
-                             level=logging.WARNING, primary=True)
-                    rmsgs.extend(self._remote_system_cleanup(self.conventionLeaderAddr))
-                    self._conventionLeaderMissCount = 0
-                else:
-                    rmsgs.extend(self.setup_convention())
-
-        for member in self._conventionMembers.values():
-            if member.preRegistered and \
-               member.preRegistered.pingValid.expired() and \
-               not member.preRegistered.pingPending:
-                member.preRegistered.pingPending = True
-                # If remote misses a checkin, re-extend the
-                # invitation.  This also helps re-initiate a socket
-                # connection if a TxOnly socket has been lost.
-                member.preRegistered.pingValid = ExpiryTime(
-                    convention_reinvite_adjustment(CONVENTION_RESTART_PERIOD
-                                                   if member.registryValid.expired()
-                                                   else CONVENTION_REREGISTRATION_PERIOD))
-                rmsgs.append(HysteresisSend(
-                    member.remoteAddress, ConventionInvite(),
-                    onSuccess = self._preRegQueryNotPending,
-                    onError = self._preRegQueryNotPending))
+        if self._has_been_activated:
+            rmsgs = foldl(lambda x, y: x + y,
+                          [self._check_preregistered_ping(member)
+                           for member in self._conventionMembers.values()],
+                          self._convention_leader_checks()
+                          if self.isConventionLeader() or
+                          not self.conventionLeaderAddr else
+                          self._convention_member_checks())
         return rmsgs
 
+    def _convention_leader_checks(self):
+        self._conventionRegistration = ExpiryTime(CONVENTION_REREGISTRATION_PERIOD)
+        return foldl(lambda x, y: x + y,
+                     [self._missed_checkin_remote_cleanup(R)
+                      for R in [ member
+                                 for member in self._conventionMembers.values()
+                                 if member.registryValid.expired() ]],
+                     [])
+
+    def _missed_checkin_remote_cleanup(self, remote_member):
+        thesplog('%s missed %d checkins (%s); assuming it has died',
+                 str(remote_member),
+                 CONVENTION_REGISTRATION_MISS_MAX,
+                 str(remote_member.registryValid),
+                 level=logging.WARNING, primary=True)
+        return self._remote_system_cleanup(remote_member.remoteAddress)
+
+
+    def _convention_member_checks(self):
+        rmsgs = []
+        # Re-register with the Convention if it's time
+        if self.conventionLeaderAddr and self._conventionRegistration.expired():
+            if getattr(self, '_conventionLeaderMissCount', 0) >= \
+               CONVENTION_REGISTRATION_MISS_MAX:
+                thesplog('Admin convention registration lost @ %s (miss %d)',
+                         self.conventionLeaderAddr,
+                         self._conventionLeaderMissCount,
+                         level=logging.WARNING, primary=True)
+                rmsgs.extend(self._remote_system_cleanup(self.conventionLeaderAddr))
+                self._conventionLeaderMissCount = 0
+            else:
+                rmsgs.extend(self.setup_convention())
+        return rmsgs
+
+    def _check_preregistered_ping(self, member):
+        if member.preRegistered and \
+           member.preRegistered.pingValid.expired() and \
+           not member.preRegistered.pingPending:
+            member.preRegistered.pingPending = True
+            # If remote misses a checkin, re-extend the
+            # invitation.  This also helps re-initiate a socket
+            # connection if a TxOnly socket has been lost.
+            member.preRegistered.pingValid = ExpiryTime(
+                convention_reinvite_adjustment(
+                    CONVENTION_RESTART_PERIOD
+                    if member.registryValid.expired()
+                    else CONVENTION_REREGISTRATION_PERIOD))
+            return [HysteresisSend(member.remoteAddress,
+                                   ConventionInvite(),
+                                   onSuccess = self._preRegQueryNotPending,
+                                   onError = self._preRegQueryNotPending)]
+        return []
 
     def _preRegQueryNotPending(self, result, finishedIntent):
         remoteAddr = finishedIntent.targetAddr
