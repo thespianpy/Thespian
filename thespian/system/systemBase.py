@@ -237,7 +237,7 @@ class ExternalOpsToActors(object):
                                                          str(txwatch.failure)))
                 raise ActorSystemRequestTimeout(
                     'Unable to send to %s within %s' %
-                    (str(anActor), str(MAX_CAPABILITY_UPDATE_DELAY)))
+                    (str(anActor), str(MAX_TELL_PERIOD)))
             except socket.error as ex:
                 import errno
                 if errno.EMFILE == ex.errno:
