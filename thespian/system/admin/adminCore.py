@@ -232,9 +232,13 @@ class AdminCore(systemCommonBase):
 
 
     def _sayGoodbye(self):
-        self._cleanupAdmin()
+        self._cleanupAdmin(self._reallySayGoodbye)
+
+    def _reallySayGoodbye(self):
         self._send_intent(TransmitIntent(self._exiting,
-                                         SystemShutdownCompleted()))
+                                         SystemShutdownCompleted(),
+                                         onSuccess=lambda _i, _s, t=self.transport: t.abort_run(),
+                                         onError=lambda _i, _s, t=self.transport: t.abort_run()))
         thesplog('---- shutdown completed', level=logging.INFO)
         logging.info('---- Actor System shutdown')
         self.shutdown_completed = True

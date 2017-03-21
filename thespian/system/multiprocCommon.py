@@ -100,7 +100,7 @@ class multiprocessCommon(systemBase):
                                               self.mpcontext),
                                         name='ThespianAdmin')
         admin.start()
-        # admin must be explicity shutdown and is not automatically
+        # admin must be explicitly shutdown and is not automatically
         # stopped when this current process exits.
         detach_child(admin)
 
@@ -167,6 +167,7 @@ def startAdmin(adminClass, addrOfStarter, endpointPrep, transportClass,
     # _verifyAdminRunning to ensure things are OK.
     transport = transportClass(endpointPrep)
     try:
+
         admin = adminClass(transport, adminAddr, capabilities, logDefs,
                            concurrency_context)
     except Exception:
@@ -448,23 +449,37 @@ class MultiProcReplicator(object):
         return False, True
 
 
-    def _cleanupAdmin(self):
+    def _reset_logging(self):
+        if hasattr(self, 'oldLoggerRoot'):
+            logging.root = self.oldLoggerRoot
+            logging.Logger.root = self.oldLoggerRoot
+            logging.Logger.manager = logging.Manager(logging.Logger.root)
+            delattr(self, 'oldLoggerRoot')
+
+    def _cleanupAdmin(self, finish_cleanup):
+        self.post_cleanup = finish_cleanup
         if getattr(self, 'asLogger', None):
-            if hasattr(self, 'oldLoggerRoot'):
-                logging.root = self.oldLoggerRoot
-                logging.Logger.root = self.oldLoggerRoot
-                logging.Logger.manager = logging.Manager(logging.Logger.root)
-            self.transport.run(TransmitOnly, maximumDuration=timedelta(milliseconds=250))
-            import time
-            time.sleep(0.05)  # allow children to exit and log their exit
-            self.transport.scheduleTransmit(None, TransmitIntent(self.asLogger,
-                                                                 LoggerExitRequest()))
-            self.transport.run(TransmitOnly)
-            if getattr(self, 'asLogProc', None):
-                if self._checkChildLiveness(self.asLogProc):
-                    import time
-                    time.sleep(0.02)  # wait a little to allow logger to exit
-                self._checkChildLiveness(self.asLogProc) # cleanup defunct proc
+            self._reset_logging()
+            #self.transport.run(TransmitOnly, maximumDuration=timedelta(milliseconds=250))
+            #import time
+            #time.sleep(0.05)  # allow children to exit and log their exit
+            self.transport.scheduleTransmit(
+                None,
+                TransmitIntent(self.asLogger,
+                               LoggerExitRequest(),
+                               onSuccess=self._cleanupAdminFinish,
+                               onError=self._cleanupAdminFinish))
+            return
+        self._cleanupAdminFinish(None, None)
+
+    def _cleanupAdminFinish(self, _intent, _status):
+        #self.transport.run(TransmitOnly)
+        if getattr(self, 'asLogProc', None):
+            if self._checkChildLiveness(self.asLogProc):
+                import time
+                time.sleep(0.02)  # wait a little to allow logger to exit
+            self._checkChildLiveness(self.asLogProc) # cleanup defunct proc
+        self.post_cleanup()
 
 
 
