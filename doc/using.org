@@ -8,7 +8,7 @@
 #+LATEX_HEADER: \product{Thespian}
 #+LATEX_HEADER: \component{Python Actor System}
 #+LATEX_HEADER: \doctype{Usage}
-#+LATEX_HEADER: \docrev{2.14}{2017 Jan 02}
+#+LATEX_HEADER: \docrev{2.15}{2017 Mar 19}
 #+LATEX_HEADER: \docid{TheDoc-02}
 #+OPTIONS: ^:nil auto-id:t
 
@@ -2285,6 +2285,46 @@ actorSys = ActorSystem(systemBase = None,
    of the ~datetime.timedelta~ class, although an integer or floating
    point value will be accepted as a specification of a number of
    seconds.
+
+** private
+   :PROPERTIES:
+   :CUSTOM_ID: actorsystem.private
+   :END:
+
+The ~tell()~, ~ask()~, and ~listen()~ operations are used by external
+applications to communicate with Actors, but they only provide a
+single "address" for the external application.  If the external
+application is multi-threaded, and different threads wish to
+communicate with actors, some mechanism to route responses to the
+proper thread is needed.
+
+To accomplish this, the ~ActorSystem.private()~ method can be used to
+obtain a "private" context for a particular thread.  While it exists,
+this context creates a unique endpoint for the external application's
+threads and ensures that response messages sent by actors are sent to
+the proper initiating thread.
+
+The ~private()~ context is easy to use along with the ~with~ statement:
+
+#+BEGIN_SRC python
+...
+asys = ActorSystem()
+...
+[thread1:]
+with asys.private() as mysys:
+    r = mysys.ask(addr, message, timeout)
+    if r is not None:
+        mysys.tell(addr2, 'completed')
+...
+[thread2:]
+with asys.private() as sys2:
+    resp = sys2.ask(addr5, msg, timeout)
+    print(resp)
+#+END_SRC
+
+In the above example, the response message sent by the actor at ~addr~
+will properly be directed to thread1, and the response message sent by
+the actor at ~addr5~ will only be sent to thread2.
 
 ** updateCapability
    :PROPERTIES:
