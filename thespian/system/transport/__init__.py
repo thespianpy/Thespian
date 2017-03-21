@@ -297,6 +297,9 @@ class TransmitIntent(PauseWithBackoff):
     def expired(self):
         return self._quitTime.expired()
 
+    def expiration(self):
+        return self._quitTime
+
     def __str__(self):
         return '************* %s' % self.identify()
 
@@ -333,12 +336,16 @@ class SendStatus(object):
     class BadPacketError(BASE, Exception):
         "Remote rejected transmit, (a return value or an exception)"
         _isGood = False
+    class SENDSTS_EXPIRED(BASE):
+        "Transmit intent expired before send completed."
+        _isGood = False
     class SENDSTS_FAILED(BASE): _isGood = False
     class SENDSTS_DEADTARGET(BASE): _isGood = False
     Sent = SENDSTS_SENT()
     NotSent = SENDSTS_NOTSENT()
     BadPacket = BadPacketError('BadPacket SendStatus')
     Failed = SENDSTS_FAILED()
+    Expired = SENDSTS_EXPIRED()
     DeadTarget = SENDSTS_DEADTARGET()
 
 
