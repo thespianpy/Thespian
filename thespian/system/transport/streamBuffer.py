@@ -23,13 +23,15 @@ class ReceiveBuffer(object):
         "Called to add additional received data to this in-progress packet buffer."
         if self._size is not None:
             blen = len(buf)
-            if len(self._buf) + blen <= self._size:
+            if self._blen + blen <= self._size:
                 self._buf += buf
                 self._blen += blen
+            elif self._blen == self._size:
+                self._extra += buf
             else:
-                bufRem = self.size - len(self._size)
-                self._buf += buf[:rem]
-                self._extra = buf[rem:]
+                want = self._size - self._blen
+                self._buf += buf[:want]
+                self._extra = buf[want:]
         else:
             rem = ''
             if type(buf) == type(''):
@@ -44,6 +46,7 @@ class ReceiveBuffer(object):
                     rem = buf[markPos+1:]
             if markPos == -1:
                 self._buf += buf
+                self._blen = 1  # unimportant if _size not set, but non-zero for is_empty
             else:
                 self._size = eval(self._buf + buf[:markPos])
                 self._buf = rem[:self._size]
@@ -51,7 +54,9 @@ class ReceiveBuffer(object):
                 if len(rem) > self._size:
                     self._extra = rem[self._size:]
     def is_empty(self):
-        return self._size is None
+        # Does not indicate there is any recoverable buffer, just that
+        # there has been some input received.
+        return self._blen == 0 and self._size is None
     def remainingAmount(self):
         "Specifies the amount still to read to obtain the packet"
         if self._size is None:
