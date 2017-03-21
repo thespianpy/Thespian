@@ -1038,7 +1038,7 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
                     rEnv = self._incomingEnvelopes.pop(0)
                     if incomingHandler is None:
                         return rEnv
-                    r = incomingHandler(rEnv)
+                    r = Thespian__Run_HandlerResult(incomingHandler(rEnv))
                     if not r:
                         return r
 
@@ -1233,7 +1233,7 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
             if [] == rrecv and [] == rsend:
                 if [] == rerr and self.run_time.expired():
                     # Timeout, give up
-                    return None
+                    return Thespian__Run_Expired()
                 continue
             if xmitOnly:
                 remXmits = len(self._transmitIntents) + \
@@ -1247,11 +1247,13 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
                     rEnv = self._incomingEnvelopes.pop(0)
                     if incomingHandler is None:
                         return rEnv
-                    r = incomingHandler(rEnv)
+                    r = Thespian__Run_HandlerResult(incomingHandler(rEnv))
                     if not r:
                         return r
 
-        return None
+        return Thespian__Run_Terminated() \
+            if hasattr(self, '_aborting_run') else \
+            Thespian__Run_Expired()
 
     def _check_indicators(self):
         if self._checkChildren:
