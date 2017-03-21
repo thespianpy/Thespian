@@ -8,7 +8,7 @@ except ImportError:
 from datetime import timedelta
 import multiprocessing
 import traceback
-from thespian.system.utilis import setProcName, thesplog_control
+from thespian.system.utilis import setProcName, thesplog_control, thesplog
 from thespian.system.timing import Timer
 from thespian.system.messages.multiproc import *
 from thespian.system.transport import TransmitIntent, Thespian__UpdateWork
@@ -66,7 +66,6 @@ def startupASLogger(addrOfStarter, logEndpoint, logDefs,
     setProcName('logger', transport.myAddress)
     transport.scheduleTransmit(None, TransmitIntent(addrOfStarter, LoggerConnected()))
     fdup = None
-    last_exception = None
     last_exception_time = None
     exception_count = 0
     while True:
@@ -93,9 +92,9 @@ def startupASLogger(addrOfStarter, logEndpoint, logDefs,
                                                                     logrecord))
             else:
                 logging.warn('Unknown message rcvd by logger: %s'%str(logrecord))
-        except Exception:
-            logging.error('Thespian Logger aborting (#%d) with error', exception_count, exc_info=True)
-            if last_exception is None:
+        except Exception as ex:
+            thesplog('Thespian Logger aborting (#%d) with error %s', exception_count, ex, exc_info=True)
+            if last_exception_time is None:
                 last_exception_time = Timer()
                 exception_count = 0
             elif last_exception_time.elapsed() > timedelta(seconds=1):
@@ -104,7 +103,7 @@ def startupASLogger(addrOfStarter, logEndpoint, logDefs,
             else:
                 exception_count += 1
                 if exception_count >= MAX_LOGGING_EXCEPTIONS_PER_SECOND:
-                    logging.error('Too many Thespian Logger exceptions (#%d in %s); exiting!',
+                    thesplog('Too many Thespian Logger exceptions (#%d in %s); exiting!',
                                   exception_count, last_exception_time.elapsed())
                     return
 
