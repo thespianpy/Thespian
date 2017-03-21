@@ -229,7 +229,8 @@ class UDPTransport(asyncTransportBase, wakeupTransportBase):
             # UDPTransport transmit is serially blocking, but both sender
             # and receiver provide lots of buffering.  At present, there
             # is no receipt confirmation (KWQ: but there should be)
-            r = self.socket.sendto(transmitIntent.serMsg, transmitIntent.targetAddr.addressDetails.sockname)
+            r = self.socket.sendto(transmitIntent.serMsg,
+                                   transmitIntent.targetAddr.addressDetails.sockname)
         transmitIntent.tx_done(SendStatus.Sent
                                if r else
                                SendStatus.BadPacket)
@@ -255,7 +256,8 @@ class UDPTransport(asyncTransportBase, wakeupTransportBase):
                 except select.error as se:
                     import errno
                     if se.args[0] != errno.EINTR:
-                        thesplog('Error during select: %s', se)
+                        thesplog('Error during select: %s', se,
+                                 level=logging.CRITICAL)
                         return Thespian__Run_Errored(se)
                     continue
                 except ValueError:
