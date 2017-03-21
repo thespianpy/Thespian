@@ -19,6 +19,7 @@ class TestUnitReceiveBufferReconstruct(object):
             'Checking if no remaining amount (%s) for %s'%(
                 str(rcv.remainingAmount()),
                 descr))
+        assert not rcv.is_empty()
         completed,extra = rcv.completed()
         assert completed == expectedBuf, (
             'Checking if completed %s == %s for %s'%(str(completed),
@@ -32,6 +33,11 @@ class TestUnitReceiveBufferReconstruct(object):
         else:
             assert not extra, 'Verifying no extra in %s for %s'%(str(extra),
                                                                  descr)
+        # Extracting the completed info from the streamBuffer does not change the latter
+        c2,e2 = rcv.completed()
+        assert completed == c2
+        assert extra == e2
+        assert not rcv.is_empty()
 
     def partialTests(self, rcv, amount, totalAmount, descr):
         assert not rcv.isDone(), (
@@ -58,8 +64,10 @@ class TestUnitReceiveBufferReconstruct(object):
 
         rcv = ReceiveBuffer()
         assert not rcv.isDone(), 'initial ReceiveBuffer isDone test'
+        assert rcv.is_empty()
 
         rcv.addMore(msg)
+        assert not rcv.is_empty()
 
         self.finalTests(rcv, self.sampleBuffer, 'completion')
 

@@ -46,6 +46,8 @@ class ReceiveBuffer:
                 self._buf = rem[:self._size]
                 if len(rem) > self._size:
                     self._extra = rem[self._size:]
+    def is_empty(self):
+        return self._size is None
     def remainingAmount(self):
         "Specifies the amount still to read to obtain the packet"
         if self._size is None:
