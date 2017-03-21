@@ -10,7 +10,7 @@ import logging
 from thespian.actors import *
 from thespian.system import *
 from thespian.system.utilis import thesplog
-from thespian.system.timing import toTimeDeltaOrNone, ExpiryTime, ExpirationTimer
+from thespian.system.timing import toTimeDeltaOrNone, ExpirationTimer
 from thespian.system.messages.admin import *
 from thespian.system.messages.status import *
 from thespian.system.transport import *
@@ -219,7 +219,7 @@ class ExternalOpsToActors(object):
 
 
     def tell(self, anActor, msg):
-        attemptLimit = ExpiryTime(MAX_TELL_PERIOD)
+        attemptLimit = ExpirationTimer(MAX_TELL_PERIOD)
         # transport may not use sockets, but this helps error handling
         # in case it does.
         import socket
@@ -260,7 +260,7 @@ class ExternalOpsToActors(object):
 
     def ask(self, anActor, msg, timeout):
         txwatch = self._tx_to_actor(anActor, msg)  # KWQ: pass timeout on tx??
-        askLimit = ExpiryTime(toTimeDeltaOrNone(timeout))
+        askLimit = ExpirationTimer(toTimeDeltaOrNone(timeout))
         while not askLimit.expired():
             response = self._run_transport(askLimit.remaining())
             if txwatch.failed:
@@ -321,7 +321,7 @@ class systemBase(ExternalOpsToActors):
         super(systemBase, self).__init__(
             self.transport.getAdminAddr(system.capabilities))
 
-        tryingTime = ExpiryTime(MAX_SYSTEM_SHUTDOWN_DELAY + timedelta(seconds=1))
+        tryingTime = ExpirationTimer(MAX_SYSTEM_SHUTDOWN_DELAY + timedelta(seconds=1))
         while not tryingTime.expired():
             if not self.transport.probeAdmin(self.adminAddr):
                 self._startAdmin(self.adminAddr,
@@ -356,7 +356,7 @@ class systemBase(ExternalOpsToActors):
 
     def shutdown(self):
         thesplog('ActorSystem shutdown requested.', level=logging.INFO)
-        time_to_quit = ExpiryTime(MAX_SYSTEM_SHUTDOWN_DELAY)
+        time_to_quit = ExpirationTimer(MAX_SYSTEM_SHUTDOWN_DELAY)
         txwatch = self._tx_to_admin(SystemShutdown())
         while not time_to_quit.expired():
             response = self._run_transport(time_to_quit.remaining())
@@ -383,7 +383,7 @@ class systemBase(ExternalOpsToActors):
 
 
     def updateCapability(self, capabilityName, capabilityValue=None):
-        attemptLimit = ExpiryTime(MAX_CAPABILITY_UPDATE_DELAY)
+        attemptLimit = ExpirationTimer(MAX_CAPABILITY_UPDATE_DELAY)
         txwatch = self._tx_to_admin(CapabilityUpdate(capabilityName,
                                                      capabilityValue))
         while not attemptLimit.expired():
@@ -399,7 +399,7 @@ class systemBase(ExternalOpsToActors):
 
 
     def loadActorSource(self, fname):
-        loadLimit = ExpiryTime(MAX_LOAD_SOURCE_DELAY)
+        loadLimit = ExpirationTimer(MAX_LOAD_SOURCE_DELAY)
         f = fname if hasattr(fname, 'read') else open(fname, 'rb')
         try:
             d = f.read()
@@ -425,7 +425,7 @@ class systemBase(ExternalOpsToActors):
 
 
     def unloadActorSource(self, sourceHash):
-        loadLimit = ExpiryTime(MAX_LOAD_SOURCE_DELAY)
+        loadLimit = ExpirationTimer(MAX_LOAD_SOURCE_DELAY)
         txwatch = self._tx_to_admin(ValidateSource(sourceHash, None))
         while not loadLimit.expired():
             if not self._run_transport(loadLimit.remaining(), txonly=True):

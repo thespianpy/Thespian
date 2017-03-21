@@ -78,59 +78,6 @@ class Timer(object):
     def __nonzero__(self): return self.elapsedSeconds()
 
 
-class ExpiryTime(object):
-    def __init__(self, duration):
-        if duration is None:
-            self._time_to_quit = None
-        elif isinstance(duration, timedelta):
-            self._time_to_quit = currentTime() + timePeriodSeconds(duration)
-        else:
-            self._time_to_quit = currentTime() + duration
-    def expired(self):
-        return False if self._time_to_quit is None else (currentTime() >= self._time_to_quit)
-    def remaining(self, forever=None):
-        return forever if self._time_to_quit is None else \
-            (timedelta(seconds=0) if currentTime() > self._time_to_quit else \
-             timedelta(seconds=self._time_to_quit - currentTime()))
-    def remainingSeconds(self, forever=None):
-        return forever if self._time_to_quit is None else \
-            (0 if currentTime() > self._time_to_quit else \
-             timePeriodSeconds(self._time_to_quit - currentTime()))
-    def __str__(self):
-        if self._time_to_quit is None: return 'Forever'
-        if self.expired():
-            return 'Expired_for_%s' % \
-                timedelta(seconds=currentTime() - self._time_to_quit)
-        return 'Expires_in_' + str(self.remaining())
-    def __eq__(self, o):
-        if isinstance(o, timedelta):
-            o = ExpiryTime(o)
-        if self._time_to_quit == o._time_to_quit: return True
-        if self._time_to_quit == None or o._time_to_quit == None: return False
-        if self.expired() and o.expired(): return True
-        return abs(self._time_to_quit - o._time_to_quit) < \
-            timePeriodSeconds(timedelta(microseconds=1))
-    def __lt__(self, o):
-        try:
-            if self._time_to_quit is None and o._time_to_quit is None: return False
-        except Exception: pass
-        if self._time_to_quit is None: return False
-        if isinstance(o, timedelta):
-            o = ExpiryTime(o)
-        if o._time_to_quit is None: return True
-        return self._time_to_quit < o._time_to_quit
-    def __gt__(self, o):
-        try:
-            if self._time_to_quit is None and o._time_to_quit is None: return False
-        except Exception: pass
-        return not self.__lt__(o)
-    def __le__(self, o): return self.__eq__(o) or self.__lt__(o)
-    def __ge__(self, o): return self.__eq__(o) or self.__gt__(o)
-    def __ne__(self, o): return not self.__eq__(o)
-    def __bool__(self): return self.expired()
-    def __nonzero__(self): return self.expired()
-
-
 class ExpirationTimer(object):
     """Keeps track of a duration relative to an original time and
        indicates whether that duration has expired or how much time is
@@ -170,26 +117,52 @@ class ExpirationTimer(object):
                 timedelta(seconds=currentTime() - self._time_to_quit)
         return 'Expires_in_' + str(self.remaining())
     def __eq__(self, o):
-        if isinstance(o, timedelta):
-            o = ExpiryTime(o)
-        if self._time_to_quit == o._time_to_quit: return True
-        if self._time_to_quit == None or o._time_to_quit == None: return False
-        if self.expired() and o.expired(): return True
-        return abs(self._time_to_quit - o._time_to_quit) < \
-            timePeriodSeconds(seconds=timedelta(microseconds=1))
-    def __lt__(self, o):
+        # If compared to an arbitrary object that cannot reasonably be
+        # considered to be a time, simply return False.  Suppress all
+        # exceptions.
         try:
-            if self._time_to_quit is None and o._time_to_quit is None: return False
-        except Exception: pass
-        if self._time_to_quit is None: return False
+            if isinstance(o, timedelta):
+                o = ExpirationTimer(o)
+            if self._time_to_quit == o._time_to_quit: return True
+            if self._time_to_quit == None or o._time_to_quit == None: return False
+            if self.expired() and o.expired(): return True
+            return abs(self._time_to_quit - o._time_to_quit) < \
+                timePeriodSeconds(seconds=timedelta(microseconds=1))
+        except Exception:
+            return False
+    @staticmethod
+    def _normalize_o(o):
         if isinstance(o, timedelta):
-            o = ExpiryTime(o)
-        if o._time_to_quit is None: return True
+            return o
+        o._time_to_quit # Cause exception if an invalid type
+        return o
+    def __lt__(self, o):
+        # Explicitly allow comparison to None as equivalent to an expired timer.
+        # Comparison to arbitrary values/objects throws an exception.
+        if o is None:
+            return False
+        o = self._normalize_o(o)
+        try:
+            if self._time_to_quit is None and o._time_to_quit is None:
+                return False
+        except Exception:
+            pass
+        if self._time_to_quit is None:
+            return False
+        if o._time_to_quit is None:
+            return True
         return self._time_to_quit < o._time_to_quit
     def __gt__(self, o):
+        # Explicitly allow comparison to None as equivalent to an expired timer.
+        # Comparison to arbitrary values/objects throws an exception.
+        if o is None:
+            return True
+        o = self._normalize_o(o)
         try:
-            if self._time_to_quit is None and o._time_to_quit is None: return False
-        except Exception: pass
+            if self._time_to_quit is None and o._time_to_quit is None:
+                return False
+        except Exception:
+            pass
         return not self.__lt__(o)
     def __le__(self, o): return self.__eq__(o) or self.__lt__(o)
     def __ge__(self, o): return self.__eq__(o) or self.__gt__(o)

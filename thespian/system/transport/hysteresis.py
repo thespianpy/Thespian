@@ -1,5 +1,5 @@
 from thespian.system.utilis import partition
-from thespian.system.timing import ExpiryTime
+from thespian.system.timing import ExpirationTimer
 from thespian.system.transport import SendStatus
 from datetime import timedelta
 
@@ -42,7 +42,7 @@ class HysteresisDelaySender(object):
                  hysteresis_max_period = HYSTERESIS_MAX_PERIOD,
                  hysteresis_rate       = HYSTERESIS_RATE):
         self._sender                = actual_sender
-        self._hysteresis_until      = ExpiryTime(timedelta(seconds=0))
+        self._hysteresis_until      = ExpirationTimer(timedelta(seconds=0))
         self._hysteresis_queue      = []
         self._current_hysteresis    = None  # timedelta
         self._hysteresis_min_period = hysteresis_min_period
@@ -91,12 +91,12 @@ class HysteresisDelaySender(object):
 
     def _update_remaining_hysteresis_period(self, reset=False):
         if not self._current_hysteresis:
-            self._hysteresis_until = ExpiryTime(timedelta(seconds=0))
+            self._hysteresis_until = ExpirationTimer(timedelta(seconds=0))
         else:
             if reset or not self._hysteresis_until:
-                self._hysteresis_until = ExpiryTime(self._current_hysteresis)
+                self._hysteresis_until = ExpirationTimer(self._current_hysteresis)
             else:
-                self._hysteresis_until = ExpiryTime(
+                self._hysteresis_until = ExpirationTimer(
                     self._current_hysteresis -
                     self._hysteresis_until.remaining())
 
