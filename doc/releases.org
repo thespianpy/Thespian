@@ -8,7 +8,7 @@
 #+LATEX_HEADER: \product{Thespian}
 #+LATEX_HEADER: \component{Python Actor System}
 #+LATEX_HEADER: \doctype{Release Notes}
-#+LATEX_HEADER: \docrev{3.6.3}{2017 Mar 02}
+#+LATEX_HEADER: \docrev{3.7.0}{2017 Mar 19}
 #+LATEX_HEADER: \docid{TheDoc-06}
 #+OPTIONS: ^:nil num:nil
 
@@ -18,6 +18,55 @@ added functionality that is backwards compatible, and bugfix changes
 do not change the API.
 
 * 3.x
+
+** 3.7
+
+*** 3.7.0 <2017-03-19 Sun>
+
+  * The major enhancement in this release is the
+    ~ActorSystem.private()~ method, which can be used by external
+    applications to get a unique endpoint for communicating with
+    actors.  This is especially helpful for multi-threaded external
+    applications ([[https://github.com/godaddy/Thespian/issues/35][Issue 35]]).
+
+    Note that this is not fully supported for the MultiprocQueueBase
+    at this time.  The MultiprocQueueBase usually works, but there are
+    unresolved corner cases at this time.
+
+    See [[http://thespianpy.com/using#actorsystem.private][the description of the private method in the Using Thespian
+    document]] for more details.
+
+  * Fixes a bug where internal transmit events were not completed
+    properly and blocked subsequent transmits.
+
+  * Cleaner ActorSystem shutdown, driven by responses rather than
+    timed, recursive transport runs.
+
+  * Fixed amount of time reported in ~ActorSystem.tell()~ timeouts.
+
+  * Retry TCP transmits immediately on slot availability instead of
+    waiting a delay period.
+
+  * Fixed bugs in ReceiveBuffer when additional unexpected data is
+    received.
+
+  * Consolidated on using ExpirationTimer and removed ExpiryTime.
+
+  * Fixed statistics report of any transmits pending address resolution.
+
+  * Write logdirector exceptions to thesp and fix logdirector's
+    exception recurrence detection.
+
+  * Ensure convention registration timer is always refreshed if expired.
+
+  * Upgrade UDP transport ~select()~ error log message to critical level.
+
+  * Internally updated transport run method return values for more
+    explicit exit information.
+
+  * Internal refactoring, cleanup, and updates.
+
+  * Stable documentation hyperlink targets (based on [[https://writequit.org/articles/emacs-org-mode-generate-ids.html][Lee Hinman's article]]).
 
 ** 3.6
 
