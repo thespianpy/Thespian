@@ -369,10 +369,11 @@ class LocalConventionState(object):
                           if self.isConventionLeader() or
                           not self.conventionLeaderAddr else
                           self._convention_member_checks())
+        if self._conventionRegistration.expired():
+            self._conventionRegistration = ExpiryTime(CONVENTION_REREGISTRATION_PERIOD)
         return rmsgs
 
     def _convention_leader_checks(self):
-        self._conventionRegistration = ExpiryTime(CONVENTION_REREGISTRATION_PERIOD)
         return foldl(lambda x, y: x + y,
                      [self._missed_checkin_remote_cleanup(R)
                       for R in [ member
