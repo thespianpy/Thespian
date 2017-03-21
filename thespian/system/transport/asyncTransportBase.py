@@ -246,12 +246,16 @@ class asyncTransportBase(object):
             transmitIntent.tx_done(SendStatus.Sent)
             return
 
-        if not isinstance(transmitIntent.message, Thespian__UpdateWork):
+        if isinstance(transmitIntent.message, Thespian__UpdateWork):
+            # The UpdateWork should not actually be transmitted, but
+            # it *should* cause the main thread to be interrupted if
+            # it is in a blocking wait for work to do.
+            transmitIntent.tx_done(SendStatus.Sent)
+            self._aTB_interrupted = False
+        else:
             if not self._queue_tx(transmitIntent):
                 # TX overflow, intent discarded, no further work needed here
                 return
-        else:
-            self._aTB_interrupted = False
 
         if not self._canSendNow():
             if self._exclusively_processing():
