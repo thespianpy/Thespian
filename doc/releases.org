@@ -2,6 +2,7 @@
 #+AUTHOR: Kevin Quick <kquick@godaddy.com>
 #+SETUPFILE: theme.setup
 #+HTML_HEAD: <link href="thespian.css" rel="stylesheet" type="text/css"/>
+#+HTML_HEAD: <base href="http://thespianpy.com/releases.html">
 #+LATEX_CLASS: thespian
 # #+LATEX_CLASS_OPTIONS: [a4paper]
 #+LATEX_HEADER: \product{Thespian}
@@ -384,7 +385,7 @@ do not change the API.
 
   * Documentation updates, including a warning about the inability to
     exchange objects between different loaded sources unless
-    conventionally serialized (see [[file:using.org::*Source Loading Issues][Source Loading Issues]]).
+    conventionally serialized (see [[http://thespianpy.com/using#h:e23490e4-d720-4e84-9b9a-e768fa3e717d][Source Loading Issues]]).
 
 
 *** 3.2.1 <2016-09-08 Thu>
@@ -711,7 +712,6 @@ do not change the API.
   * Modified internal loaded source hash tagging for better handling
     of circular import references in loaded sources.
 
-
 *** 2.5.7 <2016-03-14 Mon>
 
   * Updated loaded source lookup failure to throw ImportError
@@ -775,7 +775,6 @@ do not change the API.
 
   * Minor update to ActorAddress string representation for TCP routed
     addresses.
-
 
 *** 2.5.2 <2016-01-13 Wed>
 

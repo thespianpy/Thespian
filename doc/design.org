@@ -1,3 +1,4 @@
+#+OPTIONS: ^:nil auto-id:t
 
 #+BEGIN_SRC ditaa :file heirarchy.png
 
@@ -40,14 +41,23 @@
 #+END_SRC
 
 * Primary Components
+  :PROPERTIES:
+  :CUSTOM_ID: h:ed997a20-e21b-454b-9147-04cbdd42787d
+  :END:
 
 ** ActorSystem
+   :PROPERTIES:
+   :CUSTOM_ID: h:184e53f8-6801-44c9-bca0-8dc255cd78b8
+   :END:
 
    Two concepts:
      1. The interface between the external, non-actor environment and Actors
      2. The system/framework providing support for running Actors
 
 ** Admin
+   :PROPERTIES:
+   :CUSTOM_ID: h:450d55ac-7a4e-421e-b76b-781cd3676430
+   :END:
 
     A per-system (usu. per-host) entity providing centralized
     management of the ActorSystem it administrates.  A Pseudo-Actor
@@ -56,6 +66,9 @@
     instantiated per ActorSystem.
 
 ** Actor
+   :PROPERTIES:
+   :CUSTOM_ID: h:0ff2a399-d445-49ba-8aad-7ca71030e0a9
+   :END:
 
     The computational unit provided by the user and which operates in
     the context of the ActorSystem framework.  Each Actor has an
@@ -64,8 +77,14 @@
     ActorSystem (and Admin).
 
 * Support Components
+  :PROPERTIES:
+  :CUSTOM_ID: h:a17da8a3-e6a0-43b2-8903-b96bb9c8775d
+  :END:
 
 ** SystemBase
+   :PROPERTIES:
+   :CUSTOM_ID: h:b389b068-a457-41bf-ad57-d4359bbde3c3
+   :END:
 
     Provides the interface between a specific ActorSystem
     implementation and the generic external environment.  This is the
@@ -73,11 +92,17 @@
     components utilized by the remaining elements (see below).
 
 *** simpleSystemBase
+    :PROPERTIES:
+    :CUSTOM_ID: h:b748a76e-6b87-481f-9389-d95169230f55
+    :END:
 
     Useful primarily for unit testing.  Runs all Actors in a
     synchronous manner.  Very simplistic implementation.
 
 *** multiprocessSystemBase
+    :PROPERTIES:
+    :CUSTOM_ID: h:cc3d67f3-2daf-4c75-9495-16926fb3bbe3
+    :END:
 
     Uses the Python `multiprocess' library to implement the
     ActorSystem.  This is an early implementation of the ActorSystem
@@ -90,6 +115,9 @@
     socketAddressManager.
 
 *** ActorAddressManager
+    :PROPERTIES:
+    :CUSTOM_ID: h:dd8b23b3-0bf5-450e-9f46-245611f00b11
+    :END:
 
     This is a sub-component used to track Actor Addresses and
     distinguish between local-only addresses and publicly useable
@@ -100,9 +128,12 @@
     except for the simpleSystemBase (but including the
     multiprocessSystemBase).
 
-    For more details on the use of this component, see [[*Address%20Management][Address Management]].
+    For more details on the use of this component, see [[#h:130f2707-9f45-4c5d-b7e8-102f89203034][Address Management]].
 
 *** Transport
+    :PROPERTIES:
+    :CUSTOM_ID: h:4095dcec-4fe9-45be-95ef-9a8f538defe1
+    :END:
 
     There is a Transport implementation provided for each type of
     transport.  The specific Transport implementation used is
@@ -118,6 +149,9 @@
     transport needs.
 
 *** Replicator
+    :PROPERTIES:
+    :CUSTOM_ID: h:7bb62685-aa47-4efc-a409-11046b25acb5
+    :END:
 
     The Replicator is responsible for replicating child Actors; the
     instance of the Replicator is dictated by the SystemBase selected.
@@ -127,7 +161,13 @@
 
 
 * Flow
+  :PROPERTIES:
+  :CUSTOM_ID: h:2de9f0e1-0bc6-476c-8de6-682d3e5e1c8d
+  :END:
 ** Transmit
+   :PROPERTIES:
+   :CUSTOM_ID: h:949c0370-b3c5-4fa8-887a-4bd17a6ee73c
+   :END:
 
   1. send calls ActorManager
   2. ActorManager creates a TransmitIntent and initiates an internal send
@@ -144,8 +184,14 @@
 
 
 * Functionality Details
+  :PROPERTIES:
+  :CUSTOM_ID: h:e5b8c8c2-6ca1-48a9-b0a3-273e903f4b74
+  :END:
 
 ** Supervision
+   :PROPERTIES:
+   :CUSTOM_ID: h:b21a03cc-ed74-4c52-8915-61ef2fd00a7a
+   :END:
 
 Parents are implicit supervisors of their children.  This differs from
 Erlang's system where supervisors must explicitly register for pid
@@ -170,6 +216,9 @@ where the Admin is involved:
 
 
 ** Global Actors
+   :PROPERTIES:
+   :CUSTOM_ID: h:f74a304e-e3c9-4fc4-b6a9-2b880b39acd9
+   :END:
 
 Global Actors are truly global: the registered name is known/used by
 all Admins, and the attempt to start one will check with the Admin to
@@ -181,6 +230,9 @@ but all subsequent lifecycle management for the Global Actor is handed
 by the Admin.
 
 ** Dead Letter Handler
+   :PROPERTIES:
+   :CUSTOM_ID: h:4237799b-a24f-4cdb-9448-27f38f30482d
+   :END:
 
 A special Global Actor, treated like other Global Actors but unnamed:
 there is only one Dead Letter handler active for the entire
@@ -218,7 +270,7 @@ Dead letter handling is implemented by a notification from the
 ActorSystem Transport that it is unable to deliver a message to the
 intended target by returning a ~SendStatus_DeadAddress~.  When the
 Actor (or Admin) receives this result it will call the
-[[*ActorAddressManager][ActorAddressManager]] to notify it of the failure sending to the target
+[[#h:dd8b23b3-0bf5-450e-9f46-245611f00b11][ActorAddressManager]] to notify it of the failure sending to the target
 address.  The ActorAddressManager records the address as being dead
 and any future sending address translations made to the
 ActorAddressManager will return the Admin address instead; sending the
@@ -230,6 +282,9 @@ handle this scenario, any incoming address registered with the
 ActorAddressManager is removed from the dead address list.
 
 ** Address Management
+   :PROPERTIES:
+   :CUSTOM_ID: h:130f2707-9f45-4c5d-b7e8-102f89203034
+   :END:
 
 Actors are referenced in Thespian by an ActorAddress; every Actor has
 a unique ActorAddress and this is used to identify the Actor (e.g. for
@@ -277,7 +332,7 @@ communications with the created Actor.  This raises a couple of challenges:
   1. The Actor code itself must be unaware of these issues and any
      complications that arise from them.
 
-The [[*ActorAddressManager][ActorAddressManager]] is designed to provide common functionality to
+The [[#h:dd8b23b3-0bf5-450e-9f46-245611f00b11][ActorAddressManager] is designed to provide common functionality to
 help address these challenges for ActorSystem implementations.
 
   * ~createLocalAddress()~ generates a new, unique local address to
@@ -314,6 +369,9 @@ help address these challenges for ActorSystem implementations.
     allows an association to be made via ~associateUseableAddress()~.
 
 ** Transport Layer
+   :PROPERTIES:
+   :CUSTOM_ID: h:d3f65db7-90f0-4a79-862a-c76052bc4189
+   :END:
 
 The transport layer performs the activities of sending and receiving
 messages for this Actor.  Whenever the Actor's receiveMessage is not
@@ -321,6 +379,9 @@ running and handling an actual message, the code in the transport
 layer is running to exchange messages or waiting on new messages.
 
 *** Async Transport Base
+    :PROPERTIES:
+    :CUSTOM_ID: h:74b07475-7c28-4698-88df-31bda4f7a07d
+    :END:
 
 The ~asyncTransportBase.py~ provides common functionality for
 transmitting and receiving via an underlying asynchronous mechanism.
@@ -375,6 +436,9 @@ at which point the following occur:
       address is.
 
 * File and Directory Layout
+  :PROPERTIES:
+  :CUSTOM_ID: h:1eec3c81-0904-4c59-9ba3-9bfc5753f17e
+  :END:
 
   * thespian/
     * actors.py  :: primary (and usually only) module imported by Actors
@@ -388,7 +452,7 @@ at which point the following occur:
       * multiprocessSystemBase.py :: older Thespian 1.0 multiprocess
         system base with TCP communications.  Widely used, but now
         deprecated in favor of newer system bases.
-      * systemBase.py  :: common elements for the [[*SystemBase][SystemBase]] implementation
+      * systemBase.py  :: common elements for the [[#h:b389b068-a457-41bf-ad57-d4359bbde3c3][SystemBase]] implementation
       * multiprocCommon.py :: common elements for starting Admins or
         Actors as separate processes.
       * sourceLoader.py :: supports loadActorSource, implementing a PEP-302 compliant importer 
@@ -429,6 +493,9 @@ at which point the following occur:
 
 
 * Future
+  :PROPERTIES:
+  :CUSTOM_ID: h:8f2d5a72-7148-4370-8f04-ca95f9738bf9
+  :END:
 
 Create clumps of topologically close actors, with local leaders
 deferring to the main convention leader.  All state (Global Actors,
@@ -436,8 +503,14 @@ Dead Letter Handlers) is shared amongst all actors allowing failover
 or--if necessary--partitioning.
 
 * Misc
+  :PROPERTIES:
+  :CUSTOM_ID: h:8fd6486a-df25-4cbf-8a6b-9fffb3e3a6e9
+  :END:
 
 ** MultiprocQueueSystem
+   :PROPERTIES:
+   :CUSTOM_ID: h:4511acb6-0cb3-44f9-9019-df4a2840b806
+   :END:
   * Does not support Conventions because this is a local-system-only
     configuration and so it's not worth the effort to support multiple
     ActorSystems on the same host.

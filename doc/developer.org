@@ -2,6 +2,7 @@
 #+AUTHOR: Kevin Quick <kquick@godaddy.com>
 #+SETUPFILE: theme.setup
 #+HTML_HEAD: <link href="thespian.css" rel="stylesheet" type="text/css"/>
+#+HTML_HEAD: <base href="http://thespianpy.com/developer.html">
 #+LATEX_CLASS: thespian
 # #+LATEX_CLASS_OPTIONS: [a4paper]
 #+LATEX_HEADER: \product{Thespian}
@@ -9,16 +10,25 @@
 #+LATEX_HEADER: \doctype{Developer's Notes}
 #+LATEX_HEADER: \docrev{1.2}{2015 Sep 05}
 #+LATEX_HEADER: \docid{TheDoc-03}
-#+OPTIONS: ^:nil
+#+OPTIONS: ^:nil auto-id:t
 
 * Source
+  :PROPERTIES:
+  :CUSTOM_ID: h:851aafed-d085-49ed-b189-3bfd90a8e573
+  :END:
 
 ** Availability
+   :PROPERTIES:
+   :CUSTOM_ID: h:273880cf-f38b-40bd-8ea0-95d03d668b29
+   :END:
 
     Source code for Thespian is available at
     https://github.com/godaddy/Thespian under the MIT license.
 
 ** Documentation
+   :PROPERTIES:
+   :CUSTOM_ID: h:9ebe8005-1460-4634-bead-237826702ea2
+   :END:
 
     Thespian documentation is maintained in the source tree under the
     ~doc/~ directory.  Documentation is written in Emacs orgmode,
@@ -38,10 +48,16 @@ $ bash doc/gen_html.sh doc/using.org
 #+END_EXAMPLE
 
 ** Issues
+   :PROPERTIES:
+   :CUSTOM_ID: h:e9695953-86ef-420c-a33a-4a0db2455a04
+   :END:
 
-    Any issues should be posted via the [[https://github.com/godaddy/Thespian][main Thespian github page]].
+    Any issues should be posted via the [[https://github.com/godaddy/Thespian][main Thespian github page].
 
 ** Contributions
+   :PROPERTIES:
+   :CUSTOM_ID: h:a0f114cf-cfc2-4ae6-a852-a4db84986f57
+   :END:
 
     Contributions (both source and documentation) should be in the
     form of pull requests.  Contributions will not be accepted until
@@ -52,8 +68,14 @@ $ bash doc/gen_html.sh doc/using.org
     to sign the agreement when you make your contribution.
 
 * Testing
+  :PROPERTIES:
+  :CUSTOM_ID: h:701a67c8-8882-49ff-928c-14ae0b663cbf
+  :END:
 
 ** Approach
+   :PROPERTIES:
+   :CUSTOM_ID: h:1c7bb213-1e22-455e-b767-c9a6a1a5cd68
+   :END:
 
   While there are some Thespian tests that use mocking to reduce the
   effects of external elements, the main focus of Thespian testing is
@@ -67,6 +89,9 @@ $ bash doc/gen_html.sh doc/using.org
   systembases are tested on the same set of tests.
 
 ** Test Duration
+   :PROPERTIES:
+   :CUSTOM_ID: h:f099ef66-5ab1-45d7-a700-b065f885ca75
+   :END:
 
   Because of the approach above running the tests can take some time.
   Test can even can hang if there is bad code or if system resources
@@ -81,6 +106,9 @@ $ bash doc/gen_html.sh doc/using.org
   430--650 seconds.
 
 ** Testing System Bases
+   :PROPERTIES:
+   :CUSTOM_ID: h:1dfd22a5-0c88-4d8e-8e0d-5383a503678a
+   :END:
 
   Because all systembases are tested, it is necessary to accomodate
   the differences between those system bases.  For most Actors, there
@@ -96,6 +124,9 @@ $ bash doc/gen_html.sh doc/using.org
   this in the Running Tests section below.
 
 ** Running Tests
+   :PROPERTIES:
+   :CUSTOM_ID: h:a992a85a-623f-47c8-a810-deefcb82a521
+   :END:
 
   Tests are written to fairly conventional Python unittest standards
   without relying on plugins.  Tests are normally run via ~nose~, and
@@ -168,6 +199,9 @@ $ nosetests -A 'unstable != 1 and scope == "func" and testbase in ["Simple", "Mu
 #+END_EXAMPLE
 
 ** Writing Tests
+   :PROPERTIES:
+   :CUSTOM_ID: h:bf031295-256d-471e-922a-808a77c3fbec
+   :END:
 
 When writing tests for Thespian, the ~ActorSystemTestCase~ as imported
 from ~thespian.test~ is recommended as a base class for tests using
