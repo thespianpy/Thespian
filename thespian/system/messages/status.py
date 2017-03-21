@@ -25,7 +25,7 @@ class _Common_StatusResp(ActorSystemMessage):
         self._numSendFailures = 0
         self._numReceived     = 0
         self.miscKeyVals      = {}
-        self._pendingAddrCnts = {}  # key = local address, value = # of TX pending resolution of that address
+        self._pendingAddrCnts = {}  # key = local address str, value = # of TX pending resolution of that address
     def addChild(self, childAddress): self.childActors.append(childAddress)
     def addPendingMessage(self, fromActor, toActor, msgstr):
         self.pendingMessages.append( (fromActor, toActor, str(msgstr)) )
@@ -38,7 +38,7 @@ class _Common_StatusResp(ActorSystemMessage):
     def addReceived(self, count): self._numReceived += count
     def addKeyVal(self, key, value): self.miscKeyVals[key] = value
     def addTXPendingAddressCount(self, address, count):
-        self._pendingAddrCnts[address] = count + self._pendingAddrCnts.get(address, 0)
+        self._pendingAddrCnts[str(address)] = count + self._pendingAddrCnts.get(address, 0)
 
 
 class Thespian_SystemStatus(_Common_StatusResp):
