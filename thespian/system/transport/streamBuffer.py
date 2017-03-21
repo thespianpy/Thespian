@@ -12,17 +12,20 @@ except NameError:
 toSendBuffer = lambda A, ser=pickle.dumps: (lambda AP: ('%d>'%len(AP)).encode('utf-8') + AP)(ser(A))
 
 
-class ReceiveBuffer:
+class ReceiveBuffer(object):
     def __init__(self, serializer=pickle.loads):
         self._buf         = b''
+        self._blen        = 0
         self._size        = None
         self._extra       = b''
         self._deserialize = serializer
     def addMore(self, buf):
         "Called to add additional received data to this in-progress packet buffer."
         if self._size is not None:
-            if len(self._buf) + len(buf) <= self._size:
+            blen = len(buf)
+            if len(self._buf) + blen <= self._size:
                 self._buf += buf
+                self._blen += blen
             else:
                 bufRem = self.size - len(self._size)
                 self._buf += buf[:rem]
@@ -44,6 +47,7 @@ class ReceiveBuffer:
             else:
                 self._size = eval(self._buf + buf[:markPos])
                 self._buf = rem[:self._size]
+                self._blen = len(self._buf)
                 if len(rem) > self._size:
                     self._extra = rem[self._size:]
     def is_empty(self):
@@ -56,13 +60,13 @@ class ReceiveBuffer:
     def isDone(self):
         "Returns true if no more data should be read from the socket."
         # might be true if no size could be reasonably read from the data so-far
-        return (self._size is not None and len(self._buf) == self._size) or \
-            (self._size is None and len(self._buf) > 40)  # corrupted packet
+        return (self._size is not None and self._blen == self._size) or \
+            (self._size is None and self._blen > 40)  # corrupted packet
     def removeExtra(self):
         self._extra = b''
     def completed(self):
         "Returns the packet and any extra data if fully read, otherwise None"
-        if self._size is not None and len(self._buf) == self._size:
+        if self._size is not None and self._blen == self._size:
             return self._deserialize(self._buf), self._extra
         return None
 
