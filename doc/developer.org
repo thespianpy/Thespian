@@ -52,7 +52,7 @@ $ bash doc/gen_html.sh doc/using.org
    :CUSTOM_ID: h:e9695953-86ef-420c-a33a-4a0db2455a04
    :END:
 
-    Any issues should be posted via the [[https://github.com/godaddy/Thespian][main Thespian github page].
+    Any issues should be posted via the [[https://github.com/godaddy/Thespian][main Thespian github page]].
 
 ** Contributions
    :PROPERTIES:
@@ -102,8 +102,8 @@ $ bash doc/gen_html.sh doc/using.org
   Every effort is made to have tests run quickly and reliably, but
   validating functionality is the most important goal.
 
-  As of Thespian 2.1.5, the ~run_main_functional_tests.sh~ duration is
-  430--650 seconds.
+  As of Thespian 3.7.0, the full test suite duration is approximately
+  1500 seconds.
 
 ** Testing System Bases
    :PROPERTIES:
@@ -129,14 +129,15 @@ $ bash doc/gen_html.sh doc/using.org
    :END:
 
   Tests are written to fairly conventional Python unittest standards
-  without relying on plugins.  Tests are normally run via ~nose~, and
-  the latter provides various testing controls.
+  without relying on plugins.  Tests are normally run via the pytest
+  package (run via ~$ py.test~), and the latter provides various
+  testing controls.
 
   For simple, direct runs of specific tests, direct nose invocation of
   those tests is usually sufficient:
 
 #+BEGIN_EXAMPLE
-$ nosetests thespian/test/testSimpleActor.py:TestASimpleSystem
+$ py.test thespian/test/testSimpleActor.py::TestASimpleSystem
 #+END_EXAMPLE
 
   As discussed above, all system bases are tested (by default) so the
@@ -145,48 +146,38 @@ $ nosetests thespian/test/testSimpleActor.py:TestASimpleSystem
   bases (due to alphabetically appearing first).
 
   The viability and focus of individual testcases is specified using
-  member attributes on those test case classes.
+  methods from the ~thespian/test/__init__.py~ file:
 
-   | Attribute  | Values              | Usage                                                            |
-   |------------+---------------------+------------------------------------------------------------------|
-   | ~testbase~ | "~Simple~"          | Specifies which System Base is being used.                       |
-   |            | "~MultiprocUDP~"    |                                                                  |
-   |            | "~MultiprocTCP~"    |                                                                  |
-   |            | "~MultiprocQueue~"  |                                                                  |
-   |------------+---------------------+------------------------------------------------------------------|
-   | ~unstable~ | ~False~ / ~True~    | True if the test does not provide stable results.                |
-   |            |                     | This usually indicates that the transport or                     |
-   |            |                     | services used by this system base are not reliable.              |
-   |------------+---------------------+------------------------------------------------------------------|
-   | ~scope~    | "~unit~" / "~func~" | Scope of this test.  The expectation is that unit tests          |
-   |            |                     | will exercise internal code only and not affect/utilize          |
-   |            |                     | system resources such as creating processes, using sockets, etc. |
-   |------------+---------------------+------------------------------------------------------------------|
+  * unstable_test ::
 
-  These attributes should be specified on the class itself:
+     Specifies that the test is unstable for the specified base and
+     should be skipped. The features tested may usually work, but are
+     not reliably supported by the underlying base (e.g. the UDP
+     transport does not provide delivery guarantees, so hi-traffic
+     tests are marked with ~unstable_test("multiprocUDPBase")~
 
-#+BEGIN_SRC python -n
-class TestASimpleSystem(ActorSystemTestCase):
-    testbase = 'Simple'
-    scope = 'func'
+     #+BEGIN_EXAMPLE
+     unstable_test(asys, basename[, ...])
+     #+END_EXAMPLE
 
-    def test_something(self):
-        "insert test here"
+  * actor_system_unsupported ::
 
-    def test06_frobnicator(self):
-        "verify the frobnicator functionality"
+     Specifies that the functionality being tested is not supported by
+     this particular system base and the test should be skipped for
+     the indicated base(s).
 
-class TestMultiprocUDPSystem(TestASimpleSystem):
-    testbase = 'MultiprocUDP'
-    unstable = True # see note in test06
-#+END_SRC
+     #+BEGIN_EXAMPLE
+     actor_system_unsupported(asys, basename [,...])
+     #+END_EXAMPLE
+
 
   When running the tests from the command line, the normal
-  nosetest-based commands can be used, with optional attribute
-  specifiers.  For example, to run all stable unit tests:
+  pytest-based commands can be used, with optional attribute
+  specifiers to identify tests, categories ("Func" or "Unit"), and
+  system bases.  For example, to run all unit tests:
 
 #+BEGIN_EXAMPLE
-$ nosetests -A 'unstable != 1 and scope == "unit"'
+$ py.test -k Unit
 #+END_EXAMPLE
 
 The above is saved in ~scripts/run_unit_tests.sh~ for convenient
@@ -195,7 +186,7 @@ contains the following specification which is used to run all the
 stable functional tests for the standard set of testbases:
 
 #+BEGIN_EXAMPLE
-$ nosetests -A 'unstable != 1 and scope == "func" and testbase in ["Simple", "MultiprocTCP"]'
+$ py.test -k Func
 #+END_EXAMPLE
 
 ** Writing Tests
@@ -203,12 +194,9 @@ $ nosetests -A 'unstable != 1 and scope == "func" and testbase in ["Simple", "Mu
    :CUSTOM_ID: h:bf031295-256d-471e-922a-808a77c3fbec
    :END:
 
-When writing tests for Thespian, the ~ActorSystemTestCase~ as imported
-from ~thespian.test~ is recommended as a base class for tests using
-actors.  This base class provides a ~setUp()~ method that establishes
-the system base to utilize, and a ~tearDown()~ method that shuts down
-the Actor System automatically.  It also provides a ~setSystemBase()~
-method that can be used to specify which system base is to be used for
-testing.
+When writing tests for Thespian, there is an ~asys~ fixture for pytest
+that provides an initialized ActorSystem for each system base.
+Writing the test to accept ~asys~ as a parameter will cause pytest to
+run the test once for each system base type.
 
 # KWQ: talk about thespianshell
