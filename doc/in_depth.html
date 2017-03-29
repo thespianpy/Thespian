@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
 <title>Thespian In-Depth Introduction</title>
-<!-- 2017-03-29 Wed 07:48 -->
+<!-- 2017-03-29 Wed 08:40 -->
 <meta  http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta  name="generator" content="Org-mode" />
 <meta  name="author" content="Kevin Quick &lt;kquick@godaddy.com&gt;" />
@@ -1938,10 +1938,10 @@ The sources loaded remain loaded until unloaded via a call to
 <div class="outline-text-2" id="text-h:058d8939-b973-4270-975b-3afd9c607176">
 
 <p>
-Thespian comes with a command-line application called the
-<code>thespianShell.py</code> which can be used to interact with existing Actor
-Systems.  This is especially handy to use with persistent Actor
-Systems to obtain information and perform manual testing.
+Thespian comes with a command-line application shell which can be used
+to interact with existing Actor Systems.  This is especially handy to
+use with persistent Actor Systems to obtain information and perform
+manual testing.
 </p>
 </div>
 
@@ -1964,7 +1964,7 @@ to leave the shell.
 </p>
 
 <pre class="example">
-$ thespianShell.py
+$ python -m thespian.shell
 thespian&gt; start multiprocTCPBase
 Starting multiprocTCPBase ActorSystem
 thespian&gt; exit
@@ -1978,7 +1978,7 @@ $
 <div class="outline-text-3" id="text-h:092b8ae6-ec6c-4729-9505-8dbd32284d02">
 
 <p>
-The thespianShell provides special handling for Actor Addresses.
+The thespian shell provides special handling for Actor Addresses.
 Rather than being required to type the full Actor Address each time,
 the shell provides the <code>address</code> command which can be used to
 "register" an Actor Address.  Each registered address is assigned an
@@ -1988,7 +1988,7 @@ address.
 </p>
 
 <pre class="example">
-$ thespianShell.py
+$ python -m thespian.shell
 thespian&gt; start multiprocTCPBase
 Starting multiprocTCPBase ActorSystem
 thespian&gt; address localhost 1900
@@ -2010,7 +2010,7 @@ another TestActor and return the address of that Actor.
 </p>
 
 <pre class="example">
-$ thespianShell.py
+$ python -m thespian.shell
 thespian&gt; start multiprocTCPBase
 Starting multiprocTCPBase ActorSystem
 thespian&gt; create_testActor
@@ -2120,7 +2120,7 @@ cloud-based applications.
 </div>
 <div id="postamble" class="status">
 <p class="author">Author: Kevin Quick &lt;kquick@godaddy.com&gt;</p>
-<p class="date">Created: 2017-03-29 Wed 07:48</p>
+<p class="date">Created: 2017-03-29 Wed 08:40</p>
 <p class="creator"><a href="http://www.gnu.org/software/emacs/">Emacs</a> 25.1.1 (<a href="http://orgmode.org">Org</a> mode 8.2.10)</p>
 <p class="validation"><a href="http://validator.w3.org/check?uri=referer">Validate</a></p>
 </div>
