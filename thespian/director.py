@@ -277,6 +277,7 @@ import os
 import sys
 import thespian.actors
 from collections import defaultdict
+from functools import partial
 import logging
 
 
@@ -865,12 +866,20 @@ the update.
         return None
 
     @staticmethod
+    def is_director_response(dir_resp, m):
+        try:
+            return m and \
+                'DirectorResponse' in m and \
+                m['DirectorResponse'] == dir_resp
+        except Exception as ex:
+            return False
+
+    @staticmethod
     def _ask_director(asys, director, req, dir_resp,
                       timeout=ask_wait, silent=False):
         r = DirectorControl._ask_for(asys, director, req,
-                                     lambda m: m and
-                                     'DirectorResponse' in m and
-                                     m['DirectorResponse'] == dir_resp,
+                                     partial(DirectorControl.is_director_response,
+                                             dir_resp),
                                      timeout=timeout)
         if not r or not r['Success']:
             if not silent:
