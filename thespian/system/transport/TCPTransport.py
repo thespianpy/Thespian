@@ -574,15 +574,21 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
             return
 
         if hasattr(self, '_openSockets'):
-            opskey = opsKey(rmtaddr)
-            if opskey in self._openSockets:
-                _safeSocketShutdown(self._openSockets[opskey])
-                del self._openSockets[opskey]
+            for rmvkey in [each
+                           for each in self._openSockets
+                           if rmtaddr.addressDetails.isSameSystem(
+                                   self._openSockets[each].rmtaddr)]:
+                _safeSocketShutdown(self._openSockets[rmvkey])
+                del self._openSockets[rmvkey]
         for each in [i for i in self._transmitIntents
-                     if self._transmitIntents[i].targetAddr == rmtaddr]:
+                     if rmtaddr.addressDetails.isSameSystem(
+                             self._transmitIntents[i].targetAddr)]:
             self._cancel_fd_ops(each)
-        for each in [i for i in self._incomingSockets
-                     if self._incomingSockets[i].fromAddress == rmtaddr]:
+        for each in [i for i,v in self._incomingSockets.items()
+                     if rmtaddr.addressDetails.isSameSystem(
+                             v.fromAddress
+                             if v.fromAddress.addressDetails else
+                             v.socket)]:
             self._cancel_fd_ops(each)
 
     def _cancel_fd_ops(self, errfileno):
