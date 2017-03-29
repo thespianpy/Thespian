@@ -927,10 +927,10 @@ Table of Contents
 
 
   [http_server1.py]
-  https://github.com/kquick/Thespian/blobl/master/examples/httpserver/http_server1.py
+  https://github.com/godaddy/Thespian/blobl/master/examples/httpserver/http_server1.py
 
   [http_server2.py]
-  https://github.com/kquick/Thespian/blobl/master/examples/httpserver/http_server2.py
+  https://github.com/godaddy/Thespian/blobl/master/examples/httpserver/http_server2.py
 
 
 4.8.1 Blocking Actors

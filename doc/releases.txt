@@ -11,6 +11,7 @@ Table of Contents
 
 3.x
 .. 3.7
+..... 3.7.1 <2017-03-29 Wed>
 ..... 3.7.0 <2017-03-19 Sun>
 .. 3.6
 ..... 3.6.3 <2017-03-02 Thu>
@@ -86,6 +87,17 @@ not change the API.
 
 3.7
 ───
+
+3.7.1 <2017-03-29 Wed>
+╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+
+  ‣ Better internal detection of director reponses to avoid exceptions
+    on unexpected messages.
+
+  ‣ Hold messages sent to Admin until Admin is fully initialized.
+
+  ‣ Close *all* sockets to a lost remote system.
+
 
 3.7.0 <2017-03-19 Sun>
 ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌

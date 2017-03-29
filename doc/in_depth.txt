@@ -76,7 +76,7 @@ Table of Contents
 
   [Python language] http://python.org
 
-  [Thespian library] http://github.com/kquick/Thespian
+  [Thespian library] http://github.com/godaddy/Thespian
 
 
 1.1 The Actor Model
@@ -150,9 +150,9 @@ Table of Contents
 ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 
   The Thespian Python library is available on github at
-  [http://github.com/kquick/Thespian], from [http://pypi.python.org], or
-  possibly via a package provided for your OS.  You should probably use
-  the latter if it's available, but otherwise just use `pip' for
+  [http://github.com/godaddy/Thespian], from [http://pypi.python.org],
+  or possibly via a package provided for your OS.  You should probably
+  use the latter if it's available, but otherwise just use `pip' for
   simplicity:
 
   ┌────
@@ -1297,7 +1297,7 @@ Table of Contents
     started on that system that uses the associated code.
 
   As indicated previously, GoDaddy is using a distributed Actor
-  environment that spans over 5,000 active systems.  This presents a
+  environment that spans over 9,500 active systems.  This presents a
   challenge when deploying new code into the environment.  A
   conventional deployment using yum repositories or Spacewalk will take
   a considerable amount of time to individually update all of these
