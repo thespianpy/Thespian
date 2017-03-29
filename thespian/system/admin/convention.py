@@ -579,6 +579,7 @@ class ConventioneerAdmin(GlobalNamesAdmin):
     def _activate(self):
         # Called internally when this ActorSystem has been initialized
         # and should be activated for operations.
+        super(ConventioneerAdmin, self)._activate()
         if self.isShuttingDown(): return
         self._performIO(self._cstate.setup_convention(True))
 
