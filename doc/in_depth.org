@@ -1297,7 +1297,7 @@ Actors are created.  This can be useful in several ways:
     is started on that system that uses the associated code.
 
 As indicated previously, GoDaddy is using a distributed Actor
-environment that spans over 5,000 active systems.  This presents a
+environment that spans over 9,500 active systems.  This presents a
 challenge when deploying new code into the environment.  A
 conventional deployment using yum repositories or Spacewalk will take
 a considerable amount of time to individually update all of these
