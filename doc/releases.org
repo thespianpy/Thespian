@@ -8,7 +8,7 @@
 #+LATEX_HEADER: \product{Thespian}
 #+LATEX_HEADER: \component{Python Actor System}
 #+LATEX_HEADER: \doctype{Release Notes}
-#+LATEX_HEADER: \docrev{3.7.1}{2017 Mar 29}
+#+LATEX_HEADER: \docrev{3.7.2}{2017 Mar 29}
 #+LATEX_HEADER: \docid{TheDoc-06}
 #+OPTIONS: ^:nil num:nil
 
@@ -20,6 +20,12 @@ do not change the API.
 * 3.x
 
 ** 3.7
+
+*** 3.7.2 <2017-03-29 Wed>
+
+
+  * Removed setup.py and doc references to previously removed
+    thespianShell, which is replaced by ~python -m thespian.shell~.
 
 *** 3.7.1 <2017-03-29 Wed>
 
