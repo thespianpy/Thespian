@@ -440,8 +440,15 @@ class MultiProcReplicator(object):
 
 
     def _handleReplicatorMessages(self, envelope):
+        # This method handles any messages related to multi-process
+        # management operations.  This also ensures that any messages
+        # received before initialization is completed are held to be
+        # handled after initialization finishes.
         if isinstance(envelope.message, EndpointConnected):
             return True, self.h_EndpointConnected(envelope)
+        if self.asLogger is None and not isinstance(envelope.message, LoggerConnected):
+            self._pre_init_msgs.append(envelope)
+            return True, True
         if isinstance(envelope.message, logging.LogRecord):
             return True, self.h_LogRecord(envelope)
         if isinstance(envelope.message, ChildMayHaveDied):
