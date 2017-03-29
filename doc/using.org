@@ -2,7 +2,6 @@
 #+AUTHOR: Kevin Quick <kquick@godaddy.com>
 #+SETUPFILE: theme.setup
 #+HTML_HEAD: <link href="thespian.css" rel="stylesheet" type="text/css"/>
-#+HTML_HEAD: <base href="http://thespianpy.com/using.html">
 #+LATEX_CLASS: thespian
 # #+LATEX_CLASS_OPTIONS: [a4paper]
 #+LATEX_HEADER: \product{Thespian}
