@@ -12,9 +12,13 @@ import time
 from thespian.actors import *
 
 
-wakeupAfterPeriod = timedelta(seconds=0.65)
-sleepLongerThanWakeup = lambda: time.sleep(0.7)
-sleepPartOfWakeupPeriod = lambda: time.sleep(0.1)
+# Note that this test is highly subjective based on the scheduling
+# sequence, message delivery latency, and responsiveness of the
+# current system.  Significantly larger numbers here will increase the
+# stability of the test at the expense of test duration.
+wakeupAfterPeriod = timedelta(seconds=0.065)
+sleepLongerThanWakeup = lambda: time.sleep(0.6)
+sleepPartOfWakeupPeriod = lambda: time.sleep(0.005)
 
 
 class RetryActor(Actor):

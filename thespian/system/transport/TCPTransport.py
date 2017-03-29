@@ -77,6 +77,7 @@ even between processes on separate systems.
 # transmit sequence (as opposed to a blocking transmit, which would
 # consume the processing budget for highly active scenarios).
 
+import threading
 
 import logging
 from thespian.system.utilis import (thesplog, fmap, partition)
@@ -97,10 +98,12 @@ from thespian.system.addressManager import ActorLocalAddress
 import socket
 import select
 from datetime import timedelta
-import pickle
+try:
+    import cPickle as pickle
+except Exception:
+    import pickle
 import errno
 from contextlib import closing
-
 
 DEFAULT_ADMIN_PORT = 1900
 
@@ -240,6 +243,10 @@ class TXOnlyAdminTCPv4ActorAddress(
     pass
 
 
+class ExternalTransportCopy(object): pass
+
+
+
 class TCPTransport(asyncTransportBase, wakeupTransportBase):
     "A transport using TCP IPv4 sockets for communications."
 
@@ -267,11 +274,18 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
         elif isinstance(initType, TCPEndpoint):
             instanceNum, assignedAddr, self._parentAddr, self._adminAddr, adminRouting, self.txOnly = initType.args
             isAdmin = assignedAddr == self._adminAddr
-            templateAddr = assignedAddr or ActorAddress(TCPv4ActorAddress(None, 0,
-                                                                          external = (self._parentAddr or
-                                                                                      self._adminAddr or
-                                                                                      True)))
-
+            templateAddr = assignedAddr or \
+                           ActorAddress(
+                               TCPv4ActorAddress(None, 0,
+                                                 external=(self._parentAddr or
+                                                           self._adminAddr or
+                                                           True)))
+        elif isinstance(initType, ExternalTransportCopy):
+            self._adminAddr, self.txOnly, adminRouting = args
+            self._parentAddr = None
+            isAdmin = False
+            templateAddr = ActorAddress(
+                TCPv4ActorAddress(None, 0, self._adminAddr))
         else:
             thesplog('TCPTransport init of type %s unsupported', type(initType), level=logging.ERROR)
             raise ActorSystemStartupFailure('Invalid TCPTransport init type (%s)'%type(initType))
@@ -316,8 +330,50 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
         self._checkChildren = False
         self._shutdownSignalled = False
 
+    def close(self):
+        """Releases all resources and terminates functionality.  This is
+           better done deterministically by explicitly calling this
+           method (although __del__ will attempt to perform similar
+           operations), but it has the unfortunate side-effect of
+           making this object modal: after the close it can be
+           referenced but not successfully used anymore, so it
+           explicitly nullifies its contents.
+        """
+        if hasattr(self, '_transmitIntents'):
+            for each in self._transmitIntents:
+                self._transmitIntents[each].tx_done(SendStatus.Failed)
+            delattr(self, '_transmitIntents')
+        if hasattr(self, '_waitingTransmits'):
+            for each in self._waitingTransmits:
+                each.tx_done(SendStatus.Failed)
+            delattr(self, '_waitingTransmits')
+        if hasattr(self, '_incomingSockets'):
+            for each in self._incomingSockets:
+                self._incomingSockets[each].close()
+            delattr(self, '_incomingSockets')
+        if hasattr(self, 'socket'):
+            self._safeSocketShutdown(getattr(self, 'socket', None))
+            delattr(self, 'socket')
+
     def __del__(self):
-        _safeSocketShutdown(getattr(self, 'socket', None))
+        self.close()
+
+    @staticmethod
+    def _safeSocketShutdown(sock):
+        # n.b. _safeSocketShutdown is a static method instead of a
+        # global because if __del__ calls close, the
+        # _safeSocketShutdown may already have been unbound.  However,
+        # this still needs unusual protection to validate socket in
+        # case socket was already unloaded.
+        if sock and socket and isinstance(socket.error, Exception):
+            sock = getattr(sock, 'socket', sock)
+            try:
+                sock.shutdown(socket.SHUT_RDWR)
+            except socket.error as ex:
+                if ex.errno != errno.ENOTCONN:
+                    thesplog('Error during shutdown of socket %s: %s', sock, ex)
+            sock.close()
+
 
     def protectedFileNumList(self):
         return (list(self._transmitIntents.keys()) +
@@ -365,6 +421,16 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
             thesplog('Invalid TCP convention address "%s": %s', convAddr, ex,
                      level=logging.ERROR)
             raise InvalidActorAddress(convAddr, str(ex))
+
+    def external_transport_clone(self):
+        # An external process wants a unique context for communicating
+        # with Actors.
+        return TCPTransport(ExternalTransportCopy(),
+                            self._adminAddr,
+                            self.txOnly,
+                            isinstance(self.myAddress.addressDetails,
+                                       RoutedTCPv4ActorAddress))
+
 
     def _updateStatusResponse(self, resp):
         """Called to update a Thespian_SystemStatus or Thespian_ActorStatus
@@ -804,7 +870,7 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
                 # discovered here rather than for the actual connect
                 # request.
                 thesplog('ConnRefused to %s; declaring as DeadTarget.',
-                         intent.targetAddr, level=logging.ERROR)
+                         intent.targetAddr, level=logging.INFO)
                 return self._finishIntent(intent, SendStatus.DeadTarget)
             thesplog('Socket error sending to %s on %s: %s / %s: %s',
                      intent.targetAddr, intent.socket, str(err), err.errno,
@@ -992,8 +1058,9 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
                     rEnv = self._incomingEnvelopes.pop(0)
                     if incomingHandler is None:
                         return rEnv
-                    if not incomingHandler(rEnv):
-                        return None
+                    r = Thespian__Run_HandlerResult(incomingHandler(rEnv))
+                    if not r:
+                        return r
 
             wsend, wrecv = fmap(
                 TCPTransport._socketFile,
@@ -1054,7 +1121,7 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
                 errnum = getattr(ex, 'errno', ex.args[0])
                 if err_select_retry(errnum):
                     # probably a change in descriptors
-                    thesplog('select retry on %s', ex, level=logging.ERROR)
+                    thesplog('select retry on %s', ex, level=logging.DEBUG)
                     self._check_indicators()
                     continue
                 if err_bad_fileno(errnum):
@@ -1186,7 +1253,7 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
             if [] == rrecv and [] == rsend:
                 if [] == rerr and self.run_time.expired():
                     # Timeout, give up
-                    return None
+                    return Thespian__Run_Expired()
                 continue
             if xmitOnly:
                 remXmits = len(self._transmitIntents) + \
@@ -1200,10 +1267,13 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
                     rEnv = self._incomingEnvelopes.pop(0)
                     if incomingHandler is None:
                         return rEnv
-                    if not incomingHandler(rEnv):
-                        return None
+                    r = Thespian__Run_HandlerResult(incomingHandler(rEnv))
+                    if not r:
+                        return r
 
-        return None
+        return Thespian__Run_Terminated() \
+            if hasattr(self, '_aborting_run') else \
+            Thespian__Run_Expired()
 
     def _check_indicators(self):
         if self._checkChildren:

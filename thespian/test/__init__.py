@@ -41,25 +41,6 @@ def simpleActorTestLogging():
     }
 
 
-class TestSystem(object):
-    "Functions as a context manager for a transient system base"
-    def __init__(self, newBase='simpleSystemBase',
-                 systemCapabilities=None,
-                 logDefs='BestForBase'):
-            self._asys = ActorSystem(systemBase=newBase,
-                                     capabilities=systemCapabilities,
-                                     logDefs=logDefs if logDefs != 'BestForBase' else (
-                                         simpleActorTestLogging() if newBase.startswith('multiproc')
-                                         else False),
-                                     transientUnique=True)
-
-    def __enter__(self):
-        return self._asys
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        self._asys.shutdown()
-        self._asys = None
-
-
 class LocallyManagedActorSystem(object):
 
     def setSystemBase(self, newBase='simpleSystemBase', systemCapabilities=None, logDefs='BestForBase'):
@@ -146,10 +127,12 @@ def get_free_admin_port():
         try:
             socket.socket(socket.AF_INET,
                           socket.SOCK_STREAM,
-                          socket.IPPROTO_TCP).bind(('',port))
+                          socket.IPPROTO_TCP).bind(('',port))\
+                  .close()
             socket.socket(socket.AF_INET,
                           socket.SOCK_DGRAM,
-                          socket.IPPROTO_UDP).bind(('',port))
+                          socket.IPPROTO_UDP).bind(('',port))\
+                  .close()
             return port
         except Exception:
             pass
@@ -274,3 +257,15 @@ import time
 
 inTestDelay = lambda period: time.sleep(timePeriodSeconds(period))
 
+
+def delay_for_next_of_kin_notification(system):
+    if system.base_name == 'multiprocQueueBase':
+        # The multiprocQueueBase signal processor cannot interrupt a
+        # sleeping Queue.get(), so for this base it is necessary to
+        # wait for the timeout on the Queue.get() to allow it time to
+        # notice and process the child exit.
+        time.sleep(2.5)
+    elif system.base_name == 'multiprocUDPBase':
+        time.sleep(0.6)
+    else:
+        time.sleep(0.1)

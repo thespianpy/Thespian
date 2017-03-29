@@ -15,13 +15,9 @@ from thespian.system.messages import *
 from thespian.system.messages.convention import NotifyOnSystemRegistration
 from thespian.system.messages.logcontrol import SetLogging
 from thespian.system.utilis import actualActorClass
-from thespian.system.timing import ExpiryTime
 from thespian.system.sourceLoader import loadModuleFromHashSource
 from datetime import timedelta
 from functools import partial
-
-
-MAX_SHUTDOWN_DRAIN_PERIOD=timedelta(seconds=7)
 
 
 class ActorManager(systemCommonBase):
@@ -67,7 +63,7 @@ class ActorManager(systemCommonBase):
                           exc_info = True)
             thesplog('Actor %s @ %s instantiation exception: %s', self._actorClass,
                      self.transport.myAddress, traceback.format_exc(),
-                     level=logging.ERROR, primary=True)
+                     level=logging.WARNING, primary=True)
             self._sCBStats.inc('Actor.Instance Create Failed')
             self._sayGoodbye()
             return
@@ -89,6 +85,7 @@ class ActorManager(systemCommonBase):
                     # Expects that on completion of self.transport.run
                     # that the Actor is done processing and that it has
                     # been shutdown gracefully.
+                    self.drainTransmits()
                     break
             except Exception as ex:
                 # This is usually an internal problem, since the
@@ -104,13 +101,6 @@ class ActorManager(systemCommonBase):
         else:
             self.drainTransmits()
         thesplog('Run %s done', self._actorClass, level=logging.DEBUG)
-
-
-    def drainTransmits(self):
-        drainLimit = ExpiryTime(MAX_SHUTDOWN_DRAIN_PERIOD)
-        while not drainLimit.expired():
-            if not self.transport.run(TransmitOnly, drainLimit.remaining()):
-                break  # no transmits left
 
 
     def handleMessages(self, envelope):
@@ -178,8 +168,7 @@ class ActorManager(systemCommonBase):
                         self._sCBStats.inc('Actor.Message Received.Caused Secondary Exception')
                         thesplog('Actor %s @ %s second exception on message %s: %s',
                                  self._actorClass, self.transport.myAddress, msg,
-                                 traceback.format_exc(),
-                                 level = logging.ERROR)
+                                 traceback.format_exc())
                         logging.getLogger(str(self._actorClass)) \
                                .error('Actor %s @ %s second exception on message %s',
                                       self._actorClass, self.transport.myAddress, msg,
@@ -236,7 +225,7 @@ class ActorManager(systemCommonBase):
             return True  # keep going
         # Don't need to wait for children, so exit as soon as transmit pipe drains.
         self.transport.abort_run(drain=True)
-        return True
+        return False
 
 
     def _sayGoodbye(self):
@@ -250,7 +239,7 @@ class ActorManager(systemCommonBase):
 
 
     def _childInaccessible(self, childAddress, exitRequestIntent):
-        self._handleChildExited(childAddress)
+        return self._handleChildExited(childAddress)
 
 
     def checkNewCapabilities(self, envelope):
@@ -330,9 +319,7 @@ class ActorManager(systemCommonBase):
                                                   actualAddress)
         if isMyChild: self._registerChild(actualAddress)
 
-        # Send any queued transmits for this child, and move the
-        # finalTransmit marker to use the new address.
-
+        # Send any queued transmits for this child.
         self._retryPendingChildOperations(childInstance, actualAddress)
 
 
@@ -340,7 +327,7 @@ class ActorManager(systemCommonBase):
         # Have seen it arrive here without errorCode set on the PendingActorResponse...
         if not hasattr(envelope.message, 'errorCode'):
             thesplog('Corrupted Pending Actor Response?: %s (%s)',
-                     envelope.message, dir(envelope.message), level = logging.ERROR)
+                     envelope.message, dir(envelope.message), level=logging.ERROR)
             return True
         if not getattr(envelope.message, 'errorCode', 'Failed'):
             self._pendingActorReady(envelope.message.instanceNum,
@@ -348,13 +335,16 @@ class ActorManager(systemCommonBase):
                                     isMyChild = not envelope.message.globalName)
             return True
         # Pending Actor Creation failed, clean up all the stuff associated with the intended Actor
-        thesplog('Pending Actor create failed (%s): %s',
+        thesplog('Pending Actor create for %s failed (%s): %s',
+                 envelope.message.forActor,
                  getattr(envelope.message, 'errorCode', '??'),
                  getattr(envelope.message, 'errorStr', '---'))
         logging.getLogger(str(self._actorClass)) \
-               .error('Pending Actor create failed (%s): %s',
+               .error('Pending Actor create for %s failed (%s): %s',
+                      envelope.message.forActor,
                       getattr(envelope.message, 'errorCode', '??'),
                       getattr(envelope.message, 'errorStr', '---'))
+        # Cancel any queued transmits for this child.
         self._retryPendingChildOperations(envelope.message.instanceNum, None)
         return True
 

@@ -511,22 +511,20 @@ class Director(thespian.actors.ActorTypeDispatcher):
         self.send(sender,  {
             'DirectorResponse': 'AllAddresses',
             'Success': True,
-            'Groups': {
-                group: {
-                    'ActiveHash': self.active[group],
-                    'Loaded': [L.source_hash
-                               for L in self.loaded[group]],
-                    'Running': {
-                        L.source_hash: [{'ActorClass': actor.classname,
-                                         'Role': actor.role,
-                                         'ActorAddress': actor.address}
-                                        for actor in L.actors]
-                        for L in self.loaded[group]
-                    }
-                }
+            'Groups': dict([
+                (group,
+                 {'ActiveHash': self.active[group],
+                  'Loaded': [L.source_hash
+                             for L in self.loaded[group]],
+                  'Running': dict([
+                      (L.source_hash, [{'ActorClass': actor.classname,
+                                        'Role': actor.role,
+                                        'ActorAddress': actor.address}
+                                       for actor in L.actors])
+                      for L in self.loaded[group]])
+                 })
                 for group in ([msg['Group']]
-                              if 'Group' in msg else self.groups.keys())
-            }
+                              if 'Group' in msg else self.groups.keys())])
         })
 
     def RetrieveRole(self, msg, sender):
@@ -767,10 +765,14 @@ the update.
 
     @property
     def logdir(self):
-        return self.filecfg('thesplogd.cfg', None) or \
-            [P for P in [ 'C:\\Windows\\temp',
-                          '/var/log/', os.getcwd() ]
-             if os.path.isdir(P) and os.access(P, os.W_OK)][0]
+        try:
+            return self.filecfg('thesplogd.cfg', None) or \
+                [P for P in [ 'C:\\Windows\\temp',
+                              '/var/log/',
+                              os.getcwd(), '/var/tmp', '/tmp' ]
+                 if os.path.isdir(P) and os.access(P, os.W_OK)][0]
+        except IndexError:
+            return os.getcwd()
 
     @property
     def asys(self):
@@ -886,7 +888,7 @@ the update.
            signed by a private key (for which there is a .tskey public key that
            the director can use to validate the loaded source).
 
-           Arguments:  group private_keyfile sources_dir [version:v] [deps:depfile] [tli:tlifile] srcfile [...]
+           Arguments:  group private_keyfile sources_dir [version:v] [deps:depfile] [tli:tlifile] [fmt:encoding] srcfile [...]
 
                group is the group name (there should be a
                corresponding .tli file)
@@ -906,6 +908,11 @@ the update.
                version.  If v is "date", then the version is the
                timestamp YYYYMMDDHHMM.
 
+               encoding specifies the optional encoding, defaulting to
+               the latest encoding version.  This parameter may be
+               needed if encoding sources for older instances of
+               source authorities.
+
                srcfile ... specifies the source files to be packaged
                into the loadable source file.
 
@@ -913,6 +920,7 @@ the update.
         try:
             opts = {'deps': None,
                     'tli': None,
+                    'fmt': None,
                     'version': None}
             while srcs[0].split(':')[0] in opts:
                 opt = srcs[0].split(':')[0]
@@ -923,13 +931,15 @@ the update.
         except IndexError:
             sys.stderr.write('Missing required gensrc command arguments\n')
             return 3
+        opts['fmt'] = opts['fmt'] or 'ThespianDirectorFMT1'
         self.verbose(': %s\n  '
-                     .join('Package version source_dir deps signing_key'
+                     .join('Package version format source_dir deps signing_key'
                            ' info_file source_count .'
                            .split()) %
                      (os.path.join(self.sources_dir, group_name),
-                      opts['version'], inpsrc_dir, opts['deps'],
-                      private_keyfile, opts['tli'], len(srcs)))
+                      opts['version'], opts['fmt'], inpsrc_dir,
+                      opts['deps'], private_keyfile, opts['tli'],
+                      len(srcs)))
         zfname = ''.join([group_name,
                           '-%s'%opts['version'] if 'version' in opts else '',
                           '.zip'])
@@ -978,7 +988,7 @@ the update.
                             self.verbose(' Adding dep.: %s', root)
                             zf.write(root, os.path.basename(root))
             sfpath = SourceEncoding.zip_to_tls(zfpath, private_keyfile,
-                                               self.verbose)
+                                               opts['fmt'], self.verbose)
             print('Wrote',sfpath)
             inptli = opts.get('tli', None) or \
                      os.path.join(inpsrc_dir, group_name + '.tli')
@@ -1117,17 +1127,20 @@ the update.
         elif os.name == 'posix':
             import subprocess
             try:
-                r = subprocess.check_output(['systemctl', '--version'])
+                r = subprocess.Popen(['systemctl', '--version'],
+                                    stdout=subprocess.PIPE) \
+                              .communicate()[0]
             except OSError:
                 r = b'no'
             if b'systemd' in r:
                 name = name.replace('.', '-')
-                with open(os.path.join('/usr/lib/systemd/system',
+                with open(os.path.join('/lib/systemd/system',
                                        name + '.service'), 'w') as sf:
                     sf.write('''# Thespian Director (http://thespianpy.org) system boot startup.
 
 [Unit]
 Description=%(description)s
+Wants=network-online.target
 After=network-online.target
 
 [Service]
@@ -1205,6 +1218,20 @@ end script
                 # service name status|start|stop|restart
                 print('SystemV bootstart TBD')
                 return 1
+            if os.path.isdir('/Library/LaunchDaemons'):
+                properties = { 'Label': name,
+                               'ProgramArguments': [ sys.executable,
+                                                     '-m', 'thespian.director',
+                                                     'start', 'blocking'],
+                               'KeepAlive': True,
+                }
+                import plistlib
+                plistfile = os.path.join('/Library/LaunchDaemons',
+                                         name + '.plist')
+                plistlib.writePlist(properties, plistfile)
+                if nostart:
+                    return 0
+                return subprocess.call(['launchctl', 'load', plistfile])
 
         print('Unknown os type "%s", cannot create boot configuration.' %
               os.name)
@@ -1402,44 +1429,78 @@ with the highest version at the top of the list:
                            (' (%s)' % role) if role else ''))
 
 
+class ActorAddressLogFilter(logging.Filter):
+    def filter(self, record):
+        if not hasattr(record, 'actorAddress'):
+            record.actorAddress = '-not-actor-'
+        return True
+
+
 class SourceEncoding(object):
 
     @staticmethod
-    def zip_to_tls(zfpath, private_keyfile, verbose=lambda *a: None):
-        # Adds a preface and appends the digest signature based on the
-        # private key.  The zip is still useable in that form because
-        # zip searches for internal markers and ignores prefix/suffix
-        # data.
+    def zip_to_tls(zfpath, private_keyfile, format=None,
+                   verbose=lambda *a: None):
         sfdir = os.path.dirname(zfpath)
         sfname = os.path.splitext(os.path.basename(zfpath))[0] + \
                  GroupLoadableFiles.src_suffix
         sftmp = os.path.join(sfdir, '.'+sfname)
         sfpath = os.path.join(sfdir, sfname)
-        sig = subprocess.check_output(["openssl", "dgst", "-sha256",
-                                       "-sign", private_keyfile,
-                                       zfpath])
+        shasig = subprocess.Popen(["openssl", "dgst", "-sha256",
+                                   "-sign", private_keyfile,
+                                   zfpath],
+                                  stdout=subprocess.PIPE)\
+                           .communicate()[0]
         try:
             with open(sftmp, 'wb') as sf:
                 verbose('Signing %s', sfpath)
-                sf.write("ThespianDirectorFMT1-sha256\n".encode('utf-8'))
-                with open(zfpath, 'rb') as zf:
-                    sf.write(str(len(sig)).encode('utf-8'))
-                    sf.write(b"\n")
-                    # Remove zip's EOCD to disable zip access until file
-                    # is validated, but remember where to put it back.
-                    zfc_split = zf.read().split(b'PK\5\6')
-                    sf.write(str(len(zfc_split[0])).encode('utf-8'))
-                    sf.write(b"\n")
-                    assert len(zfc_split) == 2
-                    sf.write(zfc_split[0])
-                    sf.write(zfc_split[1])
-                    sf.write(sig)
-                    os.rename(sftmp, sfpath)
-                    return sfpath
+                getattr(SourceEncoding,
+                        '_ztt_' + (format or 'ThespianDirectorFMT1'))(
+                            zfpath, sf, shasig)
+                os.rename(sftmp, sfpath)
+                return sfpath
         finally:
             try:
                 os.remove(sftmp)
             except Exception: pass
+
+
+    @staticmethod
+    def _ztt_ThespianDirectorFMT1(zfpath, sf, shasig):
+        # Adds a preface and appends the digest signature based on the
+        # private key.  The zip is still useable in that form because
+        # zip searches for internal markers and ignores prefix/suffix
+        # data.
+        sf.write("ThespianDirectorFMT1-sha256\n".encode('utf-8'))
+        with open(zfpath, 'rb') as zf:
+            sf.write(str(len(shasig)).encode('utf-8'))
+            sf.write(b"\n")
+            # Remove zip's EOCD to disable zip access until file
+            # is validated, but remember where to put it back.
+            zfc_split = zf.read().split(b'PK\5\6')
+            sf.write(str(len(zfc_split[0])).encode('utf-8'))
+            sf.write(b"\n")
+            assert len(zfc_split) == 2
+            sf.write(zfc_split[0])
+            sf.write(zfc_split[1])
+            sf.write(shasig)
+
+
+    @staticmethod
+    def _ztt_ViceroyFMT2(zfpath, sf, shasig):
+        # Adds a preface and appends the digest signature based on the
+        # private key.  The zip is still useable in that form because
+        # zip searches for internal markers and ignores prefix/suffix
+        # data.
+        sf.write("ViceroyFMT2-sha256\n".encode('utf-8'))
+        with open(zfpath, 'rb') as zf:
+            sf.write(str(len(shasig)).encode('utf-8'))
+            sf.write(b"\n")
+            zfd = zf.read()
+            sf.write(zfd)
+            #sf.write(b"\n")
+            sf.write(shasig)
+
 
     @staticmethod
     def tls_to_zip(tlsdata, public_key, verbose=None):
@@ -1462,7 +1523,7 @@ class SourceEncoding(object):
             elif l1pf.startswith('ViceroyFMT'):
                 # older encoding
                 fmtnum = l1pf[len('ViceryFMT')+1:]
-                verbose('Decoding format %s', fmtnum)
+                verbose('Decoding viceroy format %s', fmtnum)
                 return getattr(SourceEncoding, 'decode_fmt_v%s' % fmtnum) \
                     (tlsdata, public_key, hdr[l1e+1:l2e], l2e, hashfunc)
         except (ValueError, IndexError):

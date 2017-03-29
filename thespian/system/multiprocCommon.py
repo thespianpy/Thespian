@@ -66,7 +66,7 @@ def get_multiproc_context(capabilities):
                     return multiprocessing.get_context(each)
                 except ValueError:
                     pass # invalid concurrency for this system
-    return multiprocessing
+    return None
 
 
 class multiprocessCommon(systemBase):
@@ -85,7 +85,7 @@ class multiprocessCommon(systemBase):
 
 
     def _startAdmin(self, adminAddr, addrOfStarter, capabilities, logDefs):
-        mp = self.mpcontext
+        mp = self.mpcontext if self.mpcontext else multiprocessing
         endpointPrep = self.transport.prepEndpoint(adminAddr, capabilities)
 
         multiprocessing.process._current_process._daemonic = False
@@ -97,18 +97,20 @@ class multiprocessCommon(systemBase):
                                               adminAddr,
                                               capabilities,
                                               logDefs,
-                                              mp),
+                                              self.mpcontext),
                                         name='ThespianAdmin')
         admin.start()
-        # admin must be explicity shutdown and is not automatically
+        # admin must be explicitly shutdown and is not automatically
         # stopped when this current process exits.
         detach_child(admin)
 
         self.transport.connectEndpoint(endpointPrep)
 
         response = self.transport.run(None, MAX_ADMIN_STARTUP_DELAY)
-        if not response or not isinstance(response.message, EndpointConnected):
-            raise InvalidActorAddress(adminAddr, 'not a valid ActorSystem admin')
+        if not isinstance(response, ReceiveEnvelope) or \
+           not isinstance(response.message, EndpointConnected):
+            raise InvalidActorAddress(adminAddr,
+                                      'not a valid ActorSystem admin')
 
 
 def closeUnusedFiles(transport):
@@ -165,6 +167,7 @@ def startAdmin(adminClass, addrOfStarter, endpointPrep, transportClass,
     # _verifyAdminRunning to ensure things are OK.
     transport = transportClass(endpointPrep)
     try:
+
         admin = adminClass(transport, adminAddr, capabilities, logDefs,
                            concurrency_context)
     except Exception:
@@ -243,7 +246,7 @@ def startASLogger(loggerAddr, logDefs, transport, capabilities,
                   concurrency_context = None):
     endpointPrep = transport.prepEndpoint(loggerAddr, capabilities)
     multiprocessing.process._current_process._daemonic = False
-    NewProc = concurrency_context.Process if concurrency_context else Process
+    NewProc = concurrency_context.Process if concurrency_context else multiprocessing.Process
     logProc = NewProc(target=startupASLogger,
                       args = (transport.myAddress, endpointPrep,
                               logDefs,
@@ -325,7 +328,9 @@ class MultiProcReplicator(object):
         # is an argument passed to the child.
         fileNumsToClose = list(self.transport.childResetFileNumList())
 
-        child = self.mpcontext.Process(target=startChild,  #KWQ: instantiates module specified by sourceHash to create actor
+        mp = self.mpcontext if self.mpcontext else multiprocessing
+
+        child = mp.Process(target=startChild,  #KWQ: instantiates module specified by sourceHash to create actor
                                         args=(childClass,
                                               endpointPrep,
                                               self.transport.__class__,
@@ -385,7 +390,8 @@ class MultiProcReplicator(object):
         if logproc and not self._checkChildLiveness(logproc):
             # Logger has died; need to start another
             if not hasattr(self, '_exiting'):
-                _startLogger(self.transport.__class__, self.transport, self, self.capabilities, self.logdefs)
+                _startLogger(self.transport.__class__, self.transport, self, self.capabilities, self.logdefs,
+                             self.mpcontext)
         # Signal handler for SIGCHLD; figure out which child and synthesize a ChildActorExited to handle it
         self._child_procs, dead = partition(self._checkChildLiveness,  getattr(self, '_child_procs', []))
         for each in dead:
@@ -443,23 +449,37 @@ class MultiProcReplicator(object):
         return False, True
 
 
-    def _cleanupAdmin(self):
+    def _reset_logging(self):
+        if hasattr(self, 'oldLoggerRoot'):
+            logging.root = self.oldLoggerRoot
+            logging.Logger.root = self.oldLoggerRoot
+            logging.Logger.manager = logging.Manager(logging.Logger.root)
+            delattr(self, 'oldLoggerRoot')
+
+    def _cleanupAdmin(self, finish_cleanup):
+        self.post_cleanup = finish_cleanup
         if getattr(self, 'asLogger', None):
-            if hasattr(self, 'oldLoggerRoot'):
-                logging.root = self.oldLoggerRoot
-                logging.Logger.root = self.oldLoggerRoot
-                logging.Logger.manager = logging.Manager(logging.Logger.root)
-            self.transport.run(TransmitOnly, maximumDuration=timedelta(milliseconds=250))
-            import time
-            time.sleep(0.05)  # allow children to exit and log their exit
-            self.transport.scheduleTransmit(None, TransmitIntent(self.asLogger,
-                                                                 LoggerExitRequest()))
-            self.transport.run(TransmitOnly)
-            if getattr(self, 'asLogProc', None):
-                if self._checkChildLiveness(self.asLogProc):
-                    import time
-                    time.sleep(0.02)  # wait a little to allow logger to exit
-                self._checkChildLiveness(self.asLogProc) # cleanup defunct proc
+            self._reset_logging()
+            #self.transport.run(TransmitOnly, maximumDuration=timedelta(milliseconds=250))
+            #import time
+            #time.sleep(0.05)  # allow children to exit and log their exit
+            self.transport.scheduleTransmit(
+                None,
+                TransmitIntent(self.asLogger,
+                               LoggerExitRequest(),
+                               onSuccess=self._cleanupAdminFinish,
+                               onError=self._cleanupAdminFinish))
+            return
+        self._cleanupAdminFinish(None, None)
+
+    def _cleanupAdminFinish(self, _intent, _status):
+        #self.transport.run(TransmitOnly)
+        if getattr(self, 'asLogProc', None):
+            if self._checkChildLiveness(self.asLogProc):
+                import time
+                time.sleep(0.02)  # wait a little to allow logger to exit
+            self._checkChildLiveness(self.asLogProc) # cleanup defunct proc
+        self.post_cleanup()
 
 
 

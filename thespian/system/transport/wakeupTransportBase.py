@@ -61,27 +61,31 @@ class wakeupTransportBase(object):
         # Always make at least one pass through to handle expired wakeups
         # and queued events; otherwise a null/negative maximumDuration could
         # block all processing.
-        firstTime = True
 
-        while firstTime or not self._max_runtime.expired():
-            firstTime = False
-            self._update_runtime()
-            rval = self._runWithExpiry(incomingHandler)
-            if rval is not None:
-                return rval
+        rval = self._run_subtransport(incomingHandler)
 
-            if not self._realizeWakeups():
-                # No wakeups were processed, and the inner run
-                # returned, so assume there's nothing to do and exit
-                return rval
+        while rval in (True, None) and not self._max_runtime.expired():
+            rval = self._run_subtransport(incomingHandler)
 
-            while self._activeWakeups:
-                w = self._activeWakeups.pop()
-                if incomingHandler in (None, TransmitOnly):
-                    return w
-                if not incomingHandler(w):
-                    return None
+        return rval
 
+    def _run_subtransport(self, incomingHandler):
+        self._update_runtime()
+        rval = self._runWithExpiry(incomingHandler)
+        if rval is not None and not isinstance(rval, Thespian__Run_Expired):
+            return rval
+
+        self._realizeWakeups()
+        return self._deliver_wakeups(incomingHandler)
+
+    def _deliver_wakeups(self, incomingHandler):
+        while self._activeWakeups:
+            w = self._activeWakeups.pop()
+            if incomingHandler in (None, TransmitOnly):
+                return w
+            r = Thespian__Run_HandlerResult(incomingHandler(w))
+            if not r:
+                return r
         return None
 
 

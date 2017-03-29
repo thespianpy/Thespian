@@ -26,6 +26,46 @@ class Thespian__UpdateWork(object):
     pass
 
 
+class Thespian__Run__Result(object):
+    """Base class for values returned from the transport run() method.  In
+       general, a truthy value means continue and a false-ish value
+       (the default) means halt.
+    """
+    def __nonzero__(self): return False
+    def __bool__(self): return False
+
+
+class Thespian__Run_Expired(Thespian__Run__Result):
+    """Returned from the transport run() method if the run time has expired."""
+    pass
+
+
+class Thespian__Run_Terminated(Thespian__Run__Result):
+    """Returned from the transport run() method if the transport has been
+       shutdown and terminated and is no longer functional."""
+    pass
+
+
+class Thespian__Run_Errored(Thespian__Run_Terminated):
+    """Returned from the transport run() method if an internal error has
+       occurred.  Usually terminal"""
+    def __init__(self, err):
+        self.error = err
+
+
+class Thespian__Run_HandlerResult(Thespian__Run__Result):
+    """Returned handler result (false-ish).  Individual handlers should
+       return a simple value that the transport's run method wraps in
+       this object.
+    """
+    def __init__(self, val):
+        self.return_value = val
+    def __nonzero__(self): return self.return_value != 0
+    def __bool__(self): return bool(self.return_value)
+
+
+# ----------------------------------------------------------------------
+
 class TransportInit__Base(object): pass
 class ExternalInterfaceTransportInit(TransportInit__Base):
     """Used as first argument to Transport __init__ to indicate that this
@@ -59,7 +99,7 @@ class TransmitOnly(object):
 
 # ----------------------------------------------------------------------
 
-class ReceiveEnvelope(object):
+class ReceiveEnvelope(Thespian__Run__Result):
     "Represents the message received along with the sender's address"
     def __init__(self, sender, msg):
         self._sender  = sender
@@ -78,6 +118,11 @@ class ReceiveEnvelope(object):
         return 'ReceiveEnvelope(from: %s, %s msg: %s)'%(self.sender, msgt, smsg)
     def __str__(self): return self.identify()
 
+    # As a Thespian__Run__Result, this is false-ish because the caller
+    # supplied no receive handler, so the run should stop looping and
+    # return this value to the caller.
+    def __nonzero__(self): return False
+    def __bool__(self): return False
 
 
 # ----------------------------------------------------------------------
@@ -173,7 +218,6 @@ class TransmitIntent(PauseWithBackoff):
         self._callbackTo = ResultCallback(onSuccess, onError)
         self._resultsts  = None
         self._quitTime   = ExpirationTimer(maxPeriod or DEFAULT_MAX_TRANSMIT_PERIOD)
-        self.nextIntent  = None
         self._attempts    = 0
         self.transmit_retry_period = retryPeriod
 
@@ -196,7 +240,13 @@ class TransmitIntent(PauseWithBackoff):
     def completionCallback(self):
         "This is called by the transport to perform the success or failure callback operation."
         if not self.result:
-            thesplog('completion error: %s', str(self), level=logging.ERROR)
+            if self.result == SendStatus.DeadTarget:
+                # Do not perform logging in case admin or logdirector
+                # is dead (this will recurse infinitely).
+                # logging.getLogger('Thespian').warning('Dead target: %s', self.targetAddr)
+                pass
+            else:
+                thesplog('completion error: %s', str(self), level=logging.INFO)
         self._callbackTo.resultCallback(self.result, self)
 
     def addCallback(self, onSuccess=None, onFailure=None):
@@ -227,6 +277,9 @@ class TransmitIntent(PauseWithBackoff):
     def timeToRetry(self, socketAvail=False):
         if socketAvail and hasattr(self, '_awaitingTXSlot'):
             delattr(self, '_awaitingTXSlot')
+            if hasattr(self, '_retryTime'):
+                delattr(self, '_retryTime')
+            return True
         if hasattr(self, '_retryTime'):
             retryNow = self._retryTime.expired()
             if retryNow:
@@ -246,6 +299,9 @@ class TransmitIntent(PauseWithBackoff):
 
     def expired(self):
         return self._quitTime.expired()
+
+    def expiration(self):
+        return self._quitTime
 
     def __str__(self):
         return '************* %s' % self.identify()
@@ -283,12 +339,16 @@ class SendStatus(object):
     class BadPacketError(BASE, Exception):
         "Remote rejected transmit, (a return value or an exception)"
         _isGood = False
+    class SENDSTS_EXPIRED(BASE):
+        "Transmit intent expired before send completed."
+        _isGood = False
     class SENDSTS_FAILED(BASE): _isGood = False
     class SENDSTS_DEADTARGET(BASE): _isGood = False
     Sent = SENDSTS_SENT()
     NotSent = SENDSTS_NOTSENT()
     BadPacket = BadPacketError('BadPacket SendStatus')
     Failed = SENDSTS_FAILED()
+    Expired = SENDSTS_EXPIRED()
     DeadTarget = SENDSTS_DEADTARGET()
 
 

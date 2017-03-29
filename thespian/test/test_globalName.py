@@ -2,6 +2,7 @@ import logging
 from thespian.actors import *
 from thespian.test import *
 
+
 class ThereCanBeOnlyOne(Actor):
     def receiveMessage(self, msg, sender):
         self.send(sender, "ONE: %s"%msg)
@@ -11,7 +12,23 @@ class Parent(Actor):
         if msg == 'newChild':
             self.send(sender, self.createActor(Parent))
         elif msg == 'newGlobalChild':
-            self.send(sender, self.createActor(ThereCanBeOnlyOne, globalName = 'OnlyOne'))
+            child = self.createActor(ThereCanBeOnlyOne, globalName = 'OnlyOne')
+            self.send(sender, child)
+            # Send two messages that will be reported later.  Sending
+            # twice ensures that both messages awaiting an actual
+            # address and queued messages behind that are processed
+            # correctly when the address is available.
+            self.send(child, 'hi')
+            self.send(child, 'ho')
+        elif isinstance(msg, str) and msg.startswith("ONE: "):
+            if not hasattr(self, 'updates'):
+                self.updates = []
+            self.updates.append(msg)
+        elif msg == "Checking":
+            if self.updates:
+                self.send(sender, self.updates.pop(0))
+            else:
+                self.send(sender, None)
         else:
             self.send(sender, "PARENT: %s"%msg)
 
@@ -63,6 +80,38 @@ class TestFuncGlobalName(object):
         assert "ONE: me" == asys.ask(subUno, "me")
         assert "ONE: again" == asys.ask(subDos, "again")
         assert "PARENT: not me" == asys.ask(subTres, "not me")
+
+        # Some transports (e.g. AdminTXRouting) may take longer to
+        # propagate messages, so allow for this here.
+        import time
+
+        for each in range(10):
+            upd = asys.ask(pa, "Checking")
+            if upd is not None:
+                break
+            time.sleep(0.1)
+        assert upd == "ONE: hi"
+
+        for each in range(10):
+            upd = asys.ask(pa, "Checking")
+            if upd is not None:
+                break
+            time.sleep(0.1)
+        assert upd == "ONE: ho"
+
+        for each in range(10):
+            upd = asys.ask(pa, "Checking")
+            if upd is not None:
+                break
+            time.sleep(0.1)
+        assert upd == "ONE: hi"
+
+        for each in range(10):
+            upd = asys.ask(pa, "Checking")
+            if upd is not None:
+                break
+            time.sleep(0.1)
+        assert upd == "ONE: ho"
 
     def testPrimaryAndSubActorSingletons(self, asys):
         pa = asys.createActor(Parent)

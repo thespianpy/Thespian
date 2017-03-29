@@ -265,6 +265,8 @@ class AssocList(object):
         self._qa = [(A,V) for (A,V) in self._qa if A != addr] + [(addr,val)]
     def rmv(self, addr):
         self._qa = [(A,V) for (A,V) in self._qa if A != addr]
+    def rmv_value(self, val):
+        self._qa = [(A,V) for (A,V) in self._qa if V != val]
     def values(self):
         return [V for (A,V) in self._qa]
     def items(self):

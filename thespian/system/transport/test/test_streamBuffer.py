@@ -19,6 +19,7 @@ class TestUnitReceiveBufferReconstruct(object):
             'Checking if no remaining amount (%s) for %s'%(
                 str(rcv.remainingAmount()),
                 descr))
+        assert not rcv.is_empty()
         completed,extra = rcv.completed()
         assert completed == expectedBuf, (
             'Checking if completed %s == %s for %s'%(str(completed),
@@ -32,6 +33,11 @@ class TestUnitReceiveBufferReconstruct(object):
         else:
             assert not extra, 'Verifying no extra in %s for %s'%(str(extra),
                                                                  descr)
+        # Extracting the completed info from the streamBuffer does not change the latter
+        c2,e2 = rcv.completed()
+        assert completed == c2
+        assert extra == e2
+        assert not rcv.is_empty()
 
     def partialTests(self, rcv, amount, totalAmount, descr):
         assert not rcv.isDone(), (
@@ -58,8 +64,10 @@ class TestUnitReceiveBufferReconstruct(object):
 
         rcv = ReceiveBuffer()
         assert not rcv.isDone(), 'initial ReceiveBuffer isDone test'
+        assert rcv.is_empty()
 
         rcv.addMore(msg)
+        assert not rcv.is_empty()
 
         self.finalTests(rcv, self.sampleBuffer, 'completion')
 
@@ -153,3 +161,100 @@ class TestUnitReceiveBufferReconstruct(object):
                                       'partial add #%d of %d' % (partnum, partLen))
 
             self.finalTests(rcv, bigMessage, 'completion')
+
+    def test_all_points_incomplete(self):
+        message = 'hello'
+        extra = b'world'
+        msg = toSendBuffer(message)
+        origmsglen = len(msg)
+        msg += extra
+        for point in range(1, origmsglen - 1):
+            rcv = ReceiveBuffer()
+            assert not rcv.isDone()
+            assert rcv.is_empty()
+
+            print(point)
+            rcv.addMore(msg[:point])
+            assert not rcv.isDone()
+            assert not rcv.is_empty()
+            assert rcv.completed() is None
+
+    def test_all_points_incomplete_each_byte(self):
+        message = 'hello'
+        extra = b'world'
+        msg = toSendBuffer(message)
+        origmsglen = len(msg)
+        msg += extra
+        for point in range(1, origmsglen - 1):
+            rcv = ReceiveBuffer()
+            assert not rcv.isDone()
+            assert rcv.is_empty()
+
+            for bpos in range(point):
+                rcv.addMore(msg[bpos:bpos+1])
+            assert not rcv.isDone()
+            assert not rcv.is_empty()
+            assert rcv.completed() is None
+
+    def test_exact(self):
+        message = 'hello'
+        extra = b'world'
+        msg = toSendBuffer(message)
+        origmsglen = len(msg)
+        msg += extra
+
+        rcv = ReceiveBuffer()
+        assert not rcv.isDone()
+        assert rcv.is_empty()
+
+        rcv.addMore(msg[:origmsglen])
+        assert rcv.isDone()
+        assert not rcv.is_empty()
+        # py.test bug, cannot just: assert rcv.completed() == message, b''
+        rmsg, rextra = rcv.completed()
+        print(rmsg, rextra)
+        assert rmsg == message
+        assert b'' == rextra
+
+    def test_all_points_extra(self):
+        message = 'hello'
+        extra = b'world'
+        msg = toSendBuffer(message)
+        origmsglen = len(msg)
+        msg += extra
+        for point in range(origmsglen+1, len(msg)):
+            rcv = ReceiveBuffer()
+            assert not rcv.isDone()
+            assert rcv.is_empty()
+
+            rcv.addMore(msg[:point])
+            assert rcv.isDone()
+            assert not rcv.is_empty()
+
+            print(rcv.completed())
+            rmsg, rextra = rcv.completed()
+            assert rmsg == message
+            assert rextra == extra[:point-origmsglen]
+            #assert rcv.completed() == message, extra[:point-origmsglen]
+
+    def test_all_points_extra_each_byte(self):
+        message = 'hello'
+        extra = b'world'
+        msg = toSendBuffer(message)
+        origmsglen = len(msg)
+        msg += extra
+        for point in range(origmsglen+1, len(msg)):
+            rcv = ReceiveBuffer()
+            assert not rcv.isDone()
+            assert rcv.is_empty()
+
+            for bpos in range(point):
+                rcv.addMore(msg[bpos:bpos+1])
+            assert rcv.isDone()
+            assert not rcv.is_empty()
+
+            print(rcv.completed())
+            rmsg, rextra = rcv.completed()
+            assert rmsg == message
+            assert rextra == extra[:point-origmsglen]
+            #assert rcv.completed() == message, extra[:point-origmsglen]

@@ -4,10 +4,13 @@ transport independence.
 
 For more details, see http://thespianpy.com
 
-Thespian Generation 3.6
+Thespian Generation 3.7
 """
 
-ThespianGeneration = (3, 6)
+ThespianGeneration = (3, 7)
+
+
+from contextlib import contextmanager
 
 
 class ActorSystemException(Exception):
@@ -99,9 +102,11 @@ class ActorAddress(object):
     def __eq__(self, o):
         if hasattr(self, 'eqOverride'):
             return self.eqOverride(o)
+        if hasattr(o, 'eqOverride'):
+            return o.eqOverride(self)
         try:
             return self.addressDetails == o.addressDetails
-        except:
+        except Exception:
             return False
 
     def __ne__(self, o): return not self.__eq__(o)
@@ -745,6 +750,26 @@ class ActorSystem(object):
 
     def unloadActorSource(self, sourceHash):
         return self._systemBase.unloadActorSource(sourceHash)
+
+    @contextmanager
+    def private(self):
+        """The private() method can be used to return a context object
+           representing a unique external endpoint, useable by a
+           thread in the external process and which will receive ask()
+           or listen() messages separately and distinctly from the
+           main thread or any other threads.
+
+        """
+        e = ExternalContext(self._systemBase.external_clone())
+        yield e
+        e.exit_clone()
+
+
+class ExternalContext(ActorSystem):
+    def __init__(self, systemBase):
+        self._systemBase = systemBase
+    def exit_clone(self):
+        self._systemBase.exit_context()
 
 
 def requireCapability(cap, value=True):

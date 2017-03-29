@@ -43,3 +43,4 @@ _darcs
 doc/internal
 default.nix
 
+.cmd_history

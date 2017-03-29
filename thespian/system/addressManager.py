@@ -21,13 +21,15 @@ class ActorLocalAddress:
         self.addressManager     = addrManager
     def __eq__(self, o):
         # n.b. compareAddressEq below expects this to throw an exception if o is not an ActorLocalAddress
-        return isinstance(o, ActorLocalAddress) and self.generatingActor == o.generatingActor and self.addressInstanceNum == o.addressInstanceNum
+        return isinstance(o, ActorLocalAddress) and \
+            self.generatingActor == o.generatingActor and \
+            self.addressInstanceNum == o.addressInstanceNum
     def __ne__(self, o): return not self.__eq__(o)
     def __str__(self):
         try:
             realized = self.addressManager.exportAddr(self)
             if realized:
-                return str(realized)
+                return '%d-%s' % (self.addressInstanceNum, str(realized))
         except Exception:
             pass
         return 'LocalAddr.%s'%self.addressInstanceNum
@@ -156,20 +158,20 @@ class ActorAddressManager:
                isinstance(addr2.addressDetails, ActorLocalAddress):
                 return addr1.addressDetails == addr2.addressDetails
             try:
-                return (addr1.addressDetails.generatingActor == self._thisActorAddr and
-                        self._managed[addr1.addressDetails.addressInstanceNum] and
-                        self._managed[addr1.addressDetails.addressInstanceNum].addressDetails ==
-                        addr2.addressDetails)
+                return bool(addr1.addressDetails.generatingActor == self._thisActorAddr and
+                            self._managed[addr1.addressDetails.addressInstanceNum] and
+                            self._managed[addr1.addressDetails.addressInstanceNum].addressDetails ==
+                            addr2.addressDetails)
             except AttributeError:
                 # Cannot compare these details... must not be equivalent addresses
                 return False
         if isinstance(addr2, ActorAddress) and \
            isinstance(addr2.addressDetails, ActorLocalAddress):
             try:
-                return (addr2.addressDetails.generatingActor == self._thisActorAddr and
-                        self._managed[addr2.addressDetails.addressInstanceNum] and
-                        self._managed[addr2.addressDetails.addressInstanceNum].addressDetails ==
-                        addr1.addressDetails)
+                return bool(addr2.addressDetails.generatingActor == self._thisActorAddr and
+                            self._managed[addr2.addressDetails.addressInstanceNum] and
+                            self._managed[addr2.addressDetails.addressInstanceNum].addressDetails ==
+                            addr1.addressDetails)
             except AttributeError:
                 # Cannot compare these details... must not be equivalent addresses
                 return False

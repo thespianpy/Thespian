@@ -27,7 +27,10 @@ from thespian.system.addressManager import ActorLocalAddress
 import socket
 import select
 from datetime import timedelta
-import pickle
+try:
+    import cPickle as pickle
+except Exception:
+    import pickle
 from thespian.system.transport.asyncTransportBase import asyncTransportBase
 from thespian.system.transport.wakeupTransportBase import wakeupTransportBase
 
@@ -45,48 +48,72 @@ class UDPEndpoint(TransportInit__Base):  # internal use by this module only
     def addrInst(self): return self.args[0]
 
 
+class UDPTransportCopy(object): pass
+
+
 class UDPTransport(asyncTransportBase, wakeupTransportBase):
     "A transport using UDP IPv4 sockets for communications."
 
     def __init__(self, initType, *args):
         super(UDPTransport, self).__init__()
 
+        templateAddr = None
         if isinstance(initType, ExternalInterfaceTransportInit):
             # External process that is going to talk "in".  There is
             # no parent, and the child is the systemAdmin.
             capabilities, logDefs, concurrency_context = args
-            templateAddr          = UDPv4ActorAddress(None, 0)
-            self.socket           = socket.socket(*templateAddr.socketArgs)
-            self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-            self.socket.bind(*templateAddr.bindArgs)
-            self.myAddress        = ActorAddress(UDPv4ActorAddress(*self.socket.getsockname(),
-                                                                   external=True))
-            thesplog('external template %s got actual %s', templateAddr, self.myAddress,
-                     level=logging.DEBUG)
             self._adminAddr       = self.getAdminAddr(capabilities)
             self._parentAddr      = None
         elif isinstance(initType, UDPEndpoint):
             instanceNum, assignedAddr, self._parentAddr, self._adminAddr = initType.args
-            templateAddr = assignedAddr or ActorAddress(UDPv4ActorAddress(None, 0))
-            self.socket           = socket.socket(*templateAddr.addressDetails.socketArgs)
-            self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-            self.socket.bind(*templateAddr.addressDetails.bindArgs)
+            templateAddr = assignedAddr
             # N.B.  myAddress is actually the address we will export
             # for others to talk to us, not the bind address.  The
             # difference is that we bind to '0.0.0.0' (inaddr_any),
             # but that's not a valid address for people to send stuff
             # to us.
-            self.myAddress = ActorAddress(UDPv4ActorAddress(*self.socket.getsockname(),
-                                                            external=True))
+        elif isinstance(initType, UDPTransportCopy):
+            self._adminAddr = args[0]
+            self._parentAddr = None
         else:
             thesplog('UDPTransport init of type %s unsupported', str(initType), level=logging.ERROR)
+        if not templateAddr:
+            templateAddr = ActorAddress(UDPv4ActorAddress(None, 0))
+        self.socket = socket.socket(*templateAddr.addressDetails.socketArgs)
+        self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        self.socket.bind(*templateAddr.addressDetails.bindArgs)
+        self.myAddress = ActorAddress(UDPv4ActorAddress(*self.socket.getsockname(),
+                                                        external=True))
         self._rcvd = []
         self._checkChildren = False
         self._shutdownSignalled = False
         self._pending_actions = [] # array of (ExpirationTimer, func)
 
+
+    def close(self):
+        """Releases all resources and terminates functionality.  This is
+           better done deterministically by explicitly calling this
+           method (although __del__ will attempt to perform similar
+           operations), but it has the unfortunate side-effect of
+           making this object modal: after the close it can be
+           referenced but not successfully used anymore, so it
+           explicitly nullifies its contents.
+        """
+        if hasattr(self, '_pending_actions'):
+            delattr(self, '_pending_actions')
+        if hasattr(self, 'socket'):
+            self.socket.close()
+            delattr(self, 'socket')
+
+
+    def external_transport_clone(self):
+        # Return a unique context for actor communication from external
+        return UDPTransport(UDPTransportCopy(), self._adminAddr)
+
+
     def protectedFileNumList(self):
         return [self.socket.fileno()]
+
 
     def childResetFileNumList(self):
         return self.protectedFileNumList()
@@ -170,13 +197,6 @@ class UDPTransport(asyncTransportBase, wakeupTransportBase):
 
     def connectEndpoint(self, endPoint):
         pass
-        #KWQ: need to verify child is started here (message to host) so that the next step (ThespianStatusReq)?  But this would block the parent here waiting for the child when there's other work to be done.  Really want to handle this via run waiting for a natural response from the child.  Similar to MultiProcAdmin handling of h_EndpointConnected?  NEed to do that similar thing in systemBase?
-
-            # sresp, _ign1, _ign2 = select.select([self.socket.fileno()], [], [],
-            #                                     None if time_to_quit is None else
-            #                                     timePeriodSeconds(time_to_quit -
-            #                                                       datetime.now()))
-        # KWQ: not actually connected? waiting for child to callback and confirm?  happens automatically?  need this method really?
 
 
     def deadAddress(self, addressManager, childAddr):
@@ -220,7 +240,8 @@ class UDPTransport(asyncTransportBase, wakeupTransportBase):
             # UDPTransport transmit is serially blocking, but both sender
             # and receiver provide lots of buffering.  At present, there
             # is no receipt confirmation (KWQ: but there should be)
-            r = self.socket.sendto(transmitIntent.serMsg, transmitIntent.targetAddr.addressDetails.sockname)
+            r = self.socket.sendto(transmitIntent.serMsg,
+                                   transmitIntent.targetAddr.addressDetails.sockname)
         transmitIntent.tx_done(SendStatus.Sent
                                if r else
                                SendStatus.BadPacket)
@@ -232,9 +253,9 @@ class UDPTransport(asyncTransportBase, wakeupTransportBase):
             # transmits are not queued/multistage in this transport, no waiting
             return 0
 
-        self._aborting_run = False
+        self._aborting_run = None
 
-        while not self.run_time.expired() and not self._aborting_run:
+        while not self.run_time.expired() and self._aborting_run is None:
             if self._rcvd:
                 rcvdEnv = self._rcvd.pop()
             else:
@@ -246,8 +267,9 @@ class UDPTransport(asyncTransportBase, wakeupTransportBase):
                 except select.error as se:
                     import errno
                     if se.args[0] != errno.EINTR:
-                        thesplog('Error during select: %s', se)
-                        return None
+                        thesplog('Error during select: %s', se,
+                                 level=logging.CRITICAL)
+                        return Thespian__Run_Errored(se)
                     continue
                 except ValueError:
                     # self.run_time can expire between the while test
@@ -257,7 +279,7 @@ class UDPTransport(asyncTransportBase, wakeupTransportBase):
                 if [] == sresp:
                     if [] == _ign1 and [] == _ign2:
                         # Timeout, give up
-                        return None
+                        return Thespian__Run_Expired()
                     thesplog('Waiting for read event, but got %s %s', _ign1, _ign2, level=logging.WARNING)
                     continue
                 rawmsg, sender = self.socket.recvfrom(65535)
@@ -271,7 +293,6 @@ class UDPTransport(asyncTransportBase, wakeupTransportBase):
                         msg = ActorExitRequest()
                     else:
                         return Thespian__UpdateWork()
-                    return Thespian__UpdateWork()
                 else:
                     sendAddr = ActorAddress(UDPv4ActorAddress(*sender, external=True))
                     try:
@@ -281,10 +302,16 @@ class UDPTransport(asyncTransportBase, wakeupTransportBase):
                 rcvdEnv = ReceiveEnvelope(sendAddr, msg)
             if incomingHandler is None:
                 return rcvdEnv
-            if not incomingHandler(rcvdEnv):
-                return  # handler returned False, indicating run() should exit
+            r = Thespian__Run_HandlerResult(incomingHandler(rcvdEnv))
+            if not r:
+                # handler returned false-ish, indicating run() should exit
+                return r
 
-        return None
+        if self._aborting_run is not None:
+            return self._aborting_run
+
+        return Thespian__Run_Expired()
+
 
     def check_pending_actions(self):
         expired, remaining = partition(lambda E: E[0].expired(),
@@ -302,6 +329,6 @@ class UDPTransport(asyncTransportBase, wakeupTransportBase):
            before returning, otherwise run() will terminate as soon as
            control returns to it from this call.
         """
-        # UDPTransport does not queue transmits but handles them inline, so no draining required.
-        self._aborting_run = True
-
+        # UDPTransport does not queue transmits but handles them
+        # inline, so no draining required.
+        self._aborting_run = Thespian__Run_Terminated()
