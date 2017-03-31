@@ -8,7 +8,6 @@ setup(
     author_email = 'quick@sparq.org',
     url = 'http://thespianpy.com',
     license = 'MIT',
-    scripts = [ 'thespianShell.py' ],
     packages = find_packages(exclude=['thespian/test']),
     classifiers = [
         'Development Status :: 5 - Production/Stable',
