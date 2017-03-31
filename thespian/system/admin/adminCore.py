@@ -63,14 +63,24 @@ class AdminCore(systemCommonBase):
         self._sourceAuthority = None
         self._sourceNotifications = []  # array of notification addresses
 
+        # The initialization of the Admin and its logger
+        # occurs asynchronously, but since the Admin is using a known
+        # address, there is nothing to prevent clients from initiating
+        # requests to the Admin before it has had a chance to complete
+        # the initialization; the _pre_init_msgs will hold those
+        # requests until the initialization has completed.
+        self._pre_init_msgs = []
+
 
     def _activate(self):
         """Called when the full ActorSystem initialization is completed.  This
            should then activate any functionality that needed to wait
            for completion of initialization.
         """
-        pass
-
+        now_do = self._pre_init_msgs
+        self._pre_init_msgs = []
+        for each in now_do:
+            self.handleIncoming(each)
 
     def run(self):
         try:
