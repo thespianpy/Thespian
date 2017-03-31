@@ -225,9 +225,9 @@ Table of Contents
   utilization document.
 
 
-  [Thespian In-Depth Introduction] http://thespianpy.com/in_depth
+  [Thespian In-Depth Introduction] http://thespianpy.com/doc/in_depth
 
-  [Using Thespian] http://thespian.py/using
+  [Using Thespian] http://thespian.py/doc/using
 
 
 3 Documentation

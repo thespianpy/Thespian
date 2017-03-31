@@ -11,6 +11,7 @@ Table of Contents
 
 3.x
 .. 3.7
+..... 3.7.2 <2017-03-29 Wed>
 ..... 3.7.1 <2017-03-29 Wed>
 ..... 3.7.0 <2017-03-19 Sun>
 .. 3.6
@@ -88,6 +89,13 @@ not change the API.
 3.7
 ───
 
+3.7.2 <2017-03-29 Wed>
+╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+
+  ‣ Removed setup.py and doc references to previously removed
+    thespianShell, which is replaced by `python -m thespian.shell'.
+
+
 3.7.1 <2017-03-29 Wed>
 ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 
@@ -152,7 +160,7 @@ not change the API.
   [Issue 35] https://github.com/godaddy/Thespian/issues/35
 
   [the description of the private method in the Using Thespian document]
-  http://thespianpy.com/using#actorsystem.private
+  http://thespianpy.com/doc/using#actorsystem.private
 
   [Lee Hinman's article]
   https://writequit.org/articles/emacs-org-mode-generate-ids.html
@@ -567,7 +575,7 @@ not change the API.
 
 
   [Source Loading Issues]
-  http://thespianpy.com/using#h:e23490e4-d720-4e84-9b9a-e768fa3e717d
+  http://thespianpy.com/doc/using#h:e23490e4-d720-4e84-9b9a-e768fa3e717d
 
 
 3.2.1 <2016-09-08 Thu>

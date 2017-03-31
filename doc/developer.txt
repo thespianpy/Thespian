@@ -138,7 +138,7 @@ Table of Contents
 
 
   [here in the Using Thespian guide]
-  http://godaddy.github.io/Thespian/doc/using.html#outline-container-sec-8
+  http://thespianpy.com/doc/using.html#h:2a5fa63d-e6eb-43b9-bea8-47223b27544e
 
 
 2.4 Running Tests

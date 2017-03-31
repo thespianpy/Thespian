@@ -1408,10 +1408,10 @@ Table of Contents
 4 Shell
 ═══════
 
-  Thespian comes with a command-line application called the
-  `thespianShell.py' which can be used to interact with existing Actor
-  Systems.  This is especially handy to use with persistent Actor
-  Systems to obtain information and perform manual testing.
+  Thespian comes with a command-line application shell which can be used
+  to interact with existing Actor Systems.  This is especially handy to
+  use with persistent Actor Systems to obtain information and perform
+  manual testing.
 
 
 4.1 Starting the Shell
@@ -1428,7 +1428,7 @@ Table of Contents
   to leave the shell.
 
   ┌────
-  │ $ thespianShell.py
+  │ $ python -m thespian.shell
   │ thespian> start multiprocTCPBase
   │ Starting multiprocTCPBase ActorSystem
   │ thespian> exit
@@ -1439,7 +1439,7 @@ Table of Contents
 4.2 Address Management in the Shell
 ───────────────────────────────────
 
-  The thespianShell provides special handling for Actor Addresses.
+  The thespian shell provides special handling for Actor Addresses.
   Rather than being required to type the full Actor Address each time,
   the shell provides the `address' command which can be used to
   "register" an Actor Address.  Each registered address is assigned an
@@ -1448,7 +1448,7 @@ Table of Contents
   address.
 
   ┌────
-  │ $ thespianShell.py
+  │ $ python -m thespian.shell
   │ thespian> start multiprocTCPBase
   │ Starting multiprocTCPBase ActorSystem
   │ thespian> address localhost 1900
@@ -1466,7 +1466,7 @@ Table of Contents
   another TestActor and return the address of that Actor.
 
   ┌────
-  │ $ thespianShell.py
+  │ $ python -m thespian.shell
   │ thespian> start multiprocTCPBase
   │ Starting multiprocTCPBase ActorSystem
   │ thespian> create_testActor
