@@ -2,7 +2,6 @@
 #+AUTHOR: Kevin Quick <quick@sparq.org>
 #+SETUPFILE: theme.setup
 #+HTML_HEAD: <link href="thespian.css" rel="stylesheet" type="text/css"/>
-#+HTML_HEAD: <base href="http://thespianpy.com/releases.html">
 #+LATEX_CLASS: thespian
 # #+LATEX_CLASS_OPTIONS: [a4paper]
 #+LATEX_HEADER: \product{Thespian}
@@ -48,7 +47,7 @@ do not change the API.
     at this time.  The MultiprocQueueBase usually works, but there are
     unresolved corner cases at this time.
 
-    See [[http://thespianpy.com/using#actorsystem.private][the description of the private method in the Using Thespian
+    See [[http://thespianpy.com/doc/using#actorsystem.private][the description of the private method in the Using Thespian
     document]] for more details.
 
   * Fixes a bug where internal transmit events were not completed
@@ -449,7 +448,7 @@ do not change the API.
 
   * Documentation updates, including a warning about the inability to
     exchange objects between different loaded sources unless
-    conventionally serialized (see [[http://thespianpy.com/using#h:e23490e4-d720-4e84-9b9a-e768fa3e717d][Source Loading Issues]]).
+    conventionally serialized (see [[http://thespianpy.com/doc/using#h:e23490e4-d720-4e84-9b9a-e768fa3e717d][Source Loading Issues]]).
 
 
 *** 3.2.1 <2016-09-08 Thu>

@@ -2,7 +2,6 @@
 #+AUTHOR: Kevin Quick <quick@sparq.org>
 #+SETUPFILE: theme.setup
 #+HTML_HEAD: <link href="thespian.css" rel="stylesheet" type="text/css"/>
-#+HTML_HEAD: <base href="http://thespianpy.com/developer.html">
 #+LATEX_CLASS: thespian
 # #+LATEX_CLASS_OPTIONS: [a4paper]
 #+LATEX_HEADER: \product{Thespian}
@@ -119,7 +118,7 @@ $ bash doc/gen_html.sh doc/using.org
   task and Actors at hand.
 
   Some of the system bases do not support some features (as detailed
-  [[http://thespianpy.com/using.html#outline-container-h:d4e592db-8bab-45bd-9643-e952510bd7dc][here in the Using Thespian guide]]) and so there are inputs provided
+  [[http://thespianpy.com/doc/using.html#h:2a5fa63d-e6eb-43b9-bea8-47223b27544e][here in the Using Thespian guide]]) and so there are inputs provided
   to the tests to indicate which are viable and/or stable.  More on
   this in the Running Tests section below.
 
