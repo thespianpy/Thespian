@@ -220,6 +220,16 @@ class IPActorAddress(object):
     @property
     def connectArgs(self): return self.sockname,
 
+    def isSameSystem(self, other_addr):
+        if isinstance(other_addr, ActorAddress):
+            other_addr = other_addr.addressDetails
+        do_cmp = lambda A: thisSystem.isSameSystem(self.sockname, A)
+        if isinstance(other_addr, IPActorAddress):
+            return do_cmp(other_addr.sockname)
+        if isinstance(other_addr, socket.socket):
+            return do_cmp(other_addr.getsockname())
+        return do_cmp(other_addr)
+
 
 class UDPv4ActorAddress(IPActorAddress):
     def __init__(self, initialIPAddr=None, initialIPPort=0, external=False):
