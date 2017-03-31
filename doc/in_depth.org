@@ -8,7 +8,7 @@
 #+LATEX_HEADER: \product{Thespian}
 #+LATEX_HEADER: \component{Python Actor System}
 #+LATEX_HEADER: \doctype{In-Depth Introduction}
-#+LATEX_HEADER: \docrev{1.2}{2015 Sep 05}
+#+LATEX_HEADER: \docrev{1.3}{2017 Mar 29}
 #+LATEX_HEADER: \docid{TheDoc-04}
 #+OPTIONS: ^:nil auto-id:t
 
@@ -1461,10 +1461,10 @@ The sources loaded remain loaded until unloaded via a call to
   :CUSTOM_ID: h:058d8939-b973-4270-975b-3afd9c607176
   :END:
 
-Thespian comes with a command-line application called the
-~thespianShell.py~ which can be used to interact with existing Actor
-Systems.  This is especially handy to use with persistent Actor
-Systems to obtain information and perform manual testing.
+Thespian comes with a command-line application shell which can be used
+to interact with existing Actor Systems.  This is especially handy to
+use with persistent Actor Systems to obtain information and perform
+manual testing.
 
 ** Starting the Shell
    :PROPERTIES:
@@ -1482,7 +1482,7 @@ obtain more information, and the ~exit~ or ~quit~ commands can be used
 to leave the shell.
 
 #+BEGIN_EXAMPLE
-$ thespianShell.py
+$ python -m thespian.shell
 thespian> start multiprocTCPBase
 Starting multiprocTCPBase ActorSystem
 thespian> exit
@@ -1494,7 +1494,7 @@ $
    :CUSTOM_ID: h:092b8ae6-ec6c-4729-9505-8dbd32284d02
    :END:
 
-The thespianShell provides special handling for Actor Addresses.
+The thespian shell provides special handling for Actor Addresses.
 Rather than being required to type the full Actor Address each time,
 the shell provides the ~address~ command which can be used to
 "register" an Actor Address.  Each registered address is assigned an
@@ -1503,7 +1503,7 @@ itself.  All other commands use this index to refer to a specific
 address.
 
 #+BEGIN_EXAMPLE
-$ thespianShell.py
+$ python -m thespian.shell
 thespian> start multiprocTCPBase
 Starting multiprocTCPBase ActorSystem
 thespian> address localhost 1900
@@ -1522,7 +1522,7 @@ unless the message is the string "create", in which it will create
 another TestActor and return the address of that Actor.
 
 #+BEGIN_EXAMPLE
-$ thespianShell.py
+$ python -m thespian.shell
 thespian> start multiprocTCPBase
 Starting multiprocTCPBase ActorSystem
 thespian> create_testActor
