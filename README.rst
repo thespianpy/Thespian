@@ -6,6 +6,8 @@ applications implementing Actors.
 
 Thespian Site with Documentation: http://thespianpy.com
 
+Alternate fork: https://github.com/kquick/Thespian.
+
 Please report any issues here via the Github issue tracker.
 
 Contacts:
