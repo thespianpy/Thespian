@@ -1,5 +1,5 @@
 #+TITLE: [[http://thespianpy.com][@@html:<img src="thesplogo2.png" alt="Thespian" width="50%" style="inline" />@@]] Actors User's Guide
-#+AUTHOR: Kevin Quick <kquick@godaddy.com>
+#+AUTHOR: Kevin Quick <quick@sparq.org>
 #+SETUPFILE: theme.setup
 #+HTML_HEAD: <link href="thespian.css" rel="stylesheet" type="text/css"/>
 #+HTML_HEAD: <base href="http://thespianpy.com/using.html">
@@ -790,7 +790,7 @@ class ActorB(Actor):
   accessed in "non-blocking" mode so that the Actor itself can exit
   immediately if there is no work to be done (thereby allowing the
   Actor to process new messages as soon as they are received).  The
-  [[https://github.com/godaddy/Thespian/blobl/master/examples/httpserver/http_server1.py][http_server1.py]] file is an example of a simple HTTP server based on
+  [[https://github.com/kquick/Thespian/blobl/master/examples/httpserver/http_server1.py][http_server1.py]] file is an example of a simple HTTP server based on
   this model.
 
   The above model is fairly limited however: it is essentially a
@@ -813,7 +813,7 @@ class ActorB(Actor):
   should be watched during the wait for the next ~.receiveMessage()~
   invocation.
 
-  The [[https://github.com/godaddy/Thespian/blobl/master/examples/httpserver/http_server2.py][http_server2.py]] file is an example of a simple HTTP server that
+  The [[https://github.com/kquick/Thespian/blobl/master/examples/httpserver/http_server2.py][http_server2.py]] file is an example of a simple HTTP server that
   is similar to the http_server1.py but this example is modified to
   use the Watch extension.
 

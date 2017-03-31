@@ -12,7 +12,6 @@ Contacts:
 ---------
 
 * Thespian Mailing list:  thespianpy@googlegroups.com
-* Go Daddy Open Source General Issues: oss@godaddy.com
   
 
 ChangeLog

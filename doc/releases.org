@@ -1,5 +1,5 @@
 #+TITLE: [[http://thespianpy.com/][@@html:<img src="thesplogo2.png" alt="Thespian" width="50%" style="inline" />@@]] Release Notes
-#+AUTHOR: Kevin Quick <kquick@godaddy.com>
+#+AUTHOR: Kevin Quick <quick@sparq.org>
 #+SETUPFILE: theme.setup
 #+HTML_HEAD: <link href="thespian.css" rel="stylesheet" type="text/css"/>
 #+HTML_HEAD: <base href="http://thespianpy.com/releases.html">

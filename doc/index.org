@@ -1,5 +1,5 @@
 #+TITLE: [[http://thespianpy.com][@@html:<img src="thesplogo2.png" alt="Thespian" width="50%" style="inline" />@@]] Python Actors
-#+AUTHOR: Kevin Quick <kquick@godaddy.com>
+#+AUTHOR: Kevin Quick <quick@sparq.org>
 #+SETUPFILE: theme.setup
 #+HTML_HEAD: <link href="thespian.css" rel="stylesheet" type="text/css"/>
 #+HTML_HEAD: <base href="http://thespianpy.com/index.html">
@@ -281,7 +281,7 @@ $ pip install thespian
   The PyPi page can be consulted directly at https://pypi.python.org/pypi/thespian
 
   Thespian source and releases are also available from the
-  https://github.com/godaddy/Thespian github source maintenance
+  [[https://github.com/kquick/Thespian]] github source maintenance
   location.
 
   Thespian may also be provided by your system's packaging tools
@@ -296,9 +296,9 @@ $ pip install thespian
   welcomed.  The [[file:developer.org][Thespian Developer's Notes]] document provides more
   details on how to get involved.
 
-   * Source Code: https://github.com/godaddy/Thespian
+   * Source Code: [[https://github.com/kquick/Thespian]]
    * Mailing List: thespianpy@googlegroups.com
-   * Report a Bug: https://github.com/godaddy/Thespian/issues
+   * Report a Bug: [[https://github.com/kquick/Thespian/issues]]
 
 * News
   :PROPERTIES:

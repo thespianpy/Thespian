@@ -1,6 +1,5 @@
 include README.rst
 include LICENSE.txt
-include CONTRIBUTORS.txt
 recursive-include thespian *.py *.txt
 recursive-include contrib *.py *.txt
 recursive-include examples *.py *.txt *.org *.sh

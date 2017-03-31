@@ -1,5 +1,5 @@
 #+TITLE: [[http://thespianpy.com][@@html:<img src="thesplogo2.png" alt="Thespian" width="50%" style="inline" />@@]] Developer's Notes
-#+AUTHOR: Kevin Quick <kquick@godaddy.com>
+#+AUTHOR: Kevin Quick <quick@sparq.org>
 #+SETUPFILE: theme.setup
 #+HTML_HEAD: <link href="thespian.css" rel="stylesheet" type="text/css"/>
 #+HTML_HEAD: <base href="http://thespianpy.com/developer.html">
@@ -23,7 +23,7 @@
    :END:
 
     Source code for Thespian is available at
-    https://github.com/godaddy/Thespian under the MIT license.
+    https://github.com/kquick/Thespian under the MIT license.
 
 ** Documentation
    :PROPERTIES:
@@ -52,7 +52,7 @@ $ bash doc/gen_html.sh doc/using.org
    :CUSTOM_ID: h:e9695953-86ef-420c-a33a-4a0db2455a04
    :END:
 
-    Any issues should be posted via the [[https://github.com/godaddy/Thespian][main Thespian github page]].
+    Any issues should be posted via the [[https://github.com/kquick/Thespian][main Thespian github page]].
 
 ** Contributions
    :PROPERTIES:
@@ -119,7 +119,7 @@ $ bash doc/gen_html.sh doc/using.org
   task and Actors at hand.
 
   Some of the system bases do not support some features (as detailed
-  [[http://godaddy.github.io/Thespian/doc/using.html#outline-container-sec-8][here in the Using Thespian guide]]) and so there are inputs provided
+  [[http://thespianpy.com/using.html#outline-container-h:d4e592db-8bab-45bd-9643-e952510bd7dc][here in the Using Thespian guide]]) and so there are inputs provided
   to the tests to indicate which are viable and/or stable.  More on
   this in the Running Tests section below.
 
