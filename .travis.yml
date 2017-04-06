@@ -1,8 +1,9 @@
 language: python
 python:
-  - 2.6
   - 2.7
   - 3.3
   - 3.5
 #install: pip install -r requirements.txt # default
-script: py.test --lf
+script:
+  - if [[ $TRAVIS_PYTHON_VERSION == 3* ]] then py.test --lf; fi
+  - if [[ $TRAVIS_PYTHON_VERSION == '2.7' ]] then py.test --lf; fi
