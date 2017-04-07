@@ -13,5 +13,5 @@ matrix:
     - python: 3.5
       env: TOX_ENV=py35
 script:
-  - env
+  - echo "TOX_ENV=${TOX_ENV}"
   - tox -e "${TOX_ENV}"
