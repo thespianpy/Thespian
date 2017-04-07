@@ -5,5 +5,5 @@ python:
   - 3.5
 #install: pip install -r requirements.txt # default
 script:
-  - if [[ $TRAVIS_PYTHON_VERSION == 3* ]] then py.test --lf -k Unit; fi
-  - if [[ $TRAVIS_PYTHON_VERSION == '2.7' ]] then py.test --lf -k Unit; fi
+  - if [[ $TRAVIS_PYTHON_VERSION == 3* ]]; then py.test --lf -k Unit; fi
+  - if [[ $TRAVIS_PYTHON_VERSION == '2.7' ]]; then py.test --lf -k Unit; fi
