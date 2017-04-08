@@ -8,6 +8,9 @@ Thespian Site with Documentation: http://thespianpy.com/doc
 
 Please report any issues here via the Github issue tracker.
 
+.. image:: https://travis-ci.org/kquick/Thespian.svg?branch=master
+    :target: https://travis-ci.org/kquick/Thespian
+    
 Contacts:
 ---------
 
