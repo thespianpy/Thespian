@@ -240,34 +240,50 @@ class TestUnitHysteresis(object):
 
     def testTwentySendsSameAddressSameMessageTypeSendAfterDelay(self):
         self.sends = []
+        min_h_period = timedelta(milliseconds=2)
+        max_h_period = timedelta(milliseconds=20)
+        h_rate = 2
         hs = HysteresisDelaySender(self.send,
-                                   hysteresis_min_period = timedelta(milliseconds=2),
-                                   hysteresis_max_period = timedelta(milliseconds=20),
-                                   hysteresis_rate = 2)
+                                   hysteresis_min_period=min_h_period,
+                                   hysteresis_max_period=max_h_period,
+                                   hysteresis_rate=h_rate)
+
+        # Create the messages to send
         intents = [TransmitIntent('addr1', 'msg1')]
         for num in range(20):
             intents.append(TransmitIntent('addr1', 'msg'))
+
+        # Send all intents in rapid succession
         for each in intents:
             hs.sendWithHysteresis(each)
+
         # First was sent immediately, all others are delayed
         assert 1 == len(getattr(self, 'sends', []))
         assert intents[0] == self.sends[0]
+
         # The hysteresis delay should be maxed out
         t1 = hs.delay.remaining()
         assert timedelta(seconds=0) != t1
-        assert timedelta(milliseconds=20) >= t1
-        assert timedelta(milliseconds=9) < t1
+        assert max_h_period >= t1
+
         # Wait the delay period and then check, which should send the
-        # (latest) queued messages
+        # (latest) queued messages.  Because all the messages and
+        # target addresses are identical, this will actually only send
+        # a single message.
         sleep(hs.delay.remainingSeconds())
         hs.checkSends()
-        # Verify that hysteresis delay is not yet back to zero and
-        # additional sends are still blocked.
-        assert not hs.delay.expired()  # got refreshed and reduced in checkSends
+        assert 2 == len(getattr(self, 'sends', []))
+
+        # Verify that although the queued messages were sent, the
+        # hysteresis delay is not yet back to zero and additional
+        # sends are still blocked.
+        assert not hs.delay.expired()  # refreshed and reduced in checkSends
         hs.sendWithHysteresis(intents[0])
+        t1 = hs.delay.remaining() # send attempt probably bumped this up again
         assert 2 == len(getattr(self, 'sends', []))
         assert intents[0] == self.sends[0]
         assert intents[-1] == self.sends[1]
+
         # Verify that the hysteresis delay keeps dropping and
         # eventually gets back to zero.  After a drop, any pending
         # sends that were blocked should be sent.
@@ -276,17 +292,29 @@ class TestUnitHysteresis(object):
             if hs.delay.expired(): break
             t2 = hs.delay.remaining()
             assert timedelta(seconds=0) != t2
-            assert t2 < t1
+            assert (x, t2) < (x, t1)
             assert nsent == len(getattr(self, 'sends', []))
             sleep(hs.delay.remainingSeconds())
             t1 = t2
             hs.checkSends()
-            if nsent == 2: nsent = 3
+            if nsent == 2:
+                # All queued sends should now have been sent, but
+                # since they are all the same, there was only one more
+                # actual send.
+                nsent = 3
+
         # Now verify hysteresis sender is back to the original state
         assert 3 == len(getattr(self, 'sends', []))
+
         hs.sendWithHysteresis(intents[1])
+
         assert 4 == len(getattr(self, 'sends', []))
         assert intents[0] == self.sends[0]
         assert intents[-1] == self.sends[1]
         assert intents[0] == self.sends[2]
         assert intents[1] == self.sends[3]
+
+        # Verify that all intents got completed even though some were
+        # duplicates and not actually sent.
+        for each in intents:
+            assert each.result == SendStatus.Sent
