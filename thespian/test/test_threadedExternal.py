@@ -154,7 +154,7 @@ class TestFuncThreadedExternal(object):
         # UDP does not have delivery confirmation, it is unreliable,
         # especially at higher counts.
         if count > 10:
-            unstable_test(asys, 'multiprocQueueBase')
+            unstable_test(asys, 'multiprocUDPBase')
         global finishes_lock, success_finishes, failure_finishes
         starting_successes = success_finishes
         transfer = asys.createActor(Transfer)
