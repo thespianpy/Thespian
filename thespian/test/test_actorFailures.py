@@ -8,6 +8,7 @@ import sys
 max_replacement_delay = timedelta(seconds=0.35)
 max_response_delay = timedelta(seconds=1.0)
 max_no_response_delay = timedelta(seconds=0.50)
+got_bored_and_left = timedelta(seconds=30)
 
 
 class TellChild(object):
@@ -32,8 +33,13 @@ class Parent(Actor):
         self.son = None      # Always a NonStarter
         self.daughter = None  # Starter on restart
         self.poisonedChild = False
+        self._exitWait = False
 
     def receiveMessage(self, msg, sender):
+        if not self._exitWait:
+            self.wakeupAfter(got_bored_and_left)
+            self._exitWait = True
+
         if isinstance(msg, PassedMessage):
             sender = msg.origSender
             msg = msg.msg
@@ -87,7 +93,12 @@ class RestartParent(Parent):
         self._replaced = False
         self._numCreates = 0
         self._numCreatesMax = 5
+
     def receiveMessage(self, msg, sender):
+        if not self._exitWait:
+            self.wakeupAfter(got_bored_and_left)
+            self._exitWait = True
+
         if isinstance(msg, ChildActorExited):
             if self._numCreates < self._numCreatesMax:
                 self._numCreates += 1
@@ -97,17 +108,28 @@ class RestartParent(Parent):
                 elif self.daughter == msg.childAddress:
                     self.daughter = self.createActor(RestartParent)
                 self.notifyRestartWaiter()
+
         elif isinstance(msg, str) and msg == 'wait for replacement':
             self.waitForRestart(msg, sender)
+
         elif isinstance(msg, PassedMessage) and \
              isinstance(msg.msg, str) and msg.msg == 'wait for replacement':
             self.waitForRestart(msg.msg, msg.origSender)
+
         elif isinstance(msg, WakeupMessage):
-            self.notifyRestartWaiter()
+            if msg.delayPeriod == got_bored_and_left:
+                # Sometimes the parent gets killed with a harsh signal
+                # and cannot shutdown the children, so this cleans up
+                # the actor for those tests.
+                self.send(self.myAddress, ActorExitRequest())
+            else:
+                self.notifyRestartWaiter()
+
         else:
             if isinstance(msg, TellChild):
                 self._replaced = False
             super(RestartParent, self).receiveMessage(msg, sender)
+
     def waitForRestart(self, msg, sender):
         if self._replaced:
             self._replaced = False
@@ -115,6 +137,7 @@ class RestartParent(Parent):
         else:
             self.waiter = sender
             self.wakeupAfter(max_replacement_delay)
+
     def notifyRestartWaiter(self):
         waiter = getattr(self, 'waiter', None)
         if waiter:
@@ -134,6 +157,7 @@ class NoRestartParent(Parent):
 class NonStarter(Actor):
     def __init__(self, *args, **kw):
         raise Exception('This actor can never start')
+
     def receiveMessage(self, msg, sender):
         if not isinstance(msg, ActorExitRequest):
             self.send(sender, msg)
@@ -143,6 +167,7 @@ class Confused(Actor):
     def __init__(self, *args, **kw):
         self.name = 'dunno'
         super(Confused, self).__init__(*args, **kw)
+
     def receiveMessage(self, msg, sender):
         if isinstance(msg, (ActorExitRequest, BadFish)):
             raise NameError("Who am I?")
