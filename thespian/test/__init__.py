@@ -114,7 +114,12 @@ def get_free_admin_port_random():
     global testAdminPort
     if testAdminPort is None:
         import random
-        testAdminPort = random.randint(5,60) * 1000
+        # Reserved system ports are typically below 1024. Ephemeral
+        # ports typically start at either 32768 (Linux) or 49152
+        # (IANA), or range from 1024-5000 (older Windows).  Pick
+        # something unused outside those ranges for the admin.
+        testAdminPort = random.randint(10000, 30000)
+        #testAdminPort = random.randint(5,60) * 1000
     else:
         testAdminPort = testAdminPort + 1
     return testAdminPort
@@ -123,16 +128,15 @@ def get_free_admin_port():
     import socket
     import random
     for tries in range(100):
-        port = random.randint(5000, 60000)
+        port = random.randint(5000, 30000)
         try:
-            socket.socket(socket.AF_INET,
-                          socket.SOCK_STREAM,
-                          socket.IPPROTO_TCP).bind(('',port))\
-                  .close()
-            socket.socket(socket.AF_INET,
-                          socket.SOCK_DGRAM,
-                          socket.IPPROTO_UDP).bind(('',port))\
-                  .close()
+            for m,p in [ (socket.SOCK_STREAM, socket.IPPROTO_TCP),
+                         (socket.SOCK_DGRAM, socket.IPPROTO_UDP),
+            ]:
+                s = socket.socket(socket.AF_INET, m, p)
+                s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+                s.bind(('',port))
+                s.close()
             return port
         except Exception:
             pass
