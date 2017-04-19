@@ -1,1 +1,3 @@
-# importlib
+# Thespian has no required dependencies.
+
+# Thespian will utilize the setproctitle package if present.
