@@ -27,7 +27,7 @@ class TestMessage(object):
     def __str__(self): return self.name
 
 
-class TestActor(Actor):
+class LoadTestActor(Actor):
 
     def __init__(self):
         self.sum = 0
@@ -73,7 +73,7 @@ class TestFuncLoad(object):
            set too high (> 2500), the ActorExitRequests will not be
            sent and Actors may be leftover.
         """
-        actors = [asys.createActor(TestActor) for X in range(actorDepth)]
+        actors = [asys.createActor(LoadTestActor) for X in range(actorDepth)]
         starttime = datetime.now()
         for X in range(nMessages):  # messages to send
             msg = TestMessage(actors[1:])
@@ -95,7 +95,7 @@ class TestFuncLoad(object):
            drop some messages under a high message count load and end
            up timing out.
         """
-        actors = [asys.createActor(TestActor) for X in range(actorDepth)]
+        actors = [asys.createActor(LoadTestActor) for X in range(actorDepth)]
         for ii,actor in enumerate(actors):
             if actor is None or not actor:
                 raise ValueError('Actor address %s is %s!'%(ii, actor))
@@ -123,7 +123,7 @@ class TestFuncLoad(object):
            set too high (> 2500), the ActorExitRequests will not be
            sent and Actors may be leftover.
         """
-        actors = [asys.createActor(TestActor) for X in range(actorDepth)]
+        actors = [asys.createActor(LoadTestActor) for X in range(actorDepth)]
         starttime = datetime.now()
         for X in range(nMessages):  # messages to send
             msg = TestMessage(actors[1:])
