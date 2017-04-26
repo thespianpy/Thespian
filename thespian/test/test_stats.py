@@ -17,21 +17,21 @@ from thespian.system.messages.status import *
 import datetime
 
 
-class TestActor(Actor):
+class StatsTestActor(Actor):
 
     def receiveMessage(self, msg, sender):
         if msg == 'NewChild':
-            self.child = self.createActor(TestActor)
+            self.child = self.createActor(StatsTestActor)
             self.send(sender, self.child)
         elif msg == 'Sleep':
             self.wakeupAfter(timedelta(seconds=10))
-        print('TestActor got %s from %s'%(str(msg), str(sender)))
+        print('StatsTestActor got %s from %s'%(str(msg), str(sender)))
 
 
 class TestFuncStats(object):
 
     def testGetStatsFromIdlePrimaryActor(self, asys):
-        aa = asys.createActor(TestActor)
+        aa = asys.createActor(StatsTestActor)
         rsp = asys.ask(aa, Thespian_StatusReq(), 4)
         formatStatus(rsp)
         assert isinstance(rsp, Thespian_ActorStatus)
@@ -41,7 +41,7 @@ class TestFuncStats(object):
 
 
     def testGetStatsShowsCorrectChildCount(self, asys):
-        aa = asys.createActor(TestActor)
+        aa = asys.createActor(StatsTestActor)
         ab = asys.ask(aa, 'NewChild', 1)
 
         rsp = asys.ask(aa, Thespian_StatusReq(), 4)
@@ -83,7 +83,7 @@ class TestFuncStats(object):
 
 
     def testGetStatsShowsCorrectSleepCount(self, asys):
-        aa = asys.createActor(TestActor)
+        aa = asys.createActor(StatsTestActor)
         asys.tell(aa, 'Sleep')
         time.sleep(0.1)
 
