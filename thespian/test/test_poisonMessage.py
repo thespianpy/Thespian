@@ -25,7 +25,7 @@ class PoisonCounter(Actor):
             self.failed = msg[1]
 
 
-class TestActor(Actor):
+class PoisonTestActor(Actor):
     def receiveMessage(self, msg, sender):
         if isinstance(msg, PoisonMessage):
             if sender == self.myAddress:
@@ -37,7 +37,7 @@ class TestActor(Actor):
         elif isinstance(msg, int):
             if msg == 3:
                 raise ValueError('Yucky number 3')
-            next = self.createActor(TestActor)
+            next = self.createActor(PoisonTestActor)
             self.send(next, self.recorder)
             self.send(next, msg+1)
         elif "Hello" == msg:
@@ -46,7 +46,7 @@ class TestActor(Actor):
             pass
 
 
-class NoBadNewsActor(TestActor):
+class NoBadNewsActor(PoisonTestActor):
     def receiveMessage(self, msg, sender):
         if isinstance(msg, ChildActorExited):
             raise IndexError('Do not give me bad news')
@@ -76,7 +76,7 @@ class TestFuncPoisonMessage(object):
 
     def testBadNews(self, asys):
         counter = asys.createActor(PoisonCounter)
-        t1 = asys.createActor(TestActor)
+        t1 = asys.createActor(PoisonTestActor)
         asys.tell(t1, counter)
         r = asys.ask(counter, "Count?", ask_wait)
         assert r == 0
@@ -87,7 +87,7 @@ class TestFuncPoisonMessage(object):
 
     def testLevel2(self, asys):
         counter = asys.createActor(PoisonCounter)
-        t1 = asys.createActor(TestActor)
+        t1 = asys.createActor(PoisonTestActor)
         asys.tell(t1, counter)
         r = asys.ask(counter, "Count?", ask_wait)
         assert r == 0
@@ -100,7 +100,7 @@ class TestFuncPoisonMessage(object):
 
     def testLevel1(self, asys):
         counter = asys.createActor(PoisonCounter)
-        t1 = asys.createActor(TestActor)
+        t1 = asys.createActor(PoisonTestActor)
         asys.tell(t1, counter)
         r = asys.ask(counter, "Count?", ask_wait)
         assert r == 0
@@ -112,14 +112,14 @@ class TestFuncPoisonMessage(object):
 
     def testLevel3tell(self, asys):
         counter = asys.createActor(PoisonCounter)
-        t1 = asys.createActor(TestActor)
+        t1 = asys.createActor(PoisonTestActor)
         asys.tell(t1, counter)
         r = asys.ask(counter, "Count?", ask_wait)
         assert r == 0
         r = asys.ask(t1, "Hello", ask_wait)
         assert r == 'hi'
-        # Send a message that will cause the TestActor to throw an
-        # exception.  The system will restart the TestActor and
+        # Send a message that will cause the PoisonTestActor to throw an
+        # exception.  The system will restart the PoisonTestActor and
         # re-attempt delivery, but on multiple failures it will send
         # back the request to the originator in a PoisonMessage
         # wrapper.
@@ -157,14 +157,14 @@ class TestFuncPoisonMessage(object):
 
     def testLevel3ask(self, asys):
         counter = asys.createActor(PoisonCounter)
-        t1 = asys.createActor(TestActor)
+        t1 = asys.createActor(PoisonTestActor)
         asys.tell(t1, counter)
         r = asys.ask(counter, "Count?", ask_wait)
         assert r == 0
         r = asys.ask(t1, "Hello", ask_wait)
         assert r == 'hi'
-        # Send a message that will cause the TestActor to throw an
-        # exception.  The system will restart the TestActor and
+        # Send a message that will cause the PoisonTestActor to throw an
+        # exception.  The system will restart the PoisonTestActor and
         # re-attempt delivery, but on multiple failures it will send
         # back the request to the originator in a PoisonMessage
         # wrapper.
