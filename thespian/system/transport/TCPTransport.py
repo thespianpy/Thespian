@@ -77,8 +77,6 @@ even between processes on separate systems.
 # transmit sequence (as opposed to a blocking transmit, which would
 # consume the processing budget for highly active scenarios).
 
-import threading
-
 import logging
 from thespian.system.utilis import (thesplog, fmap, partition)
 from thespian.system.timing import timePeriodSeconds, ExpirationTimer
