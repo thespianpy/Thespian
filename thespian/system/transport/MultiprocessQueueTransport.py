@@ -461,6 +461,7 @@ class MultiprocessQueueTCore_External(MultiprocessQueueTCore_Common):
                 self._my_tqueues = {str(self._my_address): Q.Queue()}
                 self._subthread = threading.Thread(target=self.subcontext,
                                                    name='subcontext')
+                self._subthread.daemon = True
                 self._subthread.start()
                 self.isMyAddress = self.tsafe_isMyAddress
                 self.core_transmit = self.tsafe_core_transmit
