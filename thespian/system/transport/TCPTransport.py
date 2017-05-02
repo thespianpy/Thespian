@@ -654,16 +654,7 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
     def _finishIntent(self, intent, status=SendStatus.Sent):
         if hasattr(intent, 'socket'):
             if hasattr(self, '_openSockets'):
-                extraRead = getattr(intent, 'extraRead', None)
-                if extraRead:
-                    incoming = TCPIncomingPersistent(intent.targetAddr,
-                                                     intent.socket)
-                    incoming.addData(extraRead)
-                    pendingIncoming = self._addedDataToIncoming(incoming)
-                    if pendingIncoming:
-                        self._incomingSockets[
-                            pendingIncoming.socket.fileno()] = pendingIncoming
-                else:
+                if not self._queue_intent_extra(intent):
                     if status == SendStatus.Sent:
                         opskey = opsKey(intent.targetAddr)
                         _safeSocketShutdown(self._openSockets.get(opskey, None))
@@ -695,6 +686,24 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
             delattr(intent, 'socket')
         intent.tx_done(status)
         return False  # intent no longer needs to be attempted
+
+    def _queue_intent_extra(self, intent):
+        extraRead = getattr(intent, 'extraRead', None)
+        if not extraRead:
+            return False
+        incoming = TCPIncomingPersistent(intent.targetAddr,
+                                         intent.socket)
+        try:
+            incoming.addData(extraRead)
+        except Exception:
+            # Bad trailing data, so discard it.
+            thesplog('discarding bad trailing tx ack data')
+            return False
+        pendingIncoming = self._addedDataToIncoming(incoming)
+        if pendingIncoming:
+            self._incomingSockets[
+                pendingIncoming.socket.fileno()] = pendingIncoming
+        return True  # socket is in-progress or was already handled
 
     def _forwardIfNeeded(self, intent):
         # Called when an intent is originally received to determine if
@@ -1377,7 +1386,14 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
             # reception.  Discard it.
             inc.close()
             return None
-        inc.addData(rdata)
+        try:
+            inc.addData(rdata)
+        except Exception:
+            # Bad data, so discard it and close the socket.
+            thesplog('corrupted incoming data; closing socket',
+                     level=logging.WARNING)
+            inc.close()
+            return None
         return self._addedDataToIncoming(inc)
 
     def _addedDataToIncoming(self, inc, skipFinish=False):
@@ -1415,8 +1431,14 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
         self._processReceivedEnvelope(rEnv)
         if extra and isinstance(inc, TCPIncomingPersistent):
             newinc = TCPIncomingPersistent(inc.fromAddress, inc.socket)
-            newinc.addData(rdata)
-            return self._addedDataToIncoming(newinc)
+            try:
+                newinc.addData(rdata)
+            except Exception:
+                # Bad trailing data, so discard it by doing nothing.
+                thesplog('discarding bad incoming trailing data')
+                pass
+            else:
+                return self._addedDataToIncoming(newinc)
         if not skipFinish:
             self._finishIncoming(inc, rEnv.sender)
         return None

@@ -48,7 +48,12 @@ class ReceiveBuffer(object):
                 self._buf += buf
                 self._blen = 1  # unimportant if _size not set, but non-zero for is_empty
             else:
-                self._size = eval(self._buf + buf[:markPos])
+                try:
+                    self._size = int(self._buf + buf[:markPos])
+                except ValueError:
+                    thesplog('Cannot determine stream buffer size from %s + %s',
+                             self._buf, buf, markPos, level=logging.ERROR)
+                    raise
                 self._buf = rem[:self._size]
                 self._blen = len(self._buf)
                 if len(rem) > self._size:
