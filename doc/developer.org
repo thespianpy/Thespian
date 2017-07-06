@@ -13,12 +13,12 @@
 
 * Source
   :PROPERTIES:
-  :CUSTOM_ID: h:851aafed-d085-49ed-b189-3bfd90a8e573
+  :CUSTOM_ID: h--851aafed-d085-49ed-b189-3bfd90a8e573
   :END:
 
 ** Availability
    :PROPERTIES:
-   :CUSTOM_ID: h:273880cf-f38b-40bd-8ea0-95d03d668b29
+   :CUSTOM_ID: h--273880cf-f38b-40bd-8ea0-95d03d668b29
    :END:
 
     Source code for Thespian is available at
@@ -26,7 +26,7 @@
 
 ** Documentation
    :PROPERTIES:
-   :CUSTOM_ID: h:9ebe8005-1460-4634-bead-237826702ea2
+   :CUSTOM_ID: h--9ebe8005-1460-4634-bead-237826702ea2
    :END:
 
     Thespian documentation is maintained in the source tree under the
@@ -48,14 +48,14 @@ $ bash doc/gen_html.sh doc/using.org
 
 ** Issues
    :PROPERTIES:
-   :CUSTOM_ID: h:e9695953-86ef-420c-a33a-4a0db2455a04
+   :CUSTOM_ID: h--e9695953-86ef-420c-a33a-4a0db2455a04
    :END:
 
     Any issues should be posted via the [[https://github.com/kquick/Thespian][main Thespian github page]].
 
 ** Contributions
    :PROPERTIES:
-   :CUSTOM_ID: h:a0f114cf-cfc2-4ae6-a852-a4db84986f57
+   :CUSTOM_ID: h--a0f114cf-cfc2-4ae6-a852-a4db84986f57
    :END:
 
     Contributions (both source and documentation) should be in the
@@ -68,12 +68,12 @@ $ bash doc/gen_html.sh doc/using.org
 
 * Testing
   :PROPERTIES:
-  :CUSTOM_ID: h:701a67c8-8882-49ff-928c-14ae0b663cbf
+  :CUSTOM_ID: h--701a67c8-8882-49ff-928c-14ae0b663cbf
   :END:
 
 ** Approach
    :PROPERTIES:
-   :CUSTOM_ID: h:1c7bb213-1e22-455e-b767-c9a6a1a5cd68
+   :CUSTOM_ID: h--1c7bb213-1e22-455e-b767-c9a6a1a5cd68
    :END:
 
   While there are some Thespian tests that use mocking to reduce the
@@ -89,7 +89,7 @@ $ bash doc/gen_html.sh doc/using.org
 
 ** Test Duration
    :PROPERTIES:
-   :CUSTOM_ID: h:f099ef66-5ab1-45d7-a700-b065f885ca75
+   :CUSTOM_ID: h--f099ef66-5ab1-45d7-a700-b065f885ca75
    :END:
 
   Because of the approach above running the tests can take some time.
@@ -106,7 +106,7 @@ $ bash doc/gen_html.sh doc/using.org
 
 ** Testing System Bases
    :PROPERTIES:
-   :CUSTOM_ID: h:1dfd22a5-0c88-4d8e-8e0d-5383a503678a
+   :CUSTOM_ID: h--1dfd22a5-0c88-4d8e-8e0d-5383a503678a
    :END:
 
   Because all systembases are tested, it is necessary to accomodate
@@ -118,13 +118,13 @@ $ bash doc/gen_html.sh doc/using.org
   task and Actors at hand.
 
   Some of the system bases do not support some features (as detailed
-  [[http://thespianpy.com/doc/using.html#h:2a5fa63d-e6eb-43b9-bea8-47223b27544e][here in the Using Thespian guide]]) and so there are inputs provided
+  [[http://thespianpy.com/doc/using.html#h--2a5fa63d-e6eb-43b9-bea8-47223b27544e][here in the Using Thespian guide]]) and so there are inputs provided
   to the tests to indicate which are viable and/or stable.  More on
   this in the Running Tests section below.
 
 ** Running Tests
    :PROPERTIES:
-   :CUSTOM_ID: h:a992a85a-623f-47c8-a810-deefcb82a521
+   :CUSTOM_ID: h--a992a85a-623f-47c8-a810-deefcb82a521
    :END:
 
   Tests are written to fairly conventional Python unittest standards
@@ -190,7 +190,7 @@ $ py.test -k Func
 
 ** Writing Tests
    :PROPERTIES:
-   :CUSTOM_ID: h:bf031295-256d-471e-922a-808a77c3fbec
+   :CUSTOM_ID: h--bf031295-256d-471e-922a-808a77c3fbec
    :END:
 
 When writing tests for Thespian, there is an ~asys~ fixture for pytest

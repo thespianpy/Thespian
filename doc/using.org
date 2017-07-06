@@ -14,12 +14,12 @@
 
 * Actor Overview
   :PROPERTIES:
-  :CUSTOM_ID: h:f23d674d-ce24-48b4-8ad8-be8eb299e89e
+  :CUSTOM_ID: h--f23d674d-ce24-48b4-8ad8-be8eb299e89e
   :END:
 
 ** Actors
    :PROPERTIES:
-   :CUSTOM_ID: h:2889c112-6505-4b32-9dce-ac3e4a16ad11
+   :CUSTOM_ID: h--2889c112-6505-4b32-9dce-ac3e4a16ad11
    :END:
 
 At the core, an Actor system is very simple.  An Actor is a standalone
@@ -49,7 +49,7 @@ processing when a message is received.
 
 ** Actor Addresses
    :PROPERTIES:
-   :CUSTOM_ID: h:1348ab18-1a45-495b-ad27-84810a0b42f4
+   :CUSTOM_ID: h--1348ab18-1a45-495b-ad27-84810a0b42f4
    :END:
 
 All Actors have an Address which identifies them uniquely within the
@@ -76,7 +76,7 @@ property.
 
 ** ActorSystem
    :PROPERTIES:
-   :CUSTOM_ID: h:4adf735c-f237-4a8e-98db-ec52567353ac
+   :CUSTOM_ID: h--4adf735c-f237-4a8e-98db-ec52567353ac
    :END:
 
 The ActorSystem is the framework within which the Actors reside.  The
@@ -103,7 +103,7 @@ digraph fig1 {
 
 *** Different Implementations
     :PROPERTIES:
-    :CUSTOM_ID: h:27f1994d-f66e-4be7-a671-8eeeb81bbd4b
+    :CUSTOM_ID: h--27f1994d-f66e-4be7-a671-8eeeb81bbd4b
     :END:
 
   There maybe several different types of ActorSystem implementations.
@@ -113,7 +113,7 @@ digraph fig1 {
   Actors to be oblivious to those elements.
 
   Each implementation may require a different type of addressing, but
-  as described previously in [[#h:1348ab18-1a45-495b-ad27-84810a0b42f4][Actor Addresses]] the Actors themselves
+  as described previously in [[#h--1348ab18-1a45-495b-ad27-84810a0b42f4][Actor Addresses]] the Actors themselves
   should treat the ActorAddress objects as opaque.  In addition, an
   Actor cannot generate an ActorAddress; it must be given to the Actor
   as a result of creating an Actor or in a message passed by another
@@ -133,13 +133,13 @@ digraph fig1 {
   communicate between Actors v.s. a system that uses local
   shared-memory queue structures.
 
-  The [[#h:2a5fa63d-e6eb-43b9-bea8-47223b27544e][ActorSystem Implementations]] section provides detailed
+  The [[#h--2a5fa63d-e6eb-43b9-bea8-47223b27544e][ActorSystem Implementations]] section provides detailed
   information about the known ActorSystem implementations including
   their level of feature support and any known issues.
 
 *** Multiple Systems
     :PROPERTIES:
-    :CUSTOM_ID: h:461f4dc3-4bd6-46fe-a33e-2ad2a8d82d53
+    :CUSTOM_ID: h--461f4dc3-4bd6-46fe-a33e-2ad2a8d82d53
     :END:
 
   There can be more than one ActorSystem running on the current host
@@ -184,7 +184,7 @@ digraph fig2 {
 
 ** External Communications
    :PROPERTIES:
-   :CUSTOM_ID: h:c183ae4b-b397-433f-aa4e-69a6838ece38
+   :CUSTOM_ID: h--c183ae4b-b397-433f-aa4e-69a6838ece38
    :END:
 
 Actors run in an ActorSystem and communicate with each other using the
@@ -200,7 +200,7 @@ ActorSystem itself:
    * *ask* -- sends a message to a target Actor and waits for a
      message to be sent back.
 
-   * *createActor* -- creates a new Actor.  There is no [[#h:3868571d-e754-42a2-840e-6629e817903b][Parent Actor]]
+   * *createActor* -- creates a new Actor.  There is no [[#h--3868571d-e754-42a2-840e-6629e817903b][Parent Actor]]
      for the newly created Actor, so it is referred to as a "top-level
      Actor" and it will be managed by the ActorSystem itself and no
      other Actor will be notified if the top-level Actor exits.
@@ -255,16 +255,16 @@ digraph fig3 {
 
 
 More details on the ActorSystem operations can be found in the
-[[#h:7d2b4986-95d3-4460-9d19-ea0dcdb34fca][ActorSystem API]] section.
+[[#h--7d2b4986-95d3-4460-9d19-ea0dcdb34fca][ActorSystem API]] section.
 
 ** Effects
    :PROPERTIES:
-   :CUSTOM_ID: h:f9386620-2d2e-4f28-b971-0f106881f583
+   :CUSTOM_ID: h--f9386620-2d2e-4f28-b971-0f106881f583
    :END:
 
 Using an Actor system like Thespian tends to be a transformative
 experience in code generation.  Aspects which were previously
-difficult to work with: multi-processing, concurrency, inter-process
+difficult to work with-- multi-processing, concurrency, inter-process
 communications and networking, scalability, fault tolerance and
 recovery, ... --- all of these are handled by the Actor System itself,
 allowing the Actors to focus on the primary needs of the application
@@ -272,12 +272,12 @@ itself.
 
 ** Comparisons
    :PROPERTIES:
-   :CUSTOM_ID: h:4f420b34-24a5-49a0-b70b-e34a925e7c17
+   :CUSTOM_ID: h--4f420b34-24a5-49a0-b70b-e34a925e7c17
    :END:
 
 *** Message Bus (Pub/Sub) Architecture
     :PROPERTIES:
-    :CUSTOM_ID: h:357ddb80-542c-47d6-aa68-1964639777e9
+    :CUSTOM_ID: h--357ddb80-542c-47d6-aa68-1964639777e9
     :END:
 
 The Actor model provides a higher level of abstraction than a Message
@@ -288,12 +288,12 @@ method.
 
 *** Logging Systems
     :PROPERTIES:
-    :CUSTOM_ID: h:aeed6732-198c-41a6-8d2b-45c3b57a120f
+    :CUSTOM_ID: h--aeed6732-198c-41a6-8d2b-45c3b57a120f
     :END:
 
 Log-based architectures (e.g. Kafka) are fundamentally "pub/sub"
 architectures that use persistent storage for the published messages.
-As noted in the [[#h:357ddb80-542c-47d6-aa68-1964639777e9][Message Bus (Pub/Sub) Architecture]], the Actor model is
+As noted in the [[#h--357ddb80-542c-47d6-aa68-1964639777e9][Message Bus (Pub/Sub) Architecture]], the Actor model is
 a higher-level abstraction layer that encompasses the pub/sub
 functionality. The Actor model therefore also abstracts a Logging
 System with the exception of the persistent storage/replay
@@ -307,7 +307,7 @@ easily be extended to mimic a Logging System.
 
 * Using Thespian
   :PROPERTIES:
-  :CUSTOM_ID: h:bfd7e2ce-64cc-4267-85ce-091a3fd29a8b
+  :CUSTOM_ID: h--bfd7e2ce-64cc-4267-85ce-091a3fd29a8b
   :END:
 
 In order to use Thespian, it must be installed in the current Python
@@ -321,7 +321,7 @@ package:
 
 ** Starting an Actor System
    :PROPERTIES:
-   :CUSTOM_ID: h:0c5d14ea-e462-4a9c-b078-58341cc70e6d
+   :CUSTOM_ID: h--0c5d14ea-e462-4a9c-b078-58341cc70e6d
    :END:
 
 An ActorSystem is created simply by instantiating an ~ActorSystem()~
@@ -334,7 +334,7 @@ an ActorSystem using the "multiprocTCPBase":
 #+end_src
 
 More details on the explicit parameters for this call are found in
-[[#h:f71b7bfa-c57b-4716-a2c7-ad83a2ed3582][ActorSystem]], and the known system bases are describe in [[#h:2a5fa63d-e6eb-43b9-bea8-47223b27544e][ActorSystem Implementations]].
+[[#h--f71b7bfa-c57b-4716-a2c7-ad83a2ed3582][ActorSystem]], and the known system bases are describe in [[#h--2a5fa63d-e6eb-43b9-bea8-47223b27544e][ActorSystem Implementations]].
 
 Once created, the running ActorSystem reference is stored as a
 singleton for the current process by default.  This means that
@@ -345,7 +345,7 @@ parameters.
 
 ** Actor Lifecycle
    :PROPERTIES:
-   :CUSTOM_ID: h:41cd5450-c34f-4672-aafa-c96ed29c3f01
+   :CUSTOM_ID: h--41cd5450-c34f-4672-aafa-c96ed29c3f01
    :END:
 
 Actors are created on demand and then persist until they are requested
@@ -359,16 +359,16 @@ itself is shutdown.
 
 *** Creating a Top-Level Actor
     :PROPERTIES:
-    :CUSTOM_ID: h:df9e99d0-dac0-4cbb-8852-6a3bb95c68f9
+    :CUSTOM_ID: h--df9e99d0-dac0-4cbb-8852-6a3bb95c68f9
     :END:
 
 Actors can be created by other Actors or by external applications
 making a request to the running ActorSystem.  In the former case, the
-Actor making the request becomes the "[[#h:3868571d-e754-42a2-840e-6629e817903b][Parent Actor]]" of the newly
+Actor making the request becomes the "[[#h--3868571d-e754-42a2-840e-6629e817903b][Parent Actor]]" of the newly
 created Actor, whereas there is no parent in the latter case and the
 newly created actor is therefore referred to as a "Top-Level" Actor.
 
-A Top-Level Actor is created via the [[#h:a565af1b-aabb-4336-a51d-7505c072c319][ActorSystem.createActor]] call:
+A Top-Level Actor is created via the [[#h--a565af1b-aabb-4336-a51d-7505c072c319][ActorSystem.createActor]] call:
 
 #+begin_src python
     >>> class MyFirstActor(Actor):
@@ -379,16 +379,16 @@ A Top-Level Actor is created via the [[#h:a565af1b-aabb-4336-a51d-7505c072c319][
 #+end_src
 
 The result of the call is the ActorAddress which can be used with the
-ActorSystem's [[#h:8e52624b-cda1-4218-bc9f-693cf06b0758][ask]]() or [[#h:a5dcf9d2-7bda-43c7-ab44-86265992e972][tell]]() methods to communicate with the created
+ActorSystem's [[#h--8e52624b-cda1-4218-bc9f-693cf06b0758][ask]]() or [[#h--a5dcf9d2-7bda-43c7-ab44-86265992e972][tell]]() methods to communicate with the created
 Actor.
 
 *** Creating an Actor
     :PROPERTIES:
-    :CUSTOM_ID: h:de8ad884-0d69-4734-abf5-eb3f1e4a8723
+    :CUSTOM_ID: h--de8ad884-0d69-4734-abf5-eb3f1e4a8723
     :END:
 
 Within the ActorSystem, and Actor can create another Actor by making
-the request to the ActorSystem through the [[#h:3663d87d-8a2f-485b-aeef-c6e9cf418b4c][createActor]]() method on its
+the request to the ActorSystem through the [[#h--3663d87d-8a2f-485b-aeef-c6e9cf418b4c][createActor]]() method on its
 own instance:
 
 #+BEGIN_SRC python
@@ -404,16 +404,16 @@ own instance:
 
 As with the creation of a Top-Level actor, the ~createActor()~ method
 returns an ActorAddress that can be used to communicate with the
-created Actor (using the current Actor's [[#h:28cb6d46-fa93-4efd-bc83-88bbbd50df66][send]]() method).
+created Actor (using the current Actor's [[#h--28cb6d46-fa93-4efd-bc83-88bbbd50df66][send]]() method).
 
 *** Killing an Actor
     :PROPERTIES:
-    :CUSTOM_ID: h:e1d97e35-1d26-4277-b06b-239b6ab4d5d3
+    :CUSTOM_ID: h--e1d97e35-1d26-4277-b06b-239b6ab4d5d3
     :END:
 
 Actors normally continue to exist and handle messages until they are
 explicitly killed.  To kill an Actor, it should be sent an
-[[#h:7e6106e4-a631-47a4-9d22-3fd63f7e1951][ActorExitRequest]] message.
+[[#h--7e6106e4-a631-47a4-9d22-3fd63f7e1951][ActorExitRequest]] message.
 
 The Actor will receive that message directly on its
 ~.receiveMessage()~ method, which allows the Actor to make any
@@ -423,16 +423,16 @@ ActorSystem.
 
 After the Actor has been killed, the Actor's Address is dead-lettered;
 any subsequent messages sent to the Actor's address will be handled as
-described in [[#h:5af075c1-73b1-4f7c-8515-e55ed96c03a9][Dead Letter Handling]].
+described in [[#h--5af075c1-73b1-4f7c-8515-e55ed96c03a9][Dead Letter Handling]].
 
 
 *** Parent Actor
     :PROPERTIES:
-    :CUSTOM_ID: h:3868571d-e754-42a2-840e-6629e817903b
+    :CUSTOM_ID: h--3868571d-e754-42a2-840e-6629e817903b
     :END:
 
     An Actor which creates other Actors automatically becomes the
-    "Parent" of the created Actor(s).  In the example in the [[#h:de8ad884-0d69-4734-abf5-eb3f1e4a8723][Creating
+    "Parent" of the created Actor(s).  In the example in the [[#h--de8ad884-0d69-4734-abf5-eb3f1e4a8723][Creating
     an Actor]] section above, the MyFirstActor Actor is the parent of
     any created Supporting Actor.
 
@@ -447,7 +447,7 @@ described in [[#h:5af075c1-73b1-4f7c-8515-e55ed96c03a9][Dead Letter Handling]].
 
 *** Actor Failure
     :PROPERTIES:
-    :CUSTOM_ID: h:fb0eba5e-9d12-4cfe-8e8c-fe77b6658065
+    :CUSTOM_ID: h--fb0eba5e-9d12-4cfe-8e8c-fe77b6658065
     :END:
 
    If the Actor code handling a message fails, the ActorSystem will
@@ -459,11 +459,11 @@ described in [[#h:5af075c1-73b1-4f7c-8515-e55ed96c03a9][Dead Letter Handling]].
    When writing Actor code, the general philosophy is "fail early";
    the ActorSystem itself will restart the Actor in the event of a
    failure and possibly retry the message or abort that specific
-   message.  See [[#h:62e20202-9bff-4455-968e-73fee0b9f66a][PoisonMessage Returns]] for more details.
+   message.  See [[#h--62e20202-9bff-4455-968e-73fee0b9f66a][PoisonMessage Returns]] for more details.
 
 * Guidelines for Actors and their messages
   :PROPERTIES:
-  :CUSTOM_ID: h:bb3655d6-66df-42d5-9486-e81c8687e9d6
+  :CUSTOM_ID: h--bb3655d6-66df-42d5-9486-e81c8687e9d6
   :END:
 
   - All ActorSystem internal messages are derived from
@@ -483,11 +483,11 @@ described in [[#h:5af075c1-73b1-4f7c-8515-e55ed96c03a9][Dead Letter Handling]].
     the ActorSystemMessage base class.  The messages that an
     ActorSystem can deliver to an Actor are:
 
-       + ActorExitRequest   (see [[#h:e1d97e35-1d26-4277-b06b-239b6ab4d5d3][Killing an Actor]])
-       + ChildActorExited   (see [[#h:3868571d-e754-42a2-840e-6629e817903b][Parent Actor]])
-       + PoisonMessage      (see [[#h:62e20202-9bff-4455-968e-73fee0b9f66a][PoisonMessage Returns]])
-       + ActorSystemConventionUpdate  (see [[#h:3c8aa454-9a21-4d24-a623-ad86bfd4f5a7][Other Actor Systems]])
-       + WakeupMessage      (see [[#h:9cc1acd4-7f35-44ac-94fc-0326dc87a7a5][Timer Messages]])
+       + ActorExitRequest   (see [[#h--e1d97e35-1d26-4277-b06b-239b6ab4d5d3][Killing an Actor]])
+       + ChildActorExited   (see [[#h--3868571d-e754-42a2-840e-6629e817903b][Parent Actor]])
+       + PoisonMessage      (see [[#h--62e20202-9bff-4455-968e-73fee0b9f66a][PoisonMessage Returns]])
+       + ActorSystemConventionUpdate  (see [[#h--3c8aa454-9a21-4d24-a623-ad86bfd4f5a7][Other Actor Systems]])
+       + WakeupMessage      (see [[#h--9cc1acd4-7f35-44ac-94fc-0326dc87a7a5][Timer Messages]])
 
     Most actors can be written very simply and can safely ignore any
     and all messages from the ActorSystem.  These messages are
@@ -501,7 +501,7 @@ described in [[#h:5af075c1-73b1-4f7c-8515-e55ed96c03a9][Dead Letter Handling]].
   - It is a common practice to have an Actor probe for functional
     aspects of the current environment and update the ActorSystem
     capabilities based on the results of the probing (see
-    [[#h:1dc4362f-78dd-4adf-833c-d7bebda07ef8][updateCapability]]).  Changing the existing capabilities *may*
+    [[#h--1dc4362f-78dd-4adf-833c-d7bebda07ef8][updateCapability]]).  Changing the existing capabilities *may*
     result in all existing actors being killed, including the Actor
     initiating the change.
 
@@ -540,7 +540,7 @@ described in [[#h:5af075c1-73b1-4f7c-8515-e55ed96c03a9][Dead Letter Handling]].
 
 * Thespian Actor Feature Extensions
   :PROPERTIES:
-  :CUSTOM_ID: h:330e09d9-4a98-4814-8a1c-6003ce6a7995
+  :CUSTOM_ID: h--330e09d9-4a98-4814-8a1c-6003ce6a7995
   :END:
 
   The Thespian system provides several extended features not present
@@ -550,7 +550,7 @@ described in [[#h:5af075c1-73b1-4f7c-8515-e55ed96c03a9][Dead Letter Handling]].
 
 ** Message Delivery
    :PROPERTIES:
-   :CUSTOM_ID: h:3d280f21-4a99-416f-8cd7-9c9380a1c86c
+   :CUSTOM_ID: h--3d280f21-4a99-416f-8cd7-9c9380a1c86c
    :END:
 
   Messages are delivered to Actors on a /best-effort/ basis.  This
@@ -574,11 +574,11 @@ described in [[#h:5af075c1-73b1-4f7c-8515-e55ed96c03a9][Dead Letter Handling]].
   prevent too many messages being held in limbo.
 
   If the recipient exits before the send can be completed, the message
-  is redirected as described in [[#h:5af075c1-73b1-4f7c-8515-e55ed96c03a9][Dead Letter Handling]].
+  is redirected as described in [[#h--5af075c1-73b1-4f7c-8515-e55ed96c03a9][Dead Letter Handling]].
 
 *** Message Mutability
     :PROPERTIES:
-    :CUSTOM_ID: h:23ac66d7-ba55-40dc-ade8-a71e51c7a404
+    :CUSTOM_ID: h--23ac66d7-ba55-40dc-ade8-a71e51c7a404
     :END:
 
   Thespian does not automatically generate copies of messages that are
@@ -626,7 +626,7 @@ class ActorB(Actor):
   system Base that is used.  When using a multi-process system base,
   ActorA's version will not be modified because the two Actors run as
   separate processes and so ActorB has a separate copy of the message,
-  but the [[#h:924dc0fe-c15b-491e-a6d1-8b88683d4c0d][simpleSystemBase]] (for example) is exposed to this modification.
+  but the [[#h--924dc0fe-c15b-491e-a6d1-8b88683d4c0d][simpleSystemBase]] (for example) is exposed to this modification.
 
   If an Actor references a message post-send, it should be aware of
   this potential.  The mutation may be avoided by ActorA sending a
@@ -638,13 +638,13 @@ class ActorB(Actor):
 
 ** Dead Letter Handling
    :PROPERTIES:
-   :CUSTOM_ID: h:5af075c1-73b1-4f7c-8515-e55ed96c03a9
+   :CUSTOM_ID: h--5af075c1-73b1-4f7c-8515-e55ed96c03a9
    :END:
 
   If the ActorSystem is unable to deliver a message to the target
   Actor (usually because the target Actor has been killed or otherwise
   exited), the ActorSystem will route that message to Dead Letter
-  handling.  The routed message will be wrapped in a [[#h:e3d4bfa0-7fad-4622-b707-8f67e4f75d5c][DeadEnvelope]]
+  handling.  The routed message will be wrapped in a [[#h--e3d4bfa0-7fad-4622-b707-8f67e4f75d5c][DeadEnvelope]]
   message to indicate it's disposition.
 
   By default, the Dead Letter handling will discard the message in
@@ -666,24 +666,24 @@ class ActorB(Actor):
 
 ** Non-startable Actors
    :PROPERTIES:
-   :CUSTOM_ID: h:badcba33-bc39-4009-833f-07617ec72e12
+   :CUSTOM_ID: h--badcba33-bc39-4009-833f-07617ec72e12
    :END:
 
   Actors that cannot be started at all will be Dead Lettered by the
   ActorSystem.  If an Actor has registered for receiving Dead Letters
-  (see [[#h:5af075c1-73b1-4f7c-8515-e55ed96c03a9][Dead Letter Handling]]) then it can perform special actions to
+  (see [[#h--5af075c1-73b1-4f7c-8515-e55ed96c03a9][Dead Letter Handling]]) then it can perform special actions to
   handle the non-starting Actor, but by default all messages sent to a
   non-starting Actor are discarded by the default Dead Letter Handling.
 
 ** PoisonMessage Returns
    :PROPERTIES:
-   :CUSTOM_ID: h:62e20202-9bff-4455-968e-73fee0b9f66a
+   :CUSTOM_ID: h--62e20202-9bff-4455-968e-73fee0b9f66a
    :END:
 
    If an Actor experiences a failure (an uncaught exception) when
    processing a message, the ActorSystem will catch the exception and
    retry delivery of the message to the target Actor (as describe in
-   [[#h:fb0eba5e-9d12-4cfe-8e8c-fe77b6658065][Actor Failure]]).
+   [[#h--fb0eba5e-9d12-4cfe-8e8c-fe77b6658065][Actor Failure]]).
 
    If the target Actor generates another exception when handling the
    message the second time, the ActorSystem will assume that the
@@ -692,25 +692,25 @@ class ActorB(Actor):
    the original message.  The Actor experiencing the exception is
    still live, and other messages will still be delivered to it.
 
-   See [[#h:407c4c79-2a05-442d-b6e8-5bf7c2f2d068][PoisonMessage]] for details on the ~PoisonMessage~ object.
+   See [[#h--407c4c79-2a05-442d-b6e8-5bf7c2f2d068][PoisonMessage]] for details on the ~PoisonMessage~ object.
 
 ** Top-Level Actors
    :PROPERTIES:
-   :CUSTOM_ID: h:91e3dc4e-af22-4076-94ee-43f60458f0e0
+   :CUSTOM_ID: h--91e3dc4e-af22-4076-94ee-43f60458f0e0
    :END:
 
   Actors created by the external environment are called "Top-Level
   Actors" and are unique in that they have no "parent" Actor (see
-  [[#h:3868571d-e754-42a2-840e-6629e817903b][Parent Actor]]).  Since there is no Parent Actor, there is nowhere to
+  [[#h--3868571d-e754-42a2-840e-6629e817903b][Parent Actor]]).  Since there is no Parent Actor, there is nowhere to
   send a ChildActorExited message when the Actor dies and therefore
   there is no allowance for restarting Top Level Actors.
 
   Messages sent to a Top Level Actor that has died will still be
-  redirected to the Dead Letter Handler (see [[#h:5af075c1-73b1-4f7c-8515-e55ed96c03a9][Dead Letter Handling]]).
+  redirected to the Dead Letter Handler (see [[#h--5af075c1-73b1-4f7c-8515-e55ed96c03a9][Dead Letter Handling]]).
 
 ** Named Actors
    :PROPERTIES:
-   :CUSTOM_ID: h:2d5ef9c7-2132-45f9-b6eb-6f2729f5b232
+   :CUSTOM_ID: h--2d5ef9c7-2132-45f9-b6eb-6f2729f5b232
    :END:
 
   Most Actors are created and subsequently referenced by the
@@ -727,8 +727,8 @@ class ActorB(Actor):
   requested Actor, but the ActorSystem will remember the Actor
   associated with that name andall subsequent Actor creation requests
   with the same name will return the originally created Actor (see the
-  ~globalName~ parameter to the ActorSystem's [[#h:a565af1b-aabb-4336-a51d-7505c072c319][createActor]] call or the
-  Actor's [[#h:3663d87d-8a2f-485b-aeef-c6e9cf418b4c][createActor]] call).
+  ~globalName~ parameter to the ActorSystem's [[#h--a565af1b-aabb-4336-a51d-7505c072c319][createActor]] call or the
+  Actor's [[#h--3663d87d-8a2f-485b-aeef-c6e9cf418b4c][createActor]] call).
 
   It is possible to create any number of Named Actors in the system,
   although it is the responsibility of the creators to manage the
@@ -737,7 +737,7 @@ class ActorB(Actor):
   There are a couple of disadvantages to Named Actors that must be
   considered relative to their convenience:
 
-   1. All Named Actors are similar to [[#h:91e3dc4e-af22-4076-94ee-43f60458f0e0][Top-Level Actors]] in that they
+   1. All Named Actors are similar to [[#h--91e3dc4e-af22-4076-94ee-43f60458f0e0][Top-Level Actors]] in that they
       are managed by the ActorSystem itself rather than a Parent
       Actor and therefore there is no notification when a Named Actor
       exits, and any messages sent to a Named Actor that has exited
@@ -753,14 +753,14 @@ class ActorB(Actor):
 
 ** Timer Messages
    :PROPERTIES:
-   :CUSTOM_ID: h:9cc1acd4-7f35-44ac-94fc-0326dc87a7a5
+   :CUSTOM_ID: h--9cc1acd4-7f35-44ac-94fc-0326dc87a7a5
    :END:
 
   Normally Actors respond to messages sent to them by other Actors,
   but sometimes an Actor would like to run again after a timed delay.
   While it is possible for the Actor to sleep internally, this will
   prevent it from responding to other messages and cause messages to
-  be queued causing eventual delivery failure (see [[#h:3d280f21-4a99-416f-8cd7-9c9380a1c86c][Message Delivery]]).
+  be queued causing eventual delivery failure (see [[#h--3d280f21-4a99-416f-8cd7-9c9380a1c86c][Message Delivery]]).
 
   To avoid this, each Actor has a ~.wakeupAfter()~ method that can be
   called with a specified Python ~timedelta~ value.  The ActorSystem
@@ -774,7 +774,7 @@ class ActorB(Actor):
 
 ** Watching File Descriptors
    :PROPERTIES:
-   :CUSTOM_ID: h:94edef18-154e-4847-864f-027dff4f6e0a
+   :CUSTOM_ID: h--94edef18-154e-4847-864f-027dff4f6e0a
    :END:
 
   The Actor model itself is a pure specification that is good for
@@ -837,7 +837,7 @@ class ActorB(Actor):
 
 *** Blocking Actors
     :PROPERTIES:
-    :CUSTOM_ID: h:df96b2ed-e292-4ded-a614-30cfa1557858
+    :CUSTOM_ID: h--df96b2ed-e292-4ded-a614-30cfa1557858
     :END:
 
   There are some cases where the desired functionality of the Actor is
@@ -845,7 +845,7 @@ class ActorB(Actor):
   that acts as a client making calls to an external service might be
   best written to block on those external calls.  When the Actor
   blocks, other Actors cannot deliver messages to that Actor and
-  backpressure builds (see [[#h:3d280f21-4a99-416f-8cd7-9c9380a1c86c][Message Delivery]] for more details).
+  backpressure builds (see [[#h--3d280f21-4a99-416f-8cd7-9c9380a1c86c][Message Delivery]] for more details).
 
   The effect of this blocking functionality is to regulate the number
   of requests to the external service.  If the Actor performed
@@ -859,7 +859,7 @@ class ActorB(Actor):
 
 ** Actor Troupes
    :PROPERTIES:
-   :CUSTOM_ID: h:19cf92bf-a6ae-492c-844c-b0831c108a3a
+   :CUSTOM_ID: h--19cf92bf-a6ae-492c-844c-b0831c108a3a
    :END:
 
    If specified appropriately, multiple instances of an Actor can be
@@ -879,11 +879,11 @@ class ActorB(Actor):
    Actor (instead of a Troupe) ensures single-threaded, synchronous
    handling of messages for that Actor.
 
-   See [[#h:c796bc0d-a150-4fb9-8918-58f470813175][Actor Troupe Support]] for more details.
+   See [[#h--c796bc0d-a150-4fb9-8918-58f470813175][Actor Troupe Support]] for more details.
 
 ** ActorSystem Capabilities
    :PROPERTIES:
-   :CUSTOM_ID: h:a17e6c70-5592-4d06-b818-bd25350c4c53
+   :CUSTOM_ID: h--a17e6c70-5592-4d06-b818-bd25350c4c53
    :END:
 
   Actors can stipulate the requirements of the ActorSystem that they
@@ -903,19 +903,19 @@ class ActorB(Actor):
   specifies them.
 
   All Thespian ActorSystem instances automatically supply a set of
-  common capabilities described in the [[#h:2a4bcad4-9fe0-4399-86d4-4bbf0ba0acb7][Common Capabilities]] section.
+  common capabilities described in the [[#h--2a4bcad4-9fe0-4399-86d4-4bbf0ba0acb7][Common Capabilities]] section.
 
 ** Other Actor Systems
    :PROPERTIES:
-   :CUSTOM_ID: h:3c8aa454-9a21-4d24-a623-ad86bfd4f5a7
+   :CUSTOM_ID: h--3c8aa454-9a21-4d24-a623-ad86bfd4f5a7
    :END:
 
   The current ActorSystem can communicate with other ActorSystems to
-  coordinate Actor activities as described in [[#h:461f4dc3-4bd6-46fe-a33e-2ad2a8d82d53][Multiple Systems]].  To
+  coordinate Actor activities as described in [[#h--461f4dc3-4bd6-46fe-a33e-2ad2a8d82d53][Multiple Systems]].  To
   support this, the ActorSystems communicate on known transport
   addresses to form a "Convention" of ActorSystems.
 
-  When new Actors are created, the [[#h:a17e6c70-5592-4d06-b818-bd25350c4c53][ActorSystem Capabilities]] of the
+  When new Actors are created, the [[#h--a17e6c70-5592-4d06-b818-bd25350c4c53][ActorSystem Capabilities]] of the
   ActorSystems that are part of the Convention are used to determine
   where to start up the requested new Actor.
 
@@ -925,16 +925,16 @@ class ActorB(Actor):
 
   Actors can also register to be aware of when remote ActorSystems
   enter or exit the convention.  Registered Actors will receive an
-  [[#h:f311fc02-d355-4d68-b9af-958404637e57][ActorSystemConventionUpdate]] message for these events.  Actors
+  [[#h--f311fc02-d355-4d68-b9af-958404637e57][ActorSystemConventionUpdate]] message for these events.  Actors
   register for these updates using the
-  [[#h:b9f7a2f0-7d2a-4cc0-8241-1fee7c62c44e][notifyOnSystemRegistrationChanges]] API call.
+  [[#h--b9f7a2f0-7d2a-4cc0-8241-1fee7c62c44e][notifyOnSystemRegistrationChanges]] API call.
 
   Not all ActorSystems support multi-system communications, and those
   that do are normally of the multi-process variety.
 
 *** Convention Establishment
     :PROPERTIES:
-    :CUSTOM_ID: h:bd57f29e-4a5e-4725-9ced-7e0c5fa5bcbd
+    :CUSTOM_ID: h--bd57f29e-4a5e-4725-9ced-7e0c5fa5bcbd
     :END:
 
   The ActorSystem implementation determines the manner in which
@@ -949,20 +949,20 @@ class ActorB(Actor):
 
   2. The Convention Leader is told about members and actively attempts
      to establish communications with those members.  This is done
-     using the [[#h:956e30d5-c035-4e1e-86cb-73332e28d8d4][preRegisterRemoteSystem()]] call.  In this mode, the
+     using the [[#h--956e30d5-c035-4e1e-86cb-73332e28d8d4][preRegisterRemoteSystem()]] call.  In this mode, the
      Convention Leader will actively connect to the remote to
      establish or re-establish connectivity (until the membership is
-     cancelled, for example, with the [[#h:ce801678-bcff-497d-be2a-439cb34fc519][deRegisterRemoteSystem()]] call).
+     cancelled, for example, with the [[#h--ce801678-bcff-497d-be2a-439cb34fc519][deRegisterRemoteSystem()]] call).
 
      This latter method is particularly suited to configurations using
-     the "Outbound Only" connectivity mode (see [[#h:9d33a877-b4f0-4012-9510-442d81b0837c][multiprocTCPBase]] for
+     the "Outbound Only" connectivity mode (see [[#h--9d33a877-b4f0-4012-9510-442d81b0837c][multiprocTCPBase]] for
      example) where the Convention Leader is behind a firewall and can
      initiate outbound connections to members but those members cannot
      initiate inbound connections to the Leader.
 
 *** Convention Administrator Communications
     :PROPERTIES:
-    :CUSTOM_ID: h:0500ead3-28ea-440c-9ad6-56cb9fbdd648
+    :CUSTOM_ID: h--0500ead3-28ea-440c-9ad6-56cb9fbdd648
     :END:
 
 The communications between the Convention Leader admin process and the
@@ -981,7 +981,7 @@ utilization of Thespian.
 
 ** Performance
    :PROPERTIES:
-   :CUSTOM_ID: h:5e670e59-8334-477e-a9d2-0c2dc39d82dd
+   :CUSTOM_ID: h--5e670e59-8334-477e-a9d2-0c2dc39d82dd
    :END:
 
 The Thespian implementation is design principles are: correctness,
@@ -1004,7 +1004,7 @@ is adversely affecting your Actor-base application.
 
 ** Logging
    :PROPERTIES:
-   :CUSTOM_ID: h:ce55494c-dd7a-4258-a1e8-b090c3bbb1e6
+   :CUSTOM_ID: h--ce55494c-dd7a-4258-a1e8-b090c3bbb1e6
    :END:
 
 The standard Python logging can be used with the Thespian Actor
@@ -1018,7 +1018,7 @@ where the logger is obtained).
 
 The functionality provided by logging in the Thespian environment
 possibly includes sending log messages to a central Logging actor (as
-explicitly indicated in the [[#h:2a5fa63d-e6eb-43b9-bea8-47223b27544e][ActorSystem Implementations]] section).
+explicitly indicated in the [[#h--2a5fa63d-e6eb-43b9-bea8-47223b27544e][ActorSystem Implementations]] section).
 This is needed because the standard Python logging is not
 multi-process safe and attempts to use it as-is will result in missing
 or duplicated log messages.
@@ -1077,7 +1077,7 @@ captured in an auxiliary file and is only needed for passing to the
 
 *** Thespian Internals Logging
     :PROPERTIES:
-    :CUSTOM_ID: h:856a7ffe-676b-42a9-95eb-bd89a5810f53
+    :CUSTOM_ID: h--856a7ffe-676b-42a9-95eb-bd89a5810f53
     :END:
 
 Because Thespian instruments the standard logging functionality to
@@ -1105,7 +1105,7 @@ before the ActorSystem is started:
 
 ** Actor Code Distribution
    :PROPERTIES:
-   :CUSTOM_ID: h:955ec990-a267-4d08-8f4d-5f980c777173
+   :CUSTOM_ID: h--955ec990-a267-4d08-8f4d-5f980c777173
    :END:
 
   The Thespian ActorSystem provides an feature to specify the code
@@ -1175,12 +1175,12 @@ before the ActorSystem is started:
       communicate with a remote Actor instance that is out-of-date and
       encounter version-related problems.
 
-  The [[#h:731cff6e-674d-4341-bd92-80a08113d5df][loadActorSource]] operation describes this capability in more
+  The [[#h--731cff6e-674d-4341-bd92-80a08113d5df][loadActorSource]] operation describes this capability in more
   detail, including security protections associated with this feature.
 
 * Actor API
   :PROPERTIES:
-  :CUSTOM_ID: h:c3ba9430-5229-44ad-bbd5-ff5426e03e5e
+  :CUSTOM_ID: h--c3ba9430-5229-44ad-bbd5-ff5426e03e5e
   :END:
 
   The Actor API is the set of operations that a running Actor can
@@ -1199,11 +1199,11 @@ before the ActorSystem is started:
 #+end_src
 
   Versioning of the Actor API and the ActorSystem are described in
-  [[#h:a17e6c70-5592-4d06-b818-bd25350c4c53][ActorSystem Capabilities]].
+  [[#h--a17e6c70-5592-4d06-b818-bd25350c4c53][ActorSystem Capabilities]].
 
 ** myAddress
    :PROPERTIES:
-   :CUSTOM_ID: h:584dd408-9496-4f6f-8a86-0f0236f73893
+   :CUSTOM_ID: h--584dd408-9496-4f6f-8a86-0f0236f73893
    :END:
 
 #+begin_src python
@@ -1214,7 +1214,7 @@ before the ActorSystem is started:
 
 ** receiveMessage
    :PROPERTIES:
-   :CUSTOM_ID: h:f89540de-f853-42e3-9d52-23b1f84a251e
+   :CUSTOM_ID: h--f89540de-f853-42e3-9d52-23b1f84a251e
    :END:
 
 #+begin_src python
@@ -1225,11 +1225,11 @@ before the ActorSystem is started:
    received messages.  Each subclass should override the base Actor
    receiveMessage() method as appropriate.  The ~message~ argument is
    the message being received, and the ~sender~ is the ActorAddress of
-   the Actor (or [[#h:c183ae4b-b397-433f-aa4e-69a6838ece38][External Communications]] endpoint) sending the
+   the Actor (or [[#h--c183ae4b-b397-433f-aa4e-69a6838ece38][External Communications]] endpoint) sending the
    message.
 
    The message can be discarded once it has been handled.  As
-   described previously in [[#h:2889c112-6505-4b32-9dce-ac3e4a16ad11][Actors]], there are three things an Actor can
+   described previously in [[#h--2889c112-6505-4b32-9dce-ac3e4a16ad11][Actors]], there are three things an Actor can
    do when handling a message:
      1. Update internal state
      1. Create a finite number of other Actors
@@ -1237,7 +1237,7 @@ before the ActorSystem is started:
 
    If the processing of the message causes an exception, the failure
    will be caught by the ActorSystem and the message may be retried or
-   returned to the sender as described in [[#h:62e20202-9bff-4455-968e-73fee0b9f66a][PoisonMessage Returns]].  Note
+   returned to the sender as described in [[#h--62e20202-9bff-4455-968e-73fee0b9f66a][PoisonMessage Returns]].  Note
    that the /original/ copy of the receive message is passed to the
    Actor with each attempt; if the Actor modifies the message before
    failing with an exception, the retried or Poison-returned version
@@ -1245,16 +1245,16 @@ before the ActorSystem is started:
 
 *** Return Value
     :PROPERTIES:
-    :CUSTOM_ID: h:c7c7275c-fa32-4466-9d1a-e888f993e67c
+    :CUSTOM_ID: h--c7c7275c-fa32-4466-9d1a-e888f993e67c
     :END:
 
    Ordinarily the return value from an Actor's ~receiveMessage()~
    method is ignored, but if the underlying ActorSystem implementation
-   supports the Thespian Watch extension (see [[#h:94edef18-154e-4847-864f-027dff4f6e0a][Watching File
+   supports the Thespian Watch extension (see [[#h--94edef18-154e-4847-864f-027dff4f6e0a][Watching File
    Descriptors]]) then the Actor may return a ThespianWatch object which
    specifies a list of the file numbers to watch for incoming data;
    the Actor's ~receiveMessage()~ will subsequently be passed a
-   [[#h:8a46cfae-7ccc-407a-91c1-d4301b7a653c][WatchMessage]] with the file number(s) for which data is available.
+   [[#h--8a46cfae-7ccc-407a-91c1-d4301b7a653c][WatchMessage]] with the file number(s) for which data is available.
 
    Any other value or object returned from ~.receiveMessage()~ will be
    ignored.
@@ -1279,7 +1279,7 @@ class MyActor(Actor):
 
 ** createActor
    :PROPERTIES:
-   :CUSTOM_ID: h:3663d87d-8a2f-485b-aeef-c6e9cf418b4c
+   :CUSTOM_ID: h--3663d87d-8a2f-485b-aeef-c6e9cf418b4c
    :END:
 
 #+begin_src python
@@ -1297,16 +1297,16 @@ class MyActor(Actor):
    valid manner.
 
    The optional ~targetActorRequirements~ argument is a value that
-   will be passed passed to the [[#h:0e9f4a6a-3083-40fa-a75b-ced37d70eef0][actorSystemCapabilityCheck]] to use for
+   will be passed passed to the [[#h--0e9f4a6a-3083-40fa-a75b-ced37d70eef0][actorSystemCapabilityCheck]] to use for
    validating whether the Actor can be started within the current
-   ActorSystem environment (see [[#h:a17e6c70-5592-4d06-b818-bd25350c4c53][ActorSystem Capabilities]]).  The value
+   ActorSystem environment (see [[#h--a17e6c70-5592-4d06-b818-bd25350c4c53][ActorSystem Capabilities]]).  The value
    specified for this argument can be anything the target Actor's
    ~actorSystemCapabilityCheck()~ method can understand, although
    typically it is a Python dictionary.
 
    The ~globalName~ argument, if specified, should be a string
    specifying the "name" of the Actor within the ActorSystem.  As
-   describe in [[#h:2d5ef9c7-2132-45f9-b6eb-6f2729f5b232][Named Actors]], this name allows the Actor to be a
+   describe in [[#h--2d5ef9c7-2132-45f9-b6eb-6f2729f5b232][Named Actors]], this name allows the Actor to be a
    system-wide singleton and to be uniquely identified and referenced
    in a manner additional to the ActorAddress of the actor.
 
@@ -1315,7 +1315,7 @@ class MyActor(Actor):
    system was started as root, then all Actors will run as root._
 
    The source for the ~actorClass~ to be created is established by
-   the current Actor, relative to any [[#h:731cff6e-674d-4341-bd92-80a08113d5df][loadActorSource]] operation that
+   the current Actor, relative to any [[#h--731cff6e-674d-4341-bd92-80a08113d5df][loadActorSource]] operation that
    apply to the creating Actor itself:
 
      * If an Actor class is specified directly, that class is obtained
@@ -1351,12 +1351,12 @@ class MyActor(Actor):
    aspect of the target Actor.  However, due to this asynchronous
    startup, it is possible that the new Actor cannot be started at
    all; in this event all messages intended for the new target Actor
-   will be handled as described in the [[#h:5af075c1-73b1-4f7c-8515-e55ed96c03a9][Dead Letter Handling]] section.
+   will be handled as described in the [[#h--5af075c1-73b1-4f7c-8515-e55ed96c03a9][Dead Letter Handling]] section.
 
 
 *** globalName
     :PROPERTIES:
-    :CUSTOM_ID: h:c5ae8d61-9358-463d-b0f0-d15ae0246059
+    :CUSTOM_ID: h--c5ae8d61-9358-463d-b0f0-d15ae0246059
     :END:
 
   The parent for a Named Actor (created when the ~globalName~ argument
@@ -1370,12 +1370,12 @@ class MyActor(Actor):
   create with the same globalName.
 
   When a Named Actor exits, only the ActorSystem is aware of the
-  exit; there is no [[#h:ed408390-5a74-4955-9f7d-a84e87595459][ChildActorExited]] notification sent to any Actors
+  exit; there is no [[#h--ed408390-5a74-4955-9f7d-a84e87595459][ChildActorExited]] notification sent to any Actors
   that requested the creation of the Named Actor.
 
 *** Actor Creation Gotchas
     :PROPERTIES:
-    :CUSTOM_ID: h:57dd8b71-0f60-4ad2-9628-08edf2c5b00c
+    :CUSTOM_ID: h--57dd8b71-0f60-4ad2-9628-08edf2c5b00c
     :END:
 
   There are a few issues to be aware of when creating Actors:
@@ -1394,7 +1394,7 @@ class MyActor(Actor):
 
   1. Actor classes must either have been in the system path when the
      ActorSystem was created, or they must exist in a loaded Actor
-     Source (see [[#h:731cff6e-674d-4341-bd92-80a08113d5df][loadActorSource]]).  Many ActorSystems use separate
+     Source (see [[#h--731cff6e-674d-4341-bd92-80a08113d5df][loadActorSource]]).  Many ActorSystems use separate
      processes to manage and create new Actors, so any changes in the
      current process after the ActorSystem process is started up will
      not be visible to the latter.
@@ -1420,7 +1420,7 @@ class MyActor(Actor):
 
 ** send
    :PROPERTIES:
-   :CUSTOM_ID: h:28cb6d46-fa93-4efd-bc83-88bbbd50df66
+   :CUSTOM_ID: h--28cb6d46-fa93-4efd-bc83-88bbbd50df66
    :END:
 
 #+begin_src python
@@ -1437,12 +1437,12 @@ class MyActor(Actor):
     the target asynchronously.  There is no guarantee that the target
     has received the message by the time the ~.send()~ method returns.
     The ActorSystem delivers the message at some point by best-effort,
-    sending the message to [[#h:5af075c1-73b1-4f7c-8515-e55ed96c03a9][Dead Letter Handling]] if it cannot be
+    sending the message to [[#h--5af075c1-73b1-4f7c-8515-e55ed96c03a9][Dead Letter Handling]] if it cannot be
     delivered.
 
 ** wakeupAfter
    :PROPERTIES:
-   :CUSTOM_ID: h:b2b4b63a-c256-4793-8591-1ce8dbd87131
+   :CUSTOM_ID: h--b2b4b63a-c256-4793-8591-1ce8dbd87131
    :END:
 
 #+begin_src python
@@ -1452,12 +1452,12 @@ class MyActor(Actor):
     The ~timePeriod~ specifies a Python ~datetime.timedelta~ period.
     When this time period has expired, the ActorSystem will deliver a
     ~WakeupMessage~ to the Actor via the normal ~.receiveMessage()~
-    entrypoint (the sender will be the Actor itself).  See [[#h:9cc1acd4-7f35-44ac-94fc-0326dc87a7a5][Timer
+    entrypoint (the sender will be the Actor itself).  See [[#h--9cc1acd4-7f35-44ac-94fc-0326dc87a7a5][Timer
     Messages]] for more information.
 
 ** handleDeadLetters
    :PROPERTIES:
-   :CUSTOM_ID: h:4022d522-cdc6-487a-b5d5-5d992572c531
+   :CUSTOM_ID: h--4022d522-cdc6-487a-b5d5-5d992572c531
    :END:
 
 #+begin_src python
@@ -1469,7 +1469,7 @@ class MyActor(Actor):
 
 ** notifyOnSystemRegistrationChanges
    :PROPERTIES:
-   :CUSTOM_ID: h:b9f7a2f0-7d2a-4cc0-8241-1fee7c62c44e
+   :CUSTOM_ID: h--b9f7a2f0-7d2a-4cc0-8241-1fee7c62c44e
    :END:
 
 #+begin_src python
@@ -1478,11 +1478,11 @@ class MyActor(Actor):
 
   This method can be called to register or de-register this Actor for
   handling system registration events from other ActorSystems (see
-  [[#h:3c8aa454-9a21-4d24-a623-ad86bfd4f5a7][Other Actor Systems]]) via [[#h:f311fc02-d355-4d68-b9af-958404637e57][ActorSystemConventionUpdate]] messages.
+  [[#h--3c8aa454-9a21-4d24-a623-ad86bfd4f5a7][Other Actor Systems]]) via [[#h--f311fc02-d355-4d68-b9af-958404637e57][ActorSystemConventionUpdate]] messages.
 
 ** registerSourceAuthority
    :PROPERTIES:
-   :CUSTOM_ID: h:5ae05479-5a6d-4f01-bd7d-c4f544f7b98a
+   :CUSTOM_ID: h--5ae05479-5a6d-4f01-bd7d-c4f544f7b98a
    :END:
 
 #+begin_src python
@@ -1490,8 +1490,8 @@ class MyActor(Actor):
 #+end_src
 
    This method registers the current Actor as the Source Authority
-   handler for the current ActorSystem as described in the [[#h:b26e4f60-d3fa-40b1-bc33-bb20b61ff2d4][Security Considerations]] section of the [[#h:731cff6e-674d-4341-bd92-80a08113d5df][loadActorSource]] ActorSystem API
-   call.  Once registered, this Actor will receive [[#h:3119580d-80a6-4061-a217-1b2b21014172][ValidateSource]]
+   handler for the current ActorSystem as described in the [[#h--b26e4f60-d3fa-40b1-bc33-bb20b61ff2d4][Security Considerations]] section of the [[#h--731cff6e-674d-4341-bd92-80a08113d5df][loadActorSource]] ActorSystem API
+   call.  Once registered, this Actor will receive [[#h--3119580d-80a6-4061-a217-1b2b21014172][ValidateSource]]
    messages and be responsible for decrypting (if necessary) and
    determining authorization for loaded sources to run.
 
@@ -1500,7 +1500,7 @@ class MyActor(Actor):
 
 ** loadActorSource
    :PROPERTIES:
-   :CUSTOM_ID: h:731cff6e-674d-4341-bd92-80a08113d5df
+   :CUSTOM_ID: h--731cff6e-674d-4341-bd92-80a08113d5df
    :END:
 
 #+begin_src python
@@ -1511,20 +1511,20 @@ class MyActor(Actor):
   encrypted) zipfile containing Python source code in standard Python
   zipimport format (via PEP302[fn:PEP302] methodologies).  The return value
   is an internally-generated hash value identifying that loaded source
-  zipfile that can be used in subsequent [[#h:3663d87d-8a2f-485b-aeef-c6e9cf418b4c][createActor]] calls to
+  zipfile that can be used in subsequent [[#h--3663d87d-8a2f-485b-aeef-c6e9cf418b4c][createActor]] calls to
   instantiate Actors found in that sourcefile.
 
   There must be a valid Source Authority registered (via the
-  [[#h:5ae05479-5a6d-4f01-bd7d-c4f544f7b98a][registerSourceAuthority]] method) to validate the loaded source; by
+  [[#h--5ae05479-5a6d-4f01-bd7d-c4f544f7b98a][registerSourceAuthority]] method) to validate the loaded source; by
   default this method does nothing if no Source Authority has been
-  loaded.  See [[#h:b26e4f60-d3fa-40b1-bc33-bb20b61ff2d4][Security Considerations]] for more information.
+  loaded.  See [[#h--b26e4f60-d3fa-40b1-bc33-bb20b61ff2d4][Security Considerations]] for more information.
 
-  See the description of the same function in the [[#h:7d2b4986-95d3-4460-9d19-ea0dcdb34fca][ActorSystem API]]
+  See the description of the same function in the [[#h--7d2b4986-95d3-4460-9d19-ea0dcdb34fca][ActorSystem API]]
   section for more details.
 
 ** unloadActorSource
    :PROPERTIES:
-   :CUSTOM_ID: h:02eaa317-996a-419b-b9e5-462a28a749c0
+   :CUSTOM_ID: h--02eaa317-996a-419b-b9e5-462a28a749c0
    :END:
 
 #+begin_src python
@@ -1532,14 +1532,14 @@ class MyActor(Actor):
 #+end_src
 
   The ~unloadActorSource()~ method is used to unload a source zipfile
-  previously loaded by the [[#h:731cff6e-674d-4341-bd92-80a08113d5df][loadActorSource]] operation.
+  previously loaded by the [[#h--731cff6e-674d-4341-bd92-80a08113d5df][loadActorSource]] operation.
 
-  See the description of the same function in the [[#h:7d2b4986-95d3-4460-9d19-ea0dcdb34fca][ActorSystem API]]
+  See the description of the same function in the [[#h--7d2b4986-95d3-4460-9d19-ea0dcdb34fca][ActorSystem API]]
   section for more details.
 
 ** notifyOnSourceAvailability
    :PROPERTIES:
-   :CUSTOM_ID: h:460d04d8-3961-43c4-a4c3-8282c2e4a892
+   :CUSTOM_ID: h--460d04d8-3961-43c4-a4c3-8282c2e4a892
    :END:
 
 #+begin_src python
@@ -1549,7 +1549,7 @@ class MyActor(Actor):
   This method can be called to register or de-register (based on the
   ~enable~ argument) this Actor for being informed of loaded or
   unloaded source loads.  Load notifications are delivered via the
-  [[#h:7cc41555-6b60-4844-8cea-0ec3714cf8f8][LoadedSource]] message and source unloads generate [[#h:2a5fa63d-e6eb-43b9-bea8-47223b27544e][UnloadedSource]]
+  [[#h--7cc41555-6b60-4844-8cea-0ec3714cf8f8][LoadedSource]] message and source unloads generate [[#h--2a5fa63d-e6eb-43b9-bea8-47223b27544e][UnloadedSource]]
   messages to the notification registrant.
 
   Registration is with the local actor system only, and notifications
@@ -1559,7 +1559,7 @@ class MyActor(Actor):
 
 ** actorSystemCapabilityCheck
    :PROPERTIES:
-   :CUSTOM_ID: h:0e9f4a6a-3083-40fa-a75b-ced37d70eef0
+   :CUSTOM_ID: h--0e9f4a6a-3083-40fa-a75b-ced37d70eef0
    :END:
 
 #+begin_src python
@@ -1574,7 +1574,7 @@ class MyActor(Actor):
   The ~capabilities~ argument specifies the key/value dictionary of
   capabilities of the current ActorSystem.  ActorSystem capabilities
   are free-form and are determined solely by agents specifying those
-  capabilities (see [[#h:a17e6c70-5592-4d06-b818-bd25350c4c53][ActorSystem Capabilities]]).
+  capabilities (see [[#h--a17e6c70-5592-4d06-b818-bd25350c4c53][ActorSystem Capabilities]]).
 
   The optional ~requirements~ argument specifies the additional
   requirements that the creating Actor specified in the
@@ -1587,13 +1587,13 @@ class MyActor(Actor):
 
   This static method may also be called to re-validate the Actor's
   viability if the capabilities of its ActorSystem are updated (as
-  described in the [[#h:1dc4362f-78dd-4adf-833c-d7bebda07ef8][updateCapability]] section), and if it returns False
-  then the existing Actor will be killed with an [[#h:7e6106e4-a631-47a4-9d22-3fd63f7e1951][ActorExitRequest]]
+  described in the [[#h--1dc4362f-78dd-4adf-833c-d7bebda07ef8][updateCapability]] section), and if it returns False
+  then the existing Actor will be killed with an [[#h--7e6106e4-a631-47a4-9d22-3fd63f7e1951][ActorExitRequest]]
   message.
 
 *** requireCapability decorator
     :PROPERTIES:
-    :CUSTOM_ID: h:3bafc1e2-9e3d-4073-8e75-c01ad792b5be
+    :CUSTOM_ID: h--3bafc1e2-9e3d-4073-8e75-c01ad792b5be
     :END:
 
   To facilitate easy specification of requirements, there is a
@@ -1690,13 +1690,13 @@ class MyActor(Actor):
 #+end_src
 ** updateCapability
    :PROPERTIES:
-   :CUSTOM_ID: h:1dc4362f-78dd-4adf-833c-d7bebda07ef8
+   :CUSTOM_ID: h--1dc4362f-78dd-4adf-833c-d7bebda07ef8
    :END:
 
    The ~updateCapability()~ method is used update the capabilities of
    the current ActorSystem this Actor is running in (there is a
    corresponding method on the ActorSystem for externally-specified
-   updates; see the [[#h:7d2b4986-95d3-4460-9d19-ea0dcdb34fca][ActorSystem API]] for that version).
+   updates; see the [[#h--7d2b4986-95d3-4460-9d19-ea0dcdb34fca][ActorSystem API]] for that version).
 
 #+begin_src python
      self.updateCapability(capabilityName, capabilityValue=None)
@@ -1712,7 +1712,7 @@ class MyActor(Actor):
    If the capabilities of the ActorSystem are modified by this method
    (i.e. the capability value is not already set as requested) then
    all Actors within that ActorSystem are re-validated by calling
-   their [[#h:0e9f4a6a-3083-40fa-a75b-ced37d70eef0][actorSystemCapabilityCheck]] static method and sending them an
+   their [[#h--0e9f4a6a-3083-40fa-a75b-ced37d70eef0][actorSystemCapabilityCheck]] static method and sending them an
    ActorExitRequest if the capability check call returns false.  This
    could result in killing the Actor that initiated the capability
    exchange, even if new capabilities are added.  Actors may be
@@ -1720,11 +1720,11 @@ class MyActor(Actor):
    set of capabilities.
 
    The current set of ActorSystem capabilities can be obtained by
-   issuing a [[#h:6428fa90-8749-4777-a0b1-752ec5eb1650][Thespian_StatusReq]] to the ActorSystem.
+   issuing a [[#h--6428fa90-8749-4777-a0b1-752ec5eb1650][Thespian_StatusReq]] to the ActorSystem.
 
 ** preRegisterRemoteSystem
    :PROPERTIES:
-   :CUSTOM_ID: h:956e30d5-c035-4e1e-86cb-73332e28d8d4
+   :CUSTOM_ID: h--956e30d5-c035-4e1e-86cb-73332e28d8d4
    :END:
 
    The ~preRegisterRemoteSystem()~ method is used to inform the local
@@ -1741,7 +1741,7 @@ class MyActor(Actor):
    auto-discovery is not possible.  In these configurations, this
    method can be used to initiate communications between the two
    ActorSystems.  This method will only work for ActorSystem bases
-   that support Conventions (as describe in the [[#h:3c8aa454-9a21-4d24-a623-ad86bfd4f5a7][Other Actor Systems]]
+   that support Conventions (as describe in the [[#h--3c8aa454-9a21-4d24-a623-ad86bfd4f5a7][Other Actor Systems]]
    section).
 
    Because the remote System and the local System cannot
@@ -1773,7 +1773,7 @@ class MyActor(Actor):
 
 ** deRegisterRemoteSystem
    :PROPERTIES:
-   :CUSTOM_ID: h:ce801678-bcff-497d-be2a-439cb34fc519
+   :CUSTOM_ID: h--ce801678-bcff-497d-be2a-439cb34fc519
    :END:
 
    The ~deRegisterRemoteSystem()~ method is used to unregister a
@@ -1798,11 +1798,11 @@ class MyActor(Actor):
    same value that was originally passed to the latter method.  The
    ~remoteSystemAddress~ parameter may also be an actual ActorAddress
    (e.g. the same address that would be provided in the
-   [[#h:f311fc02-d355-4d68-b9af-958404637e57][ActorSystemConventionUpdate]] messages).
+   [[#h--f311fc02-d355-4d68-b9af-958404637e57][ActorSystemConventionUpdate]] messages).
 
 ** actorSystemShutdown
    :PROPERTIES:
-   :CUSTOM_ID: h:9e800ed1-ed40-4ff3-8445-f795719f6218
+   :CUSTOM_ID: h--9e800ed1-ed40-4ff3-8445-f795719f6218
    :END:
 
    The ~actorSystemShutdown()~ method can be called by an actor to
@@ -1822,7 +1822,7 @@ class MyActor(Actor):
 
 ** ActorTypeDispatcher
    :PROPERTIES:
-   :CUSTOM_ID: h:2f5b52bd-72b8-41eb-b879-809d174c0e30
+   :CUSTOM_ID: h--2f5b52bd-72b8-41eb-b879-809d174c0e30
    :END:
 
 An alternative base class for creating Actors is the
@@ -1938,7 +1938,7 @@ Did not recognize the message type: <type 'float'>
 
 *** Type Handling Deferral
     :PROPERTIES:
-    :CUSTOM_ID: h:e58ce3a1-df40-4d3f-bc1f-e7743e3c1dc1
+    :CUSTOM_ID: h--e58ce3a1-df40-4d3f-bc1f-e7743e3c1dc1
     :END:
 
 In a normal Python subclass, it is possible for a method in the
@@ -2006,7 +2006,7 @@ Got a message
 
 * ActorSystem API
   :PROPERTIES:
-  :CUSTOM_ID: h:7d2b4986-95d3-4460-9d19-ea0dcdb34fca
+  :CUSTOM_ID: h--7d2b4986-95d3-4460-9d19-ea0dcdb34fca
   :END:
 
     The ActorSystem is created or connected-to by instantiating the
@@ -2022,7 +2022,7 @@ Got a message
 
 ** Exceptions
    :PROPERTIES:
-   :CUSTOM_ID: h:a91e6169-660d-4df0-af13-15b3ad5e63bc
+   :CUSTOM_ID: h--a91e6169-660d-4df0-af13-15b3ad5e63bc
    :END:
 
    All exceptions generated by the ActorSystem itself are based on the
@@ -2047,7 +2047,7 @@ Got a message
 
 ** ActorSystem
    :PROPERTIES:
-   :CUSTOM_ID: h:f71b7bfa-c57b-4716-a2c7-ad83a2ed3582
+   :CUSTOM_ID: h--f71b7bfa-c57b-4716-a2c7-ad83a2ed3582
    :END:
 
 #+begin_src python
@@ -2059,14 +2059,14 @@ actorSys = ActorSystem(systemBase = None,
 
     The ~systemBase~ argument should specify which ActorSystem
     implementation base should be used for this ActorSystem, as
-    selected from those systems describe in the [[#h:2a5fa63d-e6eb-43b9-bea8-47223b27544e][ActorSystem Implementations]] section. If ~systemBase~ is None, this call will
+    selected from those systems describe in the [[#h--2a5fa63d-e6eb-43b9-bea8-47223b27544e][ActorSystem Implementations]] section. If ~systemBase~ is None, this call will
     check to see if there was a previous call to ActorSystem in the
     current process and if so, re-use the ~systemBase~ from the
     previous call. If there is no previous call, the default system
-    base is the ~simpleSystemBase~ (see [[#h:924dc0fe-c15b-491e-a6d1-8b88683d4c0d][simpleSystemBase]]).
+    base is the ~simpleSystemBase~ (see [[#h--924dc0fe-c15b-491e-a6d1-8b88683d4c0d][simpleSystemBase]]).
 
     The ~capabilities~ argument should be a dictionary of capability
-    keys and values as describe in the [[#h:a17e6c70-5592-4d06-b818-bd25350c4c53][ActorSystem Capabilities]]
+    keys and values as describe in the [[#h--a17e6c70-5592-4d06-b818-bd25350c4c53][ActorSystem Capabilities]]
     section.  These capabilities form the initial set of capabilities
     for the ActorSystem if it is started; the capabilities are ignored
     if an ActorSystem is already running.
@@ -2077,7 +2077,7 @@ actorSys = ActorSystem(systemBase = None,
     as ~False~, then no logging configuration is supplied; this latter
     is useful in situations where another component is attempting to
     establish a logging configuration (e.g. nosetest logcapture).  As
-    described in the [[#h:ce55494c-dd7a-4258-a1e8-b090c3bbb1e6][Logging]] section, the Convention Leader will
+    described in the [[#h--ce55494c-dd7a-4258-a1e8-b090c3bbb1e6][Logging]] section, the Convention Leader will
     receive forwarding of log messages at Warning level or higher,
     providing a centralized logging capability.
 
@@ -2093,7 +2093,7 @@ actorSys = ActorSystem(systemBase = None,
 
 ** ActorSystem.shutdown
    :PROPERTIES:
-   :CUSTOM_ID: h:654a6c81-b326-4c0a-98bc-638ac5ce631f
+   :CUSTOM_ID: h--654a6c81-b326-4c0a-98bc-638ac5ce631f
    :END:
 
 #+BEGIN_SRC python
@@ -2108,7 +2108,7 @@ actorSys = ActorSystem(systemBase = None,
 
     As described previously, the ActorSystem is a process-global
     singleton that may be a system-wide singleton, depending on the
-    system base used (see [[#h:2a5fa63d-e6eb-43b9-bea8-47223b27544e][ActorSystem Implementations]] for details).
+    system base used (see [[#h--2a5fa63d-e6eb-43b9-bea8-47223b27544e][ActorSystem Implementations]] for details).
     The ~shutdown()~ method is the proper way to stop those
     process-wide or system-wide ActorSystems when they are no longer
     needed.  The decision of when to do this is left to the user; in
@@ -2122,7 +2122,7 @@ actorSys = ActorSystem(systemBase = None,
 
 ** ActorSystem.createActor
    :PROPERTIES:
-   :CUSTOM_ID: h:a565af1b-aabb-4336-a51d-7505c072c319
+   :CUSTOM_ID: h--a565af1b-aabb-4336-a51d-7505c072c319
    :END:
 
 #+begin_src python
@@ -2134,7 +2134,7 @@ actorSys = ActorSystem(systemBase = None,
 
    The ~createActor()~ method is used by external applications to
    request the creation of an Actor in the ActorSystem environment.
-   This call is very similar to the [[#h:3663d87d-8a2f-485b-aeef-c6e9cf418b4c][createActor]] Actor API call except
+   This call is very similar to the [[#h--3663d87d-8a2f-485b-aeef-c6e9cf418b4c][createActor]] Actor API call except
    that this version creates "Top-Level" Actors and will block until
    the Actor is created and throw an exception on failures.
 
@@ -2144,16 +2144,16 @@ actorSys = ActorSystem(systemBase = None,
    ~bar.py~ in the ~foo~ directory).
 
    The ~targetActorRequirements~ argument is a value that will be
-   passed to the [[#h:0e9f4a6a-3083-40fa-a75b-ced37d70eef0][actorSystemCapabilityCheck]] to use for validating
+   passed to the [[#h--0e9f4a6a-3083-40fa-a75b-ced37d70eef0][actorSystemCapabilityCheck]] to use for validating
    whether the Actor can be started within the current ActorSystem
-   environment (see [[#h:a17e6c70-5592-4d06-b818-bd25350c4c53][ActorSystem Capabilities]]).  The value specified
+   environment (see [[#h--a17e6c70-5592-4d06-b818-bd25350c4c53][ActorSystem Capabilities]]).  The value specified
    for this argument can be anything the target Actor's
    ~actorSystemCapabilityCheck()~ method can understand, although
    typically it is a Python dictionary.
 
    The ~globalName~ argument, if specified, should be a string
    specifying the "name" of the Actor within the ActorSystem.  As
-   describe in [[#h:2d5ef9c7-2132-45f9-b6eb-6f2729f5b232][Named Actors]], this name allows the Actor to be a
+   describe in [[#h--2d5ef9c7-2132-45f9-b6eb-6f2729f5b232][Named Actors]], this name allows the Actor to be a
    system-wide singleton and to be uniquely identified and referenced
    in a manner additional to the ActorAddress of the actor.
 
@@ -2161,7 +2161,7 @@ actorSys = ActorSystem(systemBase = None,
    which should be prepended to the import path when attempting to
    load the ~actorClass~ source and start the Actor.
      * The source file must previously have been loaded by the
-       [[#h:73b564d2-faa3-4fc8-bfdf-5362626c03be][loadActorSource]] operation.
+       [[#h--73b564d2-faa3-4fc8-bfdf-5362626c03be][loadActorSource]] operation.
      * If not specified, then the ~actorClass~ is expected to be found
        on the standard path.  If the ~sourceHash~ value does not match
        any loaded sources then an ~InvalidActorSourceHash~
@@ -2193,7 +2193,7 @@ actorSys = ActorSystem(systemBase = None,
 
 ** tell
    :PROPERTIES:
-   :CUSTOM_ID: h:a5dcf9d2-7bda-43c7-ab44-86265992e972
+   :CUSTOM_ID: h--a5dcf9d2-7bda-43c7-ab44-86265992e972
    :END:
 
    Tell is used to inject a message into the Actor system (targeting a
@@ -2214,7 +2214,7 @@ actorSys = ActorSystem(systemBase = None,
 
 ** ask
    :PROPERTIES:
-   :CUSTOM_ID: h:8e52624b-cda1-4218-bc9f-693cf06b0758
+   :CUSTOM_ID: h--8e52624b-cda1-4218-bc9f-693cf06b0758
    :END:
 
    Ask is used to send a message to an Actor (injecting it into the
@@ -2242,7 +2242,7 @@ actorSys = ActorSystem(systemBase = None,
 
 *** Gotchas
     :PROPERTIES:
-    :CUSTOM_ID: h:b660216f-003b-4041-93cb-566be7edf72c
+    :CUSTOM_ID: h--b660216f-003b-4041-93cb-566be7edf72c
     :END:
 
   * The response may come from a previous ~tell()~ (or ~ask()~ if that
@@ -2262,7 +2262,7 @@ actorSys = ActorSystem(systemBase = None,
 
 ** listen
    :PROPERTIES:
-   :CUSTOM_ID: h:c68f8ef8-94e9-46d6-8e67-634d04c16562
+   :CUSTOM_ID: h--c68f8ef8-94e9-46d6-8e67-634d04c16562
    :END:
 
    Listen is used to wait for a message.
@@ -2327,7 +2327,7 @@ the actor at ~addr5~ will only be sent to thread2.
 
 ** updateCapability
    :PROPERTIES:
-   :CUSTOM_ID: h:bf228654-b542-48f0-a5b5-78bc883528b9
+   :CUSTOM_ID: h--bf228654-b542-48f0-a5b5-78bc883528b9
    :END:
 
    The ~updateCapability()~ method is used update the capabilities of
@@ -2348,7 +2348,7 @@ the actor at ~addr5~ will only be sent to thread2.
    If the capabilities of the ActorSystem are modified by this method
    (i.e. the capability value is not already set as requested) then
    all Actors within that ActorSystem are re-validated by calling
-   their [[#h:0e9f4a6a-3083-40fa-a75b-ced37d70eef0][actorSystemCapabilityCheck]] static method and sending them an
+   their [[#h--0e9f4a6a-3083-40fa-a75b-ced37d70eef0][actorSystemCapabilityCheck]] static method and sending them an
    ActorExitRequest if the capability check call returns false.  _This
    could result in killing the Actor that initiated the capability
    exchange, even if new capabilities are added._ Actors may be
@@ -2356,12 +2356,12 @@ the actor at ~addr5~ will only be sent to thread2.
    set of capabilities.
 
    The current set of ActorSystem capabilities can be obtained by
-   issuing a [[#h:6428fa90-8749-4777-a0b1-752ec5eb1650][Thespian_StatusReq]] to the ActorSystem.
+   issuing a [[#h--6428fa90-8749-4777-a0b1-752ec5eb1650][Thespian_StatusReq]] to the ActorSystem.
 
 
 ** loadActorSource
    :PROPERTIES:
-   :CUSTOM_ID: h:73b564d2-faa3-4fc8-bfdf-5362626c03be
+   :CUSTOM_ID: h--73b564d2-faa3-4fc8-bfdf-5362626c03be
    :END:
 
 #+begin_src python
@@ -2372,13 +2372,13 @@ the actor at ~addr5~ will only be sent to thread2.
   encrypted) zipfile containing Python source code in standard Python
   zipimport format (via PEP302[fn:PEP302] methodologies).  The return value
   is an internally-generated hash value identifying that loaded source
-  zipfile that can be used in subsequent [[#h:0e9f4a6a-3083-40fa-a75b-ced37d70eef0][createActor]] calls to
+  zipfile that can be used in subsequent [[#h--0e9f4a6a-3083-40fa-a75b-ced37d70eef0][createActor]] calls to
   instantiate Actors found in that sourcefile.
 
   There must be a valid Source Authority registered (via the
-  [[#h:5ae05479-5a6d-4f01-bd7d-c4f544f7b98a][registerSourceAuthority]] method) to validate the loaded source; by
+  [[#h--5ae05479-5a6d-4f01-bd7d-c4f544f7b98a][registerSourceAuthority]] method) to validate the loaded source; by
   default this method does nothing if no Source Authority has been
-  loaded.  See [[#h:b26e4f60-d3fa-40b1-bc33-bb20b61ff2d4][Security Considerations]] for more information.
+  loaded.  See [[#h--b26e4f60-d3fa-40b1-bc33-bb20b61ff2d4][Security Considerations]] for more information.
 
 [fn:PEP302] The PEP302 Python extension specification defines the
   ability to add a custom package finder/loader that coordinates with
@@ -2390,7 +2390,7 @@ the actor at ~addr5~ will only be sent to thread2.
   Although a plaintext zipfile may be loaded, it is highly recommended
   that production environments encrypt the zipFile using some sort of
   encryption methodology.  The reasons for this are discussed in the
-  [[#h:b26e4f60-d3fa-40b1-bc33-bb20b61ff2d4][Security Considerations]] section below; when an encrypted zipfile is
+  [[#h--b26e4f60-d3fa-40b1-bc33-bb20b61ff2d4][Security Considerations]] section below; when an encrypted zipfile is
   loaded it is first decrypted and/or authorized as described therein.
 
   The ~fileref~ argument can be a string specifying an input file path
@@ -2401,7 +2401,7 @@ the actor at ~addr5~ will only be sent to thread2.
 
 *** Source Loading Issues
     :PROPERTIES:
-    :CUSTOM_ID: h:e23490e4-d720-4e84-9b9a-e768fa3e717d
+    :CUSTOM_ID: h--e23490e4-d720-4e84-9b9a-e768fa3e717d
     :END:
 
   Although the ~loadActorSource()~ functionality works quite well,
@@ -2461,7 +2461,7 @@ the actor at ~addr5~ will only be sent to thread2.
 
 *** Security Considerations
     :PROPERTIES:
-    :CUSTOM_ID: h:b26e4f60-d3fa-40b1-bc33-bb20b61ff2d4
+    :CUSTOM_ID: h--b26e4f60-d3fa-40b1-bc33-bb20b61ff2d4
     :END:
 
   When ~loadActorSource()~ is not used, the source for all
@@ -2521,20 +2521,20 @@ class SimpleSourceAuthority(ActorTypeDispatcher):
 
 **** Multi-System Source Authorization
      :PROPERTIES:
-     :CUSTOM_ID: h:059157fd-4272-4d2e-a1c8-aa0069e5b1f5
+     :CUSTOM_ID: h--059157fd-4272-4d2e-a1c8-aa0069e5b1f5
      :END:
 
   The Source Authority registration is unique to an ActorSystem.
-  Different ActorSystems in a [[#h:461f4dc3-4bd6-46fe-a33e-2ad2a8d82d53][Multiple Systems]] configuration can each
+  Different ActorSystems in a [[#h--461f4dc3-4bd6-46fe-a33e-2ad2a8d82d53][Multiple Systems]] configuration can each
   have a separate Source Authority that may perform different
-  authorization techniques.  However, as described in [[#h:955ec990-a267-4d08-8f4d-5f980c777173][Actor Code
+  authorization techniques.  However, as described in [[#h--955ec990-a267-4d08-8f4d-5f980c777173][Actor Code
   Distribution]], ActorSystems joined together in a Convention can
   exchange sources on demand to satisfy Actor creation requests.
   sources exchanged between ActorSystems in this manner are not
   subject to further *validation* after the initial load on the
   original system (although the local ActorSystem can choose the level
   of sharing it wishes to perform; see the *AllowRemoteActorSources*
-  capability setting in the [[#h:2a4bcad4-9fe0-4399-86d4-4bbf0ba0acb7][Common Capabilities]] section).
+  capability setting in the [[#h--2a4bcad4-9fe0-4399-86d4-4bbf0ba0acb7][Common Capabilities]] section).
 
   This functionality allows for maximum flexibility in handling
   different deployment environments:
@@ -2566,7 +2566,7 @@ class SimpleSourceAuthority(ActorTypeDispatcher):
 
 ** unloadActorSource
    :PROPERTIES:
-   :CUSTOM_ID: h:3e2f292f-2797-46d7-9fc6-48c1619d4bec
+   :CUSTOM_ID: h--3e2f292f-2797-46d7-9fc6-48c1619d4bec
    :END:
 
 #+begin_src python
@@ -2574,7 +2574,7 @@ class SimpleSourceAuthority(ActorTypeDispatcher):
 #+end_src
 
   The ~unloadActorSource()~ method is used to unload a source zipfile
-  previously loaded by the [[#h:731cff6e-674d-4341-bd92-80a08113d5df][loadActorSource]] operation.
+  previously loaded by the [[#h--731cff6e-674d-4341-bd92-80a08113d5df][loadActorSource]] operation.
 
   This will not affect (i.e. stop) any remaining Actors running
   instances from that source, but it will prevent the creation of any
@@ -2602,7 +2602,7 @@ class SimpleSourceAuthority(ActorTypeDispatcher):
 
 * ActorSystem Messages
   :PROPERTIES:
-  :CUSTOM_ID: h:b889aca8-b50d-4920-8496-34b1420cf664
+  :CUSTOM_ID: h--b889aca8-b50d-4920-8496-34b1420cf664
   :END:
 
   The following Messages can be delivered to Actors by the ActorSystem
@@ -2617,7 +2617,7 @@ class SimpleSourceAuthority(ActorTypeDispatcher):
 
 ** PoisonMessage
    :PROPERTIES:
-   :CUSTOM_ID: h:407c4c79-2a05-442d-b6e8-5bf7c2f2d068
+   :CUSTOM_ID: h--407c4c79-2a05-442d-b6e8-5bf7c2f2d068
    :END:
 
    The ~PoisonMessage~ object is delivered to an Actor or to external
@@ -2625,11 +2625,11 @@ class SimpleSourceAuthority(ActorTypeDispatcher):
    fail.  The ~PoisonMessage~ is a wrapper around the original message
    that caused the failure.  The originating sender receives this
    poison message indication to allow it to perform any desired
-   cleanup or alternative work based on the target Actor failure (see [[#h:62e20202-9bff-4455-968e-73fee0b9f66a][PoisonMessage Returns]]).
+   cleanup or alternative work based on the target Actor failure (see [[#h--62e20202-9bff-4455-968e-73fee0b9f66a][PoisonMessage Returns]]).
 
 *** Attributes
     :PROPERTIES:
-    :CUSTOM_ID: h:7655532a-ec5a-49c0-9f4e-0b4207f21080
+    :CUSTOM_ID: h--7655532a-ec5a-49c0-9f4e-0b4207f21080
     :END:
 
    * ~.poisonMessage~ is the original message causing the target Actor
@@ -2641,16 +2641,16 @@ class SimpleSourceAuthority(ActorTypeDispatcher):
 
 ** WakeupMessage
    :PROPERTIES:
-   :CUSTOM_ID: h:32b3df34-552e-4398-83bb-b78f3f6483bc
+   :CUSTOM_ID: h--32b3df34-552e-4398-83bb-b78f3f6483bc
    :END:
 
   The ~WakeupMessage~ is delivered to the Actor by the ActorSystem as
   a result of a previous call to the Actor's ~.wakeupAfter()~ method
-  call (see [[#h:9cc1acd4-7f35-44ac-94fc-0326dc87a7a5][Timer Messages]]).
+  call (see [[#h--9cc1acd4-7f35-44ac-94fc-0326dc87a7a5][Timer Messages]]).
 
 *** Attributes
     :PROPERTIES:
-    :CUSTOM_ID: h:865814f4-6d08-4657-bb89-c3be8b8a9453
+    :CUSTOM_ID: h--865814f4-6d08-4657-bb89-c3be8b8a9453
     :END:
 
   * ~.delayPeriod~ which is the python ~datetime.timedelta~ value of
@@ -2658,7 +2658,7 @@ class SimpleSourceAuthority(ActorTypeDispatcher):
 
 ** WatchMessage
    :PROPERTIES:
-   :CUSTOM_ID: h:8a46cfae-7ccc-407a-91c1-d4301b7a653c
+   :CUSTOM_ID: h--8a46cfae-7ccc-407a-91c1-d4301b7a653c
    :END:
 
   The ~WatchMessage~ is delivered to the Actor by the ActorSystem when
@@ -2666,12 +2666,12 @@ class SimpleSourceAuthority(ActorTypeDispatcher):
   specifies which file numbers have data vailable.
 
   This functionality is not available from all ActorSystem
-  implementations.  See [[#h:94edef18-154e-4847-864f-027dff4f6e0a][Watching File Descriptors]] for more
+  implementations.  See [[#h--94edef18-154e-4847-864f-027dff4f6e0a][Watching File Descriptors]] for more
   information.
 
 *** Attributes
     :PROPERTIES:
-    :CUSTOM_ID: h:a4719aee-2054-466c-a013-03b6938b084e
+    :CUSTOM_ID: h--a4719aee-2054-466c-a013-03b6938b084e
     :END:
 
   * ~.ready~ specifies a list of file numbers for which data is
@@ -2681,7 +2681,7 @@ class SimpleSourceAuthority(ActorTypeDispatcher):
 
 ** ActorExitRequest
    :PROPERTIES:
-   :CUSTOM_ID: h:7e6106e4-a631-47a4-9d22-3fd63f7e1951
+   :CUSTOM_ID: h--7e6106e4-a631-47a4-9d22-3fd63f7e1951
    :END:
 
    The ~ActorExitRequest~ object is sent to any Actor to request that
@@ -2698,7 +2698,7 @@ class SimpleSourceAuthority(ActorTypeDispatcher):
 
 *** Attributes
     :PROPERTIES:
-    :CUSTOM_ID: h:8155fe0d-ad17-4677-b606-f830c6f9f249
+    :CUSTOM_ID: h--8155fe0d-ad17-4677-b606-f830c6f9f249
     :END:
 
   * ~.isRecursive~ indicates that this ActorExitRequest will
@@ -2710,15 +2710,15 @@ class SimpleSourceAuthority(ActorTypeDispatcher):
 
 ** ChildActorExited
    :PROPERTIES:
-   :CUSTOM_ID: h:ed408390-5a74-4955-9f7d-a84e87595459
+   :CUSTOM_ID: h--ed408390-5a74-4955-9f7d-a84e87595459
    :END:
 
    The ~ChildActorExited~ object is delivered to the Parent Actor of
    an Actor when that Actor has exited.  This is delivered regardless
-   of whether the exit was due to the receipt of an [[#h:7e6106e4-a631-47a4-9d22-3fd63f7e1951][ActorExitRequest]]
+   of whether the exit was due to the receipt of an [[#h--7e6106e4-a631-47a4-9d22-3fd63f7e1951][ActorExitRequest]]
    message or if the Actor was killed by other means.
 
-   The Parent of [[#h:2d5ef9c7-2132-45f9-b6eb-6f2729f5b232][Named Actors]] is the ActorSystem itself; no
+   The Parent of [[#h--2d5ef9c7-2132-45f9-b6eb-6f2729f5b232][Named Actors]] is the ActorSystem itself; no
    other Actor will receive a ~ChildActorExited~ message when a
    Named Actor exits.
 
@@ -2728,7 +2728,7 @@ class SimpleSourceAuthority(ActorTypeDispatcher):
 
 *** Attributes
     :PROPERTIES:
-    :CUSTOM_ID: h:c32348b6-fed3-4ff1-bf95-3cf491049518
+    :CUSTOM_ID: h--c32348b6-fed3-4ff1-bf95-3cf491049518
     :END:
 
   * ~.childAddress~ is the address of the child Actor that exited.
@@ -2737,17 +2737,17 @@ class SimpleSourceAuthority(ActorTypeDispatcher):
 
 ** DeadEnvelope
    :PROPERTIES:
-   :CUSTOM_ID: h:e3d4bfa0-7fad-4622-b707-8f67e4f75d5c
+   :CUSTOM_ID: h--e3d4bfa0-7fad-4622-b707-8f67e4f75d5c
    :END:
 
    The ~DeadEnvelope~ object is delivered to the Dead Letter handler as
-   described in [[#h:5af075c1-73b1-4f7c-8515-e55ed96c03a9][Dead Letter Handling]].  The ~DeadEnvelope~ is a wrapper
+   described in [[#h--5af075c1-73b1-4f7c-8515-e55ed96c03a9][Dead Letter Handling]].  The ~DeadEnvelope~ is a wrapper
    around the original message that could not be delivered to the
    target Actor because the target is no longer running.
 
 *** Attributes
     :PROPERTIES:
-    :CUSTOM_ID: h:fc0fb45a-a981-42ce-9922-705dabbbda37
+    :CUSTOM_ID: h--fc0fb45a-a981-42ce-9922-705dabbbda37
     :END:
 
   * ~.deadMessage~ -- the original, undeliverable message
@@ -2755,17 +2755,17 @@ class SimpleSourceAuthority(ActorTypeDispatcher):
 
 ** ActorSystemConventionUpdate
    :PROPERTIES:
-   :CUSTOM_ID: h:f311fc02-d355-4d68-b9af-958404637e57
+   :CUSTOM_ID: h--f311fc02-d355-4d68-b9af-958404637e57
    :END:
 
    The ~ActorSystemConventionUpdate~ object is delivered to an Actor
    that has registered to be notified on changes in ActorSystem
-   convention membership (as described in [[#h:955ec990-a267-4d08-8f4d-5f980c777173][Other Actor Systems]]).  This
+   convention membership (as described in [[#h--955ec990-a267-4d08-8f4d-5f980c777173][Other Actor Systems]]).  This
    message is generated by the ActorSystem itself.
 
 *** Attributes
     :PROPERTIES:
-    :CUSTOM_ID: h:a1cda86c-ca86-4aaa-bcb5-935e92435647
+    :CUSTOM_ID: h--a1cda86c-ca86-4aaa-bcb5-935e92435647
     :END:
 
   * ~.remoteAdminAddress~ -- Address of the Admin for the remote ActorSystem.
@@ -2778,12 +2778,12 @@ class SimpleSourceAuthority(ActorTypeDispatcher):
 
 ** ValidateSource
    :PROPERTIES:
-   :CUSTOM_ID: h:3119580d-80a6-4061-a217-1b2b21014172
+   :CUSTOM_ID: h--3119580d-80a6-4061-a217-1b2b21014172
    :END:
 
    The ~ValidateSource~ object is delivered to the registered Source
    Authority.  The contents are the source file provided via the
-   [[#h:731cff6e-674d-4341-bd92-80a08113d5df][loadActorSource]] call to the ActorSystem.  The Actor receiving this
+   [[#h--731cff6e-674d-4341-bd92-80a08113d5df][loadActorSource]] call to the ActorSystem.  The Actor receiving this
    message should decrypt and validate the source to ensure that the
    source is authorized to run in the context of the current
    ActorSystem.
@@ -2791,7 +2791,7 @@ class SimpleSourceAuthority(ActorTypeDispatcher):
    If the specified source is not authorized to run in the current
    ActorSystem, the Source Authority may either simply discard this
    message and take no further action, or it may send a
-   [[#h:1db8e94e-ca54-4817-b120-b4c51c680cdd][ValidatedSource]] message specifying None as the validated source.
+   [[#h--1db8e94e-ca54-4817-b120-b4c51c680cdd][ValidatedSource]] message specifying None as the validated source.
    The latter is recommended since it allows immediate response
    handling for pending actors for that source; otherwise a source
    load timeout must expire before rejecting actor create requests for
@@ -2812,25 +2812,25 @@ class SimpleSourceAuthority(ActorTypeDispatcher):
    the attempts to use the loaded source will immediately follow the
    ~loadActorSource()~ call, the code calling the latter should
    implement a delay or an explicit validation of the results of the
-   load via the [[#h:6428fa90-8749-4777-a0b1-752ec5eb1650][Thespian_StatusReq]] operation.
+   load via the [[#h--6428fa90-8749-4777-a0b1-752ec5eb1650][Thespian_StatusReq]] operation.
 
 *** Attributes
     :PROPERTIES:
-    :CUSTOM_ID: h:d6db3148-7664-4e50-9061-6733fe5d3a3f
+    :CUSTOM_ID: h--d6db3148-7664-4e50-9061-6733fe5d3a3f
     :END:
 
   * ~.sourceHash~ -- the hash associated with this loaded source.
   * ~.sourceData~ -- the input data (file contents) provided to the
-    [[#h:731cff6e-674d-4341-bd92-80a08113d5df][loadActorSource]] call to the ActorSystem.
+    [[#h--731cff6e-674d-4341-bd92-80a08113d5df][loadActorSource]] call to the ActorSystem.
 
 ** ValidatedSource
    :PROPERTIES:
-   :CUSTOM_ID: h:1db8e94e-ca54-4817-b120-b4c51c680cdd
+   :CUSTOM_ID: h--1db8e94e-ca54-4817-b120-b4c51c680cdd
    :END:
 
    This message is not sent by the ActorSystem to an Actor, but is
    instead sent by the Source Authority Actor back to the system as
-   the response to a [[#h:3119580d-80a6-4061-a217-1b2b21014172][ValidateSource]] message.  The data associated with
+   the response to a [[#h--3119580d-80a6-4061-a217-1b2b21014172][ValidateSource]] message.  The data associated with
    this response is a zipfile in zipimport format providing the source
    file tree of ~.py~ files that were extracted from the input data
    sent via the ~ValidateSource~ message.  By sending this message
@@ -2848,7 +2848,7 @@ class SimpleSourceAuthority(ActorTypeDispatcher):
 
 *** Attributes
     :PROPERTIES:
-    :CUSTOM_ID: h:92e91efa-fdc2-42bb-94f8-8a329618214c
+    :CUSTOM_ID: h--92e91efa-fdc2-42bb-94f8-8a329618214c
     :END:
   * ~.sourceHash~ -- the hash associated with the loaded source as
     provided in the ~ValidateSource~ input message.
@@ -2858,7 +2858,7 @@ class SimpleSourceAuthority(ActorTypeDispatcher):
 
 ** LoadedSource
    :PROPERTIES:
-   :CUSTOM_ID: h:7cc41555-6b60-4844-8cea-0ec3714cf8f8
+   :CUSTOM_ID: h--7cc41555-6b60-4844-8cea-0ec3714cf8f8
    :END:
 
    The ~LoadedSource~ object is delivered to an Actor that has
@@ -2868,7 +2868,7 @@ class SimpleSourceAuthority(ActorTypeDispatcher):
 
    This message indicates that the associated source module has been
    loaded successfully and is now available for creating new actors.
-   This message is delivered to each [[#h:460d04d8-3961-43c4-a4c3-8282c2e4a892][notifyOnSourceAvailability]]
+   This message is delivered to each [[#h--460d04d8-3961-43c4-a4c3-8282c2e4a892][notifyOnSourceAvailability]]
    registered notification target on the _local_ system when the
    source has been loaded on that system; remote loads will cause
    corresponding notifications to registrants on those systems at such
@@ -2880,7 +2880,7 @@ class SimpleSourceAuthority(ActorTypeDispatcher):
 
 *** Attributes
     :PROPERTIES:
-    :CUSTOM_ID: h:54e4613a-3c85-4d1e-a81d-0dd348af4199
+    :CUSTOM_ID: h--54e4613a-3c85-4d1e-a81d-0dd348af4199
     :END:
 
   * ~.sourceHash~ -- The hash value of the source that has been loaded
@@ -2892,7 +2892,7 @@ class SimpleSourceAuthority(ActorTypeDispatcher):
 
 ** UnloadedSource
    :PROPERTIES:
-   :CUSTOM_ID: h:72c2180e-97c4-4209-9f09-031069cb5cbe
+   :CUSTOM_ID: h--72c2180e-97c4-4209-9f09-031069cb5cbe
    :END:
 
    The ~UnloadedSource~ object is delivered to an Actor that has
@@ -2905,7 +2905,7 @@ class SimpleSourceAuthority(ActorTypeDispatcher):
 
 *** Attributes
     :PROPERTIES:
-    :CUSTOM_ID: h:3b58b48d-4d73-45c1-9486-3f6b8eb80d59
+    :CUSTOM_ID: h--3b58b48d-4d73-45c1-9486-3f6b8eb80d59
     :END:
 
   * ~.sourceHash~ -- The hash value of the source that has been unloaded
@@ -2917,7 +2917,7 @@ class SimpleSourceAuthority(ActorTypeDispatcher):
 
 ** Thespian_StatusReq
    :PROPERTIES:
-   :CUSTOM_ID: h:6428fa90-8749-4777-a0b1-752ec5eb1650
+   :CUSTOM_ID: h--6428fa90-8749-4777-a0b1-752ec5eb1650
    :END:
    The ~Thespian_StatusReq~ object can be sent to any Actor (or to the
    ActorSystem...e.g. the Admin if the ActorSystem has one) to request
@@ -2926,19 +2926,19 @@ class SimpleSourceAuthority(ActorTypeDispatcher):
    or provide handling of this message itself.
 
    The response to the ~Thespian_StatusReq~ is either a
-   [[#h:704cb0e0-30c0-4e30-82cb-52718839704f][Thespian_SystemStatus]] or a [[#h:1a0b5d02-e4b6-4c8c-9687-6e5f939d3827][Thespian_ActorStatus]]
+   [[#h--704cb0e0-30c0-4e30-82cb-52718839704f][Thespian_SystemStatus]] or a [[#h--1a0b5d02-e4b6-4c8c-9687-6e5f939d3827][Thespian_ActorStatus]]
    message, depending on whether the ~Thespian_StatusReq~ was sent to
    an Actor or the ActorSystem.
 
 *** Attributes
     :PROPERTIES:
-    :CUSTOM_ID: h:02212902-4a42-4f1e-ae6a-59464043ff50
+    :CUSTOM_ID: h--02212902-4a42-4f1e-ae6a-59464043ff50
     :END:
    The ~Thespian_StatusReq~ object has no attributes.
 
 ** Thespian_SystemStatus
    :PROPERTIES:
-   :CUSTOM_ID: h:704cb0e0-30c0-4e30-82cb-52718839704f
+   :CUSTOM_ID: h--704cb0e0-30c0-4e30-82cb-52718839704f
    :END:
    The ~Thespian_SystemStatus~ object is returned by the
    ActorSystem with status information about that ActorSystem.  The
@@ -2948,7 +2948,7 @@ class SimpleSourceAuthority(ActorTypeDispatcher):
 
 ** Thespian_ActorStatus
    :PROPERTIES:
-   :CUSTOM_ID: h:1a0b5d02-e4b6-4c8c-9687-6e5f939d3827
+   :CUSTOM_ID: h--1a0b5d02-e4b6-4c8c-9687-6e5f939d3827
    :END:
    The ~Thespian_ActorStatus~ object is returned by the
    ActorSystem with status information about that ActorSystem.  The
@@ -2958,7 +2958,7 @@ class SimpleSourceAuthority(ActorTypeDispatcher):
 
 * Patterns and Helpers
   :PROPERTIES:
-  :CUSTOM_ID: h:d4e592db-8bab-45bd-9643-e952510bd7dc
+  :CUSTOM_ID: h--d4e592db-8bab-45bd-9643-e952510bd7dc
   :END:
 
 The elements described in this section is supplemental to the base
@@ -2969,10 +2969,10 @@ actor-based application.
 
 ** Actor Troupe Support
    :PROPERTIES:
-   :CUSTOM_ID: h:c796bc0d-a150-4fb9-8918-58f470813175
+   :CUSTOM_ID: h--c796bc0d-a150-4fb9-8918-58f470813175
    :END:
 
-The use of [[#h:19cf92bf-a6ae-492c-844c-b0831c108a3a][Actor Troupes]] is supported by importing the
+The use of [[#h--19cf92bf-a6ae-492c-844c-b0831c108a3a][Actor Troupes]] is supported by importing the
 ~thespian.troupe~ file and adding a ~@troupe()~ decorator to the Actor
 definition.   This decorator turns a regular Actor into a dynamic
 Actor Troupe, where multiple Actors are spun up on-demand to handle
@@ -3014,7 +3014,7 @@ However, an actor which must interact with other actors to process the
 work requires additional modifications to allow the troupe manager to
 know when the actor has finished performing the work.  A troupe member
 that has not fully performed the work and is exchanging messages with
-other actors to complete the work (or awaiting [[#h:9cc1acd4-7f35-44ac-94fc-0326dc87a7a5][WakeupMessages]]) must
+other actors to complete the work (or awaiting [[#h--9cc1acd4-7f35-44ac-94fc-0326dc87a7a5][WakeupMessages]]) must
 set the ~troupe_work_in_progress~ attribute on self to ~True~.  Once the
 work is completed by a subsequent message delivery, it should set this
 attribute to ~False~, which will cause the troupe manager to be notified
@@ -3038,7 +3038,7 @@ non-troupe actors has no effect on their behavior and is safe to do.
 
 ** Transient Actors
    :PROPERTIES:
-   :CUSTOM_ID: h:99783a4a-183f-4b69-8910-014d01edbf1c
+   :CUSTOM_ID: h--99783a4a-183f-4b69-8910-014d01edbf1c
    :END:
 
 Some actors should automatically die at some period after they are
@@ -3082,7 +3082,7 @@ started after receipt of the actor's first message.
 
 * ActorSystem Implementations
   :PROPERTIES:
-  :CUSTOM_ID: h:2a5fa63d-e6eb-43b9-bea8-47223b27544e
+  :CUSTOM_ID: h--2a5fa63d-e6eb-43b9-bea8-47223b27544e
   :END:
 
 One of the convenient aspects of an Actor architecture is that the
@@ -3108,12 +3108,12 @@ creation is the responsibility of code in this external environment.
 When external code calls the ~ActorSystem()~ constructor, an
 ActorSystem is started if one is not already running.
 
-An argument may be passed to the [[#h:4adf735c-f237-4a8e-98db-ec52567353ac][ActorSystem]] constructor to specify
+An argument may be passed to the [[#h--4adf735c-f237-4a8e-98db-ec52567353ac][ActorSystem]] constructor to specify
 the systemBase (a.k.a ActorSystem implementation) that should be used
 for starting the ActorSystem if one is not already running; if an
 ActorSystem is already running, this argument is ignored.  If no
 argument is specified and no ActorSystem is running, the default
-[[#h:924dc0fe-c15b-491e-a6d1-8b88683d4c0d][simpleSystemBase]] ActorSystem will be started.
+[[#h--924dc0fe-c15b-491e-a6d1-8b88683d4c0d][simpleSystemBase]] ActorSystem will be started.
 
 The following table provides a summary of the different bases; more
 details are available in each section:
@@ -3129,15 +3129,15 @@ details are available in each section:
 
 ** Common Capabilities
    :PROPERTIES:
-   :CUSTOM_ID: h:2a4bcad4-9fe0-4399-86d4-4bbf0ba0acb7
+   :CUSTOM_ID: h--2a4bcad4-9fe0-4399-86d4-4bbf0ba0acb7
    :END:
 
-As described in [[#h:a17e6c70-5592-4d06-b818-bd25350c4c53][ActorSystem Capabilities]] each ActorSystem has a set of
+As described in [[#h--a17e6c70-5592-4d06-b818-bd25350c4c53][ActorSystem Capabilities]] each ActorSystem has a set of
 capabilities that describe that ActorSystem and which can be audited
-by the Actor's [[#h:0e9f4a6a-3083-40fa-a75b-ced37d70eef0][actorSystemCapabilityCheck]] method to determine if the
+by the Actor's [[#h--0e9f4a6a-3083-40fa-a75b-ced37d70eef0][actorSystemCapabilityCheck]] method to determine if the
 Actor is compatible with the ActorSystem.  Many capabilities can be
-set when the ActorSystem is started (see [[#h:4adf735c-f237-4a8e-98db-ec52567353ac][ActorSystem]]), or updated at
-run-time (see [[#h:1dc4362f-78dd-4adf-833c-d7bebda07ef8][updateCapability]] for either the Actor or the ActorSystem
+set when the ActorSystem is started (see [[#h--4adf735c-f237-4a8e-98db-ec52567353ac][ActorSystem]]), or updated at
+run-time (see [[#h--1dc4362f-78dd-4adf-833c-d7bebda07ef8][updateCapability]] for either the Actor or the ActorSystem
 API); those marked /read-only/ below may only be viewed, but not set
 or changed when the ActorSystem is started.
 
@@ -3190,7 +3190,7 @@ ActorSystems:
 
   * *AllowRemoteActorSources* :: This capability specifies whether or
        not this ActorSystem will accept sources loaded via remote
-       ActorSystems as described in the [[#h:955ec990-a267-4d08-8f4d-5f980c777173][Actor Code Distribution]]
+       ActorSystems as described in the [[#h--955ec990-a267-4d08-8f4d-5f980c777173][Actor Code Distribution]]
        section.  Valid values for this capability are:
 
          - *Yes* :: Any Actor Source validated by a Source Authority
@@ -3210,7 +3210,7 @@ ActorSystems:
 
 ** simpleSystemBase
    :PROPERTIES:
-   :CUSTOM_ID: h:924dc0fe-c15b-491e-a6d1-8b88683d4c0d
+   :CUSTOM_ID: h--924dc0fe-c15b-491e-a6d1-8b88683d4c0d
    :END:
 
   The simpleSystemBase implementation is primarily designed for Unit
@@ -3222,11 +3222,11 @@ ActorSystems:
       other Actors (as a matter of principal, accessing global state
       is an anti-pattern for the Actor Model).
     * It is possible for an Actor to modify the caller's version of
-      the message (see [[#h:23ac66d7-ba55-40dc-ade8-a71e51c7a404][Message Mutability]]).
-    * The [[#h:0e9f4a6a-3083-40fa-a75b-ced37d70eef0][actorSystemCapabilityCheck]] is not called for any Actors: all
+      the message (see [[#h--23ac66d7-ba55-40dc-ade8-a71e51c7a404][Message Mutability]]).
+    * The [[#h--0e9f4a6a-3083-40fa-a75b-ced37d70eef0][actorSystemCapabilityCheck]] is not called for any Actors: all
       actors are created in the current ActorSystem regardless of
       their capability requirements.
-    * No support for [[#h:461f4dc3-4bd6-46fe-a33e-2ad2a8d82d53][Multiple Systems]] (e.g. Conventions)
+    * No support for [[#h--461f4dc3-4bd6-46fe-a33e-2ad2a8d82d53][Multiple Systems]] (e.g. Conventions)
 
   Specifically, whenever an ActorSystem ~.tell()~ or ~.ask()~ is
   called, the message is passed to the target Actor and any subsequent
@@ -3235,7 +3235,7 @@ ActorSystems:
   completes back to the caller, most messages have been propagated
   through the system and it has reached equilibrium.
 
-  There is one exception to the equilibrium state: pending [[#h:b2b4b63a-c256-4793-8591-1ce8dbd87131][wakeupAfter]]
+  There is one exception to the equilibrium state: pending [[#h--b2b4b63a-c256-4793-8591-1ce8dbd87131][wakeupAfter]]
   wakeups.  These wakups may still be pending when the ~.tell()~ or
   ~.ask()~ returns, and will not be delivered in the background
   subsequent to that return.  If the wakeup time period expires during
@@ -3251,13 +3251,13 @@ ActorSystems:
   with any log capturing that is performed by the unit testing
   framework (e.g. nosetest logcapture).
 
-  The simpleSystemBase uses the following [[#h:a17e6c70-5592-4d06-b818-bd25350c4c53][ActorSystem Capabilities]]:
+  The simpleSystemBase uses the following [[#h--a17e6c70-5592-4d06-b818-bd25350c4c53][ActorSystem Capabilities]]:
 
   * *Thespian ActorSystem Name* :: /read-only/ "simpleSystemBase"
 
 ** multiprocQueueBase
    :PROPERTIES:
-   :CUSTOM_ID: h:59ea5ca7-a167-4d51-bd1b-78119eab6df6
+   :CUSTOM_ID: h--59ea5ca7-a167-4d51-bd1b-78119eab6df6
    :END:
 
 The multiprocQueueBase runs each Actor in its own separate process
@@ -3285,9 +3285,9 @@ destination.
 The multiprocQueueBase can only be used for communications on the
 current system and not for inter-system communications.  The
 multiprocQueueBase does not support the use of multiple ActorSystems
-in a Convention as described in [[#h:461f4dc3-4bd6-46fe-a33e-2ad2a8d82d53][Multiple Systems]].
+in a Convention as described in [[#h--461f4dc3-4bd6-46fe-a33e-2ad2a8d82d53][Multiple Systems]].
 
-The multiprocQueueBase uses the following [[#h:a17e6c70-5592-4d06-b818-bd25350c4c53][ActorSystem Capabilities]]:
+The multiprocQueueBase uses the following [[#h--a17e6c70-5592-4d06-b818-bd25350c4c53][ActorSystem Capabilities]]:
 
   * *Thespian ActorSystem Name* :: /read-only/ "multiprocQueueBase"
 
@@ -3309,7 +3309,7 @@ The multiprocQueueBase uses the following [[#h:a17e6c70-5592-4d06-b818-bd25350c4
 
 ** multiprocTCPBase
    :PROPERTIES:
-   :CUSTOM_ID: h:9d33a877-b4f0-4012-9510-442d81b0837c
+   :CUSTOM_ID: h--9d33a877-b4f0-4012-9510-442d81b0837c
    :END:
 
 The multiprocTCPBase runs each Actor in its own separate process
@@ -3415,7 +3415,7 @@ The multiprocTCPBase uses the following [[#*ActorSystem Capabilities][ActorSyste
 
 ** multiprocUDPBase
    :PROPERTIES:
-   :CUSTOM_ID: h:25cfa213-13a6-4265-8828-86ffffed0e12
+   :CUSTOM_ID: h--25cfa213-13a6-4265-8828-86ffffed0e12
    :END:
 
 The multiprocUDPBase runs each Actor in its own separate process
@@ -3443,7 +3443,7 @@ The multiprocUDPBase supports forwarding of logging messages (warning
 and above) to the Convention Leader if used in a multi-system
 configuration.
 
-The multiprocUDPBase uses the following [[#h:a17e6c70-5592-4d06-b818-bd25350c4c53][ActorSystem Capabilities]]:
+The multiprocUDPBase uses the following [[#h--a17e6c70-5592-4d06-b818-bd25350c4c53][ActorSystem Capabilities]]:
 
   * *Thespian ActorSystem Name* :: /read-only/ "multiprocUDPBase"
 
@@ -3461,7 +3461,7 @@ The multiprocUDPBase uses the following [[#h:a17e6c70-5592-4d06-b818-bd25350c4c5
 
   * *Convention Address.IPv4* :: the IPv4 address of the convention
     leader's Admin.  See the description of the same capability in the
-    [[#h:9d33a877-b4f0-4012-9510-442d81b0837c][multiprocTCPBase]] for more details.
+    [[#h--9d33a877-b4f0-4012-9510-442d81b0837c][multiprocTCPBase]] for more details.
 
   * *Process Startup Method* :: /optional/ specifies the
        multiprocessing process startup method (see
@@ -3477,7 +3477,7 @@ The multiprocUDPBase uses the following [[#h:a17e6c70-5592-4d06-b818-bd25350c4c5
 
 * Deploying Actor-based Projects
   :PROPERTIES:
-  :CUSTOM_ID: h:23bdc6e2-a5c4-4228-a75c-fb213f537732
+  :CUSTOM_ID: h--23bdc6e2-a5c4-4228-a75c-fb213f537732
   :END:
 
   Possible Methods for deployment:
@@ -3504,7 +3504,7 @@ The multiprocUDPBase uses the following [[#h:a17e6c70-5592-4d06-b818-bd25350c4c5
 
 ** Overall Security Considerations
    :PROPERTIES:
-   :CUSTOM_ID: h:7e109f00-76ff-49a1-b307-2166154c3921
+   :CUSTOM_ID: h--7e109f00-76ff-49a1-b307-2166154c3921
    :END:
 
   * *ActorSystem Startup* :: ActorSystem startup will inherit the
@@ -3524,7 +3524,7 @@ The multiprocUDPBase uses the following [[#h:a17e6c70-5592-4d06-b818-bd25350c4c5
        not an effective attack vector for the ActorSystem.
 
   * *Actor Injection* :: the use of the Source Authority (see
-       [[#h:5ae05479-5a6d-4f01-bd7d-c4f544f7b98a][registerSourceAuthority]]) and associated sourceHash values
+       [[#h--5ae05479-5a6d-4f01-bd7d-c4f544f7b98a][registerSourceAuthority]]) and associated sourceHash values
        prevent the ability to inject bad actors into the ActorSystem.
 
   * *Message Injection* :: Each Actor is responsible for any
@@ -3555,7 +3555,7 @@ The multiprocUDPBase uses the following [[#h:a17e6c70-5592-4d06-b818-bd25350c4c5
 
 *** Security Scenarios
     :PROPERTIES:
-    :CUSTOM_ID: h:fcabc7dd-327f-47cf-bcb7-5dd4d202ebdc
+    :CUSTOM_ID: h--fcabc7dd-327f-47cf-bcb7-5dd4d202ebdc
     :END:
 
 On any particular host where an ActorSystem is running, the primary
