@@ -16,7 +16,7 @@
 
 * Background
   :PROPERTIES:
-  :CUSTOM_ID: h--2755875e-6956-405e-8be2-cfc2ea596f63
+  :CUSTOM_ID: hH-2755875e-6956-405e-8be2-cfc2ea596f63
   :END:
 
 How do you design an application using Agile methodologies that will
@@ -49,7 +49,7 @@ others to leverage the Actor Model architecture for Python.
 
 ** The Actor Model
    :PROPERTIES:
-   :CUSTOM_ID: h--53c50716-fdfa-4b6e-91d0-ed0313de1b4a
+   :CUSTOM_ID: hH-53c50716-fdfa-4b6e-91d0-ed0313de1b4a
    :END:
 
 The Actor Model itself is pretty simple, but it's the way that it
@@ -93,12 +93,12 @@ various details, they all provide a common set of features, including:
 
 * Thespian Features
   :PROPERTIES:
-  :CUSTOM_ID: h--1b595f63-447b-40d1-ad52-582e4ac7a536
+  :CUSTOM_ID: hH-1b595f63-447b-40d1-ad52-582e4ac7a536
   :END:
 
 ** Thespian Walk-Through
    :PROPERTIES:
-   :CUSTOM_ID: h--0a2f4dce-a031-4631-8270-267fa1956ead
+   :CUSTOM_ID: hH-0a2f4dce-a031-4631-8270-267fa1956ead
    :END:
 
 One of the first things you'll notice when writing Actor-based code is
@@ -119,7 +119,7 @@ To demonstrate how easy this is, let's look at an example using the
 
 *** Installation of Thespian
     :PROPERTIES:
-    :CUSTOM_ID: h--b974440c-2d2e-4bc0-be71-1f85ca4d397e
+    :CUSTOM_ID: hH-b974440c-2d2e-4bc0-be71-1f85ca4d397e
     :END:
 
 The Thespian Python library is available on github at
@@ -140,7 +140,7 @@ them in `ps' output.
 
 *** Hello World
     :PROPERTIES:
-    :CUSTOM_ID: h--2b0d0d3f-4752-4adc-aa3e-db0b46c5739e
+    :CUSTOM_ID: hH-2b0d0d3f-4752-4adc-aa3e-db0b46c5739e
     :END:
 
 Let's start with the typical example of Hello World.  In this case,
@@ -209,7 +209,7 @@ Actors running, but lets keep it simple for the moment.
 
 **** Actor System Interaction
      :PROPERTIES:
-     :CUSTOM_ID: h--dcc3fb43-fa1f-47df-9eb0-aff3eaa093aa
+     :CUSTOM_ID: hH-dcc3fb43-fa1f-47df-9eb0-aff3eaa093aa
      :END:
 
 The next couple of lines in the Hello World example are a little
@@ -306,7 +306,7 @@ System is shutdown.
 
 ** Dynamic Actor Creation
    :PROPERTIES:
-   :CUSTOM_ID: h--fc4f8ecb-3a8d-40d9-afbb-2a2a2ff28680
+   :CUSTOM_ID: hH-fc4f8ecb-3a8d-40d9-afbb-2a2a2ff28680
    :END:
 
 In the Hello World example above, only a single Actor was created and
@@ -472,7 +472,7 @@ deactivate Goodbye
 
 *** Horizontal Scalability
     :PROPERTIES:
-    :CUSTOM_ID: h--015afee7-1483-44d0-bb06-f9d464c842a8
+    :CUSTOM_ID: hH-015afee7-1483-44d0-bb06-f9d464c842a8
     :END:
 
   As the /hellogoodbye/ example above demonstrates, Actors can easily be
@@ -484,7 +484,7 @@ deactivate Goodbye
 
 *** Modularity and Extensibility
     :PROPERTIES:
-    :CUSTOM_ID: h--1ff47ec9-6caa-4a8b-8209-2d75c6214728
+    :CUSTOM_ID: hH-1ff47ec9-6caa-4a8b-8209-2d75c6214728
     :END:
 
   Just as the Actor model supports Horizontal Scalability, it's also
@@ -504,7 +504,7 @@ deactivate Goodbye
 
 ** Different ActorSystem Bases
    :PROPERTIES:
-   :CUSTOM_ID: h--b2414e9c-4cec-46e7-8d53-80008f2c9498
+   :CUSTOM_ID: hH-b2414e9c-4cec-46e7-8d53-80008f2c9498
    :END:
 
   The ActorSystem Base determines how the Actor System implements the
@@ -621,7 +621,7 @@ kquick 5595 5594  0 21:51 pts/86  00:00:00 logger ActorAddr-(TCP|10.56.10.5:5186
 
 *** Base Persistence
     :PROPERTIES:
-    :CUSTOM_ID: h--5edfee1e-c49b-40bf-8fa5-970a0d1ee5f5
+    :CUSTOM_ID: hH-5edfee1e-c49b-40bf-8fa5-970a0d1ee5f5
     :END:
 
   One of the trickiest parts of using Thespian is in properly starting
@@ -643,7 +643,7 @@ kquick 5595 5594  0 21:51 pts/86  00:00:00 logger ActorAddr-(TCP|10.56.10.5:5186
 
 **** Code Updates
      :PROPERTIES:
-     :CUSTOM_ID: h--7dffe41e-27cd-4b56-bc6a-017add7b2c34
+     :CUSTOM_ID: hH-7dffe41e-27cd-4b56-bc6a-017add7b2c34
      :END:
 
   Because the persistent base's admin process continues to exist,
@@ -715,11 +715,11 @@ $ python
 
   This however will stop all other Actors that are currently running
   in that system base.  The alternative is to dynamically load the new
-  source code as described in [[#h--7b9dbba0-c492-48db-ad43-a94d3e1bef8d][Dynamic Source Loading]].
+  source code as described in [[#hH-7b9dbba0-c492-48db-ad43-a94d3e1bef8d][Dynamic Source Loading]].
 
 ** Logging
    :PROPERTIES:
-   :CUSTOM_ID: h--ff59a149-101e-4e09-8552-81b155d06d72
+   :CUSTOM_ID: hH-ff59a149-101e-4e09-8552-81b155d06d72
    :END:
 
 Thespian supports the standard ~logging~ library, but provides some
@@ -865,7 +865,7 @@ configuration which overrides the default.
 
 *** Source Actor Address Logging
     :PROPERTIES:
-    :CUSTOM_ID: h--bb02d15f-a0a3-456f-93df-64ee2712bd89
+    :CUSTOM_ID: hH-bb02d15f-a0a3-456f-93df-64ee2712bd89
     :END:
 
 Some system bases are capable of specifying the current Actor's
@@ -948,7 +948,7 @@ if __name__ == "__main__":
 
 ** Concurrency
    :PROPERTIES:
-   :CUSTOM_ID: h--e01f8b46-7c4d-4740-a2c5-b74380f18875
+   :CUSTOM_ID: hH-e01f8b46-7c4d-4740-a2c5-b74380f18875
    :END:
 
   In the examples shown above, messages were delivered to the
@@ -1008,7 +1008,7 @@ if __name__ == "__main__":
 
 *** Debugging
     :PROPERTIES:
-    :CUSTOM_ID: h--786634c3-1045-41a3-9354-fe5123fb6508
+    :CUSTOM_ID: hH-786634c3-1045-41a3-9354-fe5123fb6508
     :END:
 
   Multi-threaded applications are very difficult to debug, and
@@ -1058,7 +1058,7 @@ OK
 
 ** Location Independence
    :PROPERTIES:
-   :CUSTOM_ID: h--4d0d08fe-d96a-4937-8bca-2a9b2588bb4c
+   :CUSTOM_ID: hH-4d0d08fe-d96a-4937-8bca-2a9b2588bb4c
    :END:
 
   When an Actor wishes to send a message to another Actor, it uses the
@@ -1086,7 +1086,7 @@ OK
   appropriate... again without any changes to the Actor application
   code itself.
 
-  The combination of location independence and [[#h--015afee7-1483-44d0-bb06-f9d464c842a8][Horizontal Scalability]]
+  The combination of location independence and [[#hH-015afee7-1483-44d0-bb06-f9d464c842a8][Horizontal Scalability]]
   means that Actor-based applications are particularly well suited to
   *cloud-based solutions* where changes in the relative size of the
   cloud deployment can be realized through duplicating, moving, or
@@ -1094,7 +1094,7 @@ OK
 
 *** Capability-based Location Selection
     :PROPERTIES:
-    :CUSTOM_ID: h--b6f32db8-fb0e-4110-95c0-c745ab5b730e
+    :CUSTOM_ID: hH-b6f32db8-fb0e-4110-95c0-c745ab5b730e
     :END:
 
   Thespian allows different Actor Systems to identify what
@@ -1166,7 +1166,7 @@ method:
 
 *** Multiple Cooperating Actor Systems
     :PROPERTIES:
-    :CUSTOM_ID: h--1ab869b1-c7be-4dce-8346-d4b3a78cb2ba
+    :CUSTOM_ID: hH-1ab869b1-c7be-4dce-8346-d4b3a78cb2ba
     :END:
 
 When Thespian Actor Systems are started on each host node, they can
@@ -1228,7 +1228,7 @@ failures.
 
 ** Fault Tolerance
    :PROPERTIES:
-   :CUSTOM_ID: h--8835eec5-eb65-4899-ab80-1f861bb5f52c
+   :CUSTOM_ID: hH-8835eec5-eb65-4899-ab80-1f861bb5f52c
    :END:
 
 Any modern application must be capable of dealing with faults, and
@@ -1278,7 +1278,7 @@ interfering with concurrency.
 
 * Dynamic Source Loading
   :PROPERTIES:
-  :CUSTOM_ID: h--7b9dbba0-c492-48db-ad43-a94d3e1bef8d
+  :CUSTOM_ID: hH-7b9dbba0-c492-48db-ad43-a94d3e1bef8d
   :END:
 
 Thespian's ability to perform [[Dynamic Actor Creation][Dynamic Actor Creation]] can be logically
@@ -1286,7 +1286,7 @@ extended to be able to dynamically load the sources from which these
 Actors are created.  This can be useful in several ways:
 
   * Updating source code running in persistent ActorSystem base
-    instances (as described in [[#h--5edfee1e-c49b-40bf-8fa5-970a0d1ee5f5][Base Persistence]]).
+    instances (as described in [[#hH-5edfee1e-c49b-40bf-8fa5-970a0d1ee5f5][Base Persistence]]).
 
   * Ensuring that the same version of Actor sources are running
     throughout the environment.
@@ -1456,7 +1456,7 @@ The sources loaded remain loaded until unloaded via a call to
 
 * Shell
   :PROPERTIES:
-  :CUSTOM_ID: h--058d8939-b973-4270-975b-3afd9c607176
+  :CUSTOM_ID: hH-058d8939-b973-4270-975b-3afd9c607176
   :END:
 
 Thespian comes with a command-line application shell which can be used
@@ -1466,7 +1466,7 @@ manual testing.
 
 ** Starting the Shell
    :PROPERTIES:
-   :CUSTOM_ID: h--654845ce-3c0f-4fe8-892a-5ff5d12f5ca0
+   :CUSTOM_ID: hH-654845ce-3c0f-4fe8-892a-5ff5d12f5ca0
    :END:
 
 At startup, the ~start~ command should be used to specify which Actor
@@ -1489,7 +1489,7 @@ $
 
 ** Address Management in the Shell
    :PROPERTIES:
-   :CUSTOM_ID: h--092b8ae6-ec6c-4729-9505-8dbd32284d02
+   :CUSTOM_ID: hH-092b8ae6-ec6c-4729-9505-8dbd32284d02
    :END:
 
 The thespian shell provides special handling for Actor Addresses.
@@ -1511,7 +1511,7 @@ thespian>
 
 ** Shell Test Actor
    :PROPERTIES:
-   :CUSTOM_ID: h--c0bca217-9bbe-4d44-b322-a51b86f2ee93
+   :CUSTOM_ID: hH-c0bca217-9bbe-4d44-b322-a51b86f2ee93
    :END:
 
 There is also a test Actor that is part of the shell.  The test Actor
@@ -1537,7 +1537,7 @@ Response: TestActor @ ActorAddr-(TCP|10.56.10.5:54991) got: hi
 
 ** Actor Status Requests
    :PROPERTIES:
-   :CUSTOM_ID: h--efd0ab30-ef4e-4105-b4b6-4831afc5d3de
+   :CUSTOM_ID: hH-efd0ab30-ef4e-4105-b4b6-4831afc5d3de
    :END:
 
 The shell also supports issuing status queries to Actors.  The status
@@ -1583,7 +1583,7 @@ programmatically relied upon at this time.
 
 * Conclusion
   :PROPERTIES:
-  :CUSTOM_ID: h--2827218b-828e-4d59-9b08-153d46b02134
+  :CUSTOM_ID: hH-2827218b-828e-4d59-9b08-153d46b02134
   :END:
 
 The Actor model is a powerful and yet simple tool for the modern

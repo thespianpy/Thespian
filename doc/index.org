@@ -13,7 +13,7 @@
 
 * Home
   :PROPERTIES:
-  :CUSTOM_ID: h--5976a936-5f5a-43d9-a5e8-c00cd07d5c13
+  :CUSTOM_ID: hH-5976a936-5f5a-43d9-a5e8-c00cd07d5c13
   :END:
 
 #+BEGIN_CENTER
@@ -71,12 +71,12 @@ removed from the environment dynamically.
 
 * Quick Start
   :PROPERTIES:
-  :CUSTOM_ID: h--8fe30933-b8dd-4ac8-a11b-046ed9afe72f
+  :CUSTOM_ID: hH-8fe30933-b8dd-4ac8-a11b-046ed9afe72f
   :END:
 
 ** Simple Installation
    :PROPERTIES:
-   :CUSTOM_ID: h--facafcab-1f42-4b4b-b287-1b7ef8f5bdf7
+   :CUSTOM_ID: hH-facafcab-1f42-4b4b-b287-1b7ef8f5bdf7
    :END:
 
 Install the Thespian library on your local host system using pip:
@@ -87,7 +87,7 @@ $ pip install thespian
 
 ** Starting a Thespian Instance
    :PROPERTIES:
-   :CUSTOM_ID: h--c49119ce-dd01-4348-9c2f-df7ecf0e071a
+   :CUSTOM_ID: hH-c49119ce-dd01-4348-9c2f-df7ecf0e071a
    :END:
 
 Start a default Thespian Actor System on the current host system:
@@ -100,7 +100,7 @@ $ python
 
 ** Hello World
    :PROPERTIES:
-   :CUSTOM_ID: h--ff97e697-52e8-48e5-8682-86a4f90c750b
+   :CUSTOM_ID: hH-ff97e697-52e8-48e5-8682-86a4f90c750b
    :END:
 
 A Hello World example:
@@ -131,7 +131,7 @@ $
 
 ** Hello World Redux
    :PROPERTIES:
-   :CUSTOM_ID: h--30ec58b2-0daa-4700-be9d-c24925b965d3
+   :CUSTOM_ID: hH-30ec58b2-0daa-4700-be9d-c24925b965d3
    :END:
 
 It's easy to extend the Hello World example to include multiple actors
@@ -207,7 +207,7 @@ Please see the examples section for more information.
 
 ** What Next?
    :PROPERTIES:
-   :CUSTOM_ID: h--d35b0d3f-a95e-43e8-ac12-eae9bc49f321
+   :CUSTOM_ID: hH-d35b0d3f-a95e-43e8-ac12-eae9bc49f321
    :END:
 
 This has just been a very simple introduction to using Thespian.  A
@@ -217,12 +217,12 @@ utilization document.
 
 * Documentation
   :PROPERTIES:
-  :CUSTOM_ID: h--e8dd9cdc-1a23-4f11-9d4b-017a12b07593
+  :CUSTOM_ID: hH-e8dd9cdc-1a23-4f11-9d4b-017a12b07593
   :END:
 
 ** Thespian Documentation
    :PROPERTIES:
-   :CUSTOM_ID: h--24e6d4e0-21c2-4731-868a-2f5617a69c21
+   :CUSTOM_ID: hH-24e6d4e0-21c2-4731-868a-2f5617a69c21
    :END:
 
   | TXT | PDF | HTML | Description                                                                                                                         |
@@ -236,7 +236,7 @@ utilization document.
 
 ** Background and Related Efforts
    :PROPERTIES:
-   :CUSTOM_ID: h--a7419fe2-bdaa-486f-a514-e921fb819e73
+   :CUSTOM_ID: hH-a7419fe2-bdaa-486f-a514-e921fb819e73
    :END:
 
   * The [[http://wikipedia.org/wiki/Actor_model][Actor Model]] at Wikipedia
@@ -253,7 +253,7 @@ utilization document.
 
 ** Unrelated Efforts
    :PROPERTIES:
-   :CUSTOM_ID: h--2c16d670-b74b-4a64-ac23-e0d96111f9f4
+   :CUSTOM_ID: hH-2c16d670-b74b-4a64-ac23-e0d96111f9f4
    :END:
 
   The following projects or sites are completely unrelated to this
@@ -267,7 +267,7 @@ utilization document.
 
 * Download
   :PROPERTIES:
-  :CUSTOM_ID: h--6f80868a-124a-47b8-a47d-07477dfe88f0
+  :CUSTOM_ID: hH-6f80868a-124a-47b8-a47d-07477dfe88f0
   :END:
 
   The recommended way to obtain Thespian is by using ~pip~ to download
@@ -288,7 +288,7 @@ $ pip install thespian
 
 * Contribute
   :PROPERTIES:
-  :CUSTOM_ID: h--5d7ec411-a58f-41fa-b05e-c0cec23cfc85
+  :CUSTOM_ID: hH-5d7ec411-a58f-41fa-b05e-c0cec23cfc85
   :END:
 
   Contributions to and involvement in Thespian development itself is
@@ -301,7 +301,7 @@ $ pip install thespian
 
 * News
   :PROPERTIES:
-  :CUSTOM_ID: h--84836e30-faed-40bf-b6ae-7db014bae376
+  :CUSTOM_ID: hH-84836e30-faed-40bf-b6ae-7db014bae376
   :END:
 
   * 2015-08-31 :: Thespian Publicly Released
@@ -312,7 +312,7 @@ $ pip install thespian
 
 ** Blogs and Success Stories
    :PROPERTIES:
-   :CUSTOM_ID: h--4c48cbe8-d23b-45e8-a29f-991776c234a2
+   :CUSTOM_ID: hH-4c48cbe8-d23b-45e8-a29f-991776c234a2
    :END:
 
   * [[http://engineering.godaddy.com/why-godaddy-built-an-actor-system-library][GoDaddy blog article introducing Thespian, 2015 Aug]]

@@ -464,7 +464,7 @@ do not change the API.
 
   * Documentation updates, including a warning about the inability to
     exchange objects between different loaded sources unless
-    conventionally serialized (see [[http://thespianpy.com/doc/using#h--e23490e4-d720-4e84-9b9a-e768fa3e717d][Source Loading Issues]]).
+    conventionally serialized (see [[http://thespianpy.com/doc/using#hH-e23490e4-d720-4e84-9b9a-e768fa3e717d][Source Loading Issues]]).
 
 
 *** 3.2.1 <2016-09-08 Thu>
