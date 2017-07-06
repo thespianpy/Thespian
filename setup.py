@@ -47,7 +47,7 @@ for Cloud-based applications as well, where compute nodes are
 added and removed from the environment dynamically.
 
    * More Information: http://thespianpy.com
-   * Release Notes: http://thespianpy.com/releases.html
+   * Release Notes: http://thespianpy.com/doc/releases.html
 
     ''',
     keywords = ['actors', 'concurrent', 'concurrency', 'asynchronous',
