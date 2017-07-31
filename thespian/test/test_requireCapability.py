@@ -19,6 +19,13 @@ class TestUnitRequireCapability(object):
         assert not capcheck({'qwer':False,'asdf':False}, 0)
         assert not capcheck({'qwer':True,'asdf':False}, 0)
 
+    def test_oneReq_no_value_spec_must_be_truthy(self):
+        capcheck = TestUnitRequireCapability.req1.actorSystemCapabilityCheck
+        assert capcheck({'asdf':'truthy string'}, 0)
+        assert capcheck({'asdf':1}, 0)
+
+        assert not capcheck({'asdf':''}, 0)
+        assert not capcheck({'asdf':0}, 0)
 
     @requireCapability('asdf')
     @requireCapability('qwer')

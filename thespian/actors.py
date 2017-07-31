@@ -772,7 +772,7 @@ class ExternalContext(ActorSystem):
         self._systemBase.exit_context()
 
 
-def requireCapability(cap, value=True):
+def requireCapability(cap, value=None):
     '''Actor class decorator for requiring a capability.'''
     def go(cls):
         capCheck0 = None
@@ -781,7 +781,8 @@ def requireCapability(cap, value=True):
 
         @staticmethod
         def capCheck1(caps, reqs):
-            return caps.get(cap, False) == value and \
+            return (caps.get(cap, False) if value is None else \
+                    caps.get(cap, False) == value) and \
                 (capCheck0(caps, reqs) if capCheck0 else True)
         cls.actorSystemCapabilityCheck = capCheck1
         return cls
