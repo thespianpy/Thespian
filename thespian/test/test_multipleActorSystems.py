@@ -205,9 +205,12 @@ class Cheech(Actor):
 
 @requireCapability('Foo Allowed')
 class Chong(Actor):
+    def __init__(self, capabilities, requirements):
+        self._caps = capabilities
+        self._reqs = requirements
     def receiveMessage(self, msg, sender):
         if isinstance(msg, ActorAddress):
-            self.send(msg, 'heya')
+            self.send(msg, ('heya', self._reqs, self._caps))
         elif msg == 'take a hike':
             sys.exit(0)
         else:
@@ -534,7 +537,9 @@ class TestFuncMultiProcessSystem(object):
         r = asys.ask(cheech, 'hello', max_ask_wait)
         assert r == 'howdy'
         r = asys.ask(cheech, 'buddy', max_ask_wait)
-        assert r == 'heya'
+        assert r[0] == 'heya'
+        assert r[1] is None
+        assert r[2]['Cows Allowed']
         r = asys.ask(cheech, 'alone?', max_ask_wait)
         assert r is not None
 
@@ -552,7 +557,9 @@ class TestFuncMultiProcessSystem(object):
         r = asys.ask(cheech, 'hello', max_ask_wait)
         assert r == 'howdy'
         r = asys.ask(cheech, 'buddy', max_ask_wait)
-        assert r == 'heya'
+        assert r[0] == 'heya'
+        assert r[1] is None
+        assert r[2]['Cows Allowed']
         r = asys.ask(cheech, 'alone?', max_ask_wait)
         assert r is not None
 
@@ -570,7 +577,9 @@ class TestFuncMultiProcessSystem(object):
         r = asys2.ask(cheech, 'hello', max_ask_wait)
         assert r == 'howdy'
         r = asys2.ask(cheech, 'buddy', max_ask_wait)
-        assert r == 'heya'
+        assert r[0] == 'heya'
+        assert r[1] is None
+        assert r[2]['Cows Allowed']
         r = asys2.ask(cheech, 'alone?', max_ask_wait)
         assert r is not None
 

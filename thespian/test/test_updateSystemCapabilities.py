@@ -31,6 +31,11 @@ class SetCap(object):
         self.capName = capName
         self.capValue = capValue
 
+class GetCaps(object):
+    def __init__(self):
+        self.caps = None
+        self.reqs = None
+
 
 class ColorActorBase(Actor):
     """This actor has a particular color (identified by self.color), and
@@ -72,27 +77,48 @@ class ColorActorBase(Actor):
                 if self._subs[each] == msg.childAddress:
                     del self._subs[each]
                     break
+        elif isinstance(msg, GetCaps):
+            msg.caps = getattr(self, 'init_caps', '<no caps avail>')
+            msg.reqs = getattr(self, 'init_reqs', '<no reqs avail>')
+            self.send(sender, msg)
 
 
 class RedActor(ColorActorBase):
     @staticmethod
     def actorSystemCapabilityCheck(capabilities, actorRequirements):
         return capabilities.get('Red', False)
+    def __init__(self, capabilities):
+        self.init_caps = capabilities
+        super(RedActor, self).__init__()
 
 class GreenActor(ColorActorBase):
     @staticmethod
     def actorSystemCapabilityCheck(capabilities, actorRequirements):
         return capabilities.get('Green', False)
+    def __init__(self, requirements):
+        self.init_reqs = requirements
+        super(GreenActor, self).__init__()
 
 class BlueActor(ColorActorBase):
     @staticmethod
     def actorSystemCapabilityCheck(capabilities, actorRequirements):
         return capabilities.get('Blue', False)
+    def __init__(self, requirements, capabilities):
+        self.init_reqs = requirements
+        self.init_caps = capabilities
+        super(BlueActor, self).__init__()
 
 class OrangeActor(ColorActorBase):
-    # This actor has no actorSystemCapabilityCheck
-    pass
+    # This actor has no actorSystemCapabilityCheck, but it still can
+    # see the capabilities and requirements
+    def __init__(self, capabilities, requirements):
+        self.init_reqs = requirements
+        self.init_caps = capabilities
+        super(OrangeActor, self).__init__()
 
+class PurpleActor(ColorActorBase):
+    # simple, no requirements, just anywhere
+    pass
 
 @pytest.fixture
 def asys_trio(request, asys):
@@ -144,9 +170,9 @@ class TestFuncCapabilityUpdates(object):
         update_wait()
         update_wait()
         # Create one actor in each system
-        red = asys1.createActor(RedActor)
+        red = asys1.createActor(RedActor, targetActorRequirements={'hue': 'red'})
         green = asys1.createActor(GreenActor)
-        blue = asys1.createActor(BlueActor)
+        blue = asys1.createActor(BlueActor, targetActorRequirements={'hue': 'blue'})
         # Verify got valid ActorAddresses
         assert red is not None
         assert green is not None
@@ -158,6 +184,24 @@ class TestFuncCapabilityUpdates(object):
         assert "Got: hello" == asys1.ask(red, 'hello', 1)
         assert "Got: howdy" == asys1.ask(green, 'howdy', 1)
         assert "Got: greetings" == asys1.ask(blue, 'greetings', 1)
+        # Check the actors knowledge of capabilities and requirements
+        gc = asys1.ask(red, GetCaps(), 1)
+        assert gc.caps['Red']
+        assert not gc.caps.get('Green', False)
+        assert not gc.caps.get('Blue', False)
+        assert 'Thespian Version' in gc.caps
+        assert 'Thespian Generation' in gc.caps
+        assert gc.reqs == '<no reqs avail>'
+        gc = asys1.ask(green, GetCaps(), 1)
+        assert gc.caps == '<no caps avail>'
+        assert gc.reqs is None
+        gc = asys1.ask(blue, GetCaps(), 1)
+        assert gc.caps['Blue']
+        assert not gc.caps.get('Green', False)
+        assert not gc.caps.get('Red', False)
+        assert 'Thespian Version' in gc.caps
+        assert 'Thespian Generation' in gc.caps
+        assert gc.reqs['hue'] == 'blue'
         # Tell actors to exit
         asys1.tell(red, ActorExitRequest())
         asys1.tell(green, ActorExitRequest())
@@ -181,20 +225,35 @@ class TestFuncCapabilityUpdates(object):
         green = asys1.createActor(GreenActor)
         blue = asys1.createActor(BlueActor)
         orange = asys1.createActor(OrangeActor)
+        purple = asys1.createActor(PurpleActor)
         # Verify got valid ActorAddresses
         assert red is not None
         assert green is not None
         assert blue is not None
         assert orange is not None
+        assert purple is not None
         assert isinstance(red, ActorAddress)
         assert isinstance(green, ActorAddress)
         assert isinstance(blue, ActorAddress)
         assert isinstance(orange, ActorAddress)
+        assert isinstance(purple, ActorAddress)
         # Verify actors are responsive
         assert "Got: hello" == asys1.ask(red, 'hello', 1)
         assert "Got: howdy" == asys1.ask(green, 'howdy', 1)
         assert "Got: greetings" == asys1.ask(blue, 'greetings', 1)
         assert "Got: aloha" == asys1.ask(orange, 'aloha', 1)
+        assert "Got: aloha" == asys1.ask(purple, 'aloha', 1)
+        # Check the actors knowledge of capabilities and requirements
+        gc = asys1.ask(orange, GetCaps(), 1)
+        assert gc.caps['Red']
+        assert not gc.caps.get('Green', False)
+        assert not gc.caps.get('Blue', False)
+        assert 'Thespian Version' in gc.caps
+        assert 'Thespian Generation' in gc.caps
+        assert gc.reqs is None
+        gc = asys1.ask(purple, GetCaps(), 1)
+        assert gc.caps == '<no caps avail>'
+        assert gc.reqs == '<no reqs avail>'
         # Create a chain of multiple colors from each top level
         assert "path1" == asys1.ask(red, (BlueActor, GreenActor, RedActor,
                                           GreenActor, BlueActor, RedActor,
