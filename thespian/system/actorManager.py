@@ -5,7 +5,7 @@ import logging
 import copy
 import atexit
 from thespian.actors import *
-from thespian.system.utilis import thesplog
+from thespian.system.utilis import thesplog, withPossibleInitArgs
 from thespian.system.systemCommon import systemCommonBase
 from thespian.system.addressManager import CannotPickleAddress
 from thespian.system.transport import *
@@ -53,7 +53,9 @@ class ActorManager(systemCommonBase):
                                               self._sources)
                                       if self._sourceHash else None)
             # Now instantiate the identified Actor class object
-            actorInst = aClass()
+            actorInst = withPossibleInitArgs(capabilities=self.capabilities,
+                                             requirements=self._childReqs) \
+                                             .create(aClass)
             self._sCBStats.inc('Actor.Instance Created')
         except Exception as ex:
             import traceback

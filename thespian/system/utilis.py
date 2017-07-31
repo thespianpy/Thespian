@@ -3,7 +3,7 @@ import logging
 import os
 import tempfile
 from thespian.actors import InvalidActorSpecification
-
+import inspect
 
 
 ###
@@ -275,3 +275,45 @@ class AssocList(object):
         map(func, self._qa)
     def __len__(self):
         return len(self._qa)
+
+
+class withPossibleInitArgs(object):
+    """Allows the creation of an object, passing arguments to the
+       __init__() method only if those arguments are specified by
+       name.
+
+       Example:
+
+          class Foo(object):
+              def __init__(self, bar):  ...
+
+          foo = withPossibleInitArgs(bar=1, cow='moo').create(Foo)
+
+       will construct a Foo object by pass a bar value of 1 to the
+       __init__ method.  If the __init__ method required an argument
+       of "baz", the construction would fail because the
+       withPossibleInitArgs set of arguments did not include a "baz"
+       argument.
+
+    """
+    def __init__(self, **kw):
+        self.kwargs = kw
+    def create(self, klass):
+        """Creates an instance of the specified class, passing any of the
+           initial arguments that are valid arguments for the __init__
+           method.
+        """
+        try:
+            initsig = inspect.getargspec(klass.__init__).args
+        except (ValueError, NameError, AttributeError):
+            try:
+                initsig = inspect.getfullargspec(klass.__init__).args
+            except (ValueError, NameError, AttributeError):
+                try:
+                    initsig = [P.name
+                               for P in inspect.signature(klass.__init__).parameters]
+                except (ValueError, NameError, AttributeError):
+                    # Default to just initializing with no arguments
+                    print('defaulting')
+                    return klass()
+        return klass(**{ k: self.kwargs[k] for k in initsig if k in self.kwargs })
