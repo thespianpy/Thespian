@@ -29,7 +29,8 @@ thread, but the main thread will not exit the primary ATL completes.
 
 import logging, string, types, functools
 from thespian.actors import *
-from thespian.system.utilis import (actualActorClass, partition)
+from thespian.system.utilis import (actualActorClass, partition,
+                                    withPossibleInitArgs)
 from thespian.system.timing import timePeriodSeconds, toTimeDeltaOrNone, ExpirationTimer
 try:
     from logging.config import dictConfig
@@ -459,13 +460,10 @@ class ActorSystemBase(WakeupManager):
                    targetActorRequirements or {}):
                 actor = None
             else:
-                try:
-                    actor = actorClass(childActors=None)
-                except TypeError as te:
-                    if "unexpected keyword argument 'childActors'" in str(te):
-                        actor = actorClass()
-                    else:
-                        actor = None
+                actor = withPossibleInitArgs(
+                    capabilities=self.system.capabilities,
+                    requirements=targetActorRequirements) \
+                    .create(actorClass)
         except ActorSystemException:
             logging.getLogger('Thespian').warning('Actor total creation failure', exc_info=True)
             actor = None
