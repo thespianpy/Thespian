@@ -8,6 +8,8 @@ class TestUnitExitRequestMsg(object):
         assert m1 == WakeupMessage(1)
         m2 = WakeupMessage('hi')
         assert m2 == WakeupMessage('hi')
+        m3 = WakeupMessage(1, 'some payload')
+        assert m3 == WakeupMessage(1, 'some payload')
 
     def test_inequality(self):
         m1 = WakeupMessage(1)
@@ -15,6 +17,7 @@ class TestUnitExitRequestMsg(object):
         assert m1 != WakeupMessage('hi')
         assert m1 != WakeupMessage(0)
         assert m1 != WakeupMessage(None)
+        assert m1 != WakeupMessage(1, 'some payload')
 
     def test_properties(self):
         assert 1 == WakeupMessage(1).delayPeriod

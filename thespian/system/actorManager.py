@@ -440,8 +440,8 @@ class ActorManager(systemCommonBase):
     # ----------------------------------------------------------------------
     # Miscellaneous Functionality
 
-    def wakeupAfter(self, timePeriod):
-        self.transport.addWakeup(timePeriod)
+    def wakeupAfter(self, timePeriod, payload=None):
+        self.transport.addWakeup(timePeriod, payload)
 
     # ----------------------------------------------------------------------
     # Actors that involve themselves in topology

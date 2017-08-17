@@ -98,8 +98,8 @@ class ActorRef:
     def actor_send(self, toActorAddr, msg):
         self._system._systemBase.actor_send(self._addr, toActorAddr, msg)
 
-    def wakeupAfter(self, timePeriod):
-        self._system._systemBase.wakeupAfter(self._addr, timePeriod)
+    def wakeupAfter(self, timePeriod, payload):
+        self._system._systemBase.wakeupAfter(self._addr, timePeriod, payload)
 
     def handleDeadLetters(self, address, enable):
         self._system._handleDeadLetters(address, enable)
@@ -237,7 +237,7 @@ defaultLoggingConfig = {
 
 class WakeupManager(object):
     def __init__(self):
-        # _wakeUps is a list of (targetAddress, ExpirationTimer)
+        # _wakeUps is a list of (targetAddress, ExpirationTimer, payload)
         self._wakeUps = []
 
     def _pop_expired_wakeups(self):
@@ -246,13 +246,16 @@ class WakeupManager(object):
 
     def _next_wakeup(self):
         "Returns the ExpirationTimer for the next wakeup to occur"
-        return min([T for A,T in self._wakeUps]) if self._wakeUps else None
+        return min([T for A,T,P in self._wakeUps]) if self._wakeUps else None
 
-    def _add_wakeup(self, from_actor, time_period):
-        self._wakeUps.append( (from_actor, ExpirationTimer(time_period)) )
+    def _add_wakeup(self, from_actor, time_period, payload):
+        self._wakeUps.append(
+            (from_actor, ExpirationTimer(time_period), payload))
 
     def add_wakeups_to_status(self, statusmsg):
-        statusmsg.addWakeups(self._wakeUps)
+        # we only pass the affected actor and its associated ExpirationTimer
+        # but we exclude the payload as it's irrelevant for status info.
+        statusmsg.addWakeups([(T[0], T[1]) for T in self._wakeUps])
         return statusmsg
 
 
@@ -386,10 +389,10 @@ class ActorSystemBase(WakeupManager):
 
     def _realizeWakeups(self):
         "Find any expired wakeups and queue them to the send processing queue"
-        for target_addr, expired in self._pop_expired_wakeups():
+        for target_addr, expired, payload in self._pop_expired_wakeups():
             with self._private_lock:
                 self._pendingSends.append(
-                    PendingSend(target_addr, WakeupMessage(expired.duration), target_addr))
+                    PendingSend(target_addr, WakeupMessage(expired.duration, payload), target_addr))
 
     def _callActorWithMessage(self, tgt, ps, msg, sndr):
         try:
@@ -572,8 +575,8 @@ class ActorSystemBase(WakeupManager):
         with self._private_lock:
             self._pendingSends.append(PendingSend(fromActor, msg, toActor))
 
-    def wakeupAfter(self, fromActor, timePeriod):
-        self._add_wakeup(fromActor, timePeriod)
+    def wakeupAfter(self, fromActor, timePeriod, payload):
+        self._add_wakeup(fromActor, timePeriod, payload)
         self._realizeWakeups()
 
     def _handleDeadLetters(self, address, enable):
