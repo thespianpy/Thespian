@@ -195,13 +195,16 @@ class Actor(object):
                 'not a valid ActorAddress for sending messages to')
         self._myRef.actor_send(targetAddr, msg)
 
-    def wakeupAfter(self, timePeriod):
+    def wakeupAfter(self, timePeriod, payload=None):
         """Requests delivery of a WakeupMessage after the specified period of
            time.  This may be called multiple times to request
-           multiple wakup deliveries.  There is no mechanism to cancel
+           multiple wakup deliveries.  The optional payload parameter can be
+           used to distinguish between different types of wakeups.  The payload
+           must be pickle-able.  As it is accrued  against the actor's memory,
+           it should be kept reasonably small.  There is no mechanism to cancel
            requested wakeups.
         """
-        self._myRef.wakeupAfter(timePeriod)
+        self._myRef.wakeupAfter(timePeriod, payload)
 
     def handleDeadLetters(self, startHandling=True):
         """Registers this Actor with the ActorSystem as a recipient of
@@ -473,17 +476,20 @@ class PoisonMessage(ActorSystemMessage):
 
 class WakeupMessage(ActorSystemMessage):
     """Message sent as a result of a .wakeupAfter() call.  The
-       delayPeriod value is the amount of time of the delay.
+       delayPeriod value is the amount of time of the delay. The payload
+       can be used to store timer-specific data.
     """
-    def __init__(self, delayPeriod):
+    def __init__(self, delayPeriod, payload=None):
         self.delayPeriod = delayPeriod
+        self.payload = payload
 
     def __str__(self):
-        return 'WakeupMessage(%s)' % str(self.delayPeriod)
+        return 'WakeupMessage(%s, %s)' % (str(self.delayPeriod),
+                                          str(self.payload))
 
     def __eq__(self, o):
         return isinstance(o, WakeupMessage) and \
-            self.delayPeriod == o.delayPeriod
+            self.delayPeriod == o.delayPeriod and self.payload == o.payload
 
     def __ne__(self, o): return not self.__eq__(o)
 

@@ -769,6 +769,13 @@ class ActorB(Actor):
   any single time, and the delivery of the ~WakeupMessage~ is
   interleaved into the normal incoming message stream for the Actor.
 
+  To distinguish ~WakeupMessage~ instances that have been scheduled
+  for different purposes, it is possible to supply a ~payload~
+  as a second parameter to ~.wakeupAfter()~. The ~payload~ can be
+  arbitrary but it is accrued against the actor's memory until it is
+  delivered. Hence, it is recommended to keep the ~payload~
+  reasonably small.
+
   There is no provision for cancelling a pending wakeup; the Actor
   should simply ignore the ~WakeupMessage~ when it is received.
 

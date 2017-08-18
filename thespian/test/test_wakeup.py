@@ -27,15 +27,22 @@ sleepPartOfWakeupPeriod = lambda: time.sleep(0.005)
 
 class RetryActor(Actor):
     def __init__(self):
-        self._numWakeups = 0
+        self._numWakeups = {}
     def receiveMessage(self, msg, sender):
-        if "check" == msg:
-            self.wakeupAfter(wakeupAfterPeriod)
+        if "check" == msg or "awoken?" == msg:
+            self.dispatch(sender, (msg, None))
         elif isinstance(msg, WakeupMessage):
-            self._numWakeups += 1
-        elif "awoken?" == msg:
-            self.send(sender, self._numWakeups)
-
+            if msg.payload not in self._numWakeups:
+                self._numWakeups[msg.payload] = 0
+            self._numWakeups[msg.payload] += 1
+        elif isinstance(msg, tuple):
+            self.dispatch(sender, msg)
+    def dispatch(self, sender, msg):
+        cmd, payload = msg
+        if cmd == "check":
+            self.wakeupAfter(wakeupAfterPeriod, payload)
+        elif cmd == "awoken?":
+            self.send(sender, self._numWakeups.get(payload, 0))
 
 class TestFuncWakeup(object):
 
@@ -52,6 +59,31 @@ class TestFuncWakeup(object):
         sleepLongerThanWakeup(asys)
 
         assert asys.ask(waiter, 'awoken?', 1) == 1
+
+    def test_twoWakeupsDifferentPayloads(self, asys):
+        waiter = asys.createActor(RetryActor)
+        assert asys.ask(waiter, 'awoken?', 1) == 0
+        assert asys.ask(waiter, ('awoken?', 'payload_1'), 1) == 0
+        assert asys.ask(waiter, ('awoken?', 'payload_2'), 1) == 0
+
+        asys.tell(waiter, ('check', 'payload_1'))
+        # Next assert will fail if it takes more than the wakeupPeriod
+        # to run after the previous statement.
+        assert asys.ask(waiter, ('awoken?', 'payload_1'), 1) == 0
+
+        sleepLongerThanWakeup(asys)
+
+        assert asys.ask(waiter, 'awoken?', 1) == 0
+        assert asys.ask(waiter, ('awoken?', 'payload_1'), 1) == 1
+        assert asys.ask(waiter, ('awoken?', 'payload_2'), 1) == 0
+
+        asys.tell(waiter, ('check', 'payload_2'))
+
+        sleepLongerThanWakeup(asys)
+
+        assert asys.ask(waiter, 'awoken?', 1) == 0
+        assert asys.ask(waiter, ('awoken?', 'payload_1'), 1) == 1
+        assert asys.ask(waiter, ('awoken?', 'payload_2'), 1) == 1
 
 
     def test_threeWakeupsInSequence(self, asys):

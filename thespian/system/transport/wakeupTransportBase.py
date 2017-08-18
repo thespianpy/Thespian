@@ -34,7 +34,8 @@ class wakeupTransportBase(object):
 
     def __init__(self, *args, **kw):
         super(wakeupTransportBase, self).__init__(*args, **kw)
-        # _pendingWakeups is a sorted list of ExpirationTimer objects,
+        # _pendingWakeups is a sorted list of tuples, containing an
+        # ExpirationTimer and a payload. It is sorted by ExpirationTimer
         # from the shortest to the longest.
         self._pendingWakeups = []
         self._activeWakeups = []  # expired wakeups to be delivered
@@ -44,12 +45,14 @@ class wakeupTransportBase(object):
         """Called to update a Thespian_SystemStatus or Thespian_ActorStatus
            with common information
         """
-        resp.addWakeups([(self.myAddress, T) for T in self._pendingWakeups])
+        # we only pass the ExpirationTimer without payload as this should be
+        # sufficient for status information.
+        resp.addWakeups([(self.myAddress, T[0]) for T in self._pendingWakeups])
         for each in self._activeWakeups:
             resp.addPendingMessage(self.myAddress, self.myAddress, str(each.message))
 
     def _update_runtime(self):
-        self.run_time = (self._pendingWakeups + [self._max_runtime])[0]
+        self.run_time = self._pendingWakeups[0][0] if self._pendingWakeups else self._max_runtime
 
     def run(self, incomingHandler, maximumDuration=None):
         """Core scheduling method; called by the current Actor process when
@@ -89,9 +92,9 @@ class wakeupTransportBase(object):
         return None
 
 
-    def addWakeup(self, timePeriod):
-        self._pendingWakeups.append(ExpirationTimer(timePeriod))
-        self._pendingWakeups.sort()
+    def addWakeup(self, timePeriod, payload):
+        self._pendingWakeups.append((ExpirationTimer(timePeriod), payload))
+        self._pendingWakeups.sort(key=lambda t: t[0])
         # The addWakeup method is called as a result of
         # self.wakeupAfter, so ensure that the current run time is
         # updated in case this new wakeup is the shortest.
@@ -101,8 +104,9 @@ class wakeupTransportBase(object):
     def _realizeWakeups(self):
         "Find any expired wakeups and queue them to the send processing queue"
         starting_len = len(self._activeWakeups)
-        while self._pendingWakeups and self._pendingWakeups[0].expired():
+        while self._pendingWakeups and self._pendingWakeups[0][0].expired():
+            timer, payload = self._pendingWakeups.pop(0)
             self._activeWakeups.append(
                 ReceiveEnvelope(self.myAddress,
-                                WakeupMessage(self._pendingWakeups.pop(0).duration)))
+                                WakeupMessage(timer.duration, payload)))
         return starting_len != len(self._activeWakeups)
