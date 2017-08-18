@@ -44,3 +44,6 @@ doc/internal
 default.nix
 
 .cmd_history
+
+# IntelliJ IDEA
+.idea
