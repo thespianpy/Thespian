@@ -13,11 +13,11 @@ class TBase(ActorTypeDispatcher):
         self.send(sender, "GOT: " + strmsg)
 
 
-@transient(timedelta(seconds=1))
+@transient(timedelta(seconds=0.5))
 class T1(TBase): pass
 
 
-@transient_idle(timedelta(seconds=1))
+@transient_idle(timedelta(seconds=0.5))
 class T2(TBase): pass
 
 
@@ -25,13 +25,13 @@ class NotTransient(TBase): pass
 
 
 def test_transient(asys):
-    t1 = asys.createActor(T1)
-    t2 = asys.createActor(T2)
+    t1 = asys.createActor(T1)   # transient
+    t2 = asys.createActor(T2)   # transient idle
     nt = asys.createActor(NotTransient)
 
     # Actors do not become transient until they receive a message, so
     # they should not be affected by the initial sleep
-    sleep(2)
+    sleep(0.7)
 
     r = asys.ask(t1, 'hi.1', max_ask_wait)
     assert r == 'GOT: hi.1'
@@ -53,19 +53,19 @@ def test_transient(asys):
     assert r == 'GOT: hi.6'
 
     # Now poke the transient idle in a little bit, but let the transient die
-    sleep(0.3)
+    sleep(0.15)
     r = asys.ask(t2, 'hi.7', max_ask_wait)
     assert r == 'GOT: hi.7'
 
-    sleep(0.3)
+    sleep(0.15)
     r = asys.ask(t2, 'hi.8', max_ask_wait)
     assert r == 'GOT: hi.8'
 
-    sleep(0.3)
+    sleep(0.15)
     r = asys.ask(t2, 'hi.9', max_ask_wait)
     assert r == 'GOT: hi.9'
 
-    sleep(0.3)
+    sleep(0.15)
     r = asys.ask(t2, 'hi.10', max_ask_wait)
     assert r == 'GOT: hi.10'
 
@@ -91,10 +91,13 @@ def test_transient(asys):
 
     # And let the transient idle be idle long enough to die
 
-    sleep(1.1)
+    sleep(0.6)
 
+    # send a message to allow timeout processing
     r = asys.ask(nt, 'hi.14', max_ask_wait)
     assert r == 'GOT: hi.14'
+
+    sleep(0.05) # allow processing to occur
 
     r = asys.ask(t2, 'hi.15', max_ask_wait)
     assert r == None
