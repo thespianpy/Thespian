@@ -321,6 +321,7 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
         self._waitingTransmits = []  # list of intents without sockets
         self._incomingSockets = {}  # key = fd, value = TCP Incoming
         self._incomingEnvelopes = []
+        self._finished_intents = []
         self._watches = []
         if REUSE_SOCKETS:
             # key = opsKey(remote listen address), value=IdleSocket
@@ -674,7 +675,7 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
                         self._waitingTransmits = waiting
                         for R in runnable:
                             if status == SendStatus.DeadTarget:
-                                R.tx_done(status)
+                                self._finished_intents.append((R, status))
                             elif self._nextTransmitStep(R):
                                 if hasattr(R, 'socket'):
                                     thesplog('<S> waiting intent is now re-processing: %s', R.identify())
@@ -684,7 +685,7 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
             else:
                 _safeSocketShutdown(intent)
             delattr(intent, 'socket')
-        intent.tx_done(status)
+        self._finished_intents.append((intent, status))
         return False  # intent no longer needs to be attempted
 
     def _queue_intent_extra(self, intent):
@@ -1262,12 +1263,20 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
                 self._incomingEnvelopes.append(
                     ReceiveEnvelope(self.myAddress, WatchMessage(watchready)))
 
+            # Initiate completion operations for transmits (which may
+            # result in other transmit calls).
+            senddone = self._finished_intents
+            self._finished_intents = []
+            for intent,sts in senddone:
+                intent.tx_done(sts)
+
             # Check if it's time to quit
             if [] == rrecv and [] == rsend:
                 if [] == rerr and self.run_time.expired():
                     # Timeout, give up
                     return Thespian__Run_Expired()
                 continue
+
             if xmitOnly:
                 remXmits = len(self._transmitIntents) + \
                            len(self._waitingTransmits)
