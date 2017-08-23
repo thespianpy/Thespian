@@ -86,6 +86,34 @@ class TestFuncWakeup(object):
         assert asys.ask(waiter, ('awoken?', 'payload_2'), 1) == 1
 
 
+    def test_threeWakeupsDifferentPayloads(self, asys):
+        waiter = asys.createActor(RetryActor)
+        assert asys.ask(waiter, 'awoken?', 1) == 0
+        assert asys.ask(waiter, ('awoken?', 'payload_1'), 1) == 0
+        assert asys.ask(waiter, ('awoken?', ''), 1) == 0
+
+        asys.tell(waiter, ('check', 'payload_1'))
+        # Next assert will fail if it takes more than the wakeupPeriod
+        # to run after the previous statement.
+        assert asys.ask(waiter, ('awoken?', 'payload_1'), 1) == 0
+
+        sleepLongerThanWakeup(asys)
+
+        assert asys.ask(waiter, 'awoken?', 1) == 0
+        assert asys.ask(waiter, ('awoken?', 'payload_1'), 1) == 1
+        assert asys.ask(waiter, ('awoken?', ''), 1) == 0
+
+        asys.tell(waiter, ('check', ''))
+        sleepPartOfWakeupPeriod()
+        asys.tell(waiter, 'check')
+
+        sleepLongerThanWakeup(asys)
+
+        assert asys.ask(waiter, 'awoken?', 1) == 1
+        assert asys.ask(waiter, ('awoken?', 'payload_1'), 1) == 1
+        assert asys.ask(waiter, ('awoken?', ''), 1) == 1
+
+
     def test_threeWakeupsInSequence(self, asys):
         waiter = asys.createActor(RetryActor)
         assert asys.ask(waiter, 'awoken?', 1) == 0
