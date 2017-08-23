@@ -1453,7 +1453,7 @@ class MyActor(Actor):
    :END:
 
 #+begin_src python
-    self.wakeupAfter(timePeriod)
+    self.wakeupAfter(timePeriod, payload=None)
 #+end_src
 
     The ~timePeriod~ specifies a Python ~datetime.timedelta~ period.
@@ -1461,6 +1461,14 @@ class MyActor(Actor):
     ~WakeupMessage~ to the Actor via the normal ~.receiveMessage()~
     entrypoint (the sender will be the Actor itself).  See [[#hH-9cc1acd4-7f35-44ac-94fc-0326dc87a7a5][Timer
     Messages]] for more information.
+
+    The ~payload~ argument can be used to specify a value that is held
+    by Thespian and returned in the ~WakeupMessage~ when the elapsed
+    time has expired.  The ~payload~ can be used by the Actor to
+    provide context for the wakeup operation.  The ~payload~ value is
+    arbitrary, but it is accrued against the actor's memory until it
+    is delivered; hence, it is recommended to keep the ~payload~
+    reasonably small.
 
 ** handleDeadLetters
    :PROPERTIES:
@@ -2662,6 +2670,9 @@ class SimpleSourceAuthority(ActorTypeDispatcher):
 
   * ~.delayPeriod~ which is the python ~datetime.timedelta~ value of
     the delay period that has expired.
+
+  * ~.payload~ specifies the payload value (if any) that the Actor
+    specified on the original ~.wakeupAfter()~ call.
 
 ** WatchMessage
    :PROPERTIES:
