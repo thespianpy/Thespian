@@ -4,10 +4,10 @@ transport independence.
 
 For more details, see http://thespianpy.com
 
-Thespian Generation 3.7
+Thespian Generation 3.8
 """
 
-ThespianGeneration = (3, 7)
+ThespianGeneration = (3, 8)
 
 
 from contextlib import contextmanager

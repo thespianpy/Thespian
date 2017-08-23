@@ -7,7 +7,7 @@
 #+LATEX_HEADER: \product{Thespian}
 #+LATEX_HEADER: \component{Python Actor System}
 #+LATEX_HEADER: \doctype{Release Notes}
-#+LATEX_HEADER: \docrev{3.7.3}{2017 May 02}
+#+LATEX_HEADER: \docrev{3.8.0}{2017 Aug 22}
 #+LATEX_HEADER: \docid{TheDoc-06}
 #+OPTIONS: ^:nil num:nil
 
@@ -17,6 +17,42 @@ added functionality that is backwards compatible, and bugfix changes
 do not change the API.
 
 * 3.x
+
+** 3.8
+*** 3.8.0 <2017-08-22 Tue>
+
+    * The Actor ~__init__()~ can now specify ~capabilities~ and
+      ~requirements~ arguments. 
+
+      #+BEGIN_SRC python
+      class MyActor(Actor):
+          def __init__(self, requirements, capabilities):
+              if requirements['key'] == 'value' and \
+                  capabilities['key2'] == 'another value':
+                  self.mode = 'enabled'
+      #+END_SRC
+
+      If specified, these will receive the corresponding ActorSystem
+      values at the time of the creation of that Actor.
+
+    * Added an optional payload to ~self.wakeupAfter()~ calls.  The
+      payload will be returned to the Actor in the subsequent
+      ~WakeupMessage~ and can be used for whatever the Actor needs,
+      including to differentiate between different wakeups.   
+
+      Thanks to Daniel Mitterdorfer for contributing this enhancement!
+
+    * Update ~@requireCapability~ decorator to look for truthy values
+      when no explicit value is supplied.  Fixes [[https://github.com/kquick/Thespian/issues/5][Issue #5]].
+
+    * Fixed race conditions for situations where multi-threaded actors
+      could encounter an internal Thespian error when multiple threads
+      were sending and the main thread was receiving at the same time.
+
+    * Added pytest dependency for tox specification (thanks
+      to Daniel Mitterdorfer).
+
+    * The tox-based testing will now test the TCP transports as well.
 
 ** 3.7
 
