@@ -3347,7 +3347,7 @@ The multiprocTCPBase supports forwarding of logging messages (warning
 and above) to the Convention Leader if used in a multi-system
 configuration.
 
-The multiprocTCPBase uses the following [[#*ActorSystem Capabilities][ActorSystem Capabilities]]:
+The multiprocTCPBase uses the following [[#hH-a17e6c70-5592-4d06-b818-bd25350c4c53][ActorSystem Capabilities]]:
 
   * *Thespian ActorSystem Name* :: /read-only/ "multiprocTCPBase"
 
