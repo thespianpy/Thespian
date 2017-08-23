@@ -1242,7 +1242,7 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
                         except IOError as ex:
                             if not err_bad_fileno(ex.errno):
                                 raise
-                        if fnum is None or each == fnum:
+                        if fnum is None or fnum in rrecv:
                             del self._openSockets[opsKey(rmtaddr)]
                             if fnum:
                                 incoming = self._handlePossibleIncoming(
