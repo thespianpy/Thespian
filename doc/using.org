@@ -2817,7 +2817,7 @@ class SimpleSourceAuthority(ActorTypeDispatcher):
 
    If the specified source is valid for running in the current
    ActorSystem, the Source Authority should return a zipfile
-   containing the sources to the sender in a [[#ValidatedSource][ValidatedSource]] message.
+   containing the sources to the sender in a [[#hH-1db8e94e-ca54-4817-b120-b4c51c680cdd][ValidatedSource]] message.
 
    At the present time, only ~.py~ sources are utilized; any ~.pyc~ or
    ~.pyo~ sources are ignored if present in the zipfile.
