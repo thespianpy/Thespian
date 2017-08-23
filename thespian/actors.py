@@ -198,7 +198,7 @@ class Actor(object):
     def wakeupAfter(self, timePeriod, payload=None):
         """Requests delivery of a WakeupMessage after the specified period of
            time.  This may be called multiple times to request
-           multiple wakup deliveries.  The optional payload parameter can be
+           multiple wakeup deliveries.  The optional payload parameter can be
            used to distinguish between different types of wakeups.  The payload
            must be pickle-able.  As it is accrued  against the actor's memory,
            it should be kept reasonably small.  There is no mechanism to cancel
