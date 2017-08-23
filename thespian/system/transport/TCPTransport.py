@@ -88,7 +88,8 @@ from thespian.system.transport.streamBuffer import (toSendBuffer,
                                                     ackMsg, ackPacket,
                                                     ackDataErrMsg,
                                                     isControlMessage)
-from thespian.system.transport.asyncTransportBase import asyncTransportBase
+from thespian.system.transport.asyncTransportBase import (asyncTransportBase,
+                                                          exclusive_processing)
 from thespian.system.transport.wakeupTransportBase import wakeupTransportBase
 from thespian.system.transport.errmgmt import *
 from thespian.system.messages.multiproc import ChildMayHaveDied
@@ -1076,50 +1077,57 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
                     if not r:
                         return r
 
-            wsend, wrecv = fmap(
-                TCPTransport._socketFile,
-                partition(TCPTransport._waitForSendable,
-                          filter(lambda T: not T.backoffPause(),
-                                 self._transmitIntents.values())))
+            # Socket management can happen on other threads that are
+            # attempting transmits, so acquire exclusive processing
+            # flag.  Busy-cycle to obtain the flag since this is the
+            # primary thread.
 
-            wrecv = list(filter(None, wrecv))
-            wsend = list(filter(None, wsend))
-            wrecv.extend(list(
-                filter(lambda I: not self._incomingSockets[I].backoffPause(),
-                       filter(None, self._incomingSockets))))
+            with exclusive_processing(self):
 
-            if hasattr(self, '_openSockets'):
-                wrecv.extend(list(map(lambda s: s.socket.fileno(),
-                                      self._openSockets.values())))
+                wsend, wrecv = fmap(
+                    TCPTransport._socketFile,
+                    partition(TCPTransport._waitForSendable,
+                              filter(lambda T: not T.backoffPause(),
+                                     self._transmitIntents.values())))
 
-            delays = list(filter(None,
-                                 [self.run_time.remaining()] +
-                                 [self._transmitIntents[T].delay()
-                                  for T in self._transmitIntents] +
-                                 [W.delay() for W in self._waitingTransmits] +
-                                 [self._incomingSockets[I].delay()
-                                  for I in self._incomingSockets]))
-            # n.b. if a long period of time has elapsed (e.g. laptop
-            # sleeping) then delays could be negative.
-            delay = max(0, timePeriodSeconds(min(delays))) if delays else None
+                wrecv = list(filter(None, wrecv))
+                wsend = list(filter(None, wsend))
+                wrecv.extend(list(
+                    filter(lambda I: not self._incomingSockets[I].backoffPause(),
+                           filter(None, self._incomingSockets))))
 
-            if not xmitOnly:
-                wrecv.extend([self.socket.fileno()])
-            else:
-                # Windows does not support calling select with three
-                # empty lists, so as a workaround, supply the main
-                # listener if everything else is pending delays (or
-                # completed but unrealized) here, and ensure the main
-                # listener does not accept any listens below.
-                if not wrecv and not wsend:
-                    if not hasattr(self, 'dummySock'):
-                        self.dummySock = socket.socket(socket.AF_INET,
-                                                       socket.SOCK_DGRAM,
-                                                       socket.IPPROTO_UDP)
-                    wrecv.extend([self.dummySock.fileno()])
+                if hasattr(self, '_openSockets'):
+                    wrecv.extend(list(map(lambda s: s.socket.fileno(),
+                                          self._openSockets.values())))
 
-            if self._watches:
-                wrecv.extend(self._watches)
+                delays = list(filter(None,
+                                     [self.run_time.remaining()] +
+                                     [self._transmitIntents[T].delay()
+                                      for T in self._transmitIntents] +
+                                     [W.delay() for W in self._waitingTransmits] +
+                                     [self._incomingSockets[I].delay()
+                                      for I in self._incomingSockets]))
+                # n.b. if a long period of time has elapsed (e.g. laptop
+                # sleeping) then delays could be negative.
+                delay = max(0, timePeriodSeconds(min(delays))) if delays else None
+
+                if not xmitOnly:
+                    wrecv.extend([self.socket.fileno()])
+                else:
+                    # Windows does not support calling select with three
+                    # empty lists, so as a workaround, supply the main
+                    # listener if everything else is pending delays (or
+                    # completed but unrealized) here, and ensure the main
+                    # listener does not accept any listens below.
+                    if not wrecv and not wsend:
+                        if not hasattr(self, 'dummySock'):
+                            self.dummySock = socket.socket(socket.AF_INET,
+                                                           socket.SOCK_DGRAM,
+                                                           socket.IPPROTO_UDP)
+                        wrecv.extend([self.dummySock.fileno()])
+
+                if self._watches:
+                    wrecv.extend(self._watches)
 
             rrecv, rsend, rerr = [], [], []
             try:
@@ -1178,25 +1186,19 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
                 else:
                     raise
 
-            if rerr:
-                for errfileno in rerr:
-                    self._cancel_fd_ops(errfileno)
+            with exclusive_processing(self):  # modifying internal structures...
 
-            origPendingSends = len(self._transmitIntents) + \
-                               len(self._waitingTransmits)
+                if rerr:
+                    for errfileno in rerr:
+                            self._cancel_fd_ops(errfileno)
 
-            # Handle newly sendable data
-            for eachs in rsend:
-                self._processIntents(eachs)
+                origPendingSends = len(self._transmitIntents) + \
+                                   len(self._waitingTransmits)
 
-            # Handle newly receivable data
-            for each in rrecv:
-                # n.b. ignore this if trying to quiesce; may have had
-                # to supply this fd to avoid calling select with three
-                # empty lists.
-                if each == self.socket.fileno() and not xmitOnly:
-                    self._acceptNewIncoming()
-                    continue
+                # Handle newly sendable data
+                for eachs in rsend:
+                    self._processIntents(eachs)
+
                 # Get idleSockets before checking incoming and
                 # transmit; those latter may modify _openSockets
                 # (including replacing the element) so ensure that
@@ -1204,17 +1206,26 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
                 # and only once each.
                 idleSockets = list(getattr(self, '_openSockets', {}).values())
 
-                if each in self._incomingSockets:
-                    incoming = self._incomingSockets[each]
-                    del self._incomingSockets[each]
-                    incoming = self._handlePossibleIncoming(incoming, each)
-                    if incoming:
-                        self._incomingSockets[
-                            incoming.socket.fileno()] = incoming
-                    continue
+                # Handle newly receivable data
+                for each in rrecv:
+                    # n.b. ignore this if trying to quiesce; may have had
+                    # to supply this fd to avoid calling select with three
+                    # empty lists.
+                    if each == self.socket.fileno() and not xmitOnly:
+                        self._acceptNewIncoming()
+                        continue
 
-                if self._processIntents(each):
-                    continue
+                    if each in self._incomingSockets:
+                        incoming = self._incomingSockets[each]
+                        del self._incomingSockets[each]
+                        incoming = self._handlePossibleIncoming(incoming, each)
+                        if incoming:
+                            self._incomingSockets[
+                                incoming.socket.fileno()] = incoming
+                        continue
+
+                    if self._processIntents(each):
+                        continue
 
                 for idle in idleSockets:
                     rmtaddr = idle.rmtaddr
@@ -1233,35 +1244,36 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
                                 raise
                         if fnum is None or each == fnum:
                             del self._openSockets[opsKey(rmtaddr)]
-                            incoming = self._handlePossibleIncoming(
-                                TCPIncomingPersistent(rmtaddr, idle.socket),
-                                each)
-                            if incoming:
-                                self._incomingSockets[
-                                    incoming.socket.fileno()] = incoming
+                            if fnum:
+                                incoming = self._handlePossibleIncoming(
+                                    TCPIncomingPersistent(rmtaddr, idle.socket),
+                                    fnum)
+                                if incoming:
+                                    self._incomingSockets[
+                                        incoming.socket.fileno()] = incoming
                         elif idle.expired():
                             _safeSocketShutdown(idle)
                             del self._openSockets[opsKey(rmtaddr)]
 
-            # Handle timeouts
-            self._processIntentTimeouts()
-            rmvIncoming = []
-            for I in self._incomingSockets:
-                newI = self._handlePossibleIncoming(self._incomingSockets[I],
-                                                    -1)
-                if newI:
-                    # newI will possibly be new incoming data, but
-                    # it's going to use the same socket
-                    self._incomingSockets[I] = newI
-                else:
-                    rmvIncoming.append(I)
-            for I in rmvIncoming:
-                del self._incomingSockets[I]
+                # Handle timeouts
+                self._processIntentTimeouts()
+                rmvIncoming = []
+                for I in self._incomingSockets:
+                    newI = self._handlePossibleIncoming(self._incomingSockets[I],
+                                                        -1)
+                    if newI:
+                        # newI will possibly be new incoming data, but
+                        # it's going to use the same socket
+                        self._incomingSockets[I] = newI
+                    else:
+                        rmvIncoming.append(I)
+                for I in rmvIncoming:
+                    del self._incomingSockets[I]
 
-            watchready = [W for W in self._watches if W in rrecv]
-            if watchready:
-                self._incomingEnvelopes.append(
-                    ReceiveEnvelope(self.myAddress, WatchMessage(watchready)))
+                watchready = [W for W in self._watches if W in rrecv]
+                if watchready:
+                    self._incomingEnvelopes.append(
+                        ReceiveEnvelope(self.myAddress, WatchMessage(watchready)))
 
             # Initiate completion operations for transmits (which may
             # result in other transmit calls).

@@ -11,6 +11,8 @@ import logging
 from thespian.system.addressManager import CannotPickleAddress
 from collections import deque
 import threading
+from contextlib import contextmanager
+import time
 
 
 if hasattr(threading, 'main_thread'):
@@ -36,6 +38,14 @@ MAX_PENDING_TRANSMITS = 20
 MAX_QUEUED_TRANSMITS = 950
 QUEUE_TRANSMIT_UNBLOCK_THRESHOLD = 780
 DROP_TRANSMITS_LEVEL = MAX_QUEUED_TRANSMITS + 100
+
+
+@contextmanager
+def exclusive_processing(transport):
+    while not transport._exclusively_processing():
+        time.sleep(0.000001)
+    yield
+    transport._not_processing()
 
 
 class asyncTransportBase(object):
@@ -239,6 +249,9 @@ class asyncTransportBase(object):
                 return False  # Another thread is processing, not exclusive
             self._aTB_processing = True
             return True  # This thread exclusively holds the processing mutex
+
+    def _not_processing(self):
+        self._aTB_processing = False
 
     def _schedulePreparedIntent(self, transmitIntent):
         # If there's nothing to send, that's implicit success
