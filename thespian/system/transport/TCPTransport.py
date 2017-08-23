@@ -509,13 +509,13 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
         for _, each in canceli:
             each.socket.close()
             delattr(each, 'socket')
-            each.tx_done(SendStatus.DeadTarget)
+            self._finishIntent(each, SendStatus.DeadTarget)
 
         canceli, continuei = partition(lambda i: i.targetAddr == childAddr,
                                        self._waitingTransmits)
         self._waitingTransmits = continuei
         for each in canceli:
-            each.tx_done(SendStatus.DeadTarget)
+            self._finishIntent(each, SendStatus.DeadTarget)
 
         # No need to clean up self._incomingSockets entries: they will
         # timeout naturally.
@@ -745,7 +745,7 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
             if isDead:
                 # this is a DeadEnvelope or a ChildActorExited; drop
                 # it instead of recursing forever.
-                intent.tx_done(SendStatus.Sent)
+                self._finishIntent(intent, SendStatus.Sent)
                 return None
         # Changing the target addr to the next relay target for the
         # transmit machinery, but the levels above may process
