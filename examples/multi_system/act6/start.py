@@ -22,7 +22,7 @@ class SimpleSourceAuthority(Actor):
                                       getattr(msg, 'sourceInfo', None)))
 
 
-asys = ActorSystem('multiprocTCPBase', capabilities)
-sa = asys.createActor(SimpleSourceAuthority)
-asys.tell(sa, True)  # cause source authority to register itself as such
-
+if __name__ == "__main__":
+    asys = ActorSystem('multiprocTCPBase', capabilities)
+    sa = asys.createActor(SimpleSourceAuthority)
+    asys.tell(sa, True)  # cause source authority to register itself as such
