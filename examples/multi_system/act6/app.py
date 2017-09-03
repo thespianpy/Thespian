@@ -72,5 +72,5 @@ if __name__ == "__main__":
     r = asys.ask(app, sys.stdin.read().strip(), timedelta(seconds=1))
     while r:
         print(r)
-        r = asys.listen(timedelta(seconds=1.0))
+        r = asys.listen(timedelta(seconds=5.0))
     sys.exit(0)

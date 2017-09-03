@@ -11,9 +11,11 @@ from pytest import raises, mark
 from thespian.system.utilis import thesplog
 
 sourceauthority_reg_wait = lambda: inTestDelay(timedelta(milliseconds=100))
-sourceload_wait = lambda: inTestDelay(timedelta(milliseconds=300))
-sourceunload_wait = lambda: inTestDelay(timedelta(milliseconds=200))
-ask_wait = timedelta(seconds=15)
+sourceload_wait_period = 'timedelta(milliseconds=650)'
+sourceload_wait = lambda: inTestDelay(eval(sourceload_wait_period))
+sourceunload_wait = lambda: inTestDelay(timedelta(milliseconds=300))
+ask_wait = timedelta(seconds=3)
+load_query_wait = timedelta(seconds=0, milliseconds=900)
 
 
 def _encryptROT13Zipfile(zipFname):
@@ -139,7 +141,7 @@ class DogActor(ActorTypeDispatcher):
         if not hasattr(self, 'tgtsends'):
             self.tgtsends = []
         self.tgtsends.append( (msg, sender, newHash) )
-        self.wakeupAfter(timedelta(milliseconds=15))
+        self.wakeupAfter(%s)
     def receiveMsg_WakeupMessage(self, wakeupmsg, wakeupsender):
         pending = self.tgtsends
         self.tgtsends = []
@@ -147,7 +149,7 @@ class DogActor(ActorTypeDispatcher):
             newA = self.createActor(msg[1], sourceHash = newHash)
             self.send(newA, ('Bark! ' + msg[2], sender))
             self.unloadActorSource(newHash)
-'''
+''' % sourceload_wait_period
 
 # Pig exercises absolute imports
 pigSource = '''
@@ -667,7 +669,7 @@ class TestFuncLoadSource(object):
         sourceload_wait()
         srchash = self._loadFooSource(asys, source_zips)
         sourceload_wait()
-        r = asys.ask(loadnotify, 'what is loaded?', timedelta(milliseconds=300))
+        r = asys.ask(loadnotify, 'what is loaded?', load_query_wait)
         assert r is None
         # No notification, but srchash still useable
         foo = asys.createActor('foo.FooActor', sourceHash=srchash)
@@ -684,7 +686,7 @@ class TestFuncLoadSource(object):
         sourceload_wait()
         srchash = self._loadFooSource(asys, source_zips)
         sourceload_wait()
-        r = asys.ask(loadnotify1, 'what is loaded?', timedelta(milliseconds=300))
+        r = asys.ask(loadnotify1, 'what is loaded?', load_query_wait)
         assert r is None
         self._verifyHashNotification(asys, loadnotify2, srchash)
         foo = asys.createActor('foo.FooActor', sourceHash=srchash)

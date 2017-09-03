@@ -17,6 +17,7 @@ from functools import partial
 import multiprocessing
 import signal
 from datetime import timedelta
+import sys
 
 
 MAX_ADMIN_STARTUP_DELAY = timedelta(seconds=5)
@@ -330,8 +331,11 @@ class MultiProcReplicator(object):
 
         mp = self.mpcontext if self.mpcontext else multiprocessing
 
-        child = mp.Process(target=startChild,  #KWQ: instantiates module specified by sourceHash to create actor
-                                        args=(childClass,
+        ccArg = '%s.%s'%(sys.modules[childClass.__module__].__name__,
+                         childClass.__name__) \
+                if hasattr(childClass, '__name__') else childClass
+        child = mp.Process(target=startChild,
+                                        args=(ccArg,
                                               endpointPrep,
                                               self.transport.__class__,
                                               sourceHash or self._sourceHash,
@@ -344,7 +348,10 @@ class MultiProcReplicator(object):
                                               self.capabilities,
                                               fileNumsToClose,
                                               self.mpcontext),
-                                        name='Actor_%s__%s'%(getattr(childClass, '__name__', childClass), str(childAddr)))
+                                        name='Actor_%s__%s'%(getattr(childClass,
+                                                                     '__name__',
+                                                                     childClass),
+                                                             str(childAddr)))
         child.start()
         # Also note that while non-daemonic children cause the current
         # process to automatically join() those children on exit,

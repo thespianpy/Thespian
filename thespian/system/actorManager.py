@@ -289,10 +289,16 @@ class ActorManager(systemCommonBase):
 
         if not globalName:
             try:
+                sourceHash = sourceHash or self._sourceHash
+                # self._sources will contain sourceHash if that is
+                # this actor and the child can be created directly;
+                # otherwise the child actor creation will be forwarded
+                # to the Admin.
                 self._startChildActor(naa, newActorClass, self.myAddress,
                                       notifyAddr = self.myAddress,
                                       childRequirements = targetActorRequirements,
-                                      sourceHash = sourceHash or self._sourceHash)
+                                      sourceHash = sourceHash,
+                                      sourceToLoad = self._sources.get(sourceHash, None) if sourceHash else None)
                 # transport will contrive to call _pendingActorReady when the
                 # child is initialized and connected to this parent.
                 return naa
