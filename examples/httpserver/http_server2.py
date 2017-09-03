@@ -41,7 +41,6 @@ from thespian.actors import *
 import logging
 import select
 import socket
-import signal
 import errno
 from datetime import timedelta
 from functools import partial
@@ -157,17 +156,28 @@ class ServerActor(ActorTypeDispatcher):
                 each.socket.close()
 
 
+try:
+    import msvcrt as m
+    def wait_for_user():
+        print('Hit any key to continue')
+        m.getch()
+except Exception:
+    import signal
+    def wait_for_user():
+        print('Hit Ctrl-C to exit')
+        try:
+            signal.pause()
+        except KeyboardInterrupt:
+            pass
+
+
 def main(portnum):
     asys = ActorSystem('multiprocTCPBase')
     try:
         server = asys.createActor(ServerActor)
         handler = asys.createActor(Handler)
         asys.tell(server, StartServer(portnum, handler))
-        print('Hit Ctrl-C to exit')
-        try:
-            signal.pause()
-        except KeyboardInterrupt:
-            pass
+        wait_for_user()
         print('Shutting down')
         asys.tell(server, ActorExitRequest())
         asys.tell(handler, ActorExitRequest())
