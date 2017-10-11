@@ -15,7 +15,7 @@ sourceload_wait_period = 'timedelta(milliseconds=650)'
 sourceload_wait = lambda: inTestDelay(eval(sourceload_wait_period))
 sourceunload_wait = lambda: inTestDelay(timedelta(milliseconds=300))
 ask_wait = timedelta(seconds=3)
-load_query_wait = timedelta(seconds=0, milliseconds=900)
+load_query_wait = timedelta(seconds=1, milliseconds=900)
 
 
 def _encryptROT13Zipfile(zipFname):
