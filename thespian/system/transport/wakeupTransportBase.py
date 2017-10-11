@@ -5,6 +5,7 @@ implements support for wakeupAfter() timed messages."""
 from thespian.actors import *
 from thespian.system.timing import ExpirationTimer
 from thespian.system.transport import *
+import threading
 
 
 class wakeupTransportBase(object):
@@ -37,8 +38,9 @@ class wakeupTransportBase(object):
         # _pendingWakeups is a sorted list of tuples, containing an
         # ExpirationTimer and a payload. It is sorted by ExpirationTimer
         # from the shortest to the longest.
-        self._pendingWakeups = []
         self._activeWakeups = []  # expired wakeups to be delivered
+        self._wakeup_lock = threading.Lock()  # protects the following:
+        self._pendingWakeups = []
 
 
     def _updateStatusResponse(self, resp):
@@ -47,9 +49,10 @@ class wakeupTransportBase(object):
         """
         # we only pass the ExpirationTimer without payload as this should be
         # sufficient for status information.
-        resp.addWakeups([(self.myAddress, T[0]) for T in self._pendingWakeups])
-        for each in self._activeWakeups:
-            resp.addPendingMessage(self.myAddress, self.myAddress, str(each.message))
+        with self._wakeup_lock:
+            resp.addWakeups([(self.myAddress, T[0]) for T in self._pendingWakeups])
+            for each in self._activeWakeups:
+                resp.addPendingMessage(self.myAddress, self.myAddress, str(each.message))
 
     def _update_runtime(self):
         self.run_time = self._pendingWakeups[0][0] if self._pendingWakeups else self._max_runtime
@@ -73,7 +76,7 @@ class wakeupTransportBase(object):
         return rval
 
     def _run_subtransport(self, incomingHandler):
-        self._update_runtime()
+        self._update_runtime()  # ok not to lock: read once, no modifications
         rval = self._runWithExpiry(incomingHandler)
         if rval is not None and not isinstance(rval, Thespian__Run_Expired):
             return rval
@@ -93,8 +96,9 @@ class wakeupTransportBase(object):
 
 
     def addWakeup(self, timePeriod, payload):
-        self._pendingWakeups.append((ExpirationTimer(timePeriod), payload))
-        self._pendingWakeups.sort(key=lambda t: t[0])
+        with self._wakeup_lock:
+            self._pendingWakeups.append((ExpirationTimer(timePeriod), payload))
+            self._pendingWakeups.sort(key=lambda t: t[0])
         # The addWakeup method is called as a result of
         # self.wakeupAfter, so ensure that the current run time is
         # updated in case this new wakeup is the shortest.
@@ -103,10 +107,11 @@ class wakeupTransportBase(object):
 
     def _realizeWakeups(self):
         "Find any expired wakeups and queue them to the send processing queue"
-        starting_len = len(self._activeWakeups)
-        while self._pendingWakeups and self._pendingWakeups[0][0].expired():
-            timer, payload = self._pendingWakeups.pop(0)
-            self._activeWakeups.append(
-                ReceiveEnvelope(self.myAddress,
-                                WakeupMessage(timer.duration, payload)))
+        with self._wakeup_lock:
+            starting_len = len(self._activeWakeups)
+            while self._pendingWakeups and self._pendingWakeups[0][0].expired():
+                timer, payload = self._pendingWakeups.pop(0)
+                self._activeWakeups.append(
+                    ReceiveEnvelope(self.myAddress,
+                                    WakeupMessage(timer.duration, payload)))
         return starting_len != len(self._activeWakeups)
