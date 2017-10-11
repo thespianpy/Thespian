@@ -37,9 +37,9 @@ class ActorManager(systemCommonBase):
         self._childReqs  = childRequirements
         self.actorInst   = None
         atexit.register(self._shutdownActor)
-        thesplog('Starting Actor %s at %s (parent %s, admin %s)',
+        thesplog('Starting Actor %s at %s (parent %s, admin %s, srcHash %s)',
                  childClass, self.transport.myAddress,
-                 self._parentAddr, adminAddr,
+                 self._parentAddr, adminAddr, self._sourceHash,
                  level = logging.INFO, primary=True)
 
 
