@@ -28,7 +28,7 @@ the Admin will end up having a table of all known Actors.
 
 Worst case is when an actor address has been passed inside a message,
 so a particular Actor has no idea how to route an address.  If this
-routing deferall propagates up to the Admin, then the message will be
+routing deferral propagates up to the Admin, then the message will be
 sent to EACH AND EVERY child (on the assumption that it will be
 discarded by all leaves except the ultimate recipient).  Very
 inefficient.
