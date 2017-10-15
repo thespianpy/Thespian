@@ -9,7 +9,7 @@ from datetime import timedelta
 import multiprocessing
 import traceback
 from thespian.system.utilis import setProcName, thesplog_control, thesplog
-from thespian.system.timing import Timer
+from thespian.system.timing import ExpirationTimer
 from thespian.system.messages.multiproc import *
 from thespian.system.transport import TransmitIntent, Thespian__UpdateWork
 
@@ -94,11 +94,8 @@ def startupASLogger(addrOfStarter, logEndpoint, logDefs,
                 logging.warn('Unknown message rcvd by logger: %s'%str(logrecord))
         except Exception as ex:
             thesplog('Thespian Logger aborting (#%d) with error %s', exception_count, ex, exc_info=True)
-            if last_exception_time is None:
-                last_exception_time = Timer()
-                exception_count = 0
-            elif last_exception_time.elapsed() > timedelta(seconds=1):
-                last_exception_time.reset()
+            if last_exception_time is None or last_exception_time.expired():
+                last_exception_time = ExpirationTimer(timedelta(seconds=1))
                 exception_count = 0
             else:
                 exception_count += 1
