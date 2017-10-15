@@ -36,7 +36,7 @@ from thespian.system.transport.wakeupTransportBase import wakeupTransportBase
 
 
 DEAD_ADDRESS_TIMEOUT = timedelta(seconds=15)
-
+INTERRUPT_SUPPRESSION_TIME = timedelta(seconds=1)
 
 serializer = pickle
 # json cannot be used because Messages are often structures, which cannot be converted to JSON.
@@ -87,6 +87,8 @@ class UDPTransport(asyncTransportBase, wakeupTransportBase):
         self._rcvd = []
         self._checkChildren = False
         self._shutdownSignalled = False
+        self._interruptWaitCounter = 0
+        self._interruptWaitSilencer = None
         self._pending_actions = [] # array of (ExpirationTimer, func)
 
 
@@ -220,8 +222,20 @@ class UDPTransport(asyncTransportBase, wakeupTransportBase):
     def interrupt_wait(self,
                        signal_shutdown=False,
                        check_children=False):
+        self._interruptWaitCounter = 0
+        self._interruptWaitSilencer = None
         self._shutdownSignalled |= signal_shutdown
         self._checkChildren |= check_children
+        if self._interruptWaitSilencer:
+            if not self._interruptWaitSilencer.view().expired():
+                return
+            self._interruptWaitSilencer = None
+            self._interruptWaitCounter = 0
+        else:
+            if self._interruptWaitCounter > 10:
+                self._interruptWaitSilencer = ExpirationTimer(INTERRUPT_SUPPRESSION_TIME)
+                return
+            self._interruptWaitCounter += 1
         # Under some python implementations, signal handling (which
         # could generate an ActorShutdownRequest) can be performed
         # without interrupting the underlying syscall, so this message
