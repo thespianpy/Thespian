@@ -24,7 +24,7 @@ class RateThrottle(object):
                                                                            getattr(self, '_curRate', 'low'),
                                                                            self._runningCount)
 
-    def eventRatePause(self):
+    def eventRatePause(self, curtime):
         """This is the main method that should be called each time an event is
            to occur.  It will block internally until it is time for
            the next event to occur.
@@ -47,7 +47,7 @@ class RateThrottle(object):
             return
 
         self._curRate += 1
-        deltaT = self._timeMark.elapsed()
+        deltaT = self._timeMark.view(curtime).elapsed()
 
         if deltaT < timedelta(seconds=1):
             return

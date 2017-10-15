@@ -17,7 +17,7 @@ def send_at_rate(max_rate, actual_rate, total_count):  # return timedelta
     startT = datetime.now()
     for each in range(int(total_count)):
         tick = datetime.now()
-        rt.eventRatePause()
+        rt.eventRatePause(tick)
         tock = datetime.now()
         elapsed = timeDiffuSec(tick, tock)
         if elapsed < deltaT:

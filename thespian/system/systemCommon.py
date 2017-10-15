@@ -12,6 +12,7 @@ from thespian.system.messages.logcontrol import SetLogging
 from thespian.system.transport import *
 from thespian.system.utilis import fmap
 from itertools import chain
+from datetime import datetime
 import traceback
 
 
@@ -214,8 +215,8 @@ class systemCommonBase(object):
     # ----------------------------------------------------------------------
     # Transmit management
 
-    def _send_intent(self, intent):
-        self._governer.eventRatePause()
+    def _send_intent(self, intent, curtime=None):
+        self._governer.eventRatePause(curtime or datetime.now())
         # Check if there are any existing transmits in progress to
         # this address (on either the input address or the validated
         # address); if so, just add the new one to the list and

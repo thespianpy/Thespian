@@ -44,26 +44,28 @@ def toTimeDeltaOrNone(timespec):
 
 
 class Timer(object):
-    """
-    Keeps track of the elapsed time since its creation or the last call to reset().
+    """Keeps track of the elapsed time since its creation or the last call
+       to reset().
     """
     def __init__(self):
-        self._start = currentTime()
-    def elapsed(self):
-        """
-        :return: a timedelta object representing the elapsed time.
-        """
-        return timedelta(seconds=(currentTime() - self._start))
-    def elapsedSeconds(self):
-        """
-        :return: A float representing the elapsed time in seconds.
-        """
-        return timePeriodSeconds(self.elapsed())
+        self._fromTime = currentTime()
     def reset(self):
-        """
-        Restarts the timer.
-        """
-        self._start = currentTime()
+        """Restarts the timer."""
+        self._fromTime = currentTime()
+    def view(self, curtime):
+        return TimerView(self._fromTime, curtime)
+
+
+class TimerView(object):
+    def __init__(self, tstart, curtime):
+        self._start = tstart
+        self._now   = curtime
+    def elapsed(self):
+        ":return: a timedelta object representing the elapsed time."
+        return timedelta(seconds=(currentTime() - self._start))
+    def elapsed_seconds(self):
+        ":return: A float representing the elapsed time in seconds."
+        return timePeriodSeconds(self.elapsed())
     def __str__(self):
         return 'Started_on_' + str(self._start)
     def __eq__(self, o):
@@ -97,7 +99,8 @@ class ExpirationTimer(object):
             self._time_to_quit = currentTime() + duration
     def expired(self):
         "Returns true if the indicated duration has passed since this was created."
-        return False if self._time_to_quit is None else (currentTime() >= self._time_to_quit)
+        return False if self._time_to_quit is None \
+            else (currentTime() >= self._time_to_quit)
     def remaining(self, forever=None):
         """Returns a timedelta of remaining time until expiration, or 0 if the
            duration has already expired.  Returns forever if no timeout."""
