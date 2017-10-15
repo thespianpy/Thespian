@@ -1,0 +1,38 @@
+
+* Performance notes:
+** Time checking
+
+There may be a concern over the number of times that currentTime is
+called, or datetime.now within the Thespian code.  Under Python
+(CPython, at least) these are not a concern because the time
+sampling is done within the interpreter directly:
+
+#+BEGIN_EXAMPLE
+  $ TZ=pdt strace -c python -c 'from datetime import datetime; x = ([datetime.now() for x in xrange(13)])'
+     v.s.
+  $ TZ=pdt strace -c python -c 'from datetime import datetime; x = ([datetime.now() for x in xrange(13000000)])'
+#+END_EXAMPLE
+
+shows essentially the same syscall count, indicating that the time
+samples do not involve a syscall.
+
+Comparing the time taken (SETUP='import time; from datetime import
+datetime'):
+
+ | usec/loop |      |      |                                                                                |
+ |      py35 | py27 | pypy | cmd                                                                            |
+ |-----------+------+------+--------------------------------------------------------------------------------|
+ |      10.4 | 8.52 | ?    | $ python35 -m timeit -s '${SETUP}' '[time.time() for x in range(100)]'         |
+ |      10.6 |  n/a | ?    | $ python35 -m timeit -s '${SETUP}' '[time.perf_counter() for x in range(100)]' |
+ |      59.4 |  207 | ?    | $ python35 -m timeit -s '${SETUP}' '[datetime.now() for x in range(100)]'      |
+ |      20.1 | 13.2 | ?    | $ python35 -m timeit -s '${SETUP}' '[str(x) for x in range(100)]'              |
+
+Although the py27 timings for datetime.now() aren't fantastic,
+efforts to improve that time in the python code are competing
+against corresponding performance improvements in python itself, and
+furthermore the lowest-level code is using time.time() or
+time.perf_counter() instead of datetime.now().  The conclusion is
+that while there *may* be some small performance improvement to be
+gained, this does not represent a source of significant performance
+degradation and is of lower importance for optimization
+considerations.
