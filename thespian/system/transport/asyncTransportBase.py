@@ -234,11 +234,14 @@ class asyncTransportBase(object):
                      QUEUE_TRANSMIT_UNBLOCK_THRESHOLD,
                      level=logging.WARNING)
             finish_time = ExpirationTimer(max_delay if max_delay else None)
-            while v > QUEUE_TRANSMIT_UNBLOCK_THRESHOLD and not finish_time.expired():
-                if 0 == self.run(TransmitOnly, finish_time.remaining()):
-                    thesplog('Exiting tx-only mode because no transport work available.')
-                    break
-                v, _ = self._complete_expired_intents()
+            while v > QUEUE_TRANSMIT_UNBLOCK_THRESHOLD:
+                with finish_time as rem_time:
+                    if rem_time.expired():
+                        break
+                    if 0 == self.run(TransmitOnly, rem_time.remaining()):
+                        thesplog('Exiting tx-only mode because no transport work available.')
+                        break
+                    v, _ = self._complete_expired_intents()
             thesplog('Exited tx-only mode after draining excessive queue (%s)',
                      len(self._aTB_queuedPendingTransmits),
                      level=logging.WARNING)

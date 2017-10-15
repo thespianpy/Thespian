@@ -10,7 +10,7 @@ import logging
 from thespian.actors import *
 from thespian.system import *
 from thespian.system.utilis import thesplog
-from thespian.system.timing import toTimeDeltaOrNone, ExpirationTimer
+from thespian.system.timing import toTimeDeltaOrNone, ExpirationTimer, unexpired
 from thespian.system.messages.admin import *
 from thespian.system.messages.status import *
 from thespian.system.transport import *
@@ -26,7 +26,6 @@ MAX_CAPABILITY_UPDATE_DELAY  = timedelta(seconds=5)
 MAX_LOAD_SOURCE_DELAY        = timedelta(seconds=61)
 MAX_ADMIN_STATUS_REQ_DELAY   = timedelta(seconds=2)
 MAX_TELL_PERIOD              = timedelta(seconds=60)
-
 
 def ensure_TZ_set():
     # Actor engines handle timeouts and tend to sample system time
@@ -129,8 +128,8 @@ class ExternalOpsToActors(object):
 
         with self._cv:
             while self._transport_runner:
-                self._cv.wait(max_runtime.remainingSeconds())
-                if max_runtime.expired():
+                self._cv.wait(max_runtime.view().remainingSeconds())
+                if max_runtime.view().expired():
                     return None
             self._transport_runner = True
 
@@ -138,7 +137,7 @@ class ExternalOpsToActors(object):
             r = Thespian__UpdateWork()
             while isinstance(r, Thespian__UpdateWork):
                 r = self.transport.run(TransmitOnly if txonly else incomingHandler,
-                                       max_runtime.remaining())
+                                       max_runtime.view().remaining())
             return r
             # incomingHandler callback could deadlock on this same thread; is it ever not None?
         finally:
@@ -186,7 +185,7 @@ class ExternalOpsToActors(object):
             tx_external.run(response, MAX_CHILD_ACTOR_CREATE_DELAY)
             # Other items might abort the transport run... like transmit
             # failures on a previous ask() that itself already timed out.
-            while response.pending and not endwait.expired():
+            while response.pending and not endwait.view().expired():
                 tx_external.run(response, MAX_CHILD_ACTOR_CREATE_DELAY)
 
         if response.failed:
@@ -226,8 +225,8 @@ class ExternalOpsToActors(object):
         for attempt in range(5000):
             try:
                 txwatch = self._tx_to_actor(anActor, msg)
-                while not attemptLimit.expired():
-                    if not self._run_transport(attemptLimit.remaining(),
+                for attemptTime in unexpired(attemptLimit):
+                    if not self._run_transport(attemptTime.remaining(),
                                                txonly=True):
                         # all transmits completed
                         return
@@ -261,8 +260,8 @@ class ExternalOpsToActors(object):
     def ask(self, anActor, msg, timeout):
         txwatch = self._tx_to_actor(anActor, msg)  # KWQ: pass timeout on tx??
         askLimit = ExpirationTimer(toTimeDeltaOrNone(timeout))
-        while not askLimit.expired():
-            response = self._run_transport(askLimit.remaining())
+        for remTime in unexpired(askLimit):
+            response = self._run_transport(remTime.remaining())
             if txwatch.failed:
                 if txwatch.failure in [SendStatus.DeadTarget,
                                        SendStatus.Failed,
@@ -322,7 +321,7 @@ class systemBase(ExternalOpsToActors):
             self.transport.getAdminAddr(system.capabilities))
 
         tryingTime = ExpirationTimer(MAX_SYSTEM_SHUTDOWN_DELAY + timedelta(seconds=1))
-        while not tryingTime.expired():
+        while not tryingTime.view().expired():
             if not self.transport.probeAdmin(self.adminAddr):
                 self._startAdmin(self.adminAddr,
                                  self.transport.myAddress,
@@ -358,8 +357,8 @@ class systemBase(ExternalOpsToActors):
         thesplog('ActorSystem shutdown requested.', level=logging.INFO)
         time_to_quit = ExpirationTimer(MAX_SYSTEM_SHUTDOWN_DELAY)
         txwatch = self._tx_to_admin(SystemShutdown())
-        while not time_to_quit.expired():
-            response = self._run_transport(time_to_quit.remaining())
+        for remaining_time in unexpired(time_to_quit):
+            response = self._run_transport(remaining_time.remaining())
             if txwatch.failed:
                 thesplog('Could not send shutdown request to Admin'
                          '; aborting but not necessarily stopped',
@@ -386,8 +385,8 @@ class systemBase(ExternalOpsToActors):
         attemptLimit = ExpirationTimer(MAX_CAPABILITY_UPDATE_DELAY)
         txwatch = self._tx_to_admin(CapabilityUpdate(capabilityName,
                                                      capabilityValue))
-        while not attemptLimit.expired():
-            if not self._run_transport(attemptLimit.remaining(), txonly=True):
+        for remaining_time in unexpired(attemptLimit):
+            if not self._run_transport(remaining_time.remaining(), txonly=True):
                 return  # all transmits completed
             if txwatch.failed:
                 raise ActorSystemFailure(
@@ -410,8 +409,8 @@ class systemBase(ExternalOpsToActors):
                                                 str(fname)
                                                 if hasattr(fname, 'read')
                                                 else fname)))
-            while not loadLimit.expired():
-                if not self._run_transport(loadLimit.remaining(), txonly=True):
+            for load_time in unexpired(loadLimit):
+                if not self._run_transport(load_time.remaining(), txonly=True):
                     # All transmits completed
                     return hval
                 if txwatch.failed:
@@ -427,8 +426,8 @@ class systemBase(ExternalOpsToActors):
     def unloadActorSource(self, sourceHash):
         loadLimit = ExpirationTimer(MAX_LOAD_SOURCE_DELAY)
         txwatch = self._tx_to_admin(ValidateSource(sourceHash, None))
-        while not loadLimit.expired():
-            if not self._run_transport(loadLimit.remaining(), txonly=True):
+        for load_time in unexpired(loadLimit):
+            if not self._run_transport(load_time.remaining(), txonly=True):
                 return  # all transmits completed
             if txwatch.failed:
                 raise ActorSystemFailure(

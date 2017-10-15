@@ -3,7 +3,7 @@ implements support for wakeupAfter() timed messages."""
 
 
 from thespian.actors import *
-from thespian.system.timing import ExpirationTimer
+from thespian.system.timing import ExpirationTimer, currentTime
 from thespian.system.transport import *
 import threading
 
@@ -70,7 +70,7 @@ class wakeupTransportBase(object):
 
         rval = self._run_subtransport(incomingHandler)
 
-        while rval in (True, None) and not self._max_runtime.expired():
+        while rval in (True, None) and not self._max_runtime.view().expired():
             rval = self._run_subtransport(incomingHandler)
 
         return rval
@@ -108,8 +108,9 @@ class wakeupTransportBase(object):
     def _realizeWakeups(self):
         "Find any expired wakeups and queue them to the send processing queue"
         with self._wakeup_lock:
+            ct = currentTime()
             starting_len = len(self._activeWakeups)
-            while self._pendingWakeups and self._pendingWakeups[0][0].expired():
+            while self._pendingWakeups and self._pendingWakeups[0][0].view(ct).expired():
                 timer, payload = self._pendingWakeups.pop(0)
                 self._activeWakeups.append(
                     ReceiveEnvelope(self.myAddress,

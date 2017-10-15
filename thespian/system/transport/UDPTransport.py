@@ -20,7 +20,7 @@ from thespian.system.utilis import thesplog
 from thespian.actors import *
 from thespian.system.transport import *
 from thespian.system.transport.IPBase import *
-from thespian.system.timing import ExpirationTimer
+from thespian.system.timing import ExpirationTimer, currentTime
 from thespian.system.utilis import partition
 from thespian.system.messages.multiproc import ChildMayHaveDied
 from thespian.system.addressManager import ActorLocalAddress
@@ -255,15 +255,18 @@ class UDPTransport(asyncTransportBase, wakeupTransportBase):
 
         self._aborting_run = None
 
-        while not self.run_time.expired() and self._aborting_run is None:
+        while self._aborting_run is None:
+            ct = currentTime()
+            if self.run_time.view(ct).expired():
+                break
             if self._rcvd:
                 rcvdEnv = self._rcvd.pop()
             else:
-                next_action_timeout = self.check_pending_actions()
+                next_action_timeout = self.check_pending_actions(ct)
                 try:
                     sresp, _ign1, _ign2 = select.select([self.socket.fileno()], [], [],
                                                         min(self.run_time, next_action_timeout)
-                                                        .remainingSeconds())
+                                                        .view(ct).remainingSeconds())
                 except select.error as se:
                     import errno
                     if se.args[0] != errno.EINTR:
@@ -313,12 +316,12 @@ class UDPTransport(asyncTransportBase, wakeupTransportBase):
         return Thespian__Run_Expired()
 
 
-    def check_pending_actions(self):
-        expired, remaining = partition(lambda E: E[0].expired(),
-                                       self._pending_actions)
+    def check_pending_actions(self, current_time):
+        expired, rem = partition(lambda E: E[0].view(current_time).expired(),
+                                 self._pending_actions)
         for each in expired:
             each[1]()
-        self._pending_actions = remaining
+        self._pending_actions = rem
         return min([E[0] for E in self._pending_actions] + [ExpirationTimer(None)])
 
     def abort_run(self, drain=False):

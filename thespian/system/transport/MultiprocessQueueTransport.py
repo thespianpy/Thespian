@@ -204,13 +204,16 @@ class MultiprocessQueueTCore_Common(object):
 
         self._aborting_run = None
 
-        while not run_time_f().expired() and self._aborting_run is None:
+        while self._aborting_run is None:
+            ct = currentTime()
+            if run_time_f().view(ct).expired():
+                break
             try:
                 # Unfortunately, the Queue object is not signal-safe,
                 # so a frequent wakeup is needed to check
                 # _checkChildren and _shutdownSignalled.
                 rcvd = self._myInputQ.get(True,
-                                          min(run_time_f().remainingSeconds() or
+                                          min(run_time_f().view(ct).remainingSeconds() or
                                               QUEUE_CHECK_PERIOD,
                                               QUEUE_CHECK_PERIOD))
             except Q.Empty:
@@ -503,11 +506,14 @@ class MultiprocessQueueTCore_External(MultiprocessQueueTCore_Common):
 
 
         self._abort_my_run = False
-        while not self._abort_my_run and not run_time_f().expired():
+        while not self._abort_my_run:
+            ct = currentTime()
+            if run_time_f().view(ct).expired():
+                break
             try:
                 rcv_envelope = self._my_tqueues[str(my_address)].get(
                     True,
-                    run_time_f().remainingSeconds() or QUEUE_CHECK_PERIOD)
+                    run_time_f().view(ct).remainingSeconds() or QUEUE_CHECK_PERIOD)
             except Q.Empty:
                 # probably a timeout
                 continue

@@ -51,7 +51,7 @@ class HysteresisDelaySender(object):
 
     @property
     def delay(self):
-        return self._hysteresis_until
+        return self._hysteresis_until.view()
 
     def _has_hysteresis(self):
         return (self._current_hysteresis is not None and
@@ -98,7 +98,7 @@ class HysteresisDelaySender(object):
             else:
                 self._hysteresis_until = ExpirationTimer(
                     self._current_hysteresis -
-                    self._hysteresis_until.remaining())
+                    self._hysteresis_until.view().remaining())
 
     def checkSends(self):
         if self.delay.expired():
@@ -115,7 +115,7 @@ class HysteresisDelaySender(object):
             return False
 
     def sendWithHysteresis(self, intent):
-        if self._hysteresis_until.expired():
+        if self._hysteresis_until.view().expired():
             self._current_hysteresis = self._hysteresis_min_period
             self._sender(intent)
         else:

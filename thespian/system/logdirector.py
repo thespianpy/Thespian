@@ -94,7 +94,7 @@ def startupASLogger(addrOfStarter, logEndpoint, logDefs,
                 logging.warn('Unknown message rcvd by logger: %s'%str(logrecord))
         except Exception as ex:
             thesplog('Thespian Logger aborting (#%d) with error %s', exception_count, ex, exc_info=True)
-            if last_exception_time is None or last_exception_time.expired():
+            if last_exception_time is None or last_exception_time.view().expired():
                 last_exception_time = ExpirationTimer(timedelta(seconds=1))
                 exception_count = 0
             else:

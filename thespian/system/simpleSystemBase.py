@@ -31,7 +31,8 @@ import logging, string, types, functools
 from thespian.actors import *
 from thespian.system.utilis import (actualActorClass, partition,
                                     withPossibleInitArgs)
-from thespian.system.timing import timePeriodSeconds, toTimeDeltaOrNone, ExpirationTimer
+from thespian.system.timing import (timePeriodSeconds, toTimeDeltaOrNone,
+                                    ExpirationTimer, currentTime, unexpired)
 try:
     from logging.config import dictConfig
 except ImportError:
@@ -240,8 +241,8 @@ class WakeupManager(object):
         # _wakeUps is a list of (targetAddress, ExpirationTimer, payload)
         self._wakeUps = []
 
-    def _pop_expired_wakeups(self):
-        exp, self._wakeUps = partition(lambda E: E[1].expired(), self._wakeUps)
+    def _pop_expired_wakeups(self, ct):
+        exp, self._wakeUps = partition(lambda E: E[1].view(ct).expired(), self._wakeUps)
         return exp
 
     def _next_wakeup(self):
@@ -312,7 +313,7 @@ class ActorSystemBase(WakeupManager):
     def _runSends(self, timeout=None, stop_on_available=False):
         numsends = 0
         endtime = ExpirationTimer(toTimeDeltaOrNone(timeout))
-        while not endtime.expired():
+        for endt in unexpired(endtime):
             while self._pendingSends:
                 numsends += 1
                 if self.procLimit and numsends > self.procLimit:
@@ -330,12 +331,12 @@ class ActorSystemBase(WakeupManager):
                         for M in getattr(stop_on_available.instance,
                                          'responses', [])]):
                     return
-            if endtime.remaining(forever=-1) == -1:
+            if endt.remaining(forever=-1) == -1:
                 return
             next_wakeup = self._next_wakeup()
-            if next_wakeup is None or next_wakeup > endtime:
+            if next_wakeup is None or next_wakeup > endt:
                 return
-            time.sleep(max(0, timePeriodSeconds(next_wakeup.remaining())))
+            time.sleep(max(0, timePeriodSeconds(next_wakeup.view().remaining())))
             self._realizeWakeups()
 
 
@@ -389,10 +390,13 @@ class ActorSystemBase(WakeupManager):
 
     def _realizeWakeups(self):
         "Find any expired wakeups and queue them to the send processing queue"
-        for target_addr, expired, payload in self._pop_expired_wakeups():
+        ct = currentTime()
+        for target_addr, expired, payload in self._pop_expired_wakeups(ct):
             with self._private_lock:
                 self._pendingSends.append(
-                    PendingSend(target_addr, WakeupMessage(expired.duration, payload), target_addr))
+                    PendingSend(target_addr,
+                                WakeupMessage(expired.view(ct).duration, payload),
+                                target_addr))
 
     def _callActorWithMessage(self, tgt, ps, msg, sndr):
         try:
@@ -715,9 +719,9 @@ class ActorSystemPrivate(object):
 
     def listen(self, timeout):
         fulltime = ExpirationTimer(timeout)
-        while not fulltime.expired():
+        for ft in unexpired(fulltime):
             try:
-                response = self.my_instance.get(fulltime.remainingSeconds())
+                response = self.my_instance.get(ft.remainingSeconds())
             except Queue.Empty:
                 break
             if not isInternalActorSystemMessage(response):

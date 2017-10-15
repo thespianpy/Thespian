@@ -8,7 +8,8 @@ from thespian.system.admin.convention import (LocalConventionState, LostRemote,
                                               CONVENTION_REGISTRATION_MISS_MAX,
                                               convention_reinvite_adjustment)
 from thespian.system.utilis import fmap, StatsManager
-from thespian.system.timing import timePeriodSeconds
+from thespian.system.timing import timePeriodSeconds, ExpirationTimer
+import thespian.system.timing
 from thespian.system.logdirector import LogAggregator
 from thespian.system.transport import SendStatus
 try:
@@ -27,10 +28,34 @@ from contextlib import contextmanager
 @contextmanager
 def update_elapsed_time(time_base, elapsed):
     with patch('thespian.system.timing.currentTime') as p_ctime:
-        p_ctime.return_value = time_base + (timePeriodSeconds(elapsed)
-                                            if isinstance(elapsed, timedelta)
-                                            else elapsed)
-        yield p_ctime.return_value
+        with patch('thespian.system.admin.convention.currentTime') as p_convtime:
+            p_ctime.return_value = time_base + (timePeriodSeconds(elapsed)
+                                                if isinstance(elapsed, timedelta)
+                                                else elapsed)
+            p_convtime.return_value = time_base + (timePeriodSeconds(elapsed)
+                                                if isinstance(elapsed, timedelta)
+                                                else elapsed)
+            yield p_ctime.return_value
+
+
+@mark.skipif(not patch, reason='requires mock patch')
+def test_time_control():
+    # This test ensures that the update_elapsed_time works properly to
+    # control the perception of time changes in the code.  If this is
+    # not operational, many of the other tests will fail.
+    timer = ExpirationTimer(CONVENTION_REREGISTRATION_PERIOD)
+    assert not timer.view().expired()
+    ct = thespian.system.timing.currentTime()
+
+    with update_elapsed_time(ct,
+                             CONVENTION_REREGISTRATION_PERIOD +
+                             timedelta(seconds=1)) as later:
+        print(ct, thespian.system.timing.currentTime(), later,
+              CONVENTION_REREGISTRATION_PERIOD,
+              timePeriodSeconds(CONVENTION_REREGISTRATION_PERIOD))
+        assert ct < thespian.system.timing.currentTime()
+        assert later == thespian.system.timing.currentTime()
+        assert timer.view().expired()
 
 
 @fixture

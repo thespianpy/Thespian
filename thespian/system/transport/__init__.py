@@ -1,7 +1,7 @@
 "This module provides various low-level inter-Actor transport implementations."
 
 from datetime import timedelta
-from thespian.system.timing import ExpirationTimer
+from thespian.system.timing import ExpirationTimer, currentTime
 from thespian.system.utilis import thesplog
 import logging
 
@@ -171,8 +171,9 @@ class PauseWithBackoff(object):
             self._pauseUntil = ExpirationTimer(self._lastPauseLength)
             return self._lastPauseLength
         elif hasattr(self, '_pauseUntil'):
-            if not self._pauseUntil.expired():
-                return self._pauseUntil.remaining()
+            with self._pauseUntil as pausing:
+                if not pausing.expired():
+                    return pausing.remaining()
             delattr(self, '_pauseUntil')
         return timedelta(0)
 
@@ -265,7 +266,7 @@ class TransmitIntent(PauseWithBackoff):
     def retry(self, immediately=False):
         if self._attempts > MAX_TRANSMIT_RETRIES:
             return False
-        if self._quitTime.expired():
+        if self._quitTime.view().expired():
             return False
         self._attempts += 1
         if immediately:
@@ -281,24 +282,26 @@ class TransmitIntent(PauseWithBackoff):
                 delattr(self, '_retryTime')
             return True
         if hasattr(self, '_retryTime'):
-            retryNow = self._retryTime.expired()
+            retryNow = self._retryTime.view().expired()
             if retryNow:
                 delattr(self, '_retryTime')
             return retryNow
         return socketAvail
 
-    def delay(self):
+    def delay(self, current_time = None):
+        ct = current_time or currentTime()
+        qt = self._quitTime.view(ct)
         if getattr(self, '_awaitingTXSlot', False):
-            if self._quitTime.expired():
+            if qt.expired():
                 return timedelta(seconds=0)
-            return max(timedelta(milliseconds=10), (self._quitTime.remaining()) / 2)
+            return max(timedelta(milliseconds=10), (qt.remaining()) / 2)
         return max(timedelta(seconds=0),
-                   min(self._quitTime.remaining(),
-                       getattr(self, '_retryTime', self._quitTime).remaining(),
-                       getattr(self, '_pauseUntil', self._quitTime).remaining()))
+                   min(qt.remaining(),
+                       getattr(self, '_retryTime', self._quitTime).view(ct).remaining(),
+                       getattr(self, '_pauseUntil', self._quitTime).view(ct).remaining()))
 
     def expired(self):
-        return self._quitTime.expired()
+        return self._quitTime.view().expired()
 
     def expiration(self):
         return self._quitTime
@@ -320,9 +323,9 @@ class TransmitIntent(PauseWithBackoff):
             'WAITSLOT' if getattr(self, '_awaitingTXSlot', False) else None,
             'retry#%d'%self._attempts if self._attempts else '',
             str(type(self.message)), smsg,
-            'quit_%s'%str(self._quitTime.remaining()),
-            'retry_%s'%str(self._retryTime.remaining()) if getattr(self, '_retryTime', None) else None,
-            'pause_%s'%str(self._pauseUntil.remaining()) if getattr(self, '_pauseUntil', None) else None,
+            'quit_%s'%str(self._quitTime.view().remaining()),
+            'retry_%s'%str(self._retryTime.view().remaining()) if getattr(self, '_retryTime', None) else None,
+            'pause_%s'%str(self._pauseUntil.view().remaining()) if getattr(self, '_pauseUntil', None) else None,
             ])) + ')'
 
 

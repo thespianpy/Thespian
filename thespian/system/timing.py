@@ -97,38 +97,30 @@ class ExpirationTimer(object):
             self._time_to_quit = currentTime() + timePeriodSeconds(duration)
         else:
             self._time_to_quit = currentTime() + duration
-    def expired(self):
-        "Returns true if the indicated duration has passed since this was created."
-        return False if self._time_to_quit is None \
-            else (currentTime() >= self._time_to_quit)
-    def remaining(self, forever=None):
-        """Returns a timedelta of remaining time until expiration, or 0 if the
-           duration has already expired.  Returns forever if no timeout."""
-        return forever if self._time_to_quit is None else \
-            timedelta(seconds=self.remainingSeconds())
-    def remainingSeconds(self, forever=None):
-        """Similar to `remaining()`, but returns an floating point value of the
-           number of remaining seconds instead of returning a
-           timedelta object.
-        """
-        return forever if self._time_to_quit is None else \
-            max(self._time_to_quit - currentTime(), 0)
+    def view(self, curtime = None):
+        return ExpirationTimerView(self.duration, self._time_to_quit, curtime)
+    def __enter__(self, curtime = None):
+        return self.view(curtime)
+    def __exit__(self, exc_type, exc_value, traceback):
+        pass
     def __str__(self):
         if self._time_to_quit is None: return 'Forever'
-        if self.expired():
+        ct = currentTime()
+        if self.view(ct).expired():
             return 'Expired_for_%s' % \
-                timedelta(seconds=currentTime() - self._time_to_quit)
-        return 'Expires_in_' + str(self.remaining())
+                timedelta(seconds=ct - self._time_to_quit)
+        return 'Expires_in_' + str(self.view(ct).remaining())
     def __eq__(self, o):
         # If compared to an arbitrary object that cannot reasonably be
         # considered to be a time, simply return False.  Suppress all
         # exceptions.
+        ct = currentTime()
         try:
             if isinstance(o, timedelta):
                 o = ExpirationTimer(o)
             if self._time_to_quit == o._time_to_quit: return True
             if self._time_to_quit == None or o._time_to_quit == None: return False
-            if self.expired() and o.expired(): return True
+            if self.view(ct).expired() and o.view(ct).expired(): return True
             return abs(self._time_to_quit - o._time_to_quit) < \
                 timePeriodSeconds(seconds=timedelta(microseconds=1))
         except Exception:
@@ -170,5 +162,72 @@ class ExpirationTimer(object):
     def __le__(self, o): return self.__eq__(o) or self.__lt__(o)
     def __ge__(self, o): return self.__eq__(o) or self.__gt__(o)
     def __ne__(self, o): return not self.__eq__(o)
+    def __bool__(self): return self.view().expired()
+    def __nonzero__(self): return self.view().expired()
+
+
+class ExpirationTimerView(ExpirationTimer):
+    """Snapshot of an ExpirationTimer status relative to a specific point
+       in time.  This allows multiple statements to be executed on a
+       stable perspective of the ExpirationTimer.
+    """
+    def __init__(self, duration, time_to_quit, current_time):
+        self.duration = duration
+        self._time_to_quit = time_to_quit
+        self._current_time = current_time or currentTime()
+    def view(self):
+        return self
+    def expired(self):
+        "Returns true if the indicated duration has passed since this was created."
+        return False if self._time_to_quit is None \
+            else (self._current_time >= self._time_to_quit)
+    def remaining(self, forever=None):
+        """Returns a timedelta of remaining time until expiration, or 0 if the
+           duration has already expired.  Returns forever if no timeout."""
+        return forever if self._time_to_quit is None else \
+            timedelta(seconds=self.remainingSeconds())
+    def remainingSeconds(self, forever=None):
+        """Similar to `remaining()`, but returns an floating point value of the
+           number of remaining seconds instead of returning a
+           timedelta object.
+        """
+        return forever if self._time_to_quit is None else \
+            max(self._time_to_quit - self._current_time, 0)
+    def __str__(self):
+        if self._time_to_quit is None: return 'Forever'
+        if self.expired():
+            return 'Expired_for_%s' % \
+                timedelta(seconds=self._current_time - self._time_to_quit)
+        return 'Expires_in_' + str(self.remaining())
+    def __eq__(self, o):
+        # If compared to an arbitrary object that cannot reasonably be
+        # considered to be a time, simply return False.  Suppress all
+        # exceptions.
+        try:
+            if isinstance(o, timedelta):
+                o = ExpirationTimer(o)
+            if self._time_to_quit == o._time_to_quit: return True
+            if self._time_to_quit == None or o._time_to_quit == None: return False
+            if self.expired() and o.view(self._current_time).expired(): return True
+            return abs(self._time_to_quit - o._time_to_quit) < \
+                timePeriodSeconds(seconds=timedelta(microseconds=1))
+        except Exception:
+            return False
     def __bool__(self): return self.expired()
     def __nonzero__(self): return self.expired()
+
+
+def unexpired(timer):
+    """A helper function for implementing a common pattern.  Callers can
+       simply perform:
+
+           for timeview in unexpired(myTimer):
+              ...
+              x = timeview.remaining()
+              ...
+    """
+    while True:
+        rval = timer.view()
+        if rval.expired():
+            return
+        yield rval

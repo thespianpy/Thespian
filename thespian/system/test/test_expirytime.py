@@ -1,5 +1,5 @@
 import pytest
-from thespian.system.timing import ExpirationTimer
+from thespian.system.timing import ExpirationTimer, currentTime
 from datetime import datetime, timedelta
 from time import sleep
 
@@ -8,55 +8,58 @@ class TestUnitExpirationTimer(object):
 
     def testNoneExpired(self):
         et = ExpirationTimer(None)
-        assert not et.expired()
+        assert not et.view().expired()
 
     def testZeroExpired(self):
         et = ExpirationTimer(timedelta(seconds=0))
-        assert et.expired()
+        assert et.view().expired()
 
     def testNonZeroExpired(self):
         et = ExpirationTimer(timedelta(milliseconds=10))
-        assert not et.expired()
-        sleep(et.remainingSeconds())
-        assert et.expired()
+        assert not et.view().expired()
+        sleep(et.view().remainingSeconds())
+        with et as c:
+            assert c.expired()
 
     def testNoneRemaining(self):
         et = ExpirationTimer(None)
-        assert et.remaining() is None
+        assert et.view().remaining() is None
 
     def testZeroRemaining(self):
         et = ExpirationTimer(timedelta(seconds=0))
-        assert timedelta(days=0) == et.remaining()
+        assert timedelta(days=0) == et.view().remaining()
 
     def testNonZeroRemaining(self):
         et = ExpirationTimer(timedelta(milliseconds=10))
-        assert timedelta(days=0) < et.remaining()
-        assert timedelta(milliseconds=11) > et.remaining()
-        sleep(et.remainingSeconds())
-        assert timedelta(days=0) == et.remaining()
+        ct = currentTime()
+        assert timedelta(days=0) < et.view(ct).remaining()
+        assert timedelta(milliseconds=11) > et.view(ct).remaining()
+        sleep(et.view().remainingSeconds())
+        assert timedelta(days=0) == et.view().remaining()
 
     def testNoneRemainingSeconds(self):
         et = ExpirationTimer(None)
-        assert et.remainingSeconds() is None
+        assert et.view().remainingSeconds() is None
 
     def testZeroRemainingSeconds(self):
         et = ExpirationTimer(timedelta(microseconds=0))
-        assert 0.0 == et.remainingSeconds()
+        assert 0.0 == et.view().remainingSeconds()
 
     def testNonZeroRemainingSeconds(self):
         et = ExpirationTimer(timedelta(milliseconds=10))
-        assert 0.0 < et.remainingSeconds()
-        assert 0.0101 > et.remainingSeconds()
-        sleep(et.remainingSeconds())
-        assert 0.0 == et.remainingSeconds()
+        with et as c:
+            assert 0.0 < c.remainingSeconds()
+            assert 0.0101 > c.remainingSeconds()
+        sleep(et.view().remainingSeconds())
+        assert 0.0 == et.view().remainingSeconds()
 
     def testNoneRemainingExplicitForever(self):
         et = ExpirationTimer(None)
-        assert 5 == et.remaining(5)
+        assert 5 == et.view().remaining(5)
 
     def testNoneRemainingSecondsExplicitForever(self):
         et = ExpirationTimer(None)
-        assert 9 == et.remainingSeconds(9)
+        assert 9 == et.view().remainingSeconds(9)
 
     def testNoneStr(self):
         et = ExpirationTimer(None)
@@ -69,7 +72,7 @@ class TestUnitExpirationTimer(object):
     def testNonZeroStr(self):
         et = ExpirationTimer(timedelta(milliseconds=10))
         assert str(et).startswith('Expires_in_0:00:00.0')
-        sleep(et.remainingSeconds())
+        sleep(et.view().remainingSeconds())
         assert str(et).startswith('Expired_for_0:00:00')
 
     def testArbitraryEquality(self):
@@ -125,7 +128,7 @@ class TestUnitExpirationTimer(object):
         et2 = ExpirationTimer(timedelta(milliseconds=10))
         assert et1 != et2
         assert et2 != et1
-        sleep(et2.remainingSeconds())
+        sleep(et2.view().remainingSeconds())
         assert et1 != et2
         assert et2 != et1
 
@@ -141,7 +144,7 @@ class TestUnitExpirationTimer(object):
         et2 = ExpirationTimer(timedelta(milliseconds=10))
         assert et1 != et2
         assert et2 != et1
-        sleep(et2.remainingSeconds())
+        sleep(et2.view().remainingSeconds())
         assert et1 == et2
         assert et2 == et1
 
@@ -150,11 +153,12 @@ class TestUnitExpirationTimer(object):
         et2 = ExpirationTimer(timedelta(milliseconds=10))
         assert et1 != et2
         assert et2 != et1
-        sleep(et2.remainingSeconds())
+        sleep(et2.view().remainingSeconds())
         print(str(et1), str(et2))
+        # The following will fail if an extra 5ms delay has occurred
         assert et1 != et2
         assert et2 != et1
-        sleep(et1.remainingSeconds())
+        sleep(et1.view().remainingSeconds())
         assert et1 == et2
         assert et2 == et1
 
@@ -188,7 +192,7 @@ class TestUnitExpirationTimer(object):
         assert et2 < et1
         assert et1 > et2
         assert et2 < et1
-        sleep(et2.remainingSeconds())
+        sleep(et2.view().remainingSeconds())
         assert et1 > et2
         assert et2 < et1
         assert et1 > et2
@@ -286,6 +290,6 @@ class TestUnitExpirationTimer(object):
         et = ExpirationTimer(timedelta(milliseconds=10))
         assert not et
         assert not bool(et)
-        sleep(et.remainingSeconds())
+        sleep(et.view().remainingSeconds())
         assert et
         assert bool(et)

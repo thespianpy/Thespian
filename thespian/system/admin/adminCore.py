@@ -9,7 +9,7 @@ from thespian.system.messages.status import Thespian_SystemStatus
 from thespian.system.messages.admin import *
 from thespian.system.transport import TransmitIntent
 from thespian.system.sourceLoader import SourceHashFinder
-from thespian.system.timing import ExpirationTimer
+from thespian.system.timing import ExpirationTimer, currentTime
 
 
 
@@ -218,9 +218,10 @@ class AdminCore(systemCommonBase):
 
     def _remove_expired_sources(self):
         rmvlist = []
+        ct = currentTime()
         for each in self._sources:
             if not self._sources[each].source_valid and \
-               self._sources[each].load_expires.expired():
+               self._sources[each].load_expires.view(ct).expired():
                 rmvlist.append(each)
         for each in rmvlist:
             self._cancel_pending_actors(self._sources[each].pending_actors)

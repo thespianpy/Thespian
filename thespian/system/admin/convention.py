@@ -3,7 +3,7 @@ from thespian.actors import *
 from thespian.system.utilis import (thesplog, checkActorCapabilities,
                                     foldl, join, fmap, AssocList,
                                     actualActorClass)
-from thespian.system.timing import ExpirationTimer
+from thespian.system.timing import ExpirationTimer, currentTime
 from thespian.system.logdirector import LogAggregator
 from thespian.system.admin.globalNames import GlobalNamesAdmin
 from thespian.system.admin.adminCore import PendingSource
@@ -360,25 +360,26 @@ class LocalConventionState(object):
                           if M.remoteAddress != self.myAddress]))
 
     def check_convention(self):
+        ct = currentTime()
         rmsgs = []
         if self._has_been_activated:
             rmsgs = foldl(lambda x, y: x + y,
-                          [self._check_preregistered_ping(member)
+                          [self._check_preregistered_ping(ct, member)
                            for member in self._conventionMembers.values()],
-                          self._convention_leader_checks()
+                          self._convention_leader_checks(ct)
                           if self.isConventionLeader() or
                           not self.conventionLeaderAddr else
-                          self._convention_member_checks())
-        if self._conventionRegistration.expired():
+                          self._convention_member_checks(ct))
+        if self._conventionRegistration.view(ct).expired():
             self._conventionRegistration = ExpirationTimer(CONVENTION_REREGISTRATION_PERIOD)
         return rmsgs
 
-    def _convention_leader_checks(self):
+    def _convention_leader_checks(self, ct):
         return foldl(lambda x, y: x + y,
                      [self._missed_checkin_remote_cleanup(R)
                       for R in [ member
                                  for member in self._conventionMembers.values()
-                                 if member.registryValid.expired() ]],
+                                 if member.registryValid.view(ct).expired() ]],
                      [])
 
     def _missed_checkin_remote_cleanup(self, remote_member):
@@ -390,10 +391,11 @@ class LocalConventionState(object):
         return self._remote_system_cleanup(remote_member.remoteAddress)
 
 
-    def _convention_member_checks(self):
+    def _convention_member_checks(self, ct):
         rmsgs = []
         # Re-register with the Convention if it's time
-        if self.conventionLeaderAddr and self._conventionRegistration.expired():
+        if self.conventionLeaderAddr and \
+           self._conventionRegistration.view(ct).expired():
             if getattr(self, '_conventionLeaderMissCount', 0) >= \
                CONVENTION_REGISTRATION_MISS_MAX:
                 thesplog('Admin convention registration lost @ %s (miss %d)',
@@ -406,9 +408,9 @@ class LocalConventionState(object):
                 rmsgs.extend(self.setup_convention())
         return rmsgs
 
-    def _check_preregistered_ping(self, member):
+    def _check_preregistered_ping(self, ct, member):
         if member.preRegistered and \
-           member.preRegistered.pingValid.expired() and \
+           member.preRegistered.pingValid.view(ct).expired() and \
            not member.preRegistered.pingPending:
             member.preRegistered.pingPending = True
             # If remote misses a checkin, re-extend the
@@ -417,7 +419,7 @@ class LocalConventionState(object):
             member.preRegistered.pingValid = ExpirationTimer(
                 convention_reinvite_adjustment(
                     CONVENTION_RESTART_PERIOD
-                    if member.registryValid.expired()
+                    if member.registryValid.view(ct).expired()
                     else CONVENTION_REREGISTRATION_PERIOD))
             return [HysteresisSend(member.remoteAddress,
                                    ConventionInvite(),
@@ -498,20 +500,21 @@ class LocalConventionState(object):
                 return True
         return False
 
-    def convention_inattention_delay(self):
-        return self._conventionRegistration or \
-            ExpirationTimer(CONVENTION_REREGISTRATION_PERIOD
-                            if self.active_in_convention() or
-                            self.isConventionLeader() else
-                            CONVENTION_RESTART_PERIOD)
+    def convention_inattention_delay(self, current_time):
+        return (self._conventionRegistration or
+                ExpirationTimer(CONVENTION_REREGISTRATION_PERIOD
+                                if self.active_in_convention() or
+                                self.isConventionLeader() else
+                                CONVENTION_RESTART_PERIOD)).view(current_time)
 
     def forward_pending_to_remote_system(self, childClass, envelope, sourceHash, acceptsCaps):
         alreadyTried = getattr(envelope.message, 'alreadyTried', [])
+        ct = currentTime()
 
         remoteCandidates = [
             K
             for K in self._conventionMembers.values()
-            if not K.registryValid.expired()
+            if not K.registryValid.view(ct).expired()
             and K.remoteAddress != envelope.sender # source Admin
             and K.remoteAddress not in alreadyTried
             and acceptsCaps(K.remoteCapabilities)]
@@ -628,8 +631,9 @@ class ConventioneerAdmin(GlobalNamesAdmin):
         try:
             while not getattr(self, 'shutdown_completed', False) and \
                   not isinstance(transport_continue, Thespian__Run_Terminated):
-                delay = min(self._cstate.convention_inattention_delay(),
-                            ExpirationTimer(None) if self._hysteresisSender.delay.expired() else
+                ct = currentTime()
+                delay = min(self._cstate.convention_inattention_delay(ct),
+                            ExpirationTimer(None).view(ct) if self._hysteresisSender.delay.expired() else
                             self._hysteresisSender.delay
                 )
                 # n.b. delay does not account for soon-to-expire

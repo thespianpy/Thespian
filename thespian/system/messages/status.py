@@ -105,9 +105,10 @@ def _common_formatStatus(tofd, response, childActorTag, showAddress=str):
     # ExpirationTimer) in newer versions.  The following maintains
     # compatibility for both.
     tofd.write('  |Pending Wakeups [%d]:\n'%len(response.pendingWakeups))
-    from thespian.system.timing import ExpirationTimer
+    from thespian.system.timing import currentTime
     from datetime import datetime
     now = datetime.now()
+    ct = currentTime()
     pw = [(('' if V.sender == getattr(response, 'actorAddress', None)
             else '--> %s : ' % V.sender),
            '%s  (in %s  @  %s)' % (V.message.delayPeriod, str(A - now), str(A)))
@@ -116,8 +117,8 @@ def _common_formatStatus(tofd, response, childActorTag, showAddress=str):
          if isinstance(response.pendingWakeups, dict) else \
             [(('' if A == getattr(response, 'actorAddress', None)
                else '--> %s : ' % A),
-              '%s  (in %s @ %s)' % (W.duration, W.remaining(),
-                                       str(now + W.remaining())))
+              '%s  (in %s @ %s)' % (W.view(ct).duration, W.view(ct).remaining(),
+                                       str(now + W.view(ct).remaining())))
              for (A,W) in response.pendingWakeups]
     for each in pw:
         tofd.write('    %s%s\n' % each)

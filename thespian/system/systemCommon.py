@@ -3,7 +3,7 @@
 import logging
 from thespian.actors import *
 from thespian.system.utilis import thesplog, StatsManager, AssocList
-from thespian.system.timing import ExpirationTimer
+from thespian.system.timing import ExpirationTimer, unexpired
 from thespian.system.ratelimit import RateThrottle
 from thespian.system.addressManager import (ActorAddressManager,
                                             CannotPickleAddress,
@@ -300,6 +300,6 @@ class systemCommonBase(object):
 
     def drainTransmits(self):
         drainLimit = ExpirationTimer(MAX_SHUTDOWN_DRAIN_PERIOD)
-        while not drainLimit.expired():
-            if not self.transport.run(TransmitOnly, drainLimit.remaining()):
+        for drain_remaining_time in unexpired(drainLimit):
+            if not self.transport.run(TransmitOnly, drain_remaining_time.remaining()):
                 break  # no transmits left

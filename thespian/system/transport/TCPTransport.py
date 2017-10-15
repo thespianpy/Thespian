@@ -79,7 +79,8 @@ even between processes on separate systems.
 
 import logging
 from thespian.system.utilis import (thesplog, fmap, partition)
-from thespian.system.timing import timePeriodSeconds, ExpirationTimer
+from thespian.system.timing import (timePeriodSeconds, ExpirationTimer,
+                                    currentTime)
 from thespian.actors import *
 from thespian.system.transport import *
 from thespian.system.transport.IPBase import (TCPv4ActorAddress)
@@ -167,11 +168,12 @@ class TCPIncoming_Common(PauseWithBackoff):
     def fromAddress(self, newAddr):
         self._rmtAddr = newAddr
 
-    def delay(self):
+    def delay(self, current_time = None):
+        ct = current_time or currentTime()
         # n.b. include _pauseUntil from PauseWithBackoff
         return max(timedelta(seconds=0),
-                   min(self._expires.remaining(),
-                       getattr(self, '_pauseUntil', self._expires).remaining()))
+                   min(self._expires.view(ct).remaining(),
+                       getattr(self, '_pauseUntil', self._expires).view(ct).remaining()))
 
     def addData(self, newData): self._rData.addMore(newData)
 
@@ -212,7 +214,7 @@ class IdleSocket(object):
         self.validity = ExpirationTimer(MAX_IDLE_SOCKET_PERIOD)
 
     def expired(self):
-        return self.validity.expired()
+        return self.validity.view().expired()
 
     def __str__(self):
         return 'Idle-socket %s->%s (%s)' % (str(self.socket),
@@ -1059,11 +1061,14 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
         if hasattr(self, '_aborting_run'):
             delattr(self, '_aborting_run')
 
-        while not self.run_time.expired() and \
-              (not hasattr(self, '_aborting_run') or
+        while (not hasattr(self, '_aborting_run') or
                (self._aborting_run and
                 (len(self._transmitIntents) > 0 or
                  len(self._waitingTransmits) > 0))):
+
+            ct = currentTime()
+            if self.run_time.view(ct).expired():
+                break
 
             if xmitOnly:
                 if not self._transmitIntents and not self._waitingTransmits:
@@ -1101,11 +1106,11 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
                                           self._openSockets.values())))
 
                 delays = list(filter(None,
-                                     [self.run_time.remaining()] +
-                                     [self._transmitIntents[T].delay()
+                                     [self.run_time.view(ct).remaining()] +
+                                     [self._transmitIntents[T].delay(ct)
                                       for T in self._transmitIntents] +
                                      [W.delay() for W in self._waitingTransmits] +
-                                     [self._incomingSockets[I].delay()
+                                     [self._incomingSockets[I].delay(ct)
                                       for I in self._incomingSockets]))
                 # n.b. if a long period of time has elapsed (e.g. laptop
                 # sleeping) then delays could be negative.
@@ -1284,7 +1289,7 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
 
             # Check if it's time to quit
             if [] == rrecv and [] == rsend:
-                if [] == rerr and self.run_time.expired():
+                if [] == rerr and self.run_time.view().expired():
                     # Timeout, give up
                     return Thespian__Run_Expired()
                 continue
