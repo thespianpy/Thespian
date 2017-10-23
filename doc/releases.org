@@ -7,7 +7,7 @@
 #+LATEX_HEADER: \product{Thespian}
 #+LATEX_HEADER: \component{Python Actor System}
 #+LATEX_HEADER: \doctype{Release Notes}
-#+LATEX_HEADER: \docrev{3.8.0}{2017 Aug 22}
+#+LATEX_HEADER: \docrev{3.8.1}{2017 Oct 22}
 #+LATEX_HEADER: \docid{TheDoc-06}
 #+OPTIONS: ^:nil num:nil
 
@@ -19,6 +19,27 @@ do not change the API.
 * 3.x
 
 ** 3.8
+  * 3.8.1 <2017-10-22 Sun>
+
+    * Fix startup of loaded-source Actors on Windows: use string
+      classname since Windows spawn does not inherit modified
+      sys.modules at the time that the startup arguments (which
+      include the child class) are deserialized.
+
+    * Update httpserver to use msvcrt.getch() instead of
+      signal.pause() under Windows (thanks to Thomas Christian for
+      this contribution).
+
+    * Update multi_system act examples to add __main__ wrappers to
+      primary scripts to improve Windows support (thanks to Thomas
+      Christian for this contribution).
+
+    * Adds thread synchronization protection to wakeupAfter() Actor
+      method in case the Actor is multi-threaded.
+
+    * Internal modification of time sampling to allow consistent
+      sampling for logic evaluation.
+
 *** 3.8.0 <2017-08-22 Tue>
 
     * The Actor ~__init__()~ can now specify ~capabilities~ and
