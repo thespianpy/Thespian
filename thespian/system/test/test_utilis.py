@@ -1,6 +1,7 @@
 import pytest
 from collections import deque
 from thespian.system.utilis import *
+from thespian.system import utilis
 
 
 @pytest.mark.parametrize("itertype", [list, deque])
@@ -30,3 +31,15 @@ class TestPartition(object):
         assert a == itertype([1, 3, 5, 7, 9])
         assert b == itertype([0, 2, 4, 6, 8])
 
+class DoTestClass:
+
+    def __init__(self, num=0, foo=None, bar="test"):
+        self.num = num
+        self.foo = foo
+        self.bar = bar
+
+def test_create():
+    test_it = withPossibleInitArgs(num=10).create(DoTestClass)
+    assert test_it.num == 10
+    assert test_it.foo == None
+    assert test_it.bar == "test"

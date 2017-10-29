@@ -4,6 +4,7 @@ import os
 import tempfile
 from thespian.actors import InvalidActorSpecification
 import inspect
+import pdb
 
 
 ###
@@ -296,15 +297,19 @@ class withPossibleInitArgs(object):
        argument.
 
     """
+
     def __init__(self, **kw):
         self.kwargs = kw
+
     def create(self, klass):
         """Creates an instance of the specified class, passing any of the
            initial arguments that are valid arguments for the __init__
            method.
         """
+
         try:
-            initsig = inspect.getargspec(klass.__init__).args
+            inspect.signature(klass.__init__).args
+            # initsig = inspect.getargspec(klass.__init__).args
         except (ValueError, NameError, AttributeError):
             try:
                 initsig = inspect.getfullargspec(klass.__init__).args
