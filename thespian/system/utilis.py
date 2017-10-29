@@ -4,7 +4,6 @@ import os
 import tempfile
 from thespian.actors import InvalidActorSpecification
 import inspect
-import pdb
 
 
 ###
