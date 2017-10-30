@@ -307,15 +307,14 @@ class withPossibleInitArgs(object):
         """
 
         try:
-            inspect.signature(klass.__init__).args
-            # initsig = inspect.getargspec(klass.__init__).args
+            initsig = [P.name
+                       for P in inspect.signature(klass.__init__).parameters]
         except (ValueError, NameError, AttributeError):
             try:
-                initsig = inspect.getfullargspec(klass.__init__).args
+                initsig = inspect.getargspec(klass.__init__).args
             except (ValueError, NameError, AttributeError):
                 try:
-                    initsig = [P.name
-                               for P in inspect.signature(klass.__init__).parameters]
+                    initsig = inspect.getfullargspec(klass.__init__).args
                 except (ValueError, NameError, AttributeError):
                     # Default to just initializing with no arguments
                     print('defaulting')
