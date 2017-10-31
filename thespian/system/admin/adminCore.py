@@ -7,7 +7,7 @@ from thespian.system.utilis import thesplog, AssocList
 from thespian.system.systemCommon import systemCommonBase
 from thespian.system.messages.status import Thespian_SystemStatus
 from thespian.system.messages.admin import *
-from thespian.system.transport import TransmitIntent
+from thespian.system.transport import TransmitIntent, Thespian__UpdateWork
 from thespian.system.sourceLoader import SourceHashFinder
 from thespian.system.timing import ExpirationTimer, currentTime
 
