@@ -314,6 +314,7 @@ class AdminCore(systemCommonBase):
         # each).
         childAddr = self._addrManager.createLocalAddress()
         childInstance = childAddr.addressDetails.addressInstanceNum
+        self._pendingChildren[childInstance] = envelope
 
         try:
             self._startChildActor(
@@ -331,7 +332,6 @@ class AdminCore(systemCommonBase):
             self._retryPendingChildOperations(childInstance, None)
             return True
 
-        self._pendingChildren[childInstance] = envelope
         # transport will contrive to call _pendingActorReady when the
         # child is initialized and connected to this parent.
         return True
