@@ -181,16 +181,7 @@ class External(Actor):
 def actor_base_receive(actorInst, msg, sender):
     logging.getLogger('Thespian').debug('Actor "%s" got message "%s" from "%s"',
                                         actorInst, msg, sender)
-    try:
-        actorInst.receiveMessage(msg, sender)
-    except:
-        logging.getLogger('Thespian').warning('Actor "%s" error processing message "%s"',
-                                              actorInst, msg, exc_info=True)
-        if isinstance(msg, PoisonMessage):
-            logging.getLogger('Thespian').warning('Actor "%s" double-draught of poison; discarding',
-                                                  actorInst)
-        else:
-            actorInst.send(sender, PoisonMessage(msg, traceback.format_exc()))
+    actorInst.receiveMessage(msg, sender)
 
 
 class actorLogFilter(logging.Filter):
