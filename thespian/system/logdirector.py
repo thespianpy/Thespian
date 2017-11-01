@@ -132,7 +132,20 @@ class ThespianLogForwardHandler(logging.Handler):
                 record.exc_text = '\n'.join(excinfo)
             record.exc_info = None
         record.__dict__['actorAddress'] = str(logTransport.myAddress)
-        msg = record.getMessage()
+        try:
+            msg = record.getMessage()
+        except Exception:
+            newargs = []
+            for arg in record.args:
+                try:
+                    newargs.append(str(arg))
+                except Exception:
+                    newargs.append('<un-str-able argument>')
+            record.args = newargs
+            try:
+                msg = record.getMessage()
+            except Exception:
+                msg = '<un-str-able message>'
         record.msg = msg
         record.args = None
         logTransport.scheduleTransmit(None, TransmitIntent(self._fwdAddr, record))
