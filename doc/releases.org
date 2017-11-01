@@ -7,7 +7,7 @@
 #+LATEX_HEADER: \product{Thespian}
 #+LATEX_HEADER: \component{Python Actor System}
 #+LATEX_HEADER: \doctype{Release Notes}
-#+LATEX_HEADER: \docrev{3.8.1}{2017 Oct 22}
+#+LATEX_HEADER: \docrev{3.8.2}{2017 Nov 01}
 #+LATEX_HEADER: \docid{TheDoc-06}
 #+OPTIONS: ^:nil num:nil
 
@@ -19,6 +19,25 @@ do not change the API.
 * 3.x
 
 ** 3.8
+*** 3.8.2 <2017-11-01 Wed>
+
+    * Fixed deprecation warnings related to inspect module (with
+      thanks to Andrew Evans for the patch).
+
+    * Add unit tests and protection against messages that throw
+      exceptions on ~str()~ translations (with thanks to Felipe
+      Gutierrez for discovering this).
+
+    * Fix exception retry handling for simpleSystemBase (with thanks
+      to Felipe Gutierrez for discovering this).
+
+    * Internal change to child actor startup to remove potential race
+      condition on startup management.
+
+    * Added missing UpdateWork import for internal Admin functionality.
+
+    * Remove support claim for Python 2.6.
+
 *** 3.8.1 <2017-10-22 Sun>
 
     * Fix startup of loaded-source Actors on Windows: use string
