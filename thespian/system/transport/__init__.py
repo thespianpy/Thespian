@@ -109,7 +109,10 @@ class ReceiveEnvelope(Thespian__Run__Result):
     @property
     def message(self): return self._message
     def identify(self):
-        smsg = str(self.message)
+        try:
+            smsg = str(self.message)
+        except Exception:
+            smsg = "<message>"
         if len(smsg) > MAX_SHOWLEN:
             smsg = smsg[:MAX_SHOWLEN] + '...'
         msgt = str(type(self.message))
