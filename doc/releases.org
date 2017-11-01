@@ -19,7 +19,7 @@ do not change the API.
 * 3.x
 
 ** 3.8
-  * 3.8.1 <2017-10-22 Sun>
+*** 3.8.1 <2017-10-22 Sun>
 
     * Fix startup of loaded-source Actors on Windows: use string
       classname since Windows spawn does not inherit modified
