@@ -20,12 +20,8 @@ class GlobalNamesAdmin(AdminCore):
 
         if gName in self._globalNames:
             # Actor already registered with this name... here it is.
-            self._send_intent(
-                TransmitIntent(envelope.sender,
-                               PendingActorResponse(envelope.message.forActor,
-                                                    envelope.message.instanceNum,
-                                                    gName,
-                                                    actualAddress = self._globalNames[gName])))
+            self._sendPendingActorResponse(envelope,
+                                           self._globalNames[gName])
             return True
 
         return super(GlobalNamesAdmin, self).h_PendingActor(envelope)

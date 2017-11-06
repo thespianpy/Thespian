@@ -589,3 +589,12 @@ class TestFuncMultiProcessSystem(object):
         assert r == 'howdy'
         r = asys2.ask(cheech, 'alone?', max_ask_wait)
         assert r is None
+
+    def test22_CreateRemoteGlobalNamedChild(self, testsystems):
+        # Verifies that a remote actor with a globalname is retrieved
+        # correctly
+        asys, asys2 = testsystems
+        actor_system_unsupported(asys, 'simpleSystemBase', 'multiprocQueueBase')
+        real_stewart = asys2.createActor(Stewart, globalName='the stewart')
+        stewart = asys.createActor(Stewart, globalName='the stewart')
+        assert real_stewart == stewart
