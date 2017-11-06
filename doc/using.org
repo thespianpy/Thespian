@@ -747,9 +747,18 @@ class ActorB(Actor):
       Actors because of the need to perform global lookup and
       coordination based on the name.
 
+   1. The globalName is (at present time) unique only to the Actor
+      System within which it is running.  There may be multiple Actor
+      Systems running and communicating as part of a Convention (see
+      [[#hH-3c8aa454-9a21-4d24-a623-ad86bfd4f5a7][Other Actor Systems]]), but the uniqueness of the globalName (and
+      corresponding Actor instance) applies only to the system that
+      has created it.  See [[id:hH-e3387ca3-40b6-41b8-8a9e-125368c9e227][Multi-system Global Name support]] for more
+      details and recommendations.
+
+
   It is recommended (but not required) that only the top-level,
   coordinating Actors be Named Actors and that most Actors in the
-  system be
+  system be unnamed Actors to avoid these disadvantages.
 
 ** Timer Messages
    :PROPERTIES:
@@ -985,6 +994,40 @@ this delay may become observable.  The hysteresis delay is designed to
 protect the overall environment from failure scenarios; please contact
 the Thespian developers if this hysteresis is adversely affecting your
 utilization of Thespian.
+
+*** Multi-system Global Name support
+    :PROPERTIES:
+    :ID:       hH-e3387ca3-40b6-41b8-8a9e-125368c9e227
+    :CUSTOM_ID: h:33d27852-9cfd-4583-b0c0-5c05f2cb8e5a
+    :END:
+
+    Actor creation is first attempted locally, but if the Actor's
+    requirements do not match the local system's capabilities, other
+    Actor Systems will be invited to create the specified Actor, one
+    at a time.  The first Actor System that can create the specified
+    Actor will record the global name in that system; if an Actor
+    System already has an Actor running under that global name, that
+    will satisfy the creation attempt.
+
+    Because this global name is only recorded on a single system and
+    the creation is on a first-found basis, it is not necessarily the
+    case that the next attempt to call createActor with the same
+    globalName will query the same system before another system is
+    found that is willing to create the target actor.  As a result,
+    two ~createActor()~ calls with the same ~globalName~ value may
+    result in two different target Actors running on two separate
+    remote Actor Systems.
+
+    An recommended alternative approach is to create a "registrar"
+    Actor on the Convention Leader system, using a ~globalName~ to
+    ensure that the registrar instance is unique.  The registrar can
+    then register for notification of remote Actor Systems
+    ([[#hH-b9f7a2f0-7d2a-4cc0-8241-1fee7c62c44e][notifyOnSystemRegistrationChanges]]) and when a new remote Actor
+    System joins the convention, the registrar Actor can create a
+    specific Actor on that remote system, recording the resulting
+    address locally in the registrar.  When that unique remote Actor
+    is needed, the registrar can be consulted to obtain the target
+    address.
 
 ** Performance
    :PROPERTIES:
