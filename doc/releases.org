@@ -7,7 +7,7 @@
 #+LATEX_HEADER: \product{Thespian}
 #+LATEX_HEADER: \component{Python Actor System}
 #+LATEX_HEADER: \doctype{Release Notes}
-#+LATEX_HEADER: \docrev{3.8.2}{2017 Nov 01}
+#+LATEX_HEADER: \docrev{3.8.3}{2017 Nov 08}
 #+LATEX_HEADER: \docid{TheDoc-06}
 #+OPTIONS: ^:nil num:nil
 
@@ -19,6 +19,19 @@ do not change the API.
 * 3.x
 
 ** 3.8
+*** 3.8.3 <2017-11-08 Wed>
+
+    * Fixed issue preventing use of globalName actors in conjunction
+      with a multiple ActorSystem Convention.
+
+    * Fixed documentation link in the Using Thespian documentation.
+
+    * Updated description of the globalName argument in the Using
+      Thespian documentation.
+
+    * Added a better description of the startup modes for an
+      ActorSystem relating to the arguments supplied.
+
 *** 3.8.2 <2017-11-01 Wed>
 
     * Fixed deprecation warnings related to inspect module (with
