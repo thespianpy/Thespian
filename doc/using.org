@@ -752,7 +752,7 @@ class ActorB(Actor):
       Systems running and communicating as part of a Convention (see
       [[#hH-3c8aa454-9a21-4d24-a623-ad86bfd4f5a7][Other Actor Systems]]), but the uniqueness of the globalName (and
       corresponding Actor instance) applies only to the system that
-      has created it.  See [[id:hH-e3387ca3-40b6-41b8-8a9e-125368c9e227][Multi-system Global Name support]] for more
+      has created it.  See [[id:hH-33d27852-9cfd-4583-b0c0-5c05f2cb8e5a][Multi-system Global Name support]] for more
       details and recommendations.
 
 
@@ -997,8 +997,7 @@ utilization of Thespian.
 
 *** Multi-system Global Name support
     :PROPERTIES:
-    :ID:       hH-e3387ca3-40b6-41b8-8a9e-125368c9e227
-    :CUSTOM_ID: h:33d27852-9cfd-4583-b0c0-5c05f2cb8e5a
+    :CUSTOM_ID: hH-33d27852-9cfd-4583-b0c0-5c05f2cb8e5a
     :END:
 
     Actor creation is first attempted locally, but if the Actor's
