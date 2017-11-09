@@ -2141,12 +2141,69 @@ actorSys = ActorSystem(systemBase = None,
     Normally the created ActorSystem becomes a process-wide (and
     possibly system-wide) singleton instance.  The ~transientUnique~
     argument may be set to true to get a new, un-registered
-    ActorSystem.  Note that typical Python classes provide a unique
-    instantiation on each call (i.e. the result provided here if
-    ~transientUnique~ is ~True~) but more typical Thespian
-    functionality is achieved by the global singleton behavior, so
-    that is the default and the ~transientUnique~ must be explicitly
-    specified for non-singleton creations.
+    ActorSystem.  This leads to the following behavior:
+
+     * ~ActorSystem(...)~ :: return an object which references an
+          ActorSystem with the configuration specified by the
+          arguments, creating a new ActorSystem if necessary.
+          Subsequent calls with the same arguments will get an
+          instance referencing that same ActorSystem.
+
+     * ~ActorSystem()~ :: return an object which references any
+          previous ActorSystem created by this process.  If there is
+          no ActorSystem, it will create one with the default
+          parameters (currently defaulting to a "simpleSystemBase"
+          instance).  This is a convenience mechanism for accessing an
+          ActorSystem that may have been created elsewhere in the
+          application where more specific knowledge regarding the
+          creation parameters was available.
+
+          #+BEGIN_EXAMPLE
+          def start_system():
+              cfg = read_config_file()
+              ActorSystem(systemBase=cfg.system_base,
+                          capabilities = { 'foo'=cfg.foo_capability, ...},
+                          ...)
+
+          def do_something():
+              mine = ActorSystem().createActor(MyActor)
+              r = ActorSystem().ask(mine, 'ready?', timedelta(seconds=3))
+              ...
+
+          if __name__ == "__main__":
+              start_system()
+              do_something()
+          #+END_EXAMPLE
+
+          The following is equivalent to the above, although it
+          requires extra code to pass the actor system to the various
+          components needing it:
+
+          #+BEGIN_EXAMPLE
+          def start_system():
+              cfg = read_config_file()
+              asys = ActorSystem(systemBase=cfg.system_base,
+                                 capabilities = { 'foo'=cfg.foo_capability, ...},
+                                 ...)
+              return asys
+
+          def do_something(asys):
+              mine = asys.createActor(MyActor)
+              r = asys.ask(mine, 'ready?', timedelta(seconds=3))
+              ...
+
+          if __name__ == "__main__":
+              asys = start_system()
+              do_something(asys)
+          #+END_EXAMPLE
+
+     * ~ActorSystem(..., transientUnique=True)~ :: ensures that a new
+          ActorSystem is created instead of retrieving a
+          previously-created ActorSystem.  Note that the other
+          arguments should specify the configuration of the new
+          ActorSystem, and global resource collisions (e.g. port
+          names) will prevent the new ActorSystem from being created.
+
 
 ** ActorSystem.shutdown
    :PROPERTIES:
