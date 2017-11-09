@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
 <title>Thespian Actors User's Guide</title>
-<!-- 2017-11-05 Sun 20:46 -->
+<!-- 2017-11-08 Wed 23:30 -->
 <meta  http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta  name="generator" content="Org-mode" />
 <meta  name="author" content="Kevin Quick &lt;quick@sparq.org&gt;" />
@@ -214,7 +214,7 @@ for the JavaScript code in this tag.
 <ul>
 <li><a href="#hH-bd57f29e-4a5e-4725-9ced-7e0c5fa5bcbd">4.11.1. Convention Establishment</a></li>
 <li><a href="#hH-0500ead3-28ea-440c-9ad6-56cb9fbdd648">4.11.2. Convention Administrator Communications</a></li>
-<li><a href="#h:33d27852-9cfd-4583-b0c0-5c05f2cb8e5a">4.11.3. Multi-system Global Name support</a></li>
+<li><a href="#hH-33d27852-9cfd-4583-b0c0-5c05f2cb8e5a">4.11.3. Multi-system Global Name support</a></li>
 </ul>
 </li>
 <li><a href="#hH-5e670e59-8334-477e-a9d2-0c2dc39d82dd">4.12. Performance</a></li>
@@ -1601,9 +1601,9 @@ utilization of Thespian.
 </div>
 </div>
 
-<div id="outline-container-h:33d27852-9cfd-4583-b0c0-5c05f2cb8e5a" class="outline-4">
-<h4 id="h:33d27852-9cfd-4583-b0c0-5c05f2cb8e5a"><a id="sec-4-11-3" name="sec-4-11-3"></a><a id="hH-e3387ca3-40b6-41b8-8a9e-125368c9e227" name="hH-e3387ca3-40b6-41b8-8a9e-125368c9e227"></a><span class="section-number-4">4.11.3</span> Multi-system Global Name support</h4>
-<div class="outline-text-4" id="text-h:33d27852-9cfd-4583-b0c0-5c05f2cb8e5a">
+<div id="outline-container-hH-33d27852-9cfd-4583-b0c0-5c05f2cb8e5a" class="outline-4">
+<h4 id="hH-33d27852-9cfd-4583-b0c0-5c05f2cb8e5a"><a id="sec-4-11-3" name="sec-4-11-3"></a><span class="section-number-4">4.11.3</span> Multi-system Global Name support</h4>
+<div class="outline-text-4" id="text-hH-33d27852-9cfd-4583-b0c0-5c05f2cb8e5a">
 
 <p>
 Actor creation is first attempted locally, but if the Actor's
@@ -3115,15 +3115,79 @@ providing a centralized logging capability.
 Normally the created ActorSystem becomes a process-wide (and
 possibly system-wide) singleton instance.  The <code>transientUnique</code>
 argument may be set to true to get a new, un-registered
-ActorSystem.  Note that typical Python classes provide a unique
-instantiation on each call (i.e. the result provided here if
-<code>transientUnique</code> is <code>True</code>) but more typical Thespian
-functionality is achieved by the global singleton behavior, so
-that is the default and the <code>transientUnique</code> must be explicitly
-specified for non-singleton creations.
+ActorSystem.  This leads to the following behavior:
 </p>
+
+<dl class="org-dl">
+<dt> <code>ActorSystem(...)</code> </dt><dd>return an object which references an
+ActorSystem with the configuration specified by the
+arguments, creating a new ActorSystem if necessary.
+Subsequent calls with the same arguments will get an
+instance referencing that same ActorSystem.
+</dd>
+
+<dt> <code>ActorSystem()</code> </dt><dd>return an object which references any
+previous ActorSystem created by this process.  If there is
+no ActorSystem, it will create one with the default
+parameters (currently defaulting to a "simpleSystemBase"
+instance).  This is a convenience mechanism for accessing an
+ActorSystem that may have been created elsewhere in the
+application where more specific knowledge regarding the
+creation parameters was available.
+
+<pre class="example">
+def start_system():
+    cfg = read_config_file()
+    ActorSystem(systemBase=cfg.system_base,
+                capabilities = { 'foo'=cfg.foo_capability, ...},
+                ...)
+
+def do_something():
+    mine = ActorSystem().createActor(MyActor)
+    r = ActorSystem().ask(mine, 'ready?', timedelta(seconds=3))
+    ...
+
+if __name__ == "__main__":
+    start_system()
+    do_something()
+</pre>
+
+<p>
+The following is equivalent to the above, although it
+requires extra code to pass the actor system to the various
+components needing it:
+</p>
+
+<pre class="example">
+def start_system():
+    cfg = read_config_file()
+    asys = ActorSystem(systemBase=cfg.system_base,
+                       capabilities = { 'foo'=cfg.foo_capability, ...},
+                       ...)
+    return asys
+
+def do_something(asys):
+    mine = asys.createActor(MyActor)
+    r = asys.ask(mine, 'ready?', timedelta(seconds=3))
+    ...
+
+if __name__ == "__main__":
+    asys = start_system()
+    do_something(asys)
+</pre>
+</dd>
+
+<dt> <code>ActorSystem(..., transientUnique=True)</code> </dt><dd>ensures that a new
+ActorSystem is created instead of retrieving a
+previously-created ActorSystem.  Note that the other
+arguments should specify the configuration of the new
+ActorSystem, and global resource collisions (e.g. port
+names) will prevent the new ActorSystem from being created.
+</dd>
+</dl>
 </div>
 </div>
+
 
 <div id="outline-container-hH-654a6c81-b326-4c0a-98bc-638ac5ce631f" class="outline-3">
 <h3 id="hH-654a6c81-b326-4c0a-98bc-638ac5ce631f"><a id="sec-6-3" name="sec-6-3"></a><span class="section-number-3">6.3</span> ActorSystem.shutdown</h3>
@@ -5139,7 +5203,7 @@ difference will remain unaddressed.
 </div></div>
 <div id="postamble" class="status">
 <p class="author">Author: Kevin Quick &lt;quick@sparq.org&gt;</p>
-<p class="date">Created: 2017-11-05 Sun 20:46</p>
+<p class="date">Created: 2017-11-08 Wed 23:30</p>
 <p class="creator"><a href="http://www.gnu.org/software/emacs/">Emacs</a> 25.2.1 (<a href="http://orgmode.org">Org</a> mode 8.2.10)</p>
 <p class="validation"><a href="http://validator.w3.org/check?uri=referer">Validate</a></p>
 </div>
