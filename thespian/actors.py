@@ -699,6 +699,12 @@ class ActorSystem(object):
                                                 globalName,
                                                 sourceHash)
 
+    def getActor(self, globalName):
+        '''Called to get a "Primary" Actor (a top-level Actor owned by the
+           system itself) by globalName.
+        '''
+        return self._systemBase._globalNames.get(globalName)
+
     def tell(self, actorAddr, msg):
         """Sends msg to the Actor at the specified address.  No response is
            expected or awaited.

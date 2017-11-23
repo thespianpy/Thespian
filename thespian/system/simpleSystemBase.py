@@ -492,6 +492,7 @@ class ActorSystemBase(WakeupManager):
                                    targetActorRequirements = targetActorRequirements,
                                    isTopLevel = True)
         if nar.instance:
+            nar.instance.globalName = globalName
             if globalName:
                 with self._private_lock:
                     self._globalNames[globalName] = naa
