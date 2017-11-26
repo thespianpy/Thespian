@@ -21,7 +21,7 @@ from functools import partial
 
 
 class ActorManager(systemCommonBase):
-    def __init__(self, childClass, transport, sourceHash, sourceToLoad,
+    def __init__(self, childClass, globalName, transport, sourceHash, sourceToLoad,
                  parentAddr, adminAddr,
                  childRequirements, currentSystemCapabilities,
                  concurrency_context):
@@ -36,6 +36,7 @@ class ActorManager(systemCommonBase):
         self._actorClass = childClass  # nb. this may be a string, and sourceHash is not loaded yet
         self._childReqs  = childRequirements
         self.actorInst   = None
+        self.globalName  = globalName
         atexit.register(self._shutdownActor)
         thesplog('Starting Actor %s at %s (parent %s, admin %s, srcHash %s)',
                  childClass, self.transport.myAddress,
@@ -54,7 +55,8 @@ class ActorManager(systemCommonBase):
                                       if self._sourceHash else None)
             # Now instantiate the identified Actor class object
             actorInst = withPossibleInitArgs(capabilities=self.capabilities,
-                                             requirements=self._childReqs) \
+                                             requirements=self._childReqs,
+                                             globalName=self.globalName) \
                                              .create(aClass)
             self._sCBStats.inc('Actor.Instance Created')
         except Exception as ex:
@@ -294,7 +296,7 @@ class ActorManager(systemCommonBase):
                 # this actor and the child can be created directly;
                 # otherwise the child actor creation will be forwarded
                 # to the Admin.
-                self._startChildActor(naa, newActorClass, self.myAddress,
+                self._startChildActor(naa, newActorClass, globalName, self.myAddress,
                                       notifyAddr = self.myAddress,
                                       childRequirements = targetActorRequirements,
                                       sourceHash = sourceHash,
