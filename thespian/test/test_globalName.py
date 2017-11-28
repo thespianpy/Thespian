@@ -7,6 +7,10 @@ class ThereCanBeOnlyOne(Actor):
     def receiveMessage(self, msg, sender):
         self.send(sender, "ONE: %s"%msg)
 
+class GlobalNameReporter(Actor):
+    def receiveMessage(self, msg, sender):
+        self.send(sender, self.globalName)
+
 class Parent(Actor):
     def receiveMessage(self, msg, sender):
         if msg == 'newChild':
@@ -131,3 +135,9 @@ class TestFuncGlobalName(object):
         assert "ONE: check" == asys.ask(uno, "check")
         assert "ONE: balance" == asys.ask(subDos, "balance")
 
+    def testGlobalNameInInstance(self, asys):
+        named = asys.createActor(GlobalNameReporter, globalName = "MyName")
+        assert "MyName" == asys.ask(named, "")
+
+        unnamed = asys.createActor(GlobalNameReporter)
+        assert asys.ask(unnamed, "") is None
