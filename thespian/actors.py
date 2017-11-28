@@ -120,7 +120,7 @@ class Actor(object):
        message handling functionality.
     '''
 
-    def __init__(self):
+    def __init__(self, globalName=None):
         """Called to initialize the Actor.
 
            Override this initialization method as needed in defined Actors.
@@ -141,7 +141,7 @@ class Actor(object):
            Actor).
 
         """
-        pass
+        self.globalName = globalName
 
     def __str__(self):
         return '{A:' + self.__class__.__name__ + \

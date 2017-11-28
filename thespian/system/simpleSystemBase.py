@@ -494,6 +494,7 @@ class ActorSystemBase(WakeupManager):
         if nar.instance:
             nar.instance.globalName = globalName
             if globalName:
+                nar.instance.globalName = globalName
                 with self._private_lock:
                     self._globalNames[globalName] = naa
                 logger.info('Registered %s as global "%s" Primary Actor',
