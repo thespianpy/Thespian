@@ -120,7 +120,7 @@ class Actor(object):
        message handling functionality.
     '''
 
-    def __init__(self, globalName=None):
+    def __init__(self):
         """Called to initialize the Actor.
 
            Override this initialization method as needed in defined Actors.
@@ -141,7 +141,7 @@ class Actor(object):
            Actor).
 
         """
-        self.globalName = globalName
+        pass
 
     def __str__(self):
         return '{A:' + self.__class__.__name__ + \
@@ -163,6 +163,12 @@ class Actor(object):
     def myAddress(self):
         "Returns the ActorAddress of this Actor itself."
         return self._myRef.address
+
+    @property
+    def globalName(self):
+        """Returns the Global Name assigned to this Actor (or an empty string
+           if there is no global name)."""
+        return self._myRef.globalName
 
     def createActor(self, actorClass,
                     targetActorRequirements=None,

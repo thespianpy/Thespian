@@ -21,7 +21,8 @@ from functools import partial
 
 
 class ActorManager(systemCommonBase):
-    def __init__(self, childClass, globalName, transport, sourceHash, sourceToLoad,
+    def __init__(self, childClass, globalName,
+                 transport, sourceHash, sourceToLoad,
                  parentAddr, adminAddr,
                  childRequirements, currentSystemCapabilities,
                  concurrency_context):
@@ -55,8 +56,7 @@ class ActorManager(systemCommonBase):
                                       if self._sourceHash else None)
             # Now instantiate the identified Actor class object
             actorInst = withPossibleInitArgs(capabilities=self.capabilities,
-                                             requirements=self._childReqs,
-                                             globalName=self.globalName) \
+                                             requirements=self._childReqs) \
                                              .create(aClass)
             self._sCBStats.inc('Actor.Instance Created')
         except Exception as ex:
