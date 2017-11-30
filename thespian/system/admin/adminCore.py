@@ -318,7 +318,7 @@ class AdminCore(systemCommonBase):
 
         try:
             self._startChildActor(
-                childAddr, envelope.message.actorClassName,
+                childAddr, envelope.message.actorClassName, envelope.message.globalName,
                 parentAddr=self.myAddress,  # Admin is surrogate parent
                 notifyAddr=self.myAddress,
                 childRequirements=envelope.message.targetActorReq,

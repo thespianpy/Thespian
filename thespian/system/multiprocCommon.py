@@ -270,7 +270,7 @@ class MultiProcReplicator(object):
         self.mpcontext = concurrency_context
 
 
-    def _startChildActor(self, childAddr, childClass, parentAddr, notifyAddr,
+    def _startChildActor(self, childAddr, childClass, globalName, parentAddr, notifyAddr,
                          childRequirements=None,
                          sourceHash=None, sourceToLoad=None):
         """Create a new actor of type `childClass'.
@@ -336,6 +336,7 @@ class MultiProcReplicator(object):
                 if hasattr(childClass, '__name__') else childClass
         child = mp.Process(target=startChild,
                                         args=(ccArg,
+                                              globalName,
                                               endpointPrep,
                                               self.transport.__class__,
                                               sourceHash or self._sourceHash,
@@ -519,7 +520,7 @@ def shutdown_signal_detector(name, addr, am):
     return shutdown_signal_detected
 
 
-def startChild(childClass, endpoint, transportClass,
+def startChild(childClass, globalName, endpoint, transportClass,
                sourceHash, sourceToLoad,
                parentAddr, adminAddr, notifyAddr, loggerAddr,
                childRequirements, currentSystemCapabilities,
@@ -557,7 +558,7 @@ def startChild(childClass, endpoint, transportClass,
 
     logger = logging.getLogger('Thespian.ActorManager')
 
-    am = MultiProcManager(childClass, transport,
+    am = MultiProcManager(childClass, globalName, transport,
                           sourceHash, sourceToLoad,
                           parentAddr, adminAddr,
                           childRequirements, currentSystemCapabilities,
