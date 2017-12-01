@@ -894,7 +894,7 @@ the update.
 
     def cmd_gensrc(self, group_name, private_keyfile, inpsrc_dir, *srcs):
         """The gensrc command is used to create a loadable source file that is
-           signed by a private key (for which there is a .tskey public key that
+           signed by a private key (for which there is a *_tls.key public key that
            the director can use to validate the loaded source).
 
            Arguments:  group private_keyfile sources_dir [version:v] [deps:depfile] [tli:tlifile] [fmt:encoding] srcfile [...]
