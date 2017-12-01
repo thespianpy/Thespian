@@ -1227,6 +1227,10 @@ before the ActorSystem is started:
   The [[#hH-731cff6e-674d-4341-bd92-80a08113d5df][loadActorSource]] operation describes this capability in more
   detail, including security protections associated with this feature.
 
+  The [[director.org][Thespian Director]] document describes the Director utility and
+  how it can help to use loadable Actor sources in a safe and
+  practical manner.
+
 * Actor API
   :PROPERTIES:
   :CUSTOM_ID: hH-c3ba9430-5229-44ad-bbd5-ff5426e03e5e
@@ -2678,6 +2682,11 @@ class SimpleSourceAuthority(ActorTypeDispatcher):
   other source load, or by being passed the ActorAddress of an already
   running Actor in the other source load via independent means.
 
+  The [[director.org][Thespian Director]] document describes the Director utility and
+  how it can help to use loadable Actor sources in a safe and
+  practical manner.
+
+
 ** unloadActorSource
    :PROPERTIES:
    :CUSTOM_ID: hH-3e2f292f-2797-46d7-9fc6-48c1619d4bec
@@ -3196,6 +3205,19 @@ Note that a transient actor which is created but which never receives
 any messages does not exit; the timer for transient exit is only
 started after receipt of the actor's first message.
 
+** Thespian Director
+   :PROPERTIES:
+   :CUSTOM_ID: h:523e1df1-8cab-44dc-a46b-f7638dded176
+   :END:
+
+  The Thespian Director is a support utility that provides
+  functionality that makes it easier to use the Loadable Sources
+  functionality provided by Thespian.  It is possible to use loadable
+  sources without using the Director, but it's easier to use the
+  Director to provide a base set of support functionality.
+
+  See the [[director.org][Thespian Director]] document for more information on the Director.
+
 
 * ActorSystem Implementations
   :PROPERTIES:
@@ -3617,7 +3639,10 @@ The multiprocUDPBase uses the following [[#hH-a17e6c70-5592-4d06-b818-bd25350c4c
   packaging complexity perspective, but it allows the ActorSystem to
   be shared by multiple Actor-based applications, as well as providing
   for seamless upgrades of each application (because the new and old
-  sources can be running simultaneously).
+  sources can be running simultaneously).  The [[director.org][Thespian Director]]
+  document describes the Director utility that can optionally be used
+  to enhance and support this latter method.
+
 
 ** Overall Security Considerations
    :PROPERTIES:
