@@ -129,6 +129,19 @@ Hello, World!
 $
 #+END_EXAMPLE
 
+#+BEGIN_NOTES
+Note that any additional `ActorSystem().ask()` calls following the
+tell of `ActorExitRequest` above will return None because the target
+actor does not exist
+
+... except the first such `ask()` call, because an Actor is always
+called with its `ActorExitRequest` message before being killed; this
+allows the Actor to perform shutdown activities, which is just sending
+another greeting back in the case of the Hello Actor, and the tell
+does not read a response, so the next `ask()` will return that queued
+response.
+#+END_NOTES
+
 ** Hello World Redux
    :PROPERTIES:
    :CUSTOM_ID: hH-30ec58b2-0daa-4700-be9d-c24925b965d3
