@@ -7,7 +7,7 @@
 #+LATEX_HEADER: \product{Thespian}
 #+LATEX_HEADER: \component{Python Actor System}
 #+LATEX_HEADER: \doctype{Overview}
-#+LATEX_HEADER: \docrev{1.3}{2016 Sep 2}
+#+LATEX_HEADER: \docrev{1.4}{2017 Dec 01}
 #+LATEX_HEADER: \docid{TheDoc-05}
 #+OPTIONS: ^:nil auto-id:t
 
@@ -241,6 +241,7 @@ utilization document.
   | TXT | PDF | HTML | Description                                                                                                                         |
   |-----+-----+------+-------------------------------------------------------------------------------------------------------------------------------------|
   | [[file:using.txt][TXT]] | [[file:using.pdf][PDF]] | [[file:using.html][HTML]] | [[file:using.html][Using Thespian]] is the main documentation reference for developers  writing and implementing Actor-based applications with Thespian. |
+  | [[file:director.txt][TXT]] | [[file:director.pdf][PDF]] | [[file:director.html][HTML]] | [[file:director.html][Thespian Director]] is the main documentation reference for the Director utility.                                                     |
   | [[file:developer.txt][TXT]] | [[file:developer.pdf][PDF]] | [[file:developer.html][HTML]] | [[file:developer.html][Thespian Developer's Notes]] provides documentation for developers working on Thespian itself.                                        |
   | [[file:releases.txt][TXT]] | [[file:releases.pdf][PDF]] | [[file:releases.org][HTML]] | Release History is maintained in the [[file:releases.org][Thespian Release Notes]].                                                                        |
   | [[file:in_depth.txt][TXT]] | [[file:in_depth.pdf][PDF]] | [[file:in_depth.html][HTML]] | An [[file:in_depth.html][In Depth Introduction to Thespian]].                                                                                               |
