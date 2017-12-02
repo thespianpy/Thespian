@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
 <title>Thespian Actors User's Guide</title>
-<!-- 2017-11-08 Wed 23:30 -->
+<!-- 2017-12-02 Sat 00:14 -->
 <meta  http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta  name="generator" content="Org-mode" />
 <meta  name="author" content="Kevin Quick &lt;quick@sparq.org&gt;" />
@@ -358,6 +358,7 @@ for the JavaScript code in this tag.
 <ul>
 <li><a href="#hH-c796bc0d-a150-4fb9-8918-58f470813175">8.1. Actor Troupe Support</a></li>
 <li><a href="#hH-99783a4a-183f-4b69-8910-014d01edbf1c">8.2. Transient Actors</a></li>
+<li><a href="#h:523e1df1-8cab-44dc-a46b-f7638dded176">8.3. Thespian Director</a></li>
 </ul>
 </li>
 <li><a href="#hH-2a5fa63d-e6eb-43b9-bea8-47223b27544e">9. ActorSystem Implementations</a>
@@ -1892,6 +1893,12 @@ encounter version-related problems.
 <p>
 The <a href="#hH-731cff6e-674d-4341-bd92-80a08113d5df">loadActorSource</a> operation describes this capability in more
 detail, including security protections associated with this feature.
+</p>
+
+<p>
+The <i>Thespian Director</i> document describes the Director utility and
+how it can help to use loadable Actor sources in a safe and
+practical manner.
 </p>
 </div>
 </div>
@@ -3800,10 +3807,17 @@ load to access code in another source load is by issuing a
 other source load, or by being passed the ActorAddress of an already
 running Actor in the other source load via independent means.
 </p>
+
+<p>
+The <i>Thespian Director</i> document describes the Director utility and
+how it can help to use loadable Actor sources in a safe and
+practical manner.
+</p>
 </div>
 </li></ol>
 </div>
 </div>
+
 
 <div id="outline-container-hH-3e2f292f-2797-46d7-9fc6-48c1619d4bec" class="outline-3">
 <h3 id="hH-3e2f292f-2797-46d7-9fc6-48c1619d4bec"><a id="sec-6-11" name="sec-6-11"></a><span class="section-number-3">6.11</span> unloadActorSource</h3>
@@ -4494,6 +4508,24 @@ started after receipt of the actor's first message.
 </p>
 </div>
 </div>
+
+<div id="outline-container-h:523e1df1-8cab-44dc-a46b-f7638dded176" class="outline-3">
+<h3 id="h:523e1df1-8cab-44dc-a46b-f7638dded176"><a id="sec-8-3" name="sec-8-3"></a><span class="section-number-3">8.3</span> Thespian Director</h3>
+<div class="outline-text-3" id="text-h:523e1df1-8cab-44dc-a46b-f7638dded176">
+
+<p>
+The Thespian Director is a support utility that provides
+functionality that makes it easier to use the Loadable Sources
+functionality provided by Thespian.  It is possible to use loadable
+sources without using the Director, but it's easier to use the
+Director to provide a base set of support functionality.
+</p>
+
+<p>
+See the <i>Thespian Director</i> document for more information on the Director.
+</p>
+</div>
+</div>
 </div>
 
 
@@ -5087,9 +5119,12 @@ Using the latter method is slightly more complicated from a
 packaging complexity perspective, but it allows the ActorSystem to
 be shared by multiple Actor-based applications, as well as providing
 for seamless upgrades of each application (because the new and old
-sources can be running simultaneously).
+sources can be running simultaneously).  The <i>Thespian Director</i>
+document describes the Director utility that can optionally be used
+to enhance and support this latter method.
 </p>
 </div>
+
 
 <div id="outline-container-hH-7e109f00-76ff-49a1-b307-2166154c3921" class="outline-3">
 <h3 id="hH-7e109f00-76ff-49a1-b307-2166154c3921"><a id="sec-10-1" name="sec-10-1"></a><span class="section-number-3">10.1</span> Overall Security Considerations</h3>
@@ -5203,7 +5238,7 @@ difference will remain unaddressed.
 </div></div>
 <div id="postamble" class="status">
 <p class="author">Author: Kevin Quick &lt;quick@sparq.org&gt;</p>
-<p class="date">Created: 2017-11-08 Wed 23:30</p>
+<p class="date">Created: 2017-12-02 Sat 00:14</p>
 <p class="creator"><a href="http://www.gnu.org/software/emacs/">Emacs</a> 25.2.1 (<a href="http://orgmode.org">Org</a> mode 8.2.10)</p>
 <p class="validation"><a href="http://validator.w3.org/check?uri=referer">Validate</a></p>
 </div>
