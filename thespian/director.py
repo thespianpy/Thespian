@@ -965,7 +965,11 @@ the update.
         try:
             with zipfile.PyZipFile(zfpath, 'w', zipfile.ZIP_DEFLATED) as zf:
                 for src in srcs:
-                    for filename in glob.glob(cleanpath(src)):
+                    try:
+                        flist = glob.glob(cleanpath(src), recursive=True)
+                    except TypeError:
+                        flist = glob.glob(cleanpath(src))
+                    for filename in flist:
                         # syntax checking; throw exception on failure:
                         importlib.import_module(os.path.splitext(filename)[0]
                                                 .replace('/', '.'))
