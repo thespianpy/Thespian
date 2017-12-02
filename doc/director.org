@@ -94,7 +94,7 @@ The Thespian Director is easily invoked from the commandpline via the
 python module specification syntax:
 
 #+BEGIN_EXAMPLE
-$ python -m thespian.director [command [args...]]
+$ python -m thespian.director [verbose] [command [args...]]
 #+END_EXAMPLE
 
 When invoked with no command, the director will output help
@@ -257,7 +257,7 @@ specification to recurse into subdirectores).  Alternatively, each
 file can be explicitly specified and shell wildcarding can apply.
 
 In addition to local files, dependent packages can be included in the
-ZIPfile as well.  To specify the list of packages that should be
+ZIP file as well.  To specify the list of packages that should be
 included, create a file that lists the names of these packages, one
 per line.  Unlike a pip requirements file, there should be no
 specification of package versions: the gensrc does not download
@@ -275,9 +275,9 @@ provided to gensrc as an additional argument, identified by the
 Each loadable source group also uses an information file that
 specifies the runtime behavior and configuration of the loadable
 source group should be handled by the Director.  This information file
-is called a *"TLI"* file and it is described in more detail along with
+is called a "TLI" file and it is described in more detail along with
 the corresponding functionality in the sections below.  The TLI file
-is specified to the "gensrc" command as an additional arguemnt,
+is specified to the "gensrc" command as an additional argument,
 identified by the "tli:" prefix.
 
 *** Versioning
@@ -354,7 +354,7 @@ $
 #+END_EXAMPLE
 
 The ~deppkgs.txt~ file is used to specify the package dependencies for
-the Thespian loadable source:
+the Thespian loadable source (which does not include the test packages):
 
 #+BEGIN_EXAMPLE
 $ cat deppkgs.txt
@@ -700,7 +700,7 @@ Here is an example of a TLI specification:
 
 #+BEGIN_EXAMPLE
 $ cat $THESPIAN_DIRECTOR_DIR/foo.tli
-{ 'foo':
+{ 'Actors':
     { 'foo.fooactor': 
         { 'OnLoad': { 'Role': 'MainFoo',
                       'Message': 'StartFoo',
@@ -720,7 +720,7 @@ $ cat $THESPIAN_DIRECTOR_DIR/foo.tli
 
 $ cat $THESPIAN_DIRECTOR_DIR/other.tli
 {
-  'other':
+  'Actors':
     { 'other.mainActor': { 'OnLoad': { 'Role': 'other',
                                        'Message': 0 }}
     }
@@ -732,9 +732,9 @@ $
 #+END_EXAMPLE
 
 The contents of each TLI file is a Python dictionary, where the
-primary key is the name of the group.  The value for that is another
+primary key is "Actors".  The value for that key is another
 dictionary, whose keys are the import path specifications of Actors
-within the loaded source.  
+within the loaded source.
 
 The value for each of those dictionaries can specify 'OnLoad',
 'OnReactivate', and 'OnDeactivate' keys.  When a new loadable source
@@ -779,6 +779,97 @@ Director will determine the number of .tls sources in the
 the number of loadable sources for that group to the ~TLS_Keep_Limit~.
 This allows old loadable source distributions to be automatically
 cleaned up and removed.
+
+** Director API
+   :PROPERTIES:
+   :CUSTOM_ID: h:306175d7-4db6-4e47-b035-86efa491b3e0
+   :END:
+
+As well as the command-line interface, a Python program can interact
+with the Director in two ways:
+
+  1. Exchanging messages to the Director Actor (via
+     ~ActorSystem.ask()~ or another Actor).
+
+  1. Via the DirectorControl object.
+
+In the first form, the source for the director can be examined: there
+are documentation strings describing all the messages that can be
+exchanged with the Director and the associated responses.  The
+Director Actor is registered under the "Director" global name, so an
+example of retrieving information about all loaded sources is as follows:
+
+#+BEGIN_EXAMPLE
+import thespian.actors
+asys = ActorSystem()
+director_addr = asys.createActor('thespian.director', globalName='Director')
+resp = asys.ask(director_addr, { "DirectorOp": "RetrieveAll"})
+print(str(resp))
+#+END_EXAMPLE
+
+The second alternative is to create an instance of the DirectorControl
+object.  Once created, there is a ~cmd_COMMAND~ method for each
+COMMAND that the Director supports on the command-line, along with
+arguments corresponding to the arguments supplied to the command-line
+version.  There is also docstring help for each method.
+
+#+BEGIN_EXAMPLE
+$ THESPIAN_DIRECTOR_DIR=/opt/thespian/director python3
+>>> from thespian.director import DirectorControl
+>>> dc = DirectorControl()
+>>> dc.cmd_avail()
+THESPIAN_DIRECTOR_DIR=/opt/thespian/director
+foo: /opt/thespian/director/foo-20170261938.tls  4d41d823c3702e9cf7b8b5a650429d7e
+   + /opt/thespian/director/foo-20170261902.tls  2a9fcdc7589812b4596f317e85b76042
+other: /opt/thespian/director/other-2.0.tls    1bd9df7222c035855babefdfff8f9e29
+     + /opt/thespian/director/other-1.4.tls    8406cf8f4596f9cfcae33c7f463bfc1f
+     + /opt/thespian/director/other-1.3.5.tls  d9550b9af01692d6a4154cc54cd8d9aa
+0
+>>> help(dc.cmd_avail)
+... docstring information ...
+#+END_EXAMPLE
+
+The final ~0~ in the above output is the return value from the command
+method: command methods will return 0 on success or non-zero on error.
+
+There is an additional method: the
+~DirectorControl.get_role_address('ROLENAME')~ method, which does not
+print any output but returns a dictionary with information about the
+currently active Actor associated with the specified Role (as
+specified in the TLI file).
+
+#+BEGIN_EXAMPLE
+$ THESPIAN_DIRECTOR_DIR=/opt/thespian/director python3
+>>> from thespian.director import DirectorControl
+>>> dc = DirectorControl()
+>>> r = dc.get_role_address('MainFoo')
+>>> print(r)
+{'DirectorResponse': 'RoleAddress',
+ 'ActorAddress': <thespian.actors.ActorAddress object at 0x7f266ct1d1d0>,
+ 'Group': 'foo',
+ 'ActorClass': 'foo.fooactor',
+ 'SourceHash': '4d41d823c3702e9cf7b8b5a650429d7e',
+ 'Role': 'MainFoo',
+ 'Success': True}
+>>> r = dc.get_role_address('unknown role name')
+RoleAddress ERROR: {'DirectorResponse':'RoleAddress',
+                    'ActorAddress': None, 'Role': 'un',
+                    'SourceHash': None, 'Group': None,
+                    'ActorClass': None, 'Success':False}
+>>> print(r)
+None
+>>> r = dc.get_role_address('unknown role name', silent=True)
+>>> print(r)
+None
+>>>
+#+END_EXAMPLE
+
+This method can be used to easily obtain these role-identified actor
+addresses to initiate communications with them from an application.
+Printing of errors can be suppressed by passing the argument
+~silent=True~, and a ~group~ argument can also be specified to limit
+the role search to the corresponding group (otherwise all groups are
+searched for a role match).
 
 * Considerations for using Loadable Sources
   :PROPERTIES:
@@ -866,19 +957,19 @@ string or class reference.
 
    When using loadable sources, all names are prefixed with the hash
    value of the source they have come from, thereby creating a private
-   namespace for each loaded source.  This means that Actors within
-   the same loaded source will share the same hash and can use
-   internally created class objects to communicate, but that they will
-   not be able to do this when communicating with Actors in other
-   loaded sources (or the external environment).  This means that all
-   messages exchanged with Actors across a loaded source boundary must
-   be regular, built-in Python objects (strings, numbers, booleans,
-   tuples, lists, dictionaries, etc.).
+   namespace for each loaded source.  Actors within the same loaded
+   source will share the same hash and can use internally created
+   class objects to communicate, but that they will not be able to do
+   this when communicating with Actors in other loaded sources (or the
+   external environment).  This means that all messages exchanged with
+   Actors across a loaded source boundary must be regular, built-in
+   Python objects (strings, numbers, booleans, tuples, lists,
+   dictionaries, etc.).
 
    If there is an attempt to send an internal source-loaded object
-   across this boundary, the unpickling error will be written to the
-   logile for the destination actor, but it will not even be able to
-   generate a PoisonMessage response because it cannot parse the
+   across this boundary, a deserialization error will be written to
+   the logfile for the destination actor, but it will not even be able
+   to generate a PoisonMessage response because it cannot parse the
    message to determine the sender.
 
 ** Actor specifications for createActor
