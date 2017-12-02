@@ -960,7 +960,7 @@ the update.
         cleanpath = lambda p: os.path.expandvars(
             os.path.expanduser(p[len(inpsrc_dir)+1:]
                                if p.startswith(inpsrc_dir) else p))
-        self.verbose('Writing %s', zfpath)
+        self.verbose('Writing %s\n', zfpath)
         import importlib
         try:
             with zipfile.PyZipFile(zfpath, 'w', zipfile.ZIP_DEFLATED) as zf:
@@ -971,8 +971,9 @@ the update.
                         flist = glob.glob(cleanpath(src))
                     for filename in flist:
                         # syntax checking; throw exception on failure:
-                        importlib.import_module(os.path.splitext(filename)[0]
-                                                .replace('/', '.'))
+                        importname = os.path.splitext(filename)[0].replace('/', '.')
+                        self.verbose('    verify import of %s\n' % filename)
+                        importlib.import_module(importname)
                         zf.write(filename)
                 if opts.get('deps', []):
                     for line in open(cleanpath(opts['deps']), 'r'):
