@@ -44,7 +44,7 @@ class LoadTestActor(Actor):
 
 
 def report(what, sysBase, elapsed, nMessages, nActors):
-    print('%5d Actors, %30s %22s -- %s -- %5.2f/sec overall -- %7.2f msg/sec'%(
+    print('%3d Actors, %29s %29s -- %s -- %5.2f/sec overall -- %7.2f msg/sec'%(
         nActors, what, sysBase, elapsed,
         nMessages / timePeriodSeconds(elapsed),
         nMessages * nActors / timePeriodSeconds(elapsed)))
@@ -193,4 +193,4 @@ if __name__ == "__main__":
             stoptime = endstop - startstop
             if stoptime > timedelta(seconds=2):
                 print('  [%s stoptime: %s]'%(tbase, str(stoptime)))
-
+        print('')
