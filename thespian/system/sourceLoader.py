@@ -63,7 +63,6 @@ except ImportError:
     BadZipFile = BadZipfile
 import posixpath as ospath # because zip only uses posix notation
 import logging
-import imp
 import ast
 import sys
 from thespian.actors import InvalidActorSourceHash
@@ -103,6 +102,16 @@ if sys.version_info >= (3,0):
     exec("def do_exec(co, loc): exec(co, loc)\n")
 else:
     exec("def do_exec(co, loc): exec co in loc\n")
+
+
+if sys.version_info >= (3,5):
+    import importlib
+    newmodule = lambda loader, name: (
+        importlib.util.module_from_spec(
+            importlib.machinery.ModuleSpec(name, loader)))
+else:
+    import imp
+    newmodule = lambda loader, name: imp.new_module(name)
 
 
 def find_future_end(s, startpos):
@@ -190,8 +199,10 @@ class HashLoader(LoaderBase):
         self.isModuleDir = isModuleDir
 
     def create_module(self, spec):
+        if sys.version_info >= (3,5):
+            return None  # use default semantics
         # spec.name is what the module is registered under in sys.modules
-        mod = sys.modules.setdefault(spec.name, imp.new_module(spec.name))
+        mod = sys.modules.setdefault(spec.name, newmodule(self, spec.name))
         mod.__file__ = spec.name
         mod.__loader__ = self
         if self.isModuleDir:
@@ -258,7 +269,7 @@ class HashLoader(LoaderBase):
             moduleName = hashRoot + moduleName
         if moduleName in sys.modules:
             return sys.modules[moduleName]
-        mod = sys.modules.setdefault(moduleName, imp.new_module(moduleName))
+        mod = sys.modules.setdefault(moduleName, newmodule(self, moduleName))
         mod.__file__ = moduleName
         mod.__loader__ = self
         if self.isModuleDir:
@@ -285,7 +296,7 @@ class HashRootLoader(LoaderBase):
         self.finder = finder
     def load_module(self, moduleName):
         if moduleName != self.finder.hashRoot(): return None
-        mod             = sys.modules.setdefault(moduleName, imp.new_module(moduleName))
+        mod             = sys.modules.setdefault(moduleName, newmodule(self, moduleName))
         mod.__file__    = moduleName
         mod.__loader__  = self
         mod.__path__    = moduleName
