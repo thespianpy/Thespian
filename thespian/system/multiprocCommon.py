@@ -431,8 +431,8 @@ class MultiProcReplicator(object):
         logging.root = ThespianLogForwarder(self.asLogger, self.transport)
         logging.Logger.root = logging.root
         logging.Logger.manager = logging.Manager(logging.Logger.root)
-        logging.getLogger('Thespian.Admin') \
-               .info('ActorSystem Administrator startup @ %s', self.myAddress)
+        # logging.getLogger('Thespian.Admin') \
+        #        .info('ActorSystem Administrator startup @ %s', self.myAddress)
 
         # Now that logging is started, Admin startup can be confirmed
         self.transport.scheduleTransmit(None,

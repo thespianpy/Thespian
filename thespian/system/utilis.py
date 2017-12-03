@@ -12,7 +12,7 @@ import inspect
 
 # Default/current logging controls
 _thesplog_control_settings = (
-    logging.INFO,
+    logging.WARNING,
     False,
     os.getenv('THESPLOG_FILE_MAXSIZE', 50 * 1024) # 50KB by default
 )

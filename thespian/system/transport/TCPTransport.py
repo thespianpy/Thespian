@@ -934,7 +934,7 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
                          ' at %s for %s',
                          str(intent.targetAddr), str(self.myAddress),
                          intent.identify(),
-                         level=logging.WARNING)
+                         level=logging.INFO)
             else:
                 thesplog('Socket Error waiting for transmit ack from'
                          ' %s to %s: %s',
