@@ -1,0 +1,61 @@
+# Primary
+=========
+
+  * actors.py -- this is the main import for working with Thespian.  It
+    is possible to use Thespian with only this import.
+
+
+# Utilities (Command-Line)
+==========================
+
+  * director.py -- this is the Thespian Director (see
+    doc/director.org) which provides both command-line and boot-time
+    startup, shutdown, and management of a Thespian ActorSystem
+    environment which supports loadable sources.  Typically invoked
+    as:
+
+        $ python -m thespian.director [cmd [args...]]
+
+  * shell.py -- An interactive Python-based shell that allows
+    interaction with a running Thespian ActorSystem, including
+    querying actors for status or exchanging simple messages with them
+    and creating new Actors.  Intended as a pseudo-REPL environment
+    for Thespian.  Typically invoked as:
+
+        $ python -m thespian.shell
+
+
+# Helpers (Optional but useful)
+===============================
+
+* transient.py -- Optional import providing transient decorators for
+  Actors that can be used to shutdown actors after a specified idle
+  period.
+
+* troupe.py -- Optional import providing troupe decorators for
+  automatic scaling of multiple Actors to handle messages under higher
+  loads, while maintaining a lower number of actors during idle
+  periods.
+
+
+# Supporting (not normally needed)
+==================================
+
+  * importlib.py -- this is an alternative to the standard importlib
+    for older Python which fixes a reference error.  This should be
+    used if the loadable source fails to run correctly, complaining
+    that None is not a module.
+
+  * rsasig.py -- a Python-only implementation of RSA public key
+    verification.  This is not designed for speed, but is used by the
+    Thespian Director's Source Authority to perform loaded source
+    signature verification without requiring the installation of other
+    cryptographic libraries.  Feel free to use this, but it can
+    normally be ignored.
+
+  * system directory -- contains the internals for Thespian; Actor
+    implementations and clients should not normally need to import
+    anything from within this directory.
+
+  * test directory -- contains the high-level functional and unit
+    tests for Thespian.
