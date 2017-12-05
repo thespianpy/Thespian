@@ -37,6 +37,10 @@
   loads, while maintaining a lower number of actors during idle
   periods.
 
+* runcommand.py -- Provides the RunCommand actor which can be used to
+  execute system commands in a sub-process and collect the output and
+  result code for the requestor.
+
 
 # Supporting (not normally needed)
 ==================================
