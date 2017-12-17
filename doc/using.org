@@ -1947,6 +1947,11 @@ Got a message
 >>>
 #+END_EXAMPLE
 
+*** Derived Classes
+    :PROPERTIES:
+    :CUSTOM_ID: h:96440ac7-3db5-4cb4-9496-6c8c46075f14
+    :END:
+
 This receive method lookup also works for derived classes:
 
 #+BEGIN_SRC python
@@ -1970,6 +1975,31 @@ Got a short message
 Got a long message
 >>>
 #+END_EXAMPLE
+
+The matching does not rely on import path specifications.  In the
+following example, the creation of Message2 requires import
+qualification, but the ~ActorTypeDispatcher~-supported
+~receiveMsg_Message1~ will match ~Message1~ without the import
+namespace prefix:
+
+#+NAME: messagedefs.py
+#+BEGIN_SRC python -n
+class Message1: ...
+class Message2: ...
+#+END_SRC
+
+#+NAME: myactor.py
+#+BEGIN_SRC python -n
+import messagedefs
+
+class SendActor(ActorTypeDispatcher):
+    def receiveMsg_Message1(self, msg, sender):
+        self.send(sender, messagedefs.Message2())
+
+class RcvActor(ActorTypeDispatcher):
+    def receiveMsg_Message2(self, msg, sender):
+        ...
+#+END_SRC
 
 
 *** Unrecognized Messages
