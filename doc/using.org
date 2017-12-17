@@ -1971,9 +1971,17 @@ Got a long message
 >>>
 #+END_EXAMPLE
 
-It is possible to specify a fallback handler for the
-~ActorTypeDispatcher~ if the type is not explicitly recognized by
-defining the ~receiveUnrecognizedMessage()~ method.
+
+*** Unrecognized Messages
+    :PROPERTIES:
+    :CUSTOM_ID: h:d92333c1-bb53-48d1-8323-f6013e479750
+    :END:
+
+Normally the ActorTypeDispatcher will quietly discard messages that do
+not match any of the type-related receive methods.  It is possible to
+specify a fallback handler for the ~ActorTypeDispatcher~ if the type
+is not explicitly recognized by defining the
+~receiveUnrecognizedMessage()~ method.
 
 #+BEGIN_SRC python
 class Subtyper2(Typer):
@@ -1996,6 +2004,12 @@ Got an int
 Did not recognize the message type: <type 'float'>
 >>>
 #+END_EXAMPLE
+
+  It is important to note that an Actor based on the
+  ActorTypeDispatcher that is also using the [[ThespianWatch]]
+  functionality should implement the ~receiveUnrecognizedMessage~
+  entrypointto ensure that a proper ~ThespianWatch~ message is
+  returned when an unrecognized message is received.
 
 *** Type Handling Deferral
     :PROPERTIES:
