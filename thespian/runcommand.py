@@ -495,7 +495,7 @@ class RunCommand(ActorTypeDispatcher):
         for each in self.pending_commands[:-1]:
             self.send(each.sender, CommandResult(each, -3, '', '', None))
 
-        if subp.poll() is None:
+        if subp and subp.poll() is None:
             time.sleep(0.1)
             subp.kill()
             time.sleep(0.5)
