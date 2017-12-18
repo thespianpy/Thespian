@@ -213,6 +213,29 @@ class TestRunCommand(object):
         print(''.join(watched[1]))
         assert (res.stdout, res.stderr) == (''.join(watched[0]), ''.join(watched[1]))
 
+    def testCommandAbort(self, asys):
+        # Only run this for system bases supporting Thespian Watch
+        actor_system_unsupported(asys, 'simpleSystemBase',
+                                 'multiprocQueueBase',
+                                 'multiprocUDPBase')
+        cmd = asys.createActor(thespian.runcommand.RunCommand)
+        program = '\n'.join(['print("hello")',
+                             'import time',
+                             'time.sleep(60)',
+                             'print("\\ngoodbye")',
+        ])
+        res = asys.ask(cmd, thespian.runcommand.Command(sys.executable, ['-c', program],
+                                                        logtag='hi'),
+                       datetime.timedelta(seconds=2))
+        print(res)
+        assert res is None
+        res2 = asys.ask(cmd, thespian.runcommand.CommandAbort(),
+                        datetime.timedelta(seconds=5))
+        assert res2.exitcode == -15  # corresponds to SIGTERM
+        assert res2.stdout == ''
+        assert res2.stderr == ''
+        assert res2.duration < datetime.timedelta(seconds=7)
+
 
 class Watcher(ActorTypeDispatcher):
     def __init__(self, *args, **kw):
