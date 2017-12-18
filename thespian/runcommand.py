@@ -94,6 +94,10 @@ class Command(object):
        command run has exceeded that time limit, the command is halted
        with a SIGTERM, followed 2 seconds later with a SIGKILL.
 
+       If 'report_on_start' is set to True, then the requestor will
+       receive a CommandStarted message when the command process has
+       been started.
+
     """
     def __init__(self, exe, args,
                  use_shell=False,
@@ -105,7 +109,8 @@ class Command(object):
                  output_updates=None,
                  max_bufsize=1024*1024,
                  env=None,
-                 timeout=None):
+                 timeout=None,
+                 report_on_start=False):
         self.exe = exe
         self.args = args
         self.use_shell = use_shell
@@ -119,6 +124,17 @@ class Command(object):
         self.env = env
         self.timeout = (timeout if isinstance(timeout, timedelta)
                         else timedelta(seconds=timeout)) if timeout else timeout
+        self.report_on_start = report_on_start
+
+
+class CommandStarted(object):
+    """Message sent by the RunCommand actor to the sender of a Command to
+       indicate that the command has been initiated when the
+       Command.report_on_start is True.
+    """
+    def __init__(self, command, pid):
+        self.command = command
+        self.pid = pid
 
 
 class CommandAbort(object):
@@ -288,6 +304,8 @@ class RunCommand(ActorTypeDispatcher):
             # Error running the executable
             self._add_output(command, 'error', str(ex) + '\n')
             return self._finished_command(ex.errno)
+        if command.report_on_start:
+            self.send(command.sender, CommandStarted(command, self.p.pid))
         if command.input_src:
             try:
                 try:

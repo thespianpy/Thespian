@@ -51,9 +51,14 @@ class TestRunCommand(object):
                              'time.sleep(0.5)',
         ])
         res = asys.ask(cmd, thespian.runcommand.Command(sys.executable, ['-u', '-c', program],
-                                                        logtag='hi'),
+                                                        logtag='hi',
+                                                        report_on_start=True),
                        ask_timeout)
         print(res)
+        assert isinstance(res, thespian.runcommand.CommandStarted)
+        assert res.pid >= 1
+        assert res.command.logtag == 'hi'
+        res = asys.listen(ask_timeout)
         assert res
         assert res.stdout == 'hello\nworld\n'
 
