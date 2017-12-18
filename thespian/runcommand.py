@@ -255,7 +255,10 @@ class RunCommand(ActorTypeDispatcher):
         subp = getattr(self, 'p', None)
         if not subp:
             return None
-        return ThespianWatch([subp.stdout.fileno(), subp.stderr.fileno()])
+        try:
+            return ThespianWatch([subp.stdout.fileno(), subp.stderr.fileno()])
+        except IOError:
+            return self_finished_command() # command must have finished just now
 
     def _set_command_timeout(self, command):
         if command.timeout:
