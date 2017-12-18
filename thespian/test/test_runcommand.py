@@ -158,6 +158,7 @@ class TestRunCommand(object):
                              'r = sys.stdin.read()',
                              'print("\\nhello %s" % r)',
                              'sys.stderr.write("All done\\n")',
+                             'sys.stderr.flush()',
                              'time.sleep(0.5)',
         ])
         watcher = asys.createActor(Watcher)
