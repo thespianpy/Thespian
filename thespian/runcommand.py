@@ -360,9 +360,11 @@ class RunCommand(ActorTypeDispatcher):
                 return
             for each in watchmsg.ready:
                 if each == subp.stdout.fileno():
-                    self._add_output(self.pending_commands[-1], 'normal', subp.stdout.read(8192))
+                    self._add_output(self.pending_commands[-1],
+                                     'normal', subp.stdout.read(8192))
                 elif each == subp.stderr.fileno():
-                    self._add_output(self.pending_commands[-1], 'error', subp.stderr.read(8192))
+                    self._add_output(self.pending_commands[-1],
+                                     'error', subp.stderr.read(8192))
             if subp.poll() is not None:
                 return self._finished_command()
         return self._return_watched()
