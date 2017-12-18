@@ -95,7 +95,7 @@ class TestRunCommand(object):
                              'print("hello")',
                              'time.sleep(0.5)',
                              'import sys',
-                             'print("Who are you? "),',
+                             'sys.stdout.write("Who are you? ")',
                              'r = sys.stdin.read()',
                              'print("\\nhello %s" % r)',
                              'time.sleep(0.5)',
@@ -105,7 +105,7 @@ class TestRunCommand(object):
                        ask_timeout)
         print(res)
         assert res
-        assert res.stdout == 'hello\nWho are you?  \nhello \n'
+        assert res.stdout == 'hello\nWho are you? \nhello \n'
 
     def testSlowCommandWantingInputAvailable(self, asys):
         cmd = asys.createActor(thespian.runcommand.RunCommand)
@@ -113,7 +113,7 @@ class TestRunCommand(object):
                              'print("hello")',
                              'time.sleep(0.5)',
                              'import sys',
-                             'print("Who are you? "),',
+                             'sys.stdout.write("Who are you? ")',
                              'sys.stdout.flush()',
                              'r = sys.stdin.read()',
                              'print("\\nhello %s" % r)',
@@ -126,7 +126,7 @@ class TestRunCommand(object):
                        ask_timeout)
         print(res)
         assert res
-        assert res.stdout == 'hello\nWho are you?  \nhello Harry\n\n'
+        assert res.stdout == 'hello\nWho are you? \nhello Harry\n\n'
 
     def testSlowShellCommandWantingInputAvailable(self, asys):
         cmd = asys.createActor(thespian.runcommand.RunCommand)
@@ -153,7 +153,7 @@ class TestRunCommand(object):
                              'print("hello")',
                              'time.sleep(0.5)',
                              'import sys',
-                             'print("Who are you? "),',
+                             'sys.stdout.write("Who are you? ")',
                              'sys.stdout.flush()',
                              'r = sys.stdin.read()',
                              'print("\\nhello %s" % r)',
@@ -169,17 +169,24 @@ class TestRunCommand(object):
                        ask_timeout)
         print(res)
         assert res
-        assert res.stdout == 'hello\nWho are you?  \nhello Harry\n\n'
+        print(res.stdout)
+        assert res.stdout == 'hello\nWho are you? \nhello Harry\n\n'
         assert res.stderr == 'All done\n'
         watched = asys.ask(watcher, 1, ask_timeout)
         print(res.stdout)
         print('--')
-        print(''.join(watched[0]))
+        try:
+            watched_out = ''.join(watched[0])
+            watched_err = ''.join(watched[1])
+        except TypeError:
+            watched_out = ''.join([bs.decode('utf-8') for bs in watched[0]])
+            watched_err = ''.join([bs.decode('utf-8') for bs in watched[1]])
+        print(watched_out)
         print('==')
         print(res.stderr)
         print('--')
-        print(''.join(watched[1]))
-        assert (res.stdout, res.stderr) == (''.join(watched[0]), ''.join(watched[1]))
+        print(watched_err)
+        assert (res.stdout, res.stderr) == (watched_out, watched_err)
 
     def testWatchedSlowShellCommandWantingInputAvailable(self, asys):
         cmd = asys.createActor(thespian.runcommand.RunCommand)
@@ -206,12 +213,18 @@ class TestRunCommand(object):
         watched = asys.ask(watcher, 1, ask_timeout)
         print(res.stdout)
         print('--')
-        print(''.join(watched[0]))
+        try:
+            watched_out = ''.join(watched[0])
+            watched_err = ''.join(watched[1])
+        except TypeError:
+            watched_out = ''.join([bs.decode('utf-8') for bs in watched[0]])
+            watched_err = ''.join([bs.decode('utf-8') for bs in watched[1]])
+        print(watched_out)
         print('==')
         print(res.stderr)
         print('--')
-        print(''.join(watched[1]))
-        assert (res.stdout, res.stderr) == (''.join(watched[0]), ''.join(watched[1]))
+        print(watched_err)
+        assert (res.stdout, res.stderr) == (watched_out, watched_err)
 
     def testCommandAbort(self, asys):
         # Only run this for system bases supporting Thespian Watch

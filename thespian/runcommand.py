@@ -290,7 +290,10 @@ class RunCommand(ActorTypeDispatcher):
             return self._finished_command(ex.errno)
         if command.input_src:
             try:
-                self.p.stdin.write(command.input_src)
+                try:
+                    self.p.stdin.write(command.input_src)
+                except TypeError:
+                    self.p.stdin.write(command.input_src.encode('utf-8'))
             except BrokenPipeError:
                 pass
             except OSError as ex:
