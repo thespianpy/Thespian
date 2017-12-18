@@ -83,6 +83,10 @@ class Command(object):
        separately, so the total amount of memory that can be consumed
        is double the max_bufsize amount).
 
+       The 'env' argument specifies the environment varaibles that
+       should be set for the new process; if not specified, the
+       current environment is inherited.
+
        The 'timeout' argument should specify a maximum time period for
        the command to run to completion.  The default is None which
        does not set a time limit.  If specified, the value should be a
@@ -100,6 +104,7 @@ class Command(object):
                  input_src=None,
                  output_updates=None,
                  max_bufsize=1024*1024,
+                 env=None,
                  timeout=None):
         self.exe = exe
         self.args = args
@@ -111,6 +116,7 @@ class Command(object):
         self.input_src = input_src
         self.output_updates = output_updates
         self.max_bufsize = max_bufsize
+        self.env = env
         self.timeout = (timeout if isinstance(timeout, timedelta)
                         else timedelta(seconds=timeout)) if timeout else timeout
 
@@ -254,6 +260,7 @@ class RunCommand(ActorTypeDispatcher):
                                       stderr=subprocess.PIPE,
                                       stdin=subprocess.PIPE,
                                       bufsize=0 if can_watch else (command.max_bufsize or 0),
+                                      env=command.env,
                                       shell=command.use_shell)
         except OSError as ex:
             # Error running the executable
