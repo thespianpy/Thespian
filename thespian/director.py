@@ -1027,11 +1027,11 @@ the update.
             print('Wrote',sfpath)
             inptli = opts.get('tli', None) or \
                      os.path.join(inpsrc_dir, group_name + '.tli')
+            outtli = os.path.join(self.sources_dir, group_name + '.tli')
             if os.path.exists(inptli):
-                shutil.copyfile(inptli,
-                                os.path.join(self.sources_dir,
-                                             group_name + '.tli'))
-                tli = eval(open(inptli,'r').read())
+                shutil.copyfile(inptli, outtli)
+            if os.path.exists(outtli):
+                tli = eval(open(outtli,'r').read())
                 try:
                     limit = int(tli.pop('TLS_Keep_Limit', 0))
                 except Exception:
