@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
 <title>Thespian Actors User's Guide</title>
-<!-- 2017-12-02 Sat 00:14 -->
+<!-- 2017-12-22 Fri 15:51 -->
 <meta  http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta  name="generator" content="Org-mode" />
 <meta  name="author" content="Kevin Quick &lt;quick@sparq.org&gt;" />
@@ -88,7 +88,7 @@
     { background-color: #ffff00; color: #000000; font-weight: bold; }
   /*]]>*/-->
 </style>
-<link rel="icon" type="image/png" href="/Thespian/favicon.png" />
+<link rel="icon" type="image/png" href="/favicon.png" />
 <link rel="stylesheet" type="text/css" href="styles/bigblow/css/htmlize.css"/>
 <link rel="stylesheet" type="text/css" href="styles/bigblow/css/bigblow.css"/>
 <link rel="stylesheet" type="text/css" href="styles/bigblow/css/hideshow.css"/>
@@ -100,6 +100,8 @@
 <script type="text/javascript" src="styles/bigblow/js/bigblow.js"></script>
 <script type="text/javascript" src="styles/bigblow/js/hideshow.js"></script>
 <script type="text/javascript" src="styles/lib/js/jquery.stickytableheaders.min.js"></script>
+<link href="https://fonts.googleapis.com/css?family=Actor" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css?family=Inconsolata" rel="stylesheet">
 <link href="thespian.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript">
 /*
@@ -259,7 +261,9 @@ for the JavaScript code in this tag.
 <li><a href="#hH-9e800ed1-ed40-4ff3-8445-f795719f6218">5.16. actorSystemShutdown</a></li>
 <li><a href="#hH-2f5b52bd-72b8-41eb-b879-809d174c0e30">5.17. ActorTypeDispatcher</a>
 <ul>
-<li><a href="#hH-e58ce3a1-df40-4d3f-bc1f-e7743e3c1dc1">5.17.1. Type Handling Deferral</a></li>
+<li><a href="#h:96440ac7-3db5-4cb4-9496-6c8c46075f14">5.17.1. Derived Classes</a></li>
+<li><a href="#h:d92333c1-bb53-48d1-8323-f6013e479750">5.17.2. Unrecognized Messages</a></li>
+<li><a href="#hH-e58ce3a1-df40-4d3f-bc1f-e7743e3c1dc1">5.17.3. Type Handling Deferral</a></li>
 </ul>
 </li>
 </ul>
@@ -698,7 +702,7 @@ package:
 
 <div class="org-src-container">
 
-<pre class="src src-python">    &gt;&gt;&gt; import thespian
+<pre class="src src-python">&gt;&gt;&gt; import thespian
 </pre>
 </div>
 </div>
@@ -716,7 +720,7 @@ an ActorSystem using the "multiprocTCPBase":
 
 <div class="org-src-container">
 
-<pre class="src src-python">    &gt;&gt;&gt; asys = ActorSystem('multiprocTCPBase')
+<pre class="src src-python">&gt;&gt;&gt; asys = ActorSystem('multiprocTCPBase')
 </pre>
 </div>
 
@@ -772,11 +776,11 @@ A Top-Level Actor is created via the <a href="#hH-a565af1b-aabb-4336-a51d-7505c0
 
 <div class="org-src-container">
 
-<pre class="src src-python">    &gt;&gt;&gt; class MyFirstActor(Actor):
-    ...     def receiveMessage(self, message, sender):
-    ...         pass
-    ...
-    &gt;&gt;&gt; mfa_addr = asys.createActor(MyFirstActor)
+<pre class="src src-python">&gt;&gt;&gt; class MyFirstActor(Actor):
+...     def receiveMessage(self, message, sender):
+...         pass
+...
+&gt;&gt;&gt; mfa_addr = asys.createActor(MyFirstActor)
 </pre>
 </div>
 
@@ -800,14 +804,14 @@ own instance:
 
 <div class="org-src-container">
 
-<pre class="src src-python">    &gt;&gt;&gt; class Support(Actor):
-    ...     def receiveMessage(self, message, sender):
-    ...         pass
-    ...
-    &gt;&gt;&gt; class MyFirstActor(Actor):
-    ...     def receiveMessage(self, message, sender):
-    ...         if message == 'create another actor':
-    ...             newActor = self.createActor(Support)
+<pre class="src src-python">&gt;&gt;&gt; class Support(Actor):
+...     def receiveMessage(self, message, sender):
+...         pass
+...
+&gt;&gt;&gt; class MyFirstActor(Actor):
+...     def receiveMessage(self, message, sender):
+...         if message == 'create another actor':
+...             newActor = self.createActor(Support)
 </pre>
 </div>
 
@@ -1896,7 +1900,7 @@ detail, including security protections associated with this feature.
 </p>
 
 <p>
-The <i>Thespian Director</i> document describes the Director utility and
+The <a href="director.html">Thespian Director</a> document describes the Director utility and
 how it can help to use loadable Actor sources in a safe and
 practical manner.
 </p>
@@ -1925,9 +1929,9 @@ Each Actor is represented by an Actor baseclass:
 
 <div class="org-src-container">
 
-<pre class="src src-python">    from thespian.actors import Actor
+<pre class="src src-python">from thespian.actors import Actor
 
-    class MyActor(Actor): ...
+class MyActor(Actor): ...
 </pre>
 </div>
 
@@ -1943,7 +1947,7 @@ Versioning of the Actor API and the ActorSystem are described in
 
 <div class="org-src-container">
 
-<pre class="src src-python">    self.myAddress
+<pre class="src src-python">self.myAddress
 </pre>
 </div>
 
@@ -2049,9 +2053,9 @@ the set of file descriptors that should be watched when it exits.
 
 <div class="org-src-container">
 
-<pre class="src src-python">    newAddress = self.createActor(self, actorClass,
-                                  targetActorRequirements=None,
-                                  globalName=None)
+<pre class="src src-python">newAddress = self.createActor(self, actorClass,
+                              targetActorRequirements=None,
+                              globalName=None)
 </pre>
 </div>
 
@@ -2059,7 +2063,7 @@ the set of file descriptors that should be watched when it exits.
 This method is called by the Actor to create a new Actor
 represented by the specified <code>actorClass</code>.  The <code>actorClass</code> may be
 specified as either a class object or as a module-qualified string
-(e.g. ~"foo.bar.BarActor"~ will search for <code>class BarActor</code> in the
+(e.g. "foo.bar.BarActor" will search for <code>class BarActor</code> in the
 <code>bar.py</code> in the <code>foo</code> directory).  The InvalidActorSpecification
 exception will be thrown if the actorClass is not specified in a
 valid manner.
@@ -2236,7 +2240,7 @@ a name/import-path string.
 
 <div class="org-src-container">
 
-<pre class="src src-python">    self.send(targetAddress, message)
+<pre class="src src-python">self.send(targetAddress, message)
 </pre>
 </div>
 
@@ -2265,7 +2269,7 @@ delivered.
 
 <div class="org-src-container">
 
-<pre class="src src-python">    self.wakeupAfter(timePeriod, payload=None)
+<pre class="src src-python">self.wakeupAfter(timePeriod, payload=None)
 </pre>
 </div>
 
@@ -2312,7 +2316,7 @@ handling Dead Letters.
 
 <div class="org-src-container">
 
-<pre class="src src-python">    self.notifyOnSystemRegistrationChanges(startHandling=True)
+<pre class="src src-python">self.notifyOnSystemRegistrationChanges(startHandling=True)
 </pre>
 </div>
 
@@ -2330,7 +2334,7 @@ handling system registration events from other ActorSystems (see
 
 <div class="org-src-container">
 
-<pre class="src src-python">    self.registerSourceAuthority()
+<pre class="src src-python">self.registerSourceAuthority()
 </pre>
 </div>
 
@@ -2355,7 +2359,7 @@ Actor registers for this role.
 
 <div class="org-src-container">
 
-<pre class="src src-python">    sourceHash = self.loadActorSource(fileref)
+<pre class="src src-python">sourceHash = self.loadActorSource(fileref)
 </pre>
 </div>
 
@@ -2388,7 +2392,7 @@ section for more details.
 
 <div class="org-src-container">
 
-<pre class="src src-python">    self.unloadActorSource(sourceHash)
+<pre class="src src-python">self.unloadActorSource(sourceHash)
 </pre>
 </div>
 
@@ -2437,8 +2441,8 @@ available, but are not triggered by local load or unload events.
 
 <div class="org-src-container">
 
-<pre class="src src-python">    def actorSystemCapabilityCheck(capabilities, requirements=None):
-        return True
+<pre class="src src-python">def actorSystemCapabilityCheck(capabilities, requirements=None):
+    return True
 </pre>
 </div>
 
@@ -2490,7 +2494,7 @@ capabilities.
 
 <div class="org-src-container">
 
-<pre class="src src-python">    @requireCapability(capabilityName[, capabilityValue])
+<pre class="src src-python">@requireCapability(capabilityName[, capabilityValue])
 </pre>
 </div>
 
@@ -2513,15 +2517,15 @@ For example:
 
 <div class="org-src-container">
 
-<pre class="src src-python">    class MyActor(Actor):
+<pre class="src src-python">class MyActor(Actor):
 
-        @staticmethod
-        def actorSystemCapabilityCheck(capabilities, requirements):
-            return capabilities.get('Has Lightbulb', False) and \
-                   capabilities.get('Lit', False) and \
-                   capabilities.get('Color', 'none') == 'Yellow'
+    @staticmethod
+    def actorSystemCapabilityCheck(capabilities, requirements):
+        return capabilities.get('Has Lightbulb', False) and \
+               capabilities.get('Lit', False) and \
+               capabilities.get('Color', 'none') == 'Yellow'
 
-        def receiveMessage(self, msg, sender): pass
+    def receiveMessage(self, msg, sender): pass
 </pre>
 </div>
 
@@ -2531,15 +2535,15 @@ is equivalent to the following combined use:
 
 <div class="org-src-container">
 
-<pre class="src src-python">    @requireCapability('Has Lightbulb')
-    @requireCapability('Lit')
-    class MyActor(Actor):
+<pre class="src src-python">@requireCapability('Has Lightbulb')
+@requireCapability('Lit')
+class MyActor(Actor):
 
-        @staticmethod
-        def actorSystemCapabilityCheck(capabilities, requirements):
-            return capabilities.get('Color', 'none') == 'Yellow'
+    @staticmethod
+    def actorSystemCapabilityCheck(capabilities, requirements):
+        return capabilities.get('Color', 'none') == 'Yellow'
 
-        def receiveMessage(self, msg, sender): pass
+    def receiveMessage(self, msg, sender): pass
 </pre>
 </div>
 
@@ -2549,12 +2553,12 @@ or the equivalent use of only the decorator:
 
 <div class="org-src-container">
 
-<pre class="src src-python">    @requireCapability('Has Lightbulb')
-    @requireCapability('Lit')
-    @requireCapability(Color', 'Yellow')
-    class MyActor(Actor):
+<pre class="src src-python">@requireCapability('Has Lightbulb')
+@requireCapability('Lit')
+@requireCapability('Color', 'Yellow')
+class MyActor(Actor):
 
-        def receiveMessage(self, msg, sender): pass
+    def receiveMessage(self, msg, sender): pass
 </pre>
 </div>
 
@@ -2565,11 +2569,11 @@ in an ActorSystem that had the capabilities of:
 
 <div class="org-src-container">
 
-<pre class="src src-python">    {
-      'Has Lightbulb': 5,
-      'Lit': True,
-      'Color' : 'Yellow'
-    }
+<pre class="src src-python">{
+  'Has Lightbulb': 5,
+  'Lit': True,
+  'Color' : 'Yellow'
+}
 </pre>
 </div>
 
@@ -2585,13 +2589,13 @@ An example of a much simpler case:
 
 <div class="org-src-container">
 
-<pre class="src src-python">    class MyActor(Actor):
+<pre class="src src-python">class MyActor(Actor):
 
-        @staticmethod
-        def actorSystemCapabilityCheck(capabilities, requirements):
-            return capabilities.get('Has Lightbulb', False)
+    @staticmethod
+    def actorSystemCapabilityCheck(capabilities, requirements):
+        return capabilities.get('Has Lightbulb', False)
 
-        def receiveMessage(self, msg, sender): pass
+    def receiveMessage(self, msg, sender): pass
 </pre>
 </div>
 
@@ -2601,10 +2605,10 @@ is equivalent to:
 
 <div class="org-src-container">
 
-<pre class="src src-python">    @requireCapability('Has Lightbulb')
-    class MyActor(Actor):
+<pre class="src src-python">@requireCapability('Has Lightbulb')
+class MyActor(Actor):
 
-        def receiveMessage(self, msg, sender): pass
+    def receiveMessage(self, msg, sender): pass
 </pre>
 </div>
 </div>
@@ -2623,7 +2627,7 @@ updates; see the <a href="#hH-7d2b4986-95d3-4460-9d19-ea0dcdb34fca">ActorSystem 
 
 <div class="org-src-container">
 
-<pre class="src src-python">     self.updateCapability(capabilityName, capabilityValue=None)
+<pre class="src src-python">self.updateCapability(capabilityName, capabilityValue=None)
 </pre>
 </div>
 
@@ -2699,8 +2703,8 @@ become the Convention Leader for the remote system.
 
 <div class="org-src-container">
 
-<pre class="src src-python">     self.preRegisterRemoteSystem(remoteSystemAddress,
-                                  remoteSystemCapabilities)
+<pre class="src src-python">self.preRegisterRemoteSystem(remoteSystemAddress,
+                             remoteSystemCapabilities)
 </pre>
 </div>
 
@@ -2748,7 +2752,7 @@ local ActorSystem, this method will simply return with no effect.
 
 <div class="org-src-container">
 
-<pre class="src src-python">     self.preRegisterRemoteSystem(remoteSystemAddress)
+<pre class="src src-python">self.preRegisterRemoteSystem(remoteSystemAddress)
 </pre>
 </div>
 
@@ -2782,7 +2786,7 @@ ActorExitRequests will be sent to all locally running Actors.
 
 <div class="org-src-container">
 
-<pre class="src src-python">    self.actorSystemShutdown()
+<pre class="src src-python">self.actorSystemShutdown()
 </pre>
 </div>
 
@@ -2864,6 +2868,11 @@ Got a long message
 Got a message
 &gt;&gt;&gt;
 </pre>
+</div>
+
+<div id="outline-container-h:96440ac7-3db5-4cb4-9496-6c8c46075f14" class="outline-4">
+<h4 id="h:96440ac7-3db5-4cb4-9496-6c8c46075f14"><a id="sec-5-17-1" name="sec-5-17-1"></a><span class="section-number-4">5.17.1</span> Derived Classes</h4>
+<div class="outline-text-4" id="text-h:96440ac7-3db5-4cb4-9496-6c8c46075f14">
 
 <p>
 This receive method lookup also works for derived classes:
@@ -2894,9 +2903,47 @@ Got a long message
 </pre>
 
 <p>
-It is possible to specify a fallback handler for the
-<code>ActorTypeDispatcher</code> if the type is not explicitly recognized by
-defining the <code>receiveUnrecognizedMessage()</code> method.
+The matching does not rely on import path specifications.  In the
+following example, the creation of Message2 requires import
+qualification, but the <code>ActorTypeDispatcher</code>-supported
+<code>receiveMsg_Message1</code> will match <code>Message1</code> without the import
+namespace prefix:
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-python" id="messagedefs.py"><span class="linenr">1: </span>class Message1: ...
+<span class="linenr">2: </span>class Message2: ...
+</pre>
+</div>
+
+<div class="org-src-container">
+
+<pre class="src src-python" id="myactor.py"><span class="linenr">1: </span>import messagedefs
+<span class="linenr">2: </span>
+<span class="linenr">3: </span>class SendActor(ActorTypeDispatcher):
+<span class="linenr">4: </span>    def receiveMsg_Message1(self, msg, sender):
+<span class="linenr">5: </span>        self.send(sender, messagedefs.Message2())
+<span class="linenr">6: </span>
+<span class="linenr">7: </span>class RcvActor(ActorTypeDispatcher):
+<span class="linenr">8: </span>    def receiveMsg_Message2(self, msg, sender):
+<span class="linenr">9: </span>        ...
+</pre>
+</div>
+</div>
+</div>
+
+
+<div id="outline-container-h:d92333c1-bb53-48d1-8323-f6013e479750" class="outline-4">
+<h4 id="h:d92333c1-bb53-48d1-8323-f6013e479750"><a id="sec-5-17-2" name="sec-5-17-2"></a><span class="section-number-4">5.17.2</span> Unrecognized Messages</h4>
+<div class="outline-text-4" id="text-h:d92333c1-bb53-48d1-8323-f6013e479750">
+
+<p>
+Normally the ActorTypeDispatcher will quietly discard messages that do
+not match any of the type-related receive methods.  It is possible to
+specify a fallback handler for the <code>ActorTypeDispatcher</code> if the type
+is not explicitly recognized by defining the
+<code>receiveUnrecognizedMessage()</code> method.
 </p>
 
 <div class="org-src-container">
@@ -2922,10 +2969,19 @@ Got an int
 Did not recognize the message type: &lt;type 'float'&gt;
 &gt;&gt;&gt;
 </pre>
+
+<p>
+It is important to note that an Actor based on the
+ActorTypeDispatcher that is also using the <a href="#ThespianWatch">5.2.1</a>
+functionality should implement the <code>receiveUnrecognizedMessage</code>
+entrypointto ensure that a proper <code>ThespianWatch</code> message is
+returned when an unrecognized message is received.
+</p>
+</div>
 </div>
 
 <div id="outline-container-hH-e58ce3a1-df40-4d3f-bc1f-e7743e3c1dc1" class="outline-4">
-<h4 id="hH-e58ce3a1-df40-4d3f-bc1f-e7743e3c1dc1"><a id="sec-5-17-1" name="sec-5-17-1"></a><span class="section-number-4">5.17.1</span> Type Handling Deferral</h4>
+<h4 id="hH-e58ce3a1-df40-4d3f-bc1f-e7743e3c1dc1"><a id="sec-5-17-3" name="sec-5-17-3"></a><span class="section-number-4">5.17.3</span> Type Handling Deferral</h4>
 <div class="outline-text-4" id="text-hH-e58ce3a1-df40-4d3f-bc1f-e7743e3c1dc1">
 
 <p>
@@ -3024,7 +3080,7 @@ The ActorSystem API is made available by importing the
 
 <div class="org-src-container">
 
-<pre class="src src-python">     import thespian.actors
+<pre class="src src-python">import thespian.actors
 </pre>
 </div>
 </div>
@@ -3202,7 +3258,7 @@ names) will prevent the new ActorSystem from being created.
 
 <div class="org-src-container">
 
-<pre class="src src-python">    actorSys.shutdown()
+<pre class="src src-python">actorSys.shutdown()
 </pre>
 </div>
 
@@ -3240,10 +3296,10 @@ unaffected by stopping the transient unique ActorSystem.
 
 <div class="org-src-container">
 
-<pre class="src src-python">    actorAddr = actorSys.createActor(actorClass,
-                                     targetActorRequirements = None,
-                                     globalName = None,
-                                     sourceHash = None)
+<pre class="src src-python">actorAddr = actorSys.createActor(actorClass,
+                                 targetActorRequirements = None,
+                                 globalName = None,
+                                 sourceHash = None)
 </pre>
 </div>
 
@@ -3258,7 +3314,7 @@ the Actor is created and throw an exception on failures.
 <p>
 The <code>actorClass</code> argument can be specified either as a class object
 or as a module-qualified string identifying a class object
-(e.g. ~"foo.bar.BarActor"~ will search for <code>class BarActor</code> in the
+(e.g. "foo.bar.BarActor" will search for <code>class BarActor</code> in the
 <code>bar.py</code> in the <code>foo</code> directory).
 </p>
 
@@ -3342,7 +3398,7 @@ specific Actor) without waiting for any response message.
 
 <div class="org-src-container">
 
-<pre class="src src-python">     actorSys.tell(targetAddr, message)
+<pre class="src src-python">actorSys.tell(targetAddr, message)
 </pre>
 </div>
 
@@ -3374,7 +3430,7 @@ Actor system) and wait for a response message.
 
 <div class="org-src-container">
 
-<pre class="src src-python">     responseMessage = actorSys.ask(targetAddr, message[, timeout])
+<pre class="src src-python">responseMessage = actorSys.ask(targetAddr, message[, timeout])
 </pre>
 </div>
 
@@ -3439,7 +3495,7 @@ Listen is used to wait for a message.
 
 <div class="org-src-container">
 
-<pre class="src src-python">     responseMessage = actorSys.listen([timeout])
+<pre class="src src-python">responseMessage = actorSys.listen([timeout])
 </pre>
 </div>
 
@@ -3526,7 +3582,7 @@ capabilities; Actors can issue capability updates as well.
 
 <div class="org-src-container">
 
-<pre class="src src-python">     actorSys.updateCapability(capabilityName, capabilityValue=None)
+<pre class="src src-python">actorSys.updateCapability(capabilityName, capabilityValue=None)
 </pre>
 </div>
 
@@ -3567,7 +3623,7 @@ issuing a <a href="#hH-6428fa90-8749-4777-a0b1-752ec5eb1650">Thespian_StatusReq<
 
 <div class="org-src-container">
 
-<pre class="src src-python">    sourceHash = actorSys.loadActorSource(fileref)
+<pre class="src src-python">sourceHash = actorSys.loadActorSource(fileref)
 </pre>
 </div>
 
@@ -3809,7 +3865,7 @@ running Actor in the other source load via independent means.
 </p>
 
 <p>
-The <i>Thespian Director</i> document describes the Director utility and
+The <a href="director.html">Thespian Director</a> document describes the Director utility and
 how it can help to use loadable Actor sources in a safe and
 practical manner.
 </p>
@@ -3825,7 +3881,7 @@ practical manner.
 
 <div class="org-src-container">
 
-<pre class="src src-python">    actorSys.unloadActorSource(sourceHash)
+<pre class="src src-python">actorSys.unloadActorSource(sourceHash)
 </pre>
 </div>
 
@@ -3943,7 +3999,7 @@ specified on the original <code>.wakeupAfter()</code> call.
 <p>
 The <code>WatchMessage</code> is delivered to the Actor by the ActorSystem when
 one or more file descriptors has available data.  The WatchMessage
-specifies which file numbers have data vailable.
+specifies which file numbers have data available.
 </p>
 
 <p>
@@ -4522,7 +4578,7 @@ Director to provide a base set of support functionality.
 </p>
 
 <p>
-See the <i>Thespian Director</i> document for more information on the Director.
+See the <a href="director.html">Thespian Director</a> document for more information on the Director.
 </p>
 </div>
 </div>
@@ -4643,80 +4699,145 @@ ActorSystems:
 </p>
 
 <dl class="org-dl">
-<dt> <b>Python Version</b> </dt><dd><i>read-only</i> This is set to the tuple value of the Python
-version under which the ActorSystem is running (this is the same
-value supplied by <code>sys.version_info</code>).  Any Actors wishing to
-enforce any version restrictions use this capability to do so.
-</dd>
-
-<dt> <b>Thespian Generation</b> </dt><dd><i>read-only</i> This is the Thespian API functionality
-specifier as a tuple of two values: <code>(generation, enhancement)</code>.
-The first value is the <code>generation</code> and indicates a major
-functionality level (which is not necessarily backwards-compatible
-with the previous functionality level).  The second number is the
-<code>enhancement</code> value and is incremented when backwards-compatible
-functional enhancements have been added within the current
-<code>generation</code>.  The <code>generation</code> value is monotonically increasing,
-whereas the <code>enhancement</code> value monotonically increases within a
-<code>generation</code> but resets to zero when the generation changes. The
-Thespian Release Notes should be consulted to determine what
-features are supported in what generations.
-
-<p>
-This value is also available to current code in the <code>thespian.api</code>
-import as the <code>ThespianGeneration</code> value; if this local value is
-different than the ActorSystem provides in the capabilities
-</p>
-</dd>
-
-<dt> <b>Thespian Version</b> </dt><dd><i>read-only</i> This is the identifier for the version of
-Thespian running in the current environment.  This is a single
-numeric value where later releases will have a higher (but not
-necessarily successor) value.
-</dd>
-
-<dt> <b>Thespian ActorSystem Name</b> </dt><dd><i>read-only</i> This is the name of the running
-ActorSystem implementation.  It is encouraged that Actors are not
-written to be unique to any particular implementation, but this
-information is present to allow ActorSystem-specific capability
-verification.
-</dd>
-
-<dt> <b>Thespian ActorSystem Version</b> </dt><dd><i>read-only</i> This is the ActorSystem version
-as a single numeric value (similar to the <code>Thespian Version</code>
-capability.  This value may be incremented separately from the
-<code>Thespian Version</code> to indicate an update in the underlying
-ActorSystem implementation.  The value of a specific ActorSystem
-will increment, but different ActorSystems have different version
-namespaces and switching from one to another does not guarantee
-that the ActorSystem version will increment.
-</dd>
-
-<dt> <b>AllowRemoteActorSources</b> </dt><dd>This capability specifies whether or
-not this ActorSystem will accept sources loaded via remote
-ActorSystems as described in the <a href="#hH-955ec990-a267-4d08-8f4d-5f980c777173">Actor Code Distribution</a>
-section.  Valid values for this capability are:
+<dt> <b>Python Version</b> </dt><dd>tuple
 
 <dl class="org-dl">
-<dt> <b>Yes</b> </dt><dd>Any Actor Source validated by a Source Authority
-on a remote system can be run on this system as
-well (this is the default).
+<dt> usage </dt><dd><i>read-only</i>
+</dd>
+<dt> description </dt><dd>This is set to the tuple value of the Python
+version under which the ActorSystem is running
+(this is the same value supplied by
+<code>sys.version_info</code>).  Any Actors wishing to
+enforce any version restrictions use this
+capability to do so.
+</dd>
+</dl>
 </dd>
 
-<dt> <b>No</b> </dt><dd>No Actor Sources from remote systems will be accepted locally.
+<dt> <b>Thespian Generation</b> </dt><dd>tuple
+
+<dl class="org-dl">
+<dt> usage </dt><dd><i>read-only</i>
+</dd>
+<dt> description </dt><dd>This is the Thespian API functionality specifier
+as a tuple of two values: <code>(generation,
+                     enhancement)</code>. The first value is the
+<code>generation</code> and indicates a major functionality
+level (which is not necessarily
+backwards-compatible with the previous
+functionality level).  The second number is the
+<code>enhancement</code> value and is incremented when
+backwards-compatible functional enhancements have
+been added within the current <code>generation</code>.  The
+<code>generation</code> value is monotonically increasing,
+whereas the <code>enhancement</code> value monotonically
+increases within a <code>generation</code> but resets to
+zero when the generation changes. The Thespian
+Release Notes should be consulted to determine
+what features are supported in what generations.
+
+<p>
+This value is also available to current code in
+the <code>thespian.api</code> import as the
+<code>ThespianGeneration</code> value; if this local value
+is different than the ActorSystem provides in the
+capabilities
+</p>
+</dd>
+</dl>
 </dd>
 
-<dt> <b>LeaderOnly</b> </dt><dd>Only Actor Sources provided by the
-Convention Leader will be accepted locally.
+<dt> <b>Thespian Version</b> </dt><dd>number
+
+<dl class="org-dl">
+<dt> usage </dt><dd><i>read-only</i>
+</dd>
+<dt> description </dt><dd>This is the identifier for the version of
+Thespian running in the current environment.
+This is a single numeric value where later
+releases will have a higher (but not necessarily
+successor) value.
+</dd>
+</dl>
+</dd>
+
+<dt> <b>Thespian ActorSystem Name</b> </dt><dd>string
+
+<dl class="org-dl">
+<dt> usage </dt><dd><i>read-only</i>
+</dd>
+<dt> description </dt><dd>This is the name of the running ActorSystem
+implementation.  It is encouraged that Actors are
+not written to be unique to any particular
+implementation, but this information is present
+to allow ActorSystem-specific capability
+verification.
+</dd>
+</dl>
+</dd>
+
+<dt> <b>Thespian ActorSystem Version</b> </dt><dd>number
+
+<dl class="org-dl">
+<dt> usage </dt><dd><i>read-only</i>
+</dd>
+<dt> description </dt><dd>This is the ActorSystem version as a single
+numeric value (similar to the <code>Thespian Version</code>
+capability.  This value may be incremented
+separately from the <code>Thespian Version</code> to
+indicate an update in the underlying ActorSystem
+implementation.  The value of a specific
+ActorSystem will increment, but different
+ActorSystems have different version namespaces
+and switching from one to another does not
+guarantee that the ActorSystem version will
+increment.
+</dd>
+</dl>
+</dd>
+
+<dt> <b>AllowRemoteActorSources</b> </dt><dd>string
+
+<dl class="org-dl">
+<dt> usage </dt><dd><i>optional settable</i>
+</dd>
+<dt> values </dt><dd><code>Yes</code>, <code>No</code>, <code>LeaderOnly</code>
+</dd>
+<dt> default </dt><dd><code>Yes</code>
+</dd>
+<dt> description </dt><dd>This capability specifies whether or not this
+ActorSystem will accept sources loaded via remote
+ActorSystems as described in the <a href="#hH-955ec990-a267-4d08-8f4d-5f980c777173">Actor Code
+Distribution</a> section.  Valid values for this
+capability are:
+
+<dl class="org-dl">
+<dt> <b>Yes</b> </dt><dd>Any Actor Source validated by a Source
+Authority on a remote system can be
+run on this system as well (this is
+the default).
+</dd>
+
+<dt> <b>No</b> </dt><dd>No Actor Sources from remote systems
+will be accepted locally.
+</dd>
+
+<dt> <b>LeaderOnly</b> </dt><dd>Only Actor Sources provided by
+the Convention Leader will be
+accepted locally.
 </dd>
 </dl>
 <p>
-Any unrecognized value will be treated as <b>No</b> and will
-disallow sources loaded on remote systems to be used in the
-current ActorSystem.  If this capability is not specified, the
-default is <b>Yes</b> which will accept sources loaded on any of the
-remote ActorSystems that are part of the Convention.
+Any unrecognized value will be treated as <b>No</b>
+and will disallow sources loaded on remote
+systems to be used in the current ActorSystem.
+If this capability is not specified, the default
+is <b>Yes</b> which will accept sources loaded on any
+of the remote ActorSystems that are part of the
+Convention.
 </p>
+</dd>
+</dl>
 </dd>
 </dl>
 </div>
@@ -4784,7 +4905,14 @@ The simpleSystemBase uses the following <a href="#hH-a17e6c70-5592-4d06-b818-bd2
 </p>
 
 <dl class="org-dl">
-<dt> <b>Thespian ActorSystem Name</b> </dt><dd><i>read-only</i> "simpleSystemBase"
+<dt> <b>Thespian ActorSystem Name</b> </dt><dd>string
+
+<dl class="org-dl">
+<dt> usage </dt><dd><i>read-only</i>
+</dd>
+<dt> value </dt><dd><code>simpleSystemBase</code>
+</dd>
+</dl>
 </dd>
 </dl>
 </div>
@@ -4834,24 +4962,52 @@ The multiprocQueueBase uses the following <a href="#hH-a17e6c70-5592-4d06-b818-b
 </p>
 
 <dl class="org-dl">
-<dt> <b>Thespian ActorSystem Name</b> </dt><dd><i>read-only</i> "multiprocQueueBase"
+<dt> <b>Thespian ActorSystem Name</b> </dt><dd>string
+
+<dl class="org-dl">
+<dt> usage </dt><dd><i>read-only</i>
+</dd>
+<dt> value </dt><dd><code>multiprocQueueBase</code>
+</dd>
+</dl>
 </dd>
 
-<dt> <b>Admin Address</b> </dt><dd><i>read-only</i> the address for the Admin queue. This is an
-arbitrary string value; the default is 'ThespianQ'.
+<dt> <b>Admin Address</b> </dt><dd>string
+
+<dl class="org-dl">
+<dt> usage </dt><dd><i>read-only</i>
+</dd>
+<dt> value </dt><dd><code>ThespianQ</code>
+</dd>
+<dt> description </dt><dd>the address for the Admin queue. This is an
+arbitrary string value.
+</dd>
+</dl>
 </dd>
 
-<dt> <b>Process Startup Method</b> </dt><dd><i>optional</i> specifies the
-multiprocessing process startup method (see
-<code>multiprocessing.get_context()</code>).  Supported values are "fork"
-and "spawn".  The "spawn" method is generally slower because it
-creates each new process from scratch, but it provides better
-independence and isolation.  The "fork" method is faster but
-can inherit memory and other resources from the parent, and it
-is only available under Unix.  Note that the other
-multi-process bases support the multiprocessing "forkserver"
-method, but this multiprocQueueBase does not support the
-"forkserver" method.
+<dt> <b>Process Startup Method</b> </dt><dd>string
+
+<dl class="org-dl">
+<dt> usage </dt><dd><i>optional settable</i>
+</dd>
+<dt> values </dt><dd><code>fork</code> or <code>spawn</code>
+</dd>
+<dt> default </dt><dd><code>fork</code> (Unix), or <code>spawn</code> (Windows)
+</dd>
+<dt> description </dt><dd>specifies the multiprocessing process startup
+method (see <code>multiprocessing.get_context()</code>).
+Supported values are "fork" and "spawn".  The
+"spawn" method is generally slower because it
+creates each new process from scratch, but it
+provides better independence and isolation.  The
+"fork" method is faster but can inherit memory
+and other resources from the parent, and it is
+only available under Unix.  Note that the other
+multi-process bases support the multiprocessing
+"forkserver" method, but this multiprocQueueBase
+does not support the "forkserver" method.
+</dd>
+</dl>
 </dd>
 </dl>
 </div>
@@ -4892,106 +5048,188 @@ The multiprocTCPBase uses the following <a href="#hH-a17e6c70-5592-4d06-b818-bd2
 </p>
 
 <dl class="org-dl">
-<dt> <b>Thespian ActorSystem Name</b> </dt><dd><i>read-only</i> "multiprocTCPBase"
+<dt> <b>Thespian ActorSystem Name</b> </dt><dd>string
+
+<dl class="org-dl">
+<dt> usage </dt><dd><i>read-only</i>
+</dd>
+<dt> value </dt><dd><code>multiprocTCPBase</code>
+</dd>
+</dl>
 </dd>
 
-<dt> <b>Admin Port</b> </dt><dd>which specifies the TCP port number upon which the
-ActorSystem will listen for new communications.  Actors and the
-external systems do not need to access that port specifically:
-it specifies which port the ActorSystem uses internally for
+<dt> <b>Admin Port</b> </dt><dd>number
+
+<dl class="org-dl">
+<dt> usage </dt><dd><i>optional settable</i>
+</dd>
+<dt> default </dt><dd><code>1900</code>
+</dd>
+<dt> description </dt><dd>specifies the TCP port number upon which the
+ActorSystem will listen for new communications.
+Actors and the external systems do not need to
+access that port specifically: it specifies which
+port the ActorSystem uses internally for
 coordination of operations.
 
 <p>
-If a multiprocTCPBase ActorSystem is already listening at that
-port, then the existing system will be utilized; otherwise a new
+If a multiprocTCPBase ActorSystem is already
+listening at that port, then the existing system
+will be utilized; otherwise a new
 multiprocTCPBase ActorSystem will be started up.
 </p>
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+<dl class="org-dl">
+<dt> <b>Convention Address.IPv4</b> </dt><dd>tuple or string
+
+<dl class="org-dl">
+<dt> usage </dt><dd><i>optional settable</i>
+</dd>
+<dt> examples </dt><dd><code>('123.45.6.78', 1923)</code>, <code>123.45.6.78:1923</code>, <code>host-a:1923</code>, or <code>123.45.6.78</code>
+</dd>
+<dt> description </dt><dd>the IPv4 address of the convention leader's
+Admin.  This should be specified either as a
+tuple of <i>(hostname, portnum)</i> or as a string of
+the form "hostname:portnum".  The hostname may be
+a DNS name or a dotted quad IPv4 address
+(specified as a string) and references the host
+on which the Convention Leader Admin is to be
+found.  The portnum is the <b>Admin Port</b> upon
+which that Admin listens; if not specified (no
+colon is found) then the port num defaults to the
+<b>Admin Port</b> setting.
 
 <p>
-If not specified, the default Admin Port of 1900 is used.
+If not specified, then this ActorSystem operates
+in isolation and cannot interact with other Actor
+Systems.
 </p>
 </dd>
-
-<dt> <b>Convention Address.IPv4</b> </dt><dd>the IPv4 address of the convention
-leader's Admin.  This should be specified either as a tuple of
-<i>(hostname, portnum)</i> or as a string of the form
-"hostname:portnum".  The hostname may be a DNS name or a dotted
-quad IPv4 address (specified as a string) and references the
-host on which the Convention Leader Admin is to be found.  The
-portnum is the <b>Admin Port</b> upon which that Admin listens; if
-not specified (no colon is found) then the port num defaults to
-the <b>Admin Port</b> setting.
+</dl>
 </dd>
 
-<dt> <b>Admin Routing</b> </dt><dd>if this capability is present and has a true
-value, this indicates that all Actors in remote ActorSystems
-must send all messages to local Actors through the Admin.  This
-is commonly used where the ActorSystem is running on a host
-node that has a firewall that only allows the Admin Port to
-have network ingress permissions.  
+<dt> <b>Admin Routing</b> </dt><dd>boolean
+
+<dl class="org-dl">
+<dt> usage </dt><dd><i>optional settable</i>
+</dd>
+<dt> default </dt><dd><code>False</code>
+</dd>
+<dt> description </dt><dd>if this capability is present and has a true
+value, this indicates that all Actors in remote
+ActorSystems must send all messages to local
+Actors through the Admin.  This is commonly used
+where the ActorSystem is running on a host node
+that has a firewall that only allows the Admin
+Port to have network ingress permissions.
 
 <p>
-Note that this capability has no effect on the way in which the
-Actors themselves are implemented; it only changes the way that
-the ActorSystem routes messages.
+Note that this capability has no affect on the
+way in which the Actors themselves are
+implemented; it only changes the way that the
+ActorSystem routes messages.
 </p>
 </dd>
+</dl>
+</dd>
 
-<dt> <b>Outbound Only</b> </dt><dd>if this capability is present and has a true
-value then it means that this ActorSystem (and all of the
-Actors within it) can only initiate outbound connections.
-Inbound connections are not supported.
+<dt> <b>Outbound Only</b> </dt><dd>boolean
+
+<dl class="org-dl">
+<dt> usage </dt><dd><i>optional settable</i>
+</dd>
+<dt> default </dt><dd><code>False</code>
+</dd>
+<dt> description </dt><dd>if this capability is present and has a true
+value then it means that this ActorSystem (and
+all of the Actors within it) can only initiate
+outbound connections. Inbound connections are not
+supported.
 
 <p>
-This configuration may be needed for a system that is behind a
-firewall with very strict ingress rules but looser egress
-rules.
+This configuration may be needed for a system
+that is behind a firewall with very strict
+ingress rules but looser egress rules.
 </p>
 
 <p>
-Specifying this capability as True will implicitly force "Admin
-Routing" to be true as well, regardless of the user setting.
-This is because it is impractical for this system to maintain
-outbound connections to all possible remote Actors, so it will
-maintain a persistent connection to other Admins only and
-forward packets via them using the "Admin Routing"
+Specifying this capability as True will
+implicitly force "Admin Routing" to be true as
+well, regardless of the user setting. This is
+because it is impractical for this system to
+maintain outbound connections to all possible
+remote Actors, so it will maintain a persistent
+connection to other Admins only and forward
+packets via them using the "Admin Routing"
 functionality.
 </p>
 
 <p>
-In addition, this system will not be able to join in
-conventions with other systems unless the other systems are
-declared via the <code>preRegisterRemoteSystem()</code> call, since they
-cannot initiate an inbound registration to this system.
+In addition, this system will not be able to join
+in conventions with other systems unless the
+other systems are declared via the
+<code>preRegisterRemoteSystem()</code> call, since they
+cannot initiate an inbound registration to this
+system.
 </p>
 
 <p>
-Remote systems may encounter periodic delays in message
-forwarding messages to an Outbound Only system because they
-must await a connection establishment from that system (which
-may not occur until the next Convention Registration time
-period has elapsed).  (This mode also requires socket re-use by
-the TCP transport, which is the normal operational mode).
+Remote systems may encounter periodic delays in
+message forwarding messages to an Outbound Only
+system because they must await a connection
+establishment from that system (which may not
+occur until the next Convention Registration time
+period has elapsed).  (This mode also requires
+socket re-use by the TCP transport, which is the
+normal operational mode).
 </p>
 </dd>
-
-<dt> <b>Thespian Watch Supported</b> </dt><dd><i>read-only</i> If True, then an Actor
-may return the <code>ThespianWatch</code> object from its <code>receiveMessage()</code>
-method and be called back later when input is available on any
-of the numbered file descriptors passed in the <code>ThespianWatch</code>
-object.
+</dl>
 </dd>
 
-<dt> <b>Process Startup Method</b> </dt><dd><i>optional</i> specifies the
-multiprocessing process startup method (see
-<code>multiprocessing.get_context()</code>).  Supported values are "fork",
-"forkserver", and "spawn".  The "spawn" method is generally
-slower because it creates each new process from scratch, but it
-provides better independence and isolation.  The "fork" method
-is faster but can inherit memory and other resources from the
-parent, and it is only available under Unix.    The "forkserver"
-performance is between the other two, but closer to the
-performance of the "spawn" method.
+<dt> <b>Thespian Watch Supported</b> </dt><dd>boolean
+
+<dl class="org-dl">
+<dt> usage </dt><dd><i>read-only</i>
+</dd>
+<dt> description </dt><dd>If True, then an Actor may return the
+<code>ThespianWatch</code> object from its
+<code>receiveMessage()</code> method and be called back
+later when input is available on any of the
+numbered file descriptors passed in the
+<code>ThespianWatch</code> object.
+</dd>
+</dl>
+</dd>
+
+<dt> <b>Process Startup Method</b> </dt><dd>string
+
+<dl class="org-dl">
+<dt> usage </dt><dd><i>optional</i>
+</dd>
+<dt> values </dt><dd><code>fork</code>, <code>spawn</code>, or <code>forkserver</code>
+</dd>
+<dt> default </dt><dd><code>fork</code> (Unix), or <code>spawn</code> (Windows)
+</dd>
+<dt> description </dt><dd>specifies the multiprocessing process startup
+method (see <code>multiprocessing.get_context()</code>).
+Supported values are "fork", "forkserver", and
+"spawn".  The "spawn" method is generally slower
+because it creates each new process from scratch,
+but it provides better independence and
+isolation.  The "fork" method is faster but can
+inherit memory and other resources from the
+parent, and it is only available under Unix.  The
+"forkserver" performance is between the other
+two, but closer to the performance of the "spawn"
+method.
+</dd>
+</dl>
 </dd>
 </dl>
 </div>
@@ -5044,41 +5282,79 @@ The multiprocUDPBase uses the following <a href="#hH-a17e6c70-5592-4d06-b818-bd2
 </p>
 
 <dl class="org-dl">
-<dt> <b>Thespian ActorSystem Name</b> </dt><dd><i>read-only</i> "multiprocUDPBase"
+<dt> <b>Thespian ActorSystem Name</b> </dt><dd>string
+
+<dl class="org-dl">
+<dt> usage </dt><dd><i>read-only</i>
+</dd>
+<dt> value </dt><dd><code>~multiprocUDPBase</code>
+</dd>
+</dl>
 </dd>
 
-<dt> <b>Admin Port</b> </dt><dd>which specifies the UDP port number upon which the
-ActorSystem will listen for new communications.  Actors and the
-external systems do not need to access that port specifically:
-it specifies which port the ActorSystem uses internally for
+<dt> <b>Admin Port</b> </dt><dd>number
+
+<dl class="org-dl">
+<dt> usage </dt><dd><i>optional settable</i>
+</dd>
+<dt> default </dt><dd><code>1029</code>
+</dd>
+<dt> description </dt><dd>specifies the UDP port number upon which the
+ActorSystem will listen for new communications.
+Actors and the external systems do not need to
+access that port specifically: it specifies which
+port the ActorSystem uses internally for
 coordination of operations.
 
 <p>
-If a multiprocUDPBase ActorSystem is already listening at that
-port, then the existing system will be utilized; otherwise a new
+If a multiprocUDPBase ActorSystem is already
+listening at that port, then the existing system
+will be utilized; otherwise a new
 multiprocUDPBase ActorSystem will be started up.
 </p>
-
-<p>
-If not specified, the default Admin Port of 1029 is used.
-</p>
+</dd>
+</dl>
 </dd>
 
-<dt> <b>Convention Address.IPv4</b> </dt><dd>the IPv4 address of the convention
-leader's Admin.  See the description of the same capability in the
-<a href="#hH-9d33a877-b4f0-4012-9510-442d81b0837c">multiprocTCPBase</a> for more details.
-</dd>
+<dt> <b>Convention Address.IPv4</b> </dt><dd>tuple or string
 
-<dt> <b>Process Startup Method</b> </dt><dd><i>optional</i> specifies the
-multiprocessing process startup method (see
-<code>multiprocessing.get_context()</code>).  Supported values are "fork",
-"forkserver", and "spawn".  The "spawn" method is generally
-slower because it creates each new process from scratch, but it
-provides better independence and isolation.  The "fork" method
-is faster but can inherit memory and other resources from the
-parent, and it is only available under Unix.  The "forkserver"
-performance is between the other two, but closer to the
-performance of the "spawn" method.
+<dl class="org-dl">
+<dt> usage </dt><dd><i>optional settable</i>
+</dd>
+<dt> description </dt><dd>the IPv4 address of the convention leader's
+Admin.  See the description of the same
+capability in the <a href="#hH-9d33a877-b4f0-4012-9510-442d81b0837c">multiprocTCPBase</a> for more
+details.
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+<dl class="org-dl">
+<dt> <b>Process Startup Method</b> </dt><dd>string
+
+<dl class="org-dl">
+<dt> usage </dt><dd><i>optional</i>
+</dd>
+<dt> values </dt><dd><code>fork</code>, <code>spawn</code>, or <code>forkserver</code>
+</dd>
+<dt> default </dt><dd><code>fork</code> (Unix), or <code>spawn</code> (Windows)
+</dd>
+<dt> description </dt><dd>specifies the multiprocessing process startup
+method (see <code>multiprocessing.get_context()</code>).
+Supported values are "fork", "forkserver", and
+"spawn".  The "spawn" method is generally slower
+because it creates each new process from scratch,
+but it provides better independence and
+isolation.  The "fork" method is faster but can
+inherit memory and other resources from the
+parent, and it is only available under Unix.  The
+"forkserver" performance is between the other
+two, but closer to the performance of the "spawn"
+method.
+</dd>
+</dl>
 </dd>
 </dl>
 </div>
@@ -5119,7 +5395,7 @@ Using the latter method is slightly more complicated from a
 packaging complexity perspective, but it allows the ActorSystem to
 be shared by multiple Actor-based applications, as well as providing
 for seamless upgrades of each application (because the new and old
-sources can be running simultaneously).  The <i>Thespian Director</i>
+sources can be running simultaneously).  The <a href="director.html">Thespian Director</a>
 document describes the Director utility that can optionally be used
 to enhance and support this latter method.
 </p>
@@ -5238,7 +5514,7 @@ difference will remain unaddressed.
 </div></div>
 <div id="postamble" class="status">
 <p class="author">Author: Kevin Quick &lt;quick@sparq.org&gt;</p>
-<p class="date">Created: 2017-12-02 Sat 00:14</p>
+<p class="date">Created: 2017-12-22 Fri 15:51</p>
 <p class="creator"><a href="http://www.gnu.org/software/emacs/">Emacs</a> 25.2.1 (<a href="http://orgmode.org">Org</a> mode 8.2.10)</p>
 <p class="validation"><a href="http://validator.w3.org/check?uri=referer">Validate</a></p>
 </div>
