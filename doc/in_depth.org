@@ -2,6 +2,7 @@
 #+AUTHOR: Kevin Quick <quick@sparq.org>
 #+SETUPFILE: theme.setup
 #+HTML_HEAD: <link href="https://fonts.googleapis.com/css?family=Actor" rel="stylesheet">
+#+HTML_HEAD: <link href="https://fonts.googleapis.com/css?family=Inconsolata" rel="stylesheet">
 #+HTML_HEAD: <link href="thespian.css" rel="stylesheet" type="text/css"/>
 #+LATEX_CLASS: thespian
 # #+LATEX_CLASS_OPTIONS: [a4paper]
