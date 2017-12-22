@@ -40,7 +40,7 @@ do not change the API.
 
     * Changes to the Thespian Director:
 
-      * Added [[file:doc/director.html][documentation for the Thespian Director]], which was
+      * Added [[file:director.html][documentation for the Thespian Director]], which was
         introduced in version 3.6.0.
 
       * The ~gensrc~ command for the Thespian Director supports
