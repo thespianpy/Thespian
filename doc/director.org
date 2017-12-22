@@ -395,7 +395,7 @@ A .tls file can be verified by using the ~tlsinfo~ Director command:
 
 #+BEGIN_EXAMPLE
 $ python -m thespian.director tlsinfo /opt/thespian/director/foo-201710261902.tls
-Validated "/opt/thespian/director/foo-201710261902.tls" loadable with key /opt/theshpian/director/sourcekey_tls.key
+Validated "/opt/thespian/director/foo-201710261902.tls" loadable with key /opt/thespian/director/sourcekey_tls.key
 
 $
 #+END_EXAMPLE

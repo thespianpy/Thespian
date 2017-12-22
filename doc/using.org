@@ -318,7 +318,7 @@ within Python by simply importing the ~actors~ module from the ~thespian~
 package:
 
 #+begin_src python
-    >>> import thespian
+>>> import thespian
 #+end_src
 
 ** Starting an Actor System
@@ -332,7 +332,7 @@ as any optional capabilities of that system.  For example, to startup
 an ActorSystem using the "multiprocTCPBase":
 
 #+begin_src python
-    >>> asys = ActorSystem('multiprocTCPBase')
+>>> asys = ActorSystem('multiprocTCPBase')
 #+end_src
 
 More details on the explicit parameters for this call are found in
@@ -373,11 +373,11 @@ newly created actor is therefore referred to as a "Top-Level" Actor.
 A Top-Level Actor is created via the [[#hH-a565af1b-aabb-4336-a51d-7505c072c319][ActorSystem.createActor]] call:
 
 #+begin_src python
-    >>> class MyFirstActor(Actor):
-    ...     def receiveMessage(self, message, sender):
-    ...         pass
-    ...
-    >>> mfa_addr = asys.createActor(MyFirstActor)
+>>> class MyFirstActor(Actor):
+...     def receiveMessage(self, message, sender):
+...         pass
+...
+>>> mfa_addr = asys.createActor(MyFirstActor)
 #+end_src
 
 The result of the call is the ActorAddress which can be used with the
@@ -394,14 +394,14 @@ the request to the ActorSystem through the [[#hH-3663d87d-8a2f-485b-aeef-c6e9cf4
 own instance:
 
 #+BEGIN_SRC python
-    >>> class Support(Actor):
-    ...     def receiveMessage(self, message, sender):
-    ...         pass
-    ...
-    >>> class MyFirstActor(Actor):
-    ...     def receiveMessage(self, message, sender):
-    ...         if message == 'create another actor':
-    ...             newActor = self.createActor(Support)
+>>> class Support(Actor):
+...     def receiveMessage(self, message, sender):
+...         pass
+...
+>>> class MyFirstActor(Actor):
+...     def receiveMessage(self, message, sender):
+...         if message == 'create another actor':
+...             newActor = self.createActor(Support)
 #+END_SRC
 
 As with the creation of a Top-Level actor, the ~createActor()~ method
@@ -1248,9 +1248,9 @@ before the ActorSystem is started:
   Each Actor is represented by an Actor baseclass:
 
 #+begin_src python
-    from thespian.actors import Actor
+from thespian.actors import Actor
 
-    class MyActor(Actor): ...
+class MyActor(Actor): ...
 #+end_src
 
   Versioning of the Actor API and the ActorSystem are described in
@@ -1262,7 +1262,7 @@ before the ActorSystem is started:
    :END:
 
 #+begin_src python
-    self.myAddress
+self.myAddress
 #+end_src
 
    This property is the ActorAddress of this Actor.
@@ -1338,15 +1338,15 @@ class MyActor(Actor):
    :END:
 
 #+begin_src python
-    newAddress = self.createActor(self, actorClass,
-                                  targetActorRequirements=None,
-                                  globalName=None)
+newAddress = self.createActor(self, actorClass,
+                              targetActorRequirements=None,
+                              globalName=None)
 #+end_src
 
    This method is called by the Actor to create a new Actor
    represented by the specified ~actorClass~.  The ~actorClass~ may be
    specified as either a class object or as a module-qualified string
-   (e.g. ~"foo.bar.BarActor"~ will search for ~class BarActor~ in the
+   (e.g. "foo.bar.BarActor" will search for ~class BarActor~ in the
    ~bar.py~ in the ~foo~ directory).  The InvalidActorSpecification
    exception will be thrown if the actorClass is not specified in a
    valid manner.
@@ -1479,7 +1479,7 @@ class MyActor(Actor):
    :END:
 
 #+begin_src python
-    self.send(targetAddress, message)
+self.send(targetAddress, message)
 #+end_src
 
     This is the method used to send a message from the current Actor
@@ -1501,7 +1501,7 @@ class MyActor(Actor):
    :END:
 
 #+begin_src python
-    self.wakeupAfter(timePeriod, payload=None)
+self.wakeupAfter(timePeriod, payload=None)
 #+end_src
 
     The ~timePeriod~ specifies a Python ~datetime.timedelta~ period.
@@ -1536,7 +1536,7 @@ class MyActor(Actor):
    :END:
 
 #+begin_src python
-    self.notifyOnSystemRegistrationChanges(startHandling=True)
+self.notifyOnSystemRegistrationChanges(startHandling=True)
 #+end_src
 
   This method can be called to register or de-register this Actor for
@@ -1549,7 +1549,7 @@ class MyActor(Actor):
    :END:
 
 #+begin_src python
-    self.registerSourceAuthority()
+self.registerSourceAuthority()
 #+end_src
 
    This method registers the current Actor as the Source Authority
@@ -1567,7 +1567,7 @@ class MyActor(Actor):
    :END:
 
 #+begin_src python
-    sourceHash = self.loadActorSource(fileref)
+sourceHash = self.loadActorSource(fileref)
 #+end_src
 
   The ~loadActorSource()~ method is used to load a (possibly
@@ -1591,7 +1591,7 @@ class MyActor(Actor):
    :END:
 
 #+begin_src python
-    self.unloadActorSource(sourceHash)
+self.unloadActorSource(sourceHash)
 #+end_src
 
   The ~unloadActorSource()~ method is used to unload a source zipfile
@@ -1626,8 +1626,8 @@ class MyActor(Actor):
    :END:
 
 #+begin_src python
-    def actorSystemCapabilityCheck(capabilities, requirements=None):
-        return True
+def actorSystemCapabilityCheck(capabilities, requirements=None):
+    return True
 #+end_src
 
   This is a *static* method provided by the Actor object that is
@@ -1665,7 +1665,7 @@ class MyActor(Actor):
   capabilities.
 
 #+begin_src python
-    @requireCapability(capabilityName[, capabilityValue])
+@requireCapability(capabilityName[, capabilityValue])
 #+end_src
 
   The ~requireCapability~ decorator can also specify a
@@ -1680,51 +1680,51 @@ class MyActor(Actor):
   For example:
 
 #+begin_src python
-    class MyActor(Actor):
+class MyActor(Actor):
 
-        @staticmethod
-        def actorSystemCapabilityCheck(capabilities, requirements):
-            return capabilities.get('Has Lightbulb', False) and \
-                   capabilities.get('Lit', False) and \
-                   capabilities.get('Color', 'none') == 'Yellow'
+    @staticmethod
+    def actorSystemCapabilityCheck(capabilities, requirements):
+        return capabilities.get('Has Lightbulb', False) and \
+               capabilities.get('Lit', False) and \
+               capabilities.get('Color', 'none') == 'Yellow'
 
-        def receiveMessage(self, msg, sender): pass
+    def receiveMessage(self, msg, sender): pass
 #+end_src
 
    is equivalent to the following combined use:
 
 #+begin_src python
-    @requireCapability('Has Lightbulb')
-    @requireCapability('Lit')
-    class MyActor(Actor):
+@requireCapability('Has Lightbulb')
+@requireCapability('Lit')
+class MyActor(Actor):
 
-        @staticmethod
-        def actorSystemCapabilityCheck(capabilities, requirements):
-            return capabilities.get('Color', 'none') == 'Yellow'
+    @staticmethod
+    def actorSystemCapabilityCheck(capabilities, requirements):
+        return capabilities.get('Color', 'none') == 'Yellow'
 
-        def receiveMessage(self, msg, sender): pass
+    def receiveMessage(self, msg, sender): pass
 #+end_src
 
    or the equivalent use of only the decorator:
 
 #+begin_src python
-    @requireCapability('Has Lightbulb')
-    @requireCapability('Lit')
-    @requireCapability(Color', 'Yellow')
-    class MyActor(Actor):
+@requireCapability('Has Lightbulb')
+@requireCapability('Lit')
+@requireCapability('Color', 'Yellow')
+class MyActor(Actor):
 
-        def receiveMessage(self, msg, sender): pass
+    def receiveMessage(self, msg, sender): pass
 #+end_src
 
    In the above examples, the ~MyActor~ Actor can be instantiated
    in an ActorSystem that had the capabilities of:
 
 #+begin_src python
-    {
-      'Has Lightbulb': 5,
-      'Lit': True,
-      'Color' : 'Yellow'
-    }
+{
+  'Has Lightbulb': 5,
+  'Lit': True,
+  'Color' : 'Yellow'
+}
 #+end_src
 
    Note that the value of 5 is "true", as compared to a value of 0
@@ -1734,22 +1734,22 @@ class MyActor(Actor):
    An example of a much simpler case:
 
 #+begin_src python
-    class MyActor(Actor):
+class MyActor(Actor):
 
-        @staticmethod
-        def actorSystemCapabilityCheck(capabilities, requirements):
-            return capabilities.get('Has Lightbulb', False)
+    @staticmethod
+    def actorSystemCapabilityCheck(capabilities, requirements):
+        return capabilities.get('Has Lightbulb', False)
 
-        def receiveMessage(self, msg, sender): pass
+    def receiveMessage(self, msg, sender): pass
 #+end_src
 
    is equivalent to:
 
 #+begin_src python
-    @requireCapability('Has Lightbulb')
-    class MyActor(Actor):
+@requireCapability('Has Lightbulb')
+class MyActor(Actor):
 
-        def receiveMessage(self, msg, sender): pass
+    def receiveMessage(self, msg, sender): pass
 #+end_src
 ** updateCapability
    :PROPERTIES:
@@ -1762,7 +1762,7 @@ class MyActor(Actor):
    updates; see the [[#hH-7d2b4986-95d3-4460-9d19-ea0dcdb34fca][ActorSystem API]] for that version).
 
 #+begin_src python
-     self.updateCapability(capabilityName, capabilityValue=None)
+self.updateCapability(capabilityName, capabilityValue=None)
 #+end_src
 
    If the capability value is specified and is not None, the specified
@@ -1817,8 +1817,8 @@ class MyActor(Actor):
    become the Convention Leader for the remote system.
 
 #+begin_src python
-     self.preRegisterRemoteSystem(remoteSystemAddress,
-                                  remoteSystemCapabilities)
+self.preRegisterRemoteSystem(remoteSystemAddress,
+                             remoteSystemCapabilities)
 #+end_src
 
    The ~remoteSystemAddress~ parameter is not a true Actor Address: it
@@ -1853,7 +1853,7 @@ class MyActor(Actor):
    local ActorSystem, this method will simply return with no effect.
 
 #+begin_src python
-     self.preRegisterRemoteSystem(remoteSystemAddress)
+self.preRegisterRemoteSystem(remoteSystemAddress)
 #+end_src
 
    The ~remoteSystemAddress~ parameter may be specified in the same
@@ -1878,7 +1878,7 @@ class MyActor(Actor):
    ActorExitRequests will be sent to all locally running Actors.
 
 #+BEGIN_SRC python
-    self.actorSystemShutdown()
+self.actorSystemShutdown()
 #+END_SRC
 
    Use this method with caution.
@@ -2124,7 +2124,7 @@ Got a message
     ~thespian.actors~ module:
 
 #+begin_src python
-     import thespian.actors
+import thespian.actors
 #+end_src
 
 ** Exceptions
@@ -2261,7 +2261,7 @@ actorSys = ActorSystem(systemBase = None,
    :END:
 
 #+BEGIN_SRC python
-    actorSys.shutdown()
+actorSys.shutdown()
 #+END_SRC
 
     The ~shutdown()~ ActorSystem method is used to terminate an
@@ -2290,10 +2290,10 @@ actorSys = ActorSystem(systemBase = None,
    :END:
 
 #+begin_src python
-    actorAddr = actorSys.createActor(actorClass,
-                                     targetActorRequirements = None,
-                                     globalName = None,
-                                     sourceHash = None)
+actorAddr = actorSys.createActor(actorClass,
+                                 targetActorRequirements = None,
+                                 globalName = None,
+                                 sourceHash = None)
 #+end_src
 
    The ~createActor()~ method is used by external applications to
@@ -2304,7 +2304,7 @@ actorSys = ActorSystem(systemBase = None,
 
    The ~actorClass~ argument can be specified either as a class object
    or as a module-qualified string identifying a class object
-   (e.g. ~"foo.bar.BarActor"~ will search for ~class BarActor~ in the
+   (e.g. "foo.bar.BarActor" will search for ~class BarActor~ in the
    ~bar.py~ in the ~foo~ directory).
 
    The ~targetActorRequirements~ argument is a value that will be
@@ -2364,7 +2364,7 @@ actorSys = ActorSystem(systemBase = None,
    specific Actor) without waiting for any response message.
 
 #+begin_src python
-     actorSys.tell(targetAddr, message)
+actorSys.tell(targetAddr, message)
 #+end_src
 
    The ~targetAddr~ must be an Actor Address known to the current
@@ -2385,7 +2385,7 @@ actorSys = ActorSystem(systemBase = None,
    Actor system) and wait for a response message.
 
 #+begin_src python
-     responseMessage = actorSys.ask(targetAddr, message[, timeout])
+responseMessage = actorSys.ask(targetAddr, message[, timeout])
 #+end_src
 
    As with the ~tell()~ operation, the target address must be a valid
@@ -2432,7 +2432,7 @@ actorSys = ActorSystem(systemBase = None,
    Listen is used to wait for a message.
 
 #+begin_src python
-     responseMessage = actorSys.listen([timeout])
+responseMessage = actorSys.listen([timeout])
 #+end_src
 
    The received message is any message received by the local endpoint.
@@ -2499,7 +2499,7 @@ the actor at ~addr5~ will only be sent to thread2.
    capabilities; Actors can issue capability updates as well.
 
 #+begin_src python
-     actorSys.updateCapability(capabilityName, capabilityValue=None)
+actorSys.updateCapability(capabilityName, capabilityValue=None)
 #+end_src
 
    If the capability value is specified and is not None, the specified
@@ -2529,7 +2529,7 @@ the actor at ~addr5~ will only be sent to thread2.
    :END:
 
 #+begin_src python
-    sourceHash = actorSys.loadActorSource(fileref)
+sourceHash = actorSys.loadActorSource(fileref)
 #+end_src
 
   The ~loadActorSource()~ method is used to load a (possibly
@@ -2739,7 +2739,7 @@ class SimpleSourceAuthority(ActorTypeDispatcher):
    :END:
 
 #+begin_src python
-    actorSys.unloadActorSource(sourceHash)
+actorSys.unloadActorSource(sourceHash)
 #+end_src
 
   The ~unloadActorSource()~ method is used to unload a source zipfile
