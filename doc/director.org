@@ -934,16 +934,31 @@ string or class reference.
    4. Loaded sources should expect that ~__file__~ or other internals
       can be set to None.
 
-   5. It is not possible to send a pickled message between sources,
-      even if that message is imported from the same file/module in
-      both loaded sources.  This is because each loaded source (and
-      all of its top level symbols) are internally prefixed with the
-      hash of the source they are contained in; this helps preserve
-      independence between loaded source modules and prevents
-      interference between them, but it means that the pickled object
-      will have a different source hash on the target side than on the
-      sender side.  The object should be encoded in a more
-      conventional format (e.g. JSON).
+   5. It is not possible to send internally-defined objects between
+      sources (see [[#h:423373f2-9638-4b96-80a5-a57abe94f134][Communication across package boundaries]] below).
+
+   6. The loadable source can only contain pure Python code, including
+      all dependencies.  If there are dependencies that have
+      associated C object extensions or other binary-specific
+      components, those must be pre-installed and accessed via the
+      normal fashion and not included as a dependency in the loadable
+      source package.
+
+** Logging callables not supported
+   :PROPERTIES:
+   :CUSTOM_ID: h:1e8b3963-5daa-4ea5-9067-25bde3580b80
+   :END:
+
+The Python ~logging~ library has the ability to configure callable
+objects to provide various formatter capabilities.  Since the
+~thesplog.cfg~ file must define only a Python dictionary and not
+executable code, that file cannot contain any callable objects.
+
+If a callable object was needed for logging, it would need to be
+installed on the target systems (along with Thespian) prior to
+starting up Thespian.  As long as the callable target is a valid
+import path for the context in which Thespian is started, it can then
+be used.
 
 ** Communication across package boundaries
    :PROPERTIES:
@@ -964,7 +979,7 @@ string or class reference.
    external environment).  This means that all messages exchanged with
    Actors across a loaded source boundary must be regular, built-in
    Python objects (strings, numbers, booleans, tuples, lists,
-   dictionaries, etc.).
+   dictionaries, etc.), or a standardized format such as JSON.
 
    If there is an attempt to send an internal source-loaded object
    across this boundary, a deserialization error will be written to
