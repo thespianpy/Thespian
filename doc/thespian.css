@@ -17,7 +17,8 @@ pre span.comment {color:#b22222}
 // .title {background-color:#80d0f0}
 .title {background-color:#80b0f0}
 
-body { font:16px/1.385 arial,helvetica,clean,sans-serif; }
+// body { font:16px/1.385 arial,helvetica,clean,sans-serif; }
+body { font-family: 'Actor'; font-size: 22px; }
 
 .bannerheader {
     font-size: 180%;
