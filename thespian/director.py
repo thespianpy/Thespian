@@ -202,6 +202,7 @@ The Director handles the messages:
                                         "ActorClass": "actor-class-name",
                                         "Role": "actor-role-name",
                                         "ActorAddress": address,
+                                        "StartTime": datetime,
                                      }],
                                      ...
                                    }
@@ -236,6 +237,7 @@ The Director handles the messages:
       "ActorClass": "actor-class-name",
       "Role": "role-name",
       "ActorAddress": address,
+      "StartTime": datetime,
     }
 
     If the group name or source hash is invalid, this returns Success
@@ -277,8 +279,12 @@ import os
 import sys
 import thespian.actors
 from collections import defaultdict
+from datetime import datetime, timedelta
 from functools import partial
 import logging
+
+
+MINIMUM_STARTED_TIME=timedelta(seconds=2)
 
 
 class Director(thespian.actors.ActorTypeDispatcher):
@@ -345,9 +351,12 @@ class Director(thespian.actors.ActorTypeDispatcher):
             self.source_hash = source_hash
             self.source_info = source_info
             self.auto_unload = auto_unload
-            self.actors = []
+            self.actorinfo = []
         def add_actor(self, running_actor_info):
-            self.actors.append(running_actor_info)
+            self.actorinfo.append((running_actor_info, datetime.now()))
+        @property
+        def actors(self):
+            return [a[0] for a in self.actorinfo]
 
 
     class RunningActorInfo(object):
@@ -487,17 +496,28 @@ class Director(thespian.actors.ActorTypeDispatcher):
         child = exitmsg.childAddress
         # If this actor was one of the currently active actors,
         # restart it and send its startup message again
+        now = datetime.now()
         for group in self.active:
             for loaded in self.loaded[group]:
                 if loaded.source_hash == self.active[group]:
-                    for actor in loaded.actors:
+                    for actor, start_time in loaded.actorinfo:
                         if actor.address == child:
-                            actor.address = self.start_actor(
-                                actor.classname,
-                                loaded.source_hash,
-                                actor.role,
-                                global_name=actor.global_name,
-                                startmsg=actor.activate_msg)
+                            if now - start_time < MINIMUM_STARTED_TIME:
+                                logging.warning('Actor %s%s only ran for %s'
+                                                '; threshold of %s not met'
+                                                ', not restarting.' %
+                                                (actor.classname,
+                                                 ' (role %s)' % actor.role
+                                                 if actor.role else '',
+                                                 now - start_time,
+                                                 MINIMUM_STARTED_TIME))
+                            else:
+                                actor.address = self.start_actor(
+                                    actor.classname,
+                                    loaded.source_hash,
+                                    actor.role,
+                                    global_name=actor.global_name,
+                                    startmsg=actor.activate_msg)
                             # n.b. fall through for inactive cleanup;
                             # globalName can exist in multiple places.
         # Remove this actor from any and *all* non-active entries
@@ -520,8 +540,9 @@ class Director(thespian.actors.ActorTypeDispatcher):
                   'Running': dict([
                       (L.source_hash, [{'ActorClass': actor.classname,
                                         'Role': actor.role,
-                                        'ActorAddress': actor.address}
-                                       for actor in L.actors])
+                                        'ActorAddress': actor.address,
+                                        'StartTime': start_time}
+                                       for actor, start_time in L.actorinfo])
                       for L in self.loaded[group]])
                  })
                 for group in ([msg['Group']]
@@ -537,7 +558,7 @@ class Director(thespian.actors.ActorTypeDispatcher):
             for loaded in self.loaded[group]:
                 if loaded.source_hash != self.active[group]:
                     continue
-                for actor in loaded.actors:
+                for actor, start_time in loaded.actorinfo:
                     if actor.role == msg['Role']:
                         self.send(sender, {
                             "DirectorResponse": "RoleAddress",
@@ -547,6 +568,7 @@ class Director(thespian.actors.ActorTypeDispatcher):
                             "ActorClass": actor.classname,
                             "Role": actor.role,
                             "ActorAddress": actor.address,
+                            "StartTime": start_time,
                             })
                         return
         self.send(sender, {"DirectorResponse": "RoleAddress",
@@ -592,7 +614,6 @@ class SourceAuthority(thespian.actors.ActorTypeDispatcher):
 
 import glob
 import shutil
-from datetime import datetime, timedelta
 import subprocess
 import zipfile
 import json
@@ -1437,10 +1458,12 @@ with the highest version at the top of the list:
                        if srchash == gi['ActiveHash'] else '') )
                 for actor in gi['Running'].get(srchash, []):
                     role = actor.get('Role', None)
-                    print('      %s -- %s%s' %
+                    print('      %s -- %s%s  (since %s)' %
                           (actor['ActorAddress'],
                            actor['ActorClass'],
-                           (' (%s)' % role) if role else ''))
+                           (' (%s)' % role) if role else '',
+                          # n.b. StartTime was added after v3.8.3
+                          actor.get('StartTime', '?')))
 
 
 class ActorAddressLogFilter(logging.Filter):
