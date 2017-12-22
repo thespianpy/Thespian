@@ -14,11 +14,23 @@ pre span.constant {color:#d0372d}
 pre span.comment-delimiter {color:#8d8d84}
 pre span.comment {color:#b22222}
 
+#content { max-width: 1200px; } // wider than normal bigblow
+
 // .title {background-color:#80d0f0}
 .title {background-color:#80b0f0}
 
 // body { font:16px/1.385 arial,helvetica,clean,sans-serif; }
 body { font-family: 'Actor'; font-size: 22px; }
+h1, h2, h3, h4, h5, ul#tabs { font-family: 'Actor'; }
+h1 { font-size: xx-large; }
+h2 { font-size: xx-large; }
+h3 { font-size: x-large; }
+h4 { font-size: x-large; }
+#tabs li a { font-size: inherit; }
+
+.buttons {
+    padding: 0px 7px 23px 0px;  // needed for the taller font
+}
 
 .bannerheader {
     font-size: 180%;
