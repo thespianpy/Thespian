@@ -600,7 +600,7 @@ do not change the API.
     admin from updating remote nodes and therefore causing the remote
     to enter a partially-disconnected state after about 22 minutes.
     These changes introduce significant stability and behavior
-    imprlements for conventions.
+    implements for conventions.
 
   * Add ~.details~ to ~PoisonMessage~ for additional information
     ([[https://github.com/godaddy/Thespian/issues/22][Issue 22]]).
@@ -846,7 +846,7 @@ do not change the API.
     for each test's admin address.
 
   * Added test delay function for convenient centralization and
-    standardizationof testing delays and the ability to override,
+    standardization of testing delays and the ability to override,
     mock, or adjust the delay as needed.
 
   * Updated ~mark.skip~ specifications for broader pytest compatibility.
