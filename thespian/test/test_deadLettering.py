@@ -29,6 +29,7 @@ ASK_WAIT = timedelta(seconds=15)
 dead_routing_wait = lambda: inTestDelay(timedelta(milliseconds=125))
 actor_exit_wait = lambda: inTestDelay(timedelta(milliseconds=50))
 actor_create_wait = lambda: inTestDelay(timedelta(milliseconds=750))
+actor_do_stuff_wait = lambda: inTestDelay(timedelta(milliseconds=500))
 
 
 class DLHandler(Actor):
@@ -161,7 +162,7 @@ class TestFuncDeadLettering(object):
 
         pawn = asys.createActor(DLHandler)
         asys.tell(pawn, ActorExitRequest())
-        time.sleep(0.025)
+        actor_do_stuff_wait()
 
         # Send a couple of messages and verify they are each passed to the dead letter handler
 
@@ -173,7 +174,7 @@ class TestFuncDeadLettering(object):
         # Another start has no effect; remains the dead letter handler.
 
         asys.tell(handler, 'Start')
-        time.sleep(0.02)
+        actor_do_stuff_wait()
 
         # Send another couple of messages to the dead actor and verify dead letter receipt.
 
@@ -193,7 +194,7 @@ class TestFuncDeadLettering(object):
 
         pawn = asys.createActor(DLParent)
         asys.tell(pawn, ActorExitRequest())
-        time.sleep(0.025)
+        actor_exit_wait()
 
         # Send a couple of messages and verify they are each passed to the dead letter handler
 
@@ -205,7 +206,7 @@ class TestFuncDeadLettering(object):
         # Another start has no effect; remains the dead letter handler.
 
         asys.tell(handler, 'Start')
-        time.sleep(0.02)
+        actor_do_stuff_wait()
 
         # Send another couple of messages to the dead actor and verify dead letter receipt.
 
@@ -223,7 +224,7 @@ class TestFuncDeadLettering(object):
 
         pawn = asys.createActor(DLHandler)
         asys.tell(pawn, ActorExitRequest())
-        time.sleep(0.02)
+        actor_exit_wait()
 
         asys.tell(pawn, 'hello')
         cnt = self.checkNewDLCount(asys, handler, cnt)
@@ -232,7 +233,7 @@ class TestFuncDeadLettering(object):
 
         handler2 = asys.createActor(DLHandler)
         asys.tell(handler2, 'Start')
-        time.sleep(0.025)
+        actor_do_stuff_wait()
 
         assert cnt == asys.ask(handler, 'Count', ASK_WAIT)
         assert 0 == asys.ask(handler2, 'Count', ASK_WAIT)
@@ -246,7 +247,7 @@ class TestFuncDeadLettering(object):
         assert cnt == asys.ask(handler, 'Count', ASK_WAIT)
 
         asys.tell(handler, 'Stop')  # no effect
-        time.sleep(0.025)
+        actor_do_stuff_wait()
 
         asys.tell(pawn, 'more messages')
         cnt2 = self.checkNewDLCount(asys, handler2, cnt2)
@@ -257,22 +258,22 @@ class TestFuncDeadLettering(object):
         assert cnt == asys.ask(handler, 'Count', ASK_WAIT)
 
         asys.tell(handler2, 'Stop')
-        time.sleep(0.025)
+        actor_do_stuff_wait()
         assert cnt == asys.ask(handler, 'Count', ASK_WAIT)
         assert cnt2 == asys.ask(handler2, 'Count', ASK_WAIT)
 
         asys.tell(pawn, 'more messages repeated')
-        time.sleep(0.025)
+        actor_do_stuff_wait()
         assert cnt == asys.ask(handler, 'Count', ASK_WAIT)
         assert cnt2 == asys.ask(handler2, 'Count', ASK_WAIT)
 
         asys.tell(pawn, 'more messages again repeated')
-        time.sleep(0.025)
+        actor_do_stuff_wait()
         assert cnt == asys.ask(handler, 'Count', ASK_WAIT)
         assert cnt2 == asys.ask(handler2, 'Count', ASK_WAIT)
 
         asys.tell(handler, 'Start')
-        time.sleep(0.025)
+        actor_do_stuff_wait()
         assert cnt == asys.ask(handler, 'Count', ASK_WAIT)
         assert cnt2 == asys.ask(handler2, 'Count', ASK_WAIT)
 
@@ -293,7 +294,7 @@ class TestFuncDeadLettering(object):
 
         pawn = asys.createActor(DLParent)
         asys.tell(pawn, ActorExitRequest())
-        time.sleep(0.02)
+        actor_exit_wait()
 
         asys.tell(pawn, 'hello')
         cnt = self.checkNewDLCount(asys, handler, cnt)
@@ -302,7 +303,7 @@ class TestFuncDeadLettering(object):
 
         handler2 = asys.createActor(DLParent)
         asys.tell(handler2, 'Start')
-        time.sleep(0.025)
+        actor_do_stuff_wait()
 
         assert cnt == asys.ask(handler, 'Count', ASK_WAIT)
         assert 0 == asys.ask(handler2, 'Count', ASK_WAIT)
@@ -316,7 +317,7 @@ class TestFuncDeadLettering(object):
         assert cnt == asys.ask(handler, 'Count', ASK_WAIT)
 
         asys.tell(handler, 'Stop')  # no effect
-        time.sleep(0.025)
+        actor_do_stuff_wait()
 
         asys.tell(pawn, 'more messages')
         cnt2 = self.checkNewDLCount(asys, handler2, cnt2)
@@ -327,22 +328,22 @@ class TestFuncDeadLettering(object):
         assert cnt == asys.ask(handler, 'Count', ASK_WAIT)
 
         asys.tell(handler2, 'Stop')
-        time.sleep(0.025)
+        actor_do_stuff_wait()
         assert cnt == asys.ask(handler, 'Count', ASK_WAIT)
         assert cnt2 == asys.ask(handler2, 'Count', ASK_WAIT)
 
         asys.tell(pawn, 'more messages repeated')
-        time.sleep(0.025)
+        actor_do_stuff_wait()
         assert cnt == asys.ask(handler, 'Count', ASK_WAIT)
         assert cnt2 == asys.ask(handler2, 'Count', ASK_WAIT)
 
         asys.tell(pawn, 'more messages again repeated')
-        time.sleep(0.025)
+        actor_do_stuff_wait()
         assert cnt == asys.ask(handler, 'Count', ASK_WAIT)
         assert cnt2 == asys.ask(handler2, 'Count', ASK_WAIT)
 
         asys.tell(handler, 'Start')
-        time.sleep(0.025)
+        actor_do_stuff_wait()
         assert cnt == asys.ask(handler, 'Count', ASK_WAIT)
         assert cnt2 == asys.ask(handler2, 'Count', ASK_WAIT)
 
@@ -368,7 +369,7 @@ class TestFuncDeadLettering(object):
 
         pawn = asys.createActor(DLHandler)
         asys.tell(pawn, ActorExitRequest())
-        time.sleep(0.025)
+        actor_exit_wait()
 
         # Send a message ane make sure the later dead-letter handler receives it
 
@@ -388,11 +389,11 @@ class TestFuncDeadLettering(object):
         # Now remove dead letter handler; ensure dead letters are dropped
 
         asys.tell(handler2, ActorExitRequest())
-        time.sleep(0.025)
+        actor_exit_wait()
         assert 0 == asys.ask(handler, 'Count', ASK_WAIT)
 
         asys.tell(pawn, 'another')
-        time.sleep(0.025)
+        actor_do_stuff_wait()
         assert 0 == asys.ask(handler, 'Count', ASK_WAIT)
 
         # Tell first dead letter handler to re-register
@@ -413,7 +414,7 @@ class TestFuncDeadLettering(object):
         asys.tell(handler, 'Start')
         handler2 = asys.createActor(DLParent)
         asys.tell(handler2, 'Start')
-        time.sleep(0.15)
+        actor_do_stuff_wait()
         assert 0 == asys.ask(handler, 'Count', ASK_WAIT)
         assert 0 == asys.ask(handler2, 'Count', ASK_WAIT)
 
@@ -421,7 +422,7 @@ class TestFuncDeadLettering(object):
 
         pawn = asys.createActor(DLParent)
         asys.tell(pawn, ActorExitRequest())
-        time.sleep(0.025)
+        actor_exit_wait()
 
         # Send a message and make sure the later dead-letter handler receives it
 
@@ -441,17 +442,17 @@ class TestFuncDeadLettering(object):
         # Now remove dead letter handler; ensure dead letters are dropped
 
         asys.tell(handler2, ActorExitRequest())
-        time.sleep(0.025)
+        actor_exit_wait()
         assert 0 == asys.ask(handler, 'Count', ASK_WAIT)
 
         asys.tell(pawn, 'another')
-        time.sleep(0.025)
+        actor_do_stuff_wait()
         assert 0 == asys.ask(handler, 'Count', ASK_WAIT)
 
         # Tell first dead letter handler to re-register
 
         asys.tell(handler, 'Start')
-        time.sleep(0.15)
+        actor_do_stuff_wait()
         # n.b. tell or ask might create temporary actor, so can't assume startnum == 0
         cnt = asys.ask(handler, 'Count', ASK_WAIT)
 
