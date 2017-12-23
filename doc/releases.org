@@ -18,6 +18,116 @@ version changes indicate incompatible changes, minor versions indicate
 added functionality that is backwards compatible, and bugfix changes
 do not change the API.
 
+* Summary
+** 2017
+
+ | Release |       Date | Significant Bugfixes                                | Significant Features                    |
+ |---------+------------+-----------------------------------------------------+-----------------------------------------|
+ |   3.9.0 | 2017-12-22 | [[https://github.com/kquick/Thespian/issues/9][Issue #9]]                                            | ~self.globalName~, ~runcommand~ helper  |
+ |---------+------------+-----------------------------------------------------+-----------------------------------------|
+ |   3.8.3 | 2017-11-08 | ~globalName~ w/convention                           |                                         |
+ |         |            |                                                     |                                         |
+ |   3.8.2 | 2017-11-01 | ~inspect~ deprecation,                              |                                         |
+ |         |            | message ~str()~ exceptions                          |                                         |
+ |         |            |                                                     |                                         |
+ |   3.8.1 | 2017-10-22 | starting loaded source Actors under Windows         | enhance examples for Windows            |
+ |         |            | thread-protection for ~wakeupAfter()~               |                                         |
+ |         |            |                                                     |                                         |
+ |   3.8.0 | 2017-08-22 | [[https://github.com/kquick/Thespian/issues/5][Issue #5]]                                            | ~Actor.__init__(capabilities)~          |
+ |         |            | thread protection                                   | ~self.wakeupAfter()~ payload            |
+ |---------+------------+-----------------------------------------------------+-----------------------------------------|
+ |   3.7.3 | 2017-05-02 | TCP transport trailing input                        |                                         |
+ |         |            | MultiprocQueueBase daemonized background            |                                         |
+ |         |            |                                                     |                                         |
+ |   3.7.2 | 2017-03-29 | fixed setup.py stale references                     |                                         |
+ |         |            |                                                     |                                         |
+ |   3.7.1 | 2017-03-29 | Director response detection, admin startup          |                                         |
+ |         |            | socket closure                                      |                                         |
+ |         |            |                                                     |                                         |
+ |   3.7.0 | 2017-03-19 | ActorSystem shutdown, transmit completions          | ~ActorSystem.private()~ context         |
+ |---------+------------+-----------------------------------------------------+-----------------------------------------|
+ |   3.6.3 | 2017-03-02 | revert 3.6.2 regression                             |                                         |
+ |         |            |                                                     |                                         |
+ |   3.6.2 | 2017-02-19 | convention notifications, shutdown cleanup,         |                                         |
+ |         |            | address comparison commutativity                    |                                         |
+ |         |            |                                                     |                                         |
+ |   3.6.1 | 2017-01-18 | Director locations (support Debian/Ubuntu),         |                                         |
+ |         |            | Director Python2.6 + Mac launchd fix,               |                                         |
+ |         |            | [[https://github.com/godaddy/Thespian/issues/32][Issue 32]], message stuck on tx queue                 |                                         |
+ |         |            |                                                     |                                         |
+ |   3.6.0 | 2017-01-02 | Actor Address display,                              | Thespian Director, ~@transient~,        |
+ |         |            | dead target forwarding,                             | timer improvements, Source Authority    |
+ |         |            | preserve loaded source information                  | active rejection, address re-use.       |
+ |---------+------------+-----------------------------------------------------+-----------------------------------------|
+
+** 2016
+
+ | Release |       Date | Significant Bugfixes                                | Significant Features                    |
+ |---------+------------+-----------------------------------------------------+-----------------------------------------|
+ |   3.5.2 | 2016-12-12 | Slower hysteresis backoff,                          |                                         |
+ |         |            | async tx mgmt fixes with spin/promela models        |                                         |
+ |         |            |                                                     |                                         |
+ |   3.5.1 | 2016-12-08 | Rollback admin addr optimization,                   |                                         |
+ |         |            | Prioritize local Admin traffic                      |                                         |
+ |         |            |                                                     |                                         |
+ |   3.5.0 | 2016-12-04 | Close idle TCP sockets when needed and add          | Actor signal handling,                  |
+ |         |            | protection against remotely closed sockets,         | troup leader status reporting,          |
+ |         |            | more socket closure when creating children,         | ~self.actorSystemShutdown()~,           |
+ |         |            | set TZ in env (avoid ~stat()~ to ~/etc/localtime~), | Address string brevity                  |
+ |         |            | troupe worker exit handling                         |                                         |
+ |         |            | Windows ~SO_EXCLUSIVEADDRUSE~ for probing running   |                                         |
+ |---------+------------+-----------------------------------------------------+-----------------------------------------|
+ |   3.4.0 | 2016-11-07 | TCP transport socket shutdown corner cases,         | ~self.notifyOnSourceAvailability()~,    |
+ |         |            | logging error ([[https://github.com/godaddy/Thespian/issues/23][Issue 23]])                            | ~ask()~ and ~listen()~ speed,           |
+ |         |            |                                                     | convention management stability,        |
+ |         |            |                                                     | ~PoisonMessage.details~,                |
+ |         |            |                                                     | ~@troupe~                               |
+ |---------+------------+-----------------------------------------------------+-----------------------------------------|
+ |   3.3.0 | 2016-09-15 | TCP retransmits on corrupted ack/nak,               | ~deRegisterREmoteSystem(remoteAdmin)~,  |
+ |         |            | internal non-progress ~select()~ CPU consumption    | Python 3.6 support, convention mgmt,    |
+ |---------+------------+-----------------------------------------------------+-----------------------------------------|
+ |   3.2.2 | 2016-09-15 | No pre-registered on remote notifications,          |                                         |
+ |         |            | maximize async sends,                               |                                         |
+ |         |            | fix race condition on multiple globalName creates   |                                         |
+ |         |            |                                                     |                                         |
+ |   3.2.1 | 2016-09-08 | Add backward compatibility re: ~sourceInfo~         |                                         |
+ |         |            |                                                     |                                         |
+ |   3.2.0 | 2016-09-08 |                                                     | Added ~sourceInfo~ to ~ValidateSource~, |
+ |         |            |                                                     | multi-threaded Actor ~self.send()~      |
+ |---------+------------+-----------------------------------------------------+-----------------------------------------|
+ |   3.1.1 | 2016-09-08 | Missing import on exception, better TCP connects,   |                                         |
+ |         |            | disable ActorAddress hashing                        |                                         |
+ |         |            |                                                     |                                         |
+ |   3.1.0 | 2016-08-29 | More complete Actor shutdowns, TCP connect timeout  | "Process Startup Method" capability,    |
+ |         |            | to support busy networks, no infinite-repeat of     | thespian shell Python3 support,         |
+ |         |            | convention source unload notifications              | initial multi-threaded Actor support    |
+ |---------+------------+-----------------------------------------------------+-----------------------------------------|
+ |   3.0.4 | 2016-08-12 | Fix init hardening, longer Actor startup allowance  | Optimize ~__import__~ interceptor.      |
+ |         |            |                                                     |                                         |
+ |   3.0.3 | 2016-08-11 | Hardened init for fqdn, hostname, or dns gaierrors. |                                         |
+ |         |            | Error reporting for actor creation exceptions.      |                                         |
+ |         |            |                                                     |                                         |
+ |   3.0.2 | 2016-07-29 | Defer unknown createActor sourceHash to Admin       |                                         |
+ |         |            | Sourceload import hooking updates.                  |                                         |
+ |         |            |                                                     |                                         |
+ |   3.0.1 | 2016-07-26 | Fix unloads for None sys.modules entries,           |                                         |
+ |         |            | sourceload import optimizations, more pending       |                                         |
+ |         |            | actor timeout info                                  |                                         |
+ |         |            |                                                     |                                         |
+ |   3.0.0 |            | No hash attempts for ActorAddress                   | Use py.test for testing                 |
+ |         |            | socket accept failure handling, pre-reg fixes,      |                                         |
+ |         |            | sourceloading fixes, TCP transport improvements,    |                                         |
+ |         |            | revert signal handling from 2.5.8, convention       |                                         |
+ |         |            | handler standardization.                            |                                         |
+ |---------+------------+-----------------------------------------------------+-----------------------------------------|
+ |   2.6.1 | 2016-05-20 | Fix DeadEnvelope in simpleSystemBase                |                                         |
+ |         |            | Fix SIGUSR1 for Windows                             |                                         |
+ |         |            |                                                     |                                         |
+ |   2.6.0 | 2016-05-18 | No restart of logger on shutdown                    | SIGUSR1 status reporting,               |
+ |         |            |                                                     | simpleSystemBase capability updates     |
+ |---------+------------+-----------------------------------------------------+-----------------------------------------|
+
+
 * 3.x
 
 ** 3.9
