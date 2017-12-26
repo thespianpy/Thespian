@@ -188,9 +188,11 @@ class asyncTransportBase(object):
             transmitIntent.changeMessage(txmsg)
 
         # Verify that the message can be serialized.  This may throw
-        # an exception, which will cause the caller to store this
-        # intent and retry it at some future point (the code up to and
-        # including this serialization should be idempotent).
+        # an exception for local-only ActorAddresses or for attempting
+        # to send other invalid elements in the message.  The invalid
+        # address will cause the caller to store this intent and retry
+        # it at some future point (the code up to and including this
+        # serialization should be idempotent).
 
         transmitIntent.serMsg = self.serializer(transmitIntent)
         self._schedulePreparedIntent(transmitIntent)

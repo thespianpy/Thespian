@@ -279,6 +279,9 @@ class systemCommonBase(object):
             import traceback
             thesplog('Declaring transmit of %s as Poison: %s', intent.identify(),
                      traceback.format_exc(), exc_info=True, level=logging.ERROR)
+            if not isinstance(intent.message, logging.LogRecord):
+                logging.error('Declaring transmit of %s as Poison: %s', intent.identify(),
+                              traceback.format_exc(), exc_info=True)
             if not isinstance(intent.message, PoisonMessage):
                 self._receiveQueue.append(
                     ReceiveEnvelope(intent.targetAddr,
