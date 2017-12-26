@@ -513,10 +513,10 @@ class RunCommand(ActorTypeDispatcher):
         if isinstance(error_out, tuple):
             error_out = error_out[1]
         else:
-            error_out = normal_out[getattr(self, '_eoli', {}).get('nbytes', 0):]
+            error_out = error_out[(getattr(self, '_eoli', {}) or {}).get('nbytes', 0):]
         eelided = False
         for ei in range(0, len(error_out)):
-            if '\n' == normal_out[-ei-1]:
+            if '\n' == error_out[-ei-1]:
                 leo = list(filter(None, error_out[-ni:].split('\n')))
                 if len(leo) == HALF_NUM_LINES_LOGGED:
                     nelided = ei != len(error_out)
