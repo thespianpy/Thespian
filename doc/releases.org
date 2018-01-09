@@ -9,7 +9,7 @@
 #+LATEX_HEADER: \product{Thespian}
 #+LATEX_HEADER: \component{Python Actor System}
 #+LATEX_HEADER: \doctype{Release Notes}
-#+LATEX_HEADER: \docrev{3.9.0}{2017 Dec 22}
+#+LATEX_HEADER: \docrev{3.9.1}{2018 Jan 09}
 #+LATEX_HEADER: \docid{TheDoc-06}
 #+OPTIONS: ^:nil num:nil
 
@@ -19,6 +19,13 @@ added functionality that is backwards compatible, and bugfix changes
 do not change the API.
 
 * Summary
+** 2018
+
+ | Release |       Date | Significant Bugfixes     | Significant Features             |
+ |---------+------------+--------------------------+----------------------------------|
+ |   3.9.1 | 2018-01-09 | ~RunCommand logging fix~ | log message serialization errors |
+ |---------+------------+--------------------------+----------------------------------|
+
 ** 2017
 
  | Release |       Date | Significant Bugfixes                                | Significant Features                    |
@@ -131,6 +138,18 @@ do not change the API.
 * 3.x
 
 ** 3.9
+
+*** 3.9.1 <2018-01-09 Tue>
+
+    * Message serialization failures (causing a ~PoisonMessage~
+      response) are now logged for easier diagnosis.
+
+    * Fixed an error in logging for the new ~RunCommand~ helper.
+
+    * Updated ~RunCommand~ to take a logger Actor Address instead of
+      attempting to call a logging function directly.  This allows any
+      filtering and log adjustments to be implemented by the logging
+      actor and keeps RunCommand cleaner.
 
 *** 3.9.0 <2017-12-22 Fri>
 
