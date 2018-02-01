@@ -517,7 +517,7 @@ class RunCommand(ActorTypeDispatcher):
         eelided = False
         for ei in range(0, len(error_out)):
             if '\n' == error_out[-ei-1]:
-                leo = list(filter(None, error_out[-ni:].split('\n')))
+                leo = list(filter(None, error_out[-ei:].split('\n')))
                 if len(leo) == HALF_NUM_LINES_LOGGED:
                     nelided = ei != len(error_out)
                     break
