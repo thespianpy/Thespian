@@ -9,7 +9,7 @@
 #+LATEX_HEADER: \product{Thespian}
 #+LATEX_HEADER: \component{Python Actor System}
 #+LATEX_HEADER: \doctype{Release Notes}
-#+LATEX_HEADER: \docrev{3.9.1}{2018 Jan 09}
+#+LATEX_HEADER: \docrev{3.9.2}{2018 Jan 31}
 #+LATEX_HEADER: \docid{TheDoc-06}
 #+OPTIONS: ^:nil num:nil
 
@@ -21,10 +21,11 @@ do not change the API.
 * Summary
 ** 2018
 
- | Release |       Date | Significant Bugfixes     | Significant Features             |
- |---------+------------+--------------------------+----------------------------------|
- |   3.9.1 | 2018-01-09 | ~RunCommand logging fix~ | log message serialization errors |
- |---------+------------+--------------------------+----------------------------------|
+ | Release |       Date | Significant Bugfixes              | Significant Features             |
+ |---------+------------+-----------------------------------+----------------------------------|
+ |   3.9.2 | 2018-01-31 | ~RunCommand error processing fix~ |                                  |
+ |   3.9.1 | 2018-01-09 | ~RunCommand logging fix~          | log message serialization errors |
+ |---------+------------+-----------------------------------+----------------------------------|
 
 ** 2017
 
@@ -139,8 +140,11 @@ do not change the API.
 
 ** 3.9
 
-*** 3.9.1 <2018-01-09 Tue>
+*** 3.9.2 <2018-01-31 Wed>
+    * Fixed an error in the error handling code for the ~RunCommand~
+      helper.
 
+*** 3.9.1 <2018-01-09 Tue>
     * Message serialization failures (causing a ~PoisonMessage~
       response) are now logged for easier diagnosis.
 
