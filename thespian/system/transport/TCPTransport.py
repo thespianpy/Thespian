@@ -1394,7 +1394,7 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
 
     def _handleReadableIncoming(self, inc):
         try:
-            rdata = inc.socket.recv(min(8192, inc.remainingSize()))
+            rdata = inc.socket.recv(min(1024000, inc.remainingSize()))
             inc.failCount = 0
         except socket.error as e:
             inc.failCount = getattr(inc, 'failCount', 0) + 1
