@@ -227,7 +227,7 @@ Please see the examples section for more information.
 
 This has just been a very simple introduction to using Thespian.  A
 more detailed introduction can be found in the [[http://thespianpy.com/doc/in_depth][Thespian In-Depth
-Introduction]] document, and [[http://thespian.py/doc/using][Using Thespian]] is the primary API and
+Introduction]] document, and [[http://thespianpy.com/doc/using][Using Thespian]] is the primary API and
 utilization document.
 
 * Documentation
