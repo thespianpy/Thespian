@@ -75,6 +75,7 @@ class asyncTransportBase(object):
         self._aTB_numPendingTransmits = 0  # counts recursion and in-progress
         self._aTB_lock = threading.Lock()  # protects the following:
         self._aTB_processing = False       # limits to a single operation
+        self._aTB_sending = False          # transmit is being performed
         self._aTB_queuedPendingTransmits = deque()
         self._aTB_rx_pause_enabled = True
         self._aTB_interrupted = False
@@ -117,24 +118,38 @@ class asyncTransportBase(object):
                 break
 
     def _runQueued(self):
+        """Perform queued transmits; returns False if there are no transmits
+           or if another process is already in this critical section
+           (and will therefore be perform the transmits).
+        """
         v, e = self._complete_expired_intents()
         while e:
             v, e = self._complete_expired_intents()
         # If something is queued, submit it to the lower level for transmission
-        with self._aTB_lock:
-            if self._aTB_processing:
-                # Some other thread is processing TX
-                return False
-            self._aTB_processing = True
-            try:
-                nextTransmit = self._aTB_queuedPendingTransmits.popleft()
-            except IndexError:
-                self._aTB_processing = False
-                return False
-        self._submitTransmit(nextTransmit)
-        with self._aTB_lock:
-            self._aTB_processing = False
-        return True
+        # 1. Sync with the lower level, since this will be modifying lower-level objects
+        while True:
+            nextTransmit = None
+            with self._aTB_lock:
+                if not self._aTB_processing:
+                    # 2. If another process is in the sending critical
+                    # section, defer to it
+                    if self._aTB_sending:
+                        return False
+                    # Nothing to send by this point, return
+                    if not self._aTB_queuedPendingTransmits:
+                        return False
+                    self._aTB_processing = True
+                    self._aTB_sending = True
+                    nextTransmit = self._aTB_queuedPendingTransmits.popleft()
+            if nextTransmit:
+                try:
+                    self._submitTransmit(nextTransmit)
+                    return True
+                finally:
+                    self._aTB_sending = False
+                    self._aTB_processing = False
+            time.sleep(0.00001)
+
 
     def scheduleTransmit(self, addressManager, transmitIntent):
 
@@ -249,6 +264,7 @@ class asyncTransportBase(object):
                      level=logging.WARNING)
 
     def _exclusively_processing(self):
+        "Protects critical sections by only allowing a single thread entry"
         with self._aTB_lock:
             if self._aTB_processing:
                 return False  # Another thread is processing, not exclusive
@@ -256,6 +272,7 @@ class asyncTransportBase(object):
             return True  # This thread exclusively holds the processing mutex
 
     def _not_processing(self):
+        "Exit from critical section"
         self._aTB_processing = False
 
     def _schedulePreparedIntent(self, transmitIntent):
@@ -277,8 +294,10 @@ class asyncTransportBase(object):
 
         if not self._canSendNow():
             if self._exclusively_processing():
-                self._drain_tx_queue_if_needed(transmitIntent.delay())
-                self._aTB_processing = False
+                try:
+                    self._drain_tx_queue_if_needed(transmitIntent.delay())
+                finally:
+                    self._aTB_processing = False
 
         while self._canSendNow():
             if not self._runQueued():
