@@ -141,13 +141,14 @@ class asyncTransportBase(object):
                     self._aTB_processing = True
                     self._aTB_sending = True
                     nextTransmit = self._aTB_queuedPendingTransmits.popleft()
-            if nextTransmit:
-                try:
+            try:
+                if nextTransmit:
                     self._submitTransmit(nextTransmit)
                     return True
-                finally:
-                    self._aTB_sending = False
-                    self._aTB_processing = False
+                return False
+            finally:
+                self._aTB_sending = False
+                self._aTB_processing = False
             time.sleep(0.00001)
 
 
