@@ -62,21 +62,30 @@ class StartServer(object):
 
 
 class ServerActor(ActorTypeDispatcher):
+    def __init__(self, *args, **kw):
+        super(ServerActor, self).__init__(*args, **kw)
+        self._response_only = []
 
     def check_socket(self, incsock):
         """Reads incoming data from a client-connected socket.  When a full
            HTTP request has been received, sends it to the handler
         """
         try:
-            newdata = incsock.socket.recv((incsock.expsize or 65535) - len(incsock.incbuf))
+            newdata = incsock.socket.recv(incsock.incbuf.remaining())
         except IOError as ex:
             if ex.errno == errno.EAGAIN:
                 return True  # nothing to read right now
             raise
         if not newdata:
-            logging.info('Client socket from %s: closed', incsock.rmtaddr)
-            return False
-        logging.info('Client socket from %s: newdata -> %s', incsock.rmtaddr, newdata)
+            # The other side may have fully closed, or may have just
+            # done a shutdown WR.
+            if incsock.responded:
+                incsock.close()
+                logging.info('Client socket from %s: closed', incsock.rmtaddr)
+                return False
+            else:
+                self._response_only.append(incsock)
+        logging.info('Client socket from %s: newdata[%d] -> %s', incsock.rmtaddr, len(newdata), newdata[:100])
         incsock.incbuf.addMore(newdata)
         while incsock.incbuf.isComplete():
             request, incsock.incbuf = incsock.incbuf.extract(partial(HTTPRequest, self.serveAddress, incsock.rmtaddr))
@@ -97,9 +106,19 @@ class ServerActor(ActorTypeDispatcher):
         for each in self.activesockets:
             if each.rmtaddr == msg.request.rmtaddr:
                 each.socket.sendall(msg.serialize())
+                each.responded = True
                 break
         else:
-            logging.warning('Got HTTP response for %s but no socket to send', each.rmtaddr)
+            for each in self._response_only:
+                if each.rmtaddr == msg.request.rmtaddr:
+                    print('Sending and closing:',str(msg.serialize()))
+                    each.socket.sendall(msg.serialize())
+                    self._response_only = [ RO for RO in self._response_only
+                                            if RO != each ]
+                    each.close()
+                    break
+            else:
+                logging.warning('Got HTTP response for %s but no socket to send', msg.request.rmtaddr)
         return self._watchlist()
 
 
@@ -127,9 +146,9 @@ class ServerActor(ActorTypeDispatcher):
             self.servesocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM, socket.IPPROTO_TCP)
             try:
                 self.servesocket.bind(self.serveAddress)
-                self.servesocket.listen(5)
                 self.servesocket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
                 self.servesocket.setblocking(0)
+                self.servesocket.listen(5)
             except Exception:
                 delattr(self, 'servesocket')
             self.activesockets = []

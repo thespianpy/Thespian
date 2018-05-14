@@ -1,9 +1,10 @@
 class HTTPRequest(object):
     "Represents a complete HTTP client request"
-    def __init__(self, serveraddr, rmtaddr, req):
+    def __init__(self, serveraddr, rmtaddr, req, body):
         self.rmtaddr = rmtaddr
         self._serveraddr = serveraddr
         self.environ = self._parse_req(req)
+        self.body = body
     def _parse_req(self, req):
         reqlines = req.split(b'\r\n' if b'\r\n' in req else b'\n')
         reqwords = reqlines[0].split(b' ')
@@ -34,21 +35,44 @@ class HTTPRequestBuf(object):
        HTTP request is present in the data."""
     def __init__(self, initial=None):
         self.incbuf = initial or b''
+        self._rmtClosed = False
     def addMore(self, more):
-        self.incbuf += more
+        if hasattr(self, 'body'):
+            self.body += more
+        else:
+            self.incbuf += more
     def __len__(self): return len(self.incbuf)
+    def rmtClosed(self):
+        self._rmtClosed = True
+    def remaining(self):
+        return getattr(self, 'clen', 65535) - len(getattr(self, 'body', self.incbuf))
     def isComplete(self):
-        return b'\r\n\r\n' in self.incbuf or b'\n\n' in self.incbuf
+        # If calculation has already been cached
+        if hasattr(self, 'clen') and hasattr(self, 'body'):
+            return len(self.body) >= self.clen
+        # Check for complete request, caching elements for later use
+        if b'\r\n\r\n' not in self.incbuf and b'\n\n' not in self.incbuf:
+            return False
+        if b'\r\n\r\n'  in self.incbuf:
+            self.headers, self.body = self.incbuf.split(b'\r\n\r\n')
+            hlines = self.headers.split(b'\r\n')
+        else:
+            self.headers, self.body = self.incbuf.split(b'\n\n')
+            hlines = self.headers.split(b'\n')
+        for hline in hlines:
+            hwords = hline.split(b':')
+            if hwords[0].lower() != b'content-length':
+                continue
+            self.clen = int(hwords[1])
+            return len(self.body) >= self.clen
+        # No Content-Length, so assume finished only when the other
+        # side closes (shutdown WR).
+        return self._rmtClosed
     def extract(self, reqbuilder):
         if self.isComplete():
-            endreq = b'\r\n\r\n' if b'\r\n\r\n' in self.incbuf else b'\n\n'
-            endloc = self.incbuf.index(endreq)
-            excess = self.incbuf[endloc + len(endreq):]
-            return reqbuilder(self.incbuf[:endloc]), HTTPRequestBuf(excess)
+            return (reqbuilder(self.headers, self.body[:self.clen]),
+                    HTTPRequestBuf(self.body[self.clen:]))
         return None
-
-def parse_request(incsock, reqbuf):
-    return HTTPRequest(incsock.rmtaddr, reqbuf.incbuf)
 
 
 class IncomingSocket(object):
@@ -56,8 +80,12 @@ class IncomingSocket(object):
     def __init__(self, acceptInfo):
         self.socket, self.rmtaddr = acceptInfo
         self.incbuf = HTTPRequestBuf()
-        self.expsize = None
         self.socket.setblocking(0)
+        self.responded = False
+    def close(self):
+        import socket
+        self.socket.shutdown(socket.SHUT_RDWR)
+        self.socket.close()
 
 
 class HTTPResponse(object):
