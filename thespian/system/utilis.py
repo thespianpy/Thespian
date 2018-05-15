@@ -10,9 +10,18 @@ import inspect
 ### Logging
 ###
 
+# recognized logging level names for the Thespian internal log.
+_name_to_level = {
+    "CRITICAL": logging.CRITICAL,
+    "ERROR": logging.ERROR,
+    "WARNING": logging.WARNING,
+    "INFO": logging.INFO,
+    "DEBUG": logging.DEBUG
+}
+
 # Default/current logging controls
 _thesplog_control_settings = (
-    logging.WARNING,
+    _name_to_level.get(os.getenv('THESPLOG_THRESHOLD'), logging.WARNING),
     False,
     os.getenv('THESPLOG_FILE_MAXSIZE', 50 * 1024) # 50KB by default
 )
