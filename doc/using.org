@@ -1154,6 +1154,11 @@ before the ActorSystem is started:
        by developers writing Actors and is usually only needed by
        developers modifying Thespian internals.
 
+  * THESPLOG_THRESHOLD :: specifies the minimum log level that will get
+       written the THESPLOG_FILE. The default value is ~WARNING~ and the
+       following log levels are recognized: ~CRITICAL~, ~ERROR~, ~WARNING~,
+        ~INFO~, and ~DEBUG~.
+
 ** Actor Code Distribution
    :PROPERTIES:
    :CUSTOM_ID: hH-955ec990-a267-4d08-8f4d-5f980c777173

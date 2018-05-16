@@ -1438,7 +1438,8 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
             import traceback
             thesplog('OUCH!  Error deserializing received data:'
                      ' %s  (rdata="%s", extra="%s")',
-                     traceback.format_exc(), rdata, extra)
+                     traceback.format_exc(), rdata, extra,
+                     level=logging.ERROR)
             try:
                 inc.socket.send(ackDataErrMsg)
             except Exception:
