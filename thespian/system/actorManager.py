@@ -14,6 +14,7 @@ from thespian.system.messages.status import Thespian_StatusReq, Thespian_ActorSt
 from thespian.system.messages import *
 from thespian.system.messages.convention import NotifyOnSystemRegistration
 from thespian.system.messages.logcontrol import SetLogging
+from thespian.system.messages.multiproc import EndpointConnected
 from thespian.system.utilis import actualActorClass
 from thespian.system.sourceLoader import loadModuleFromHashSource
 from datetime import timedelta
@@ -278,6 +279,14 @@ class ActorManager(systemCommonBase):
             self._send_intent(TransmitIntent(self._adminAddr,
                                              DeadEnvelope(intent.targetAddr,
                                                           intent.message)))
+        # If this was the startup connection to the parent and the
+        # parent is a DeadTarget, this child should exit immediately.
+        if result == SendStatus.DeadTarget and \
+           isinstance(intent.message, EndpointConnected):
+            # Startup was not completed, no children can exist, directly exit.
+            self._exiting = True  # set exiting mode
+            self.transport.abort_run(drain=True)
+            return False
 
 
     # ----------------------------------------------------------------------

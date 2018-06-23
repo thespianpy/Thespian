@@ -255,7 +255,7 @@ class TransmitIntent(PauseWithBackoff):
 
     def addCallback(self, onSuccess=None, onFailure=None):
         self._callbackTo = ResultCallback(onSuccess, onFailure, self._callbackTo)
-
+        return self
 
     def tx_done(self, status):
         self.result = status

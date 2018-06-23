@@ -564,9 +564,11 @@ def startChild(childClass, globalName, endpoint, transportClass,
                           childRequirements, currentSystemCapabilities,
                           concurrency_context)
     am.asLogger = loggerAddr
-    am.transport.scheduleTransmit(None,
-                                  TransmitIntent(notifyAddr,
-                                                 EndpointConnected(endpoint.addrInst)))
+    am.transport.scheduleTransmit(
+        None,
+        TransmitIntent(notifyAddr,
+                       EndpointConnected(endpoint.addrInst))
+        .addCallback(onFailure=am.actor_send_fail))
     setProcName(getattr(childClass, '__name__',
                         str(childClass)).rpartition('.')[-1],
                 am.transport.myAddress)
