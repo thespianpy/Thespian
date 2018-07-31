@@ -9,7 +9,7 @@
 #+LATEX_HEADER: \product{Thespian}
 #+LATEX_HEADER: \component{Python Actor System}
 #+LATEX_HEADER: \doctype{Release Notes}
-#+LATEX_HEADER: \docrev{3.9.2}{2018 Jan 31}
+#+LATEX_HEADER: \docrev{3.9.3}{2018 Jul 31}
 #+LATEX_HEADER: \docid{TheDoc-06}
 #+OPTIONS: ^:nil num:nil
 
@@ -21,11 +21,15 @@ do not change the API.
 * Summary
 ** 2018
 
- | Release |       Date | Significant Bugfixes              | Significant Features             |
- |---------+------------+-----------------------------------+----------------------------------|
- |   3.9.2 | 2018-01-31 | ~RunCommand error processing fix~ |                                  |
- |   3.9.1 | 2018-01-09 | ~RunCommand logging fix~          | log message serialization errors |
- |---------+------------+-----------------------------------+----------------------------------|
+ | Release |       Date | Significant Bugfixes                           | Significant Features             |
+ |---------+------------+------------------------------------------------+----------------------------------|
+ |   3.9.3 | 2018-07-31 | Log deserialization errors at ERROR level      | ~THESPLOG_THRESHOLD~             |
+ |         |            | More thread-safety fixes                       |                                  |
+ |         |            | Fix [[https://github.com/kquick/Thespian/issues/27][Issue #27]]: parent dies before child starts |                                  |
+ |         |            | Updates to the http_server.                    |                                  |
+ |   3.9.2 | 2018-01-31 | ~RunCommand error processing fix~              |                                  |
+ |   3.9.1 | 2018-01-09 | ~RunCommand logging fix~                       | log message serialization errors |
+ |---------+------------+------------------------------------------------+----------------------------------|
 
 ** 2017
 
@@ -139,6 +143,27 @@ do not change the API.
 * 3.x
 
 ** 3.9
+
+*** 3.9.3 <2018-07-31 Tue>
+    * Added the ~THESPLOG_THRESHOLD~ environment variable to allow
+      control over thesplog logging levels without editing files, and
+      fixed some log deserialization (thanks to Daniel Mitterdorfer
+      for this enhancement).
+    * Set the level for logging incoming message deserialization
+      levels to ERROR (again, thank you to Daniel Mitterdorfer).
+    * Fixed [[https://github.com/kquick/Thespian/issues/27][Issue #27]] which prevented a child from being destroyed
+      when the parent exited before the child was successfully
+      created.
+    * More fixes for thread-safety when Actors use multiple threads.
+    * Updates to the ~http_server~ example for handling: remote
+      closure after send, retrieving the full Content-Length
+      specified, and providing the body of the data in the HTTPRequest
+      message.
+    * Internal fixes to async transmit to exit when no more work is
+      available.
+    * Added ~test_bigmessages~ to test the transfer of very large
+      messages.
+    * Increased incoming message buffer size for less re-assembly.
 
 *** 3.9.2 <2018-01-31 Wed>
     * Fixed an error in the error handling code for the ~RunCommand~
