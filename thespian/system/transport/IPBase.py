@@ -144,9 +144,23 @@ class IPActorAddress(object):
                 print('Error connecting to %s' % (str(remoteAddr)))
                 import traceback
                 traceback.print_exc()
+            except OSError as er:
+                if er.errno == 101 \
+                   and (not isinstance(external, tuple) or not external[0]):
+                    # Network unreachable, ENETUNREACH, but no specific
+                    # network requested, so run local-only with loopback
+                    # addresses.
+                    baseaddr = '127.0.0.1'
+            except socket.error as er:
+                if er.errno == 101 \
+                   and (not isinstance(external, tuple) or not external[0]):
+                    # Network unreachable, ENETUNREACH, but no specific
+                    # network requested, so run local-only with loopback
+                    # addresses.
+                    baseaddr = '127.0.0.1'
             except Exception:
                 pass
-            if not baseaddr or thisSystem._isLocalReference(baseaddr):
+            if not baseaddr:
                 raise RuntimeError('Unable to determine valid external socket address.')
             thisSystem.add_local_addr(baseaddr)
         res = socket.getaddrinfo(baseaddr, port, af, socktype, proto,
