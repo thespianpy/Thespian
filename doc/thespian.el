@@ -30,7 +30,7 @@
          (ditaa . t)
          ;(plantuml . t)  ;; see org-babel-execute:plantuml below
          (python . t)
-         (sh . t)
+         ; (sh . t)
          (org . t)
          (latex . t))))
 
