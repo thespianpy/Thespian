@@ -9,7 +9,7 @@
 #+LATEX_HEADER: \product{Thespian}
 #+LATEX_HEADER: \component{Python Actor System}
 #+LATEX_HEADER: \doctype{Release Notes}
-#+LATEX_HEADER: \docrev{3.9.3}{2018 Jul 31}
+#+LATEX_HEADER: \docrev{3.9.4}{2018 Aug 05}
 #+LATEX_HEADER: \docid{TheDoc-06}
 #+OPTIONS: ^:nil num:nil
 
@@ -23,6 +23,7 @@ do not change the API.
 
  | Release |       Date | Significant Bugfixes                           | Significant Features             |
  |---------+------------+------------------------------------------------+----------------------------------|
+ |   3.9.4 | 2018-08-05 | Fix [[https://github.com/kquick/Thespian/issues/28][Issue #28]]: Enable offline                  |                                  |
  |   3.9.3 | 2018-07-31 | Log deserialization errors at ERROR level      | ~THESPLOG_THRESHOLD~             |
  |         |            | More thread-safety fixes                       |                                  |
  |         |            | Fix [[https://github.com/kquick/Thespian/issues/27][Issue #27]]: parent dies before child starts |                                  |
@@ -144,6 +145,10 @@ do not change the API.
 
 ** 3.9
 
+*** 3.9.4 <2018-08-05 Sun>
+    * Fixed [[https://github.com/kquick/Thespian/issues/28][Issue #28]] which prevented using the multiprocTCPBase or
+      multiprocUDPBase ActorSystem bases offline (i.e. when internet
+      connectivity was unavailable).
 *** 3.9.3 <2018-07-31 Tue>
     * Added the ~THESPLOG_THRESHOLD~ environment variable to allow
       control over thesplog logging levels without editing files, and
