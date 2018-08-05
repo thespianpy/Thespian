@@ -13,6 +13,8 @@
                        ))
 
 (setq org-src-preserve-indentation t)
+
+(require 'htmlize)
 (setq org-html-htmlize-output-type "css")
 (setq org-html-htmlize-convert-nonascii-to-entities nil)
 (setq org-html-htmlize-html-charset "utf-8")
@@ -75,5 +77,3 @@ This function is called by `org-babel-execute-src-block'."
 ;    (add-to-list 'org-latex-classes   -->  (add-to-list 'org-export-latex-classes
 ;    -funcall org-latex-export-to-pdf  ---> -funcall org-export-as-pdf
 
-(add-to-list 'load-path "${PWD}")
-(load "${PWD}/doc/settings.el" 't)
