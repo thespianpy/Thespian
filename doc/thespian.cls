@@ -82,7 +82,7 @@
 
 %\usepackage{manpage}
 \usepackage{fancyhdr}
-\usepackage{longtable}
+%\usepackage{longtable}
 \usepackage{lastpage}
 \usepackage{xspace}
 %\usepackage{chappg}      % number pages with ``chap-page'' style
