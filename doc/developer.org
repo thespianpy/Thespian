@@ -1,4 +1,4 @@
-#+TITLE: [[http://thespianpy.com][@@html:<img src="thesplogo2.png" alt="Thespian" width="50%" style="inline" />@@]] Developer's Notes
+#+TITLE: [[https://thespianpy.com][@@html:<img src="thesplogo2.png" alt="Thespian" width="50%" style="inline" />@@]] Developer's Notes
 #+AUTHOR: Kevin Quick <quick@sparq.org>
 #+SETUPFILE: theme.setup
 #+HTML_HEAD: <link href="https://fonts.googleapis.com/css?family=Actor" rel="stylesheet">
@@ -120,7 +120,7 @@ $ bash doc/gen_html.sh doc/using.org
   task and Actors at hand.
 
   Some of the system bases do not support some features (as detailed
-  [[http://thespianpy.com/doc/using.html#hH-2a5fa63d-e6eb-43b9-bea8-47223b27544e][here in the Using Thespian guide]]) and so there are inputs provided
+  [[https://thespianpy.com/doc/using.html#hH-2a5fa63d-e6eb-43b9-bea8-47223b27544e][here in the Using Thespian guide]]) and so there are inputs provided
   to the tests to indicate which are viable and/or stable.  More on
   this in the Running Tests section below.
 

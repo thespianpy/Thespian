@@ -1,4 +1,4 @@
-#+TITLE: [[http://thespianpy.com][@@html:<img src="thesplogo2.png" alt="Thespian" width="50%" style="inline" />@@]] Python Actors
+#+TITLE: [[https://thespianpy.com][@@html:<img src="thesplogo2.png" alt="Thespian" width="50%" style="inline" />@@]] Python Actors
 #+AUTHOR: Kevin Quick <quick@sparq.org>
 #+SETUPFILE: theme.setup
 #+HTML_HEAD: <link href="https://fonts.googleapis.com/css?family=Actor" rel="stylesheet">
@@ -25,7 +25,7 @@
 Thespian is a Python library providing a framework for developing
 concurrent, distributed, fault tolerant applications.
 
-Thespian is built on the [[http://wikipedia.org/wiki/Actor_model][Actor Model]] which allows applications to be
+Thespian is built on the [[https://wikipedia.org/wiki/Actor_model][Actor Model]] which allows applications to be
 written as a group of independently executing but cooperating "Actors"
 which communicate via messages.  These Actors run within the Actor
 System provided by the Thespian library.
@@ -226,8 +226,8 @@ Please see the examples section for more information.
    :END:
 
 This has just been a very simple introduction to using Thespian.  A
-more detailed introduction can be found in the [[http://thespianpy.com/doc/in_depth][Thespian In-Depth
-Introduction]] document, and [[http://thespianpy.com/doc/using][Using Thespian]] is the primary API and
+more detailed introduction can be found in the [[https://thespianpy.com/doc/in_depth][Thespian In-Depth
+Introduction]] document, and [[https://thespianpy.com/doc/using][Using Thespian]] is the primary API and
 utilization document.
 
 * Documentation
@@ -255,14 +255,14 @@ utilization document.
    :CUSTOM_ID: hH-a7419fe2-bdaa-486f-a514-e921fb819e73
    :END:
 
-  * The [[http://wikipedia.org/wiki/Actor_model][Actor Model]] at Wikipedia
+  * The [[https://wikipedia.org/wiki/Actor_model][Actor Model]] at Wikipedia
   * A video with [[https://channel9.msdn.com/Shows/Going+Deep/Hewitt-Meijer-and-Szyperski-The-Actor-Model-everything-you-wanted-to-know-but-were-afraid-to-ask][Carl Hewitt, Eric Meijer, and Clemens Szyperski discussing the Actor Model]]
-  * http://c2.com/cgi/wiki?ActorsModel
-  * [[http://akka.io][Akka]] is a popular Actor Library for Java and Scala; it is roughly
+  * https://c2.com/cgi/wiki?ActorsModel
+  * [[https://akka.io][Akka]] is a popular Actor Library for Java and Scala; it is roughly
     the equivalent to Thespian for those languages.
-  * [[http://getakka.net/][Akka.NET]] is an implementation of Akka for the .NET and Mono environments making it useable for C# and F# applications.
-  * The [[http://www.erlang.org][Erlang]] language has Actor support built-in (see
-    http://www.erlang.org/doc/getting_started/conc_prog.html).
+  * [[https://getakka.net/][Akka.NET]] is an implementation of Akka for the .NET and Mono environments making it useable for C# and F# applications.
+  * The [[https://www.erlang.org][Erlang]] language has Actor support built-in (see
+    https://www.erlang.org/doc/getting_started/conc_prog.html).
 
   The Wikipedia site has a good list of Actor Model implementations,
   but please let us know of others that should be listed here.
@@ -331,7 +331,7 @@ $ pip install thespian
    :CUSTOM_ID: hH-4c48cbe8-d23b-45e8-a29f-991776c234a2
    :END:
 
-  * [[http://engineering.godaddy.com/why-godaddy-built-an-actor-system-library][GoDaddy blog article introducing Thespian, 2015 Aug]]
+  * [[https://engineering.godaddy.com/why-godaddy-built-an-actor-system-library][GoDaddy blog article introducing Thespian, 2015 Aug]]
   * [[file:blog/async_blog_2016Feb/async_2016Feb.org][Article comparing Actors to Python asyncio/await, 2016 Feb]]
 
   If you have a blog, article, or success story you would like

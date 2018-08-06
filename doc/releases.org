@@ -1,4 +1,4 @@
-#+TITLE: [[http://thespianpy.com/][@@html:<img src="thesplogo2.png" alt="Thespian" width="50%" style="inline" />@@]] Release Notes
+#+TITLE: [[https://thespianpy.com/][@@html:<img src="thesplogo2.png" alt="Thespian" width="50%" style="inline" />@@]] Release Notes
 #+AUTHOR: Kevin Quick <quick@sparq.org>
 #+SETUPFILE: theme.setup
 #+HTML_HEAD: <link href="https://fonts.googleapis.com/css?family=Actor" rel="stylesheet">
@@ -13,7 +13,7 @@
 #+LATEX_HEADER: \docid{TheDoc-06}
 #+OPTIONS: ^:nil num:nil
 
-Thespian uses [[http://semver.org][Semantic Versioning]]: "major.minor.bugfix", where major
+Thespian uses [[https://semver.org][Semantic Versioning]]: "major.minor.bugfix", where major
 version changes indicate incompatible changes, minor versions indicate
 added functionality that is backwards compatible, and bugfix changes
 do not change the API.
@@ -367,7 +367,7 @@ do not change the API.
     at this time.  The MultiprocQueueBase usually works, but there are
     unresolved corner cases at this time.
 
-    See [[http://thespianpy.com/doc/using#actorsystem.private][the description of the private method in the Using Thespian
+    See [[https://thespianpy.com/doc/using#actorsystem.private][the description of the private method in the Using Thespian
     document]] for more details.
 
   * Fixes a bug where internal transmit events were not completed
@@ -768,7 +768,7 @@ do not change the API.
 
   * Documentation updates, including a warning about the inability to
     exchange objects between different loaded sources unless
-    conventionally serialized (see [[http://thespianpy.com/doc/using#hH-e23490e4-d720-4e84-9b9a-e768fa3e717d][Source Loading Issues]]).
+    conventionally serialized (see [[https://thespianpy.com/doc/using#hH-e23490e4-d720-4e84-9b9a-e768fa3e717d][Source Loading Issues]]).
 
 
 *** 3.2.1 <2016-09-08 Thu>
@@ -964,7 +964,7 @@ do not change the API.
     positive non-zero time duration for transport processing.
 
   * Revert signal handling introduced in version 2.5.8: internal
-    Python issues (e.g. http://bugs.python.org/issues14976) made the
+    Python issues (e.g. https://bugs.python.org/issues14976) made the
     initial approach buggy.  Newly engineered signals support will be
     added in a forthcoming release.
 

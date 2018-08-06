@@ -1,4 +1,4 @@
-#+TITLE: [[http://thespianpy.com][@@html:<img src="thesplogo2.png" alt="Thespian" width="50%" style="inline" />@@]] Thespian Director Guide
+#+TITLE: [[https://thespianpy.com][@@html:<img src="thesplogo2.png" alt="Thespian" width="50%" style="inline" />@@]] Thespian Director Guide
 #+AUTHOR: Kevin Quick <quick@sparq.org>
 #+SETUPFILE: theme.setup
 #+HTML_HEAD: <link href="https://fonts.googleapis.com/css?family=Actor" rel="stylesheet">

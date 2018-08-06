@@ -1,4 +1,4 @@
-#+TITLE: [[http://thespianpy.com/][@@html:<img src="/Thespian/doc/thesplogo2.png" alt="Thespian" width="50%" display="inline" />@@]] Comparing Actors to Async and Coroutines
+#+TITLE: [[https://thespianpy.com/][@@html:<img src="/Thespian/doc/thesplogo2.png" alt="Thespian" width="50%" display="inline" />@@]] Comparing Actors to Async and Coroutines
 #+AUTHOR: Kevin Quick <kq1quick@gmail.com>
 #+SETUPFILE: theme.setup
 #+HTML_HEAD: <link href="../../thespian.css" rel="stylesheet" type="text/css"/>

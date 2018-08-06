@@ -1,4 +1,4 @@
-#+TITLE: [[http://thespianpy.com][@@html:<img src="thesplogo2.png" alt="Thespian" width="50%" style="inline" />@@]] In-Depth Introduction
+#+TITLE: [[https://thespianpy.com][@@html:<img src="thesplogo2.png" alt="Thespian" width="50%" style="inline" />@@]] In-Depth Introduction
 #+AUTHOR: Kevin Quick <quick@sparq.org>
 #+SETUPFILE: theme.setup
 #+HTML_HEAD: <link href="https://fonts.googleapis.com/css?family=Actor" rel="stylesheet">
@@ -43,10 +43,10 @@ Thespian is a Python library that enables Actor-based applications to
 be written to handle the challenges above. This document provides an
 in-depth introduction to writing Actor-based applications
 
-GoDaddy uses the [[http://python.org][Python language]] for many of it's internal systems and
+GoDaddy uses the [[https://python.org][Python language]] for many of it's internal systems and
 has developed an Actor library for Python called *Thespian* to support
 this highly-scalable architecture.  GoDaddy has open-sourced the
-[[http://thespianpy.com][Thespian library]] itself to share it with the community and allow
+[[https://thespianpy.com][Thespian library]] itself to share it with the community and allow
 others to leverage the Actor Model architecture for Python.
 
 ** The Actor Model
@@ -125,7 +125,7 @@ To demonstrate how easy this is, let's look at an example using the
     :END:
 
 The Thespian Python library is available on github at
-[[http://github.com/kquick/Thespian]], from [[http://pypi.python.org]], or possibly
+[[https://github.com/kquick/Thespian]], from [[https://pypi.python.org]], or possibly
 via a package provided for your OS.  You should probably use the
 latter if it's available, but otherwise just use ~pip~ for simplicity:
 
