@@ -24,7 +24,7 @@
    :CUSTOM_ID: hH-2889c112-6505-4b32-9dce-ac3e4a16ad11
    :END:
 
-At the core, an Actor system is very simple.  An Actor is a standalone
+At the core, an Actor system is simple.  An Actor is a standalone
 entity that receives messages from other Actors and does one of three
 things:
 
@@ -33,9 +33,9 @@ things:
    1. Sends a finite number of messages to other Actors
 
 Importantly, an Actor cannot access internals of other Actors, and it
-should not access any globals.  Any information used by the Actor
-should be passed to the Actor via a message or else generated
-internally.
+should not access any globals.  The Actor operates solely on
+information passed to the Actor via a message or else generated
+internally by the Actor itself.
 
 Actors may only communicate with other Actors by sending messages to
 those Actors, using known addresses for those target Actors.
@@ -46,8 +46,8 @@ are free to exchange whatever messages their implementation dictates
 however, including sending acknowledgement messages back to the
 sender.
 
-In practice, an Actor will perform some sort of application-specific
-processing when a message is received.
+In practice, an Actor receiving a message will perform some sort of
+application-specific processing as a result.
 
 ** Actor Addresses
    :PROPERTIES:
@@ -55,18 +55,18 @@ processing when a message is received.
    :END:
 
 All Actors have an Address which identifies them uniquely within the
-ActorSystem.  The Address of an Actor is assigned by the ActorSystem
-and should be treated by the Actor as an opaque value.
+ActorSystem.  The ActorSystem assigns an Address to an Actor and the
+Actor should treat that Address as an opaque value.
 
 Actors will communicate with other Actors using the ActorAddress of
-the other actors.  ActorAddress values cannot be synthesized.  The
-ActorAddress of other actors can be obtained in one of two ways:
+the other actors.  ActorAddress values cannot be synthesized.  An
+Actor obtains the ActorAddress of other actors in one of two ways:
 
   1. The return value from an Actor create request is an ActorAddress
   1. Receiving an ActorAddress in a message from another Actor
 
-The actual value of an ActorAddress is determined by the ActorSystem,
-and varies with the implementation of the ActorSystem and the
+The ActorSystem determines the actual value of an ActorAddress and the
+value varies with the implementation of the ActorSystem and the
 transport mechanism used.  Actors may print the string form of
 ActorAddresses, and they may compare ActorAddresses for equality or
 inequality and use them as hash values (e.g. for dictionary keys), but
@@ -108,18 +108,18 @@ digraph fig1 {
     :CUSTOM_ID: hH-27f1994d-f66e-4be7-a671-8eeeb81bbd4b
     :END:
 
-  There maybe several different types of ActorSystem implementations.
-  Switching from one system to another can be done without requiring
-  any changes to the Actors that run in those systems: the ActorSystem
+  There are multiple different types of ActorSystem implementations.
+  Switching from one system to another can does not require any
+  changes to the Actors that run in those systems: the ActorSystem
   cleanly abstracts the scheduling and message delivery to allow the
   Actors to be oblivious to those elements.
 
   Each implementation may require a different type of addressing, but
   as described previously in [[#hH-1348ab18-1a45-495b-ad27-84810a0b42f4][Actor Addresses]] the Actors themselves
   should treat the ActorAddress objects as opaque.  In addition, an
-  Actor cannot generate an ActorAddress; it must be given to the Actor
-  as a result of creating an Actor or in a message passed by another
-  Actor.
+  Actor cannot generate an ActorAddress; the Actor receives an
+  ActorAddress as a result of creating an Actor or in a message
+  received from another Actor.
 
   Not all implementations are equivalent, however.  Although all
   ActorSystem implementations must support the standard Actor API for
@@ -148,11 +148,11 @@ digraph fig1 {
   system, and there can be ActorSystems running on other host systems
   that can coordinate activities with the current ActorSystem.
 
-  When Actors are created, they can be created within "remote"
-  ActorSystems.  This locality flexibility does not affect each Actor
-  implementation at all: the ActorAddress of an Actor can indicate
-  either a remote or local Actor but the ActorAddress itself is opaque
-  to the Actor.
+  Actors can be created within "remote" ActorSystems as well as the
+  local ActorSystem.  This locality flexibility does not affect each
+  Actor implementation at all: the ActorAddress of an Actor can
+  indicate either a remote or local Actor but the ActorAddress itself
+  is opaque to the Actor.
 
 #+begin_src dot :file fig2.png :cmdline -Kdot -Tpng
 digraph fig2 {
@@ -192,19 +192,20 @@ digraph fig2 {
 Actors run in an ActorSystem and communicate with each other using the
 message sending capability, but it is also typically necessary for the
 external world to communicate with Actors to initiate activity by
-those Actors and obtain the corresponding results.  This can be done
-by the external system using the following operations on the
-ActorSystem itself:
+those Actors and obtain the corresponding results.  External
+applications use the following ActorSystem operations to communicate
+with Actors in that system (these operations are not intended for use
+by Actors themselves):
 
    * *tell* -- sends a message to a target Actor (as specified by the
      target Actor's ActorAddress)
 
-   * *ask* -- sends a message to a target Actor and waits for a
-     message to be sent back.
+   * *ask* -- sends a message to a target Actor and waits for the
+     Actor to send a response message.
 
    * *createActor* -- creates a new Actor.  There is no [[#hH-3868571d-e754-42a2-840e-6629e817903b][Parent Actor]]
-     for the newly created Actor, so it is referred to as a "top-level
-     Actor" and it will be managed by the ActorSystem itself and no
+     for the newly created Actor; this Actor is referred to as a "top-level
+     Actor" and it is managed by the ActorSystem itself.  No
      other Actor will be notified if the top-level Actor exits.
 
 To the Actor's themselves the messages delivered via the ~tell~ or
@@ -255,9 +256,8 @@ digraph fig3 {
 }
 #+end_src
 
-
-More details on the ActorSystem operations can be found in the
-[[#hH-7d2b4986-95d3-4460-9d19-ea0dcdb34fca][ActorSystem API]] section.
+The [[#hH-7d2b4986-95d3-4460-9d19-ea0dcdb34fca][ActorSystem API]] section has more details on the ActorSystem
+operations.
 
 ** Effects
    :PROPERTIES:
@@ -266,11 +266,10 @@ More details on the ActorSystem operations can be found in the
 
 Using an Actor system like Thespian tends to be a transformative
 experience in code generation.  Aspects which were previously
-difficult to work withH- multi-processing, concurrency, inter-process
+difficult to work with (multi-processing, concurrency, inter-process
 communications and networking, scalability, fault tolerance and
-recovery, ... --- all of these are handled by the Actor System itself,
-allowing the Actors to focus on the primary needs of the application
-itself.
+recovery, etc) are all handled by the Actor System itself, allowing
+the Actors to focus on the primary needs of the application itself.
 
 ** Comparisons
    :PROPERTIES:
@@ -284,9 +283,8 @@ itself.
 
 The Actor model provides a higher level of abstraction than a Message
 Bus architecture (also known as a "pub/sub" architecture).  An Actor
-system can be implemented on top of a message-bus architecture; the
-Actors themselves are completely unaware of this implementation
-method.
+system could be implemented on top of a message-bus architecture; the
+Actors themselves are unaware of this implementation method.
 
 *** Logging Systems
     :PROPERTIES:
@@ -304,7 +302,7 @@ functionality of the latter.
 It is possible to implement message persistence and/or replay
 functionality for an Actor system by using Actors specifically
 designed to provide this functionality.  The Actor model can thus
-easily be extended to mimic a Logging System.
+easily mimic a Logging System.
 
 
 * Using Thespian
@@ -335,14 +333,14 @@ an ActorSystem using the "multiprocTCPBase":
 >>> asys = ActorSystem('multiprocTCPBase')
 #+end_src
 
-More details on the explicit parameters for this call are found in
-[[#hH-f71b7bfa-c57b-4716-a2c7-ad83a2ed3582][ActorSystem]], and the known system bases are describe in [[#hH-2a5fa63d-e6eb-43b9-bea8-47223b27544e][ActorSystem Implementations]].
+More details on the explicit parameters for this call are found in the
+[[#hH-f71b7bfa-c57b-4716-a2c7-ad83a2ed3582][ActorSystem]] section of this document and the known system bases are
+describe in the [[#hH-2a5fa63d-e6eb-43b9-bea8-47223b27544e][ActorSystem Implementations]] section.
 
-Once created, the running ActorSystem reference is stored as a
-singleton for the current process by default.  This means that
-subsequent references can either use the direct reference (e.g. ~asys~
-from the above) or another ~ActorSystem()~ instantiation with no
-parameters.
+Once created, the running ActorSystem is (by default) a singleton
+instance for the current process.  This means that subsequent
+references can either use the direct reference (e.g. ~asys~ from the
+above) or another ~ActorSystem()~ instantiation with no parameters.
 
 
 ** Actor Lifecycle
@@ -350,11 +348,11 @@ parameters.
    :CUSTOM_ID: hH-41cd5450-c34f-4672-aafa-c96ed29c3f01
    :END:
 
-Actors are created on demand and then persist until they are requested
-to exit.  Actors in a multiprocess System Base are independent of the
-process that created them and can outlive that process; Actors in a
-multi-threaded or synchronous System Base exist within the lifetime of
-the process itself.
+Actors are created on demand and then persist until they receive a
+request to exit.  Actors in a multiprocess System Base are independent
+of the process that created them and can outlive that process; Actors
+in a multi-threaded or synchronous System Base exist within the
+lifetime of the process itself.
 
 Actors exit when explicitly requested to exit, or when the ActorSystem
 itself is shutdown.
@@ -370,7 +368,7 @@ Actor making the request becomes the "[[#hH-3868571d-e754-42a2-840e-6629e817903b
 created Actor, whereas there is no parent in the latter case and the
 newly created actor is therefore referred to as a "Top-Level" Actor.
 
-A Top-Level Actor is created via the [[#hH-a565af1b-aabb-4336-a51d-7505c072c319][ActorSystem.createActor]] call:
+The [[#hH-a565af1b-aabb-4336-a51d-7505c072c319][ActorSystem.createActor]] call creates a Top-Level Actor:
 
 #+begin_src python
 >>> class MyFirstActor(Actor):
@@ -380,9 +378,9 @@ A Top-Level Actor is created via the [[#hH-a565af1b-aabb-4336-a51d-7505c072c319]
 >>> mfa_addr = asys.createActor(MyFirstActor)
 #+end_src
 
-The result of the call is the ActorAddress which can be used with the
-ActorSystem's [[#hH-8e52624b-cda1-4218-bc9f-693cf06b0758][ask]]() or [[#hH-a5dcf9d2-7bda-43c7-ab44-86265992e972][tell]]() methods to communicate with the created
-Actor.
+The result of the call is the ActorAddress associated with the Actor.
+The ActorSystem's [[#hH-8e52624b-cda1-4218-bc9f-693cf06b0758][ask]]() or [[#hH-a5dcf9d2-7bda-43c7-ab44-86265992e972][tell]]() methods use this ActorAddress to
+communicate with the created Actor.
 
 *** Creating an Actor
     :PROPERTIES:
@@ -405,8 +403,10 @@ own instance:
 #+END_SRC
 
 As with the creation of a Top-Level actor, the ~createActor()~ method
-returns an ActorAddress that can be used to communicate with the
-created Actor (using the current Actor's [[#hH-28cb6d46-fa93-4efd-bc83-88bbbd50df66][send]]() method).
+returns an ActorAddress associated with the new Actor.  The creating
+Actor's sends messages to the new Actor via the creator's [[#hH-28cb6d46-fa93-4efd-bc83-88bbbd50df66][send]]()
+method, passing the ActorAddress of the new Actor as the target
+address.
 
 *** Killing an Actor
     :PROPERTIES:
@@ -414,18 +414,18 @@ created Actor (using the current Actor's [[#hH-28cb6d46-fa93-4efd-bc83-88bbbd50d
     :END:
 
 Actors normally continue to exist and handle messages until they are
-explicitly killed.  To kill an Actor, it should be sent an
+explicitly killed.  An Actor can be killed by sending it an
 [[#hH-7e6106e4-a631-47a4-9d22-3fd63f7e1951][ActorExitRequest]] message.
 
 The Actor will receive that message directly on its
 ~.receiveMessage()~ method, which allows the Actor to make any
 preparations for its demise, but it cannot refuse to exit and it
-returns from the ~.receiveMessage()~, the Actor will be killed by the
-ActorSystem.
+returns from the ~.receiveMessage()~, the ActorSystem will killed the
+Actor.
 
-After the Actor has been killed, the Actor's Address is dead-lettered;
-any subsequent messages sent to the Actor's address will be handled as
-described in [[#hH-5af075c1-73b1-4f7c-8515-e55ed96c03a9][Dead Letter Handling]].
+A killed Actor's Address is dead-lettered; any subsequent messages
+sent to the Actor's address will be handled as described in [[#hH-5af075c1-73b1-4f7c-8515-e55ed96c03a9][Dead
+Letter Handling]].
 
 
 *** Parent Actor
@@ -438,9 +438,10 @@ described in [[#hH-5af075c1-73b1-4f7c-8515-e55ed96c03a9][Dead Letter Handling]].
     an Actor]] section above, the MyFirstActor Actor is the parent of
     any created Supporting Actor.
 
-    The Parent is notified when any child Actors exit.  When the
-    Parent is killed, the child Actors are killed by default unless
-    the Parent indicates that they should not be.
+    The ActorSystem notifies the Parent Actor when any of its child
+    Actors exit.  Child Actors are killed when the Parent dies unless
+    the Parent indicates that the ActorExitRequest should not
+    propagate to the children.
 
     Notification of exited children is via the ~ChildActorExited~
     message.  This message has the following attributes:
@@ -468,8 +469,8 @@ described in [[#hH-5af075c1-73b1-4f7c-8515-e55ed96c03a9][Dead Letter Handling]].
   :CUSTOM_ID: hH-bb3655d6-66df-42d5-9486-e81c8687e9d6
   :END:
 
-  - All ActorSystem internal messages are derived from
-    ActorSystemMessage.  Messages sent by Actors should not subclass
+  - The ActorSystemMessage class is the base class all ActorSystem
+    internal messages.  Messages sent by Actors should not subclass
     ActorSystemMessage, but Actors may differentiate their messages
     from Thespian messages by ~isinstance()~ testing against the
     ActorSystemMessage.
@@ -478,12 +479,12 @@ described in [[#hH-5af075c1-73b1-4f7c-8515-e55ed96c03a9][Dead Letter Handling]].
 
   - Actors should allow unexpected or unreasonable exceptions and
     errors to cause them to fail.  The ActorSystem will restart the
-    actor automatically to handle subsequent messages; the message
-    that caused the failure will be returned to the sender.
+    actor automatically to handle subsequent messages; the ActorSystem
+    will return the message that caused the failure to the sender in a
+    PoisonMessage wrapper.
 
-  - All messages sent by the ActorSystem to an Actor are derived from
-    the ActorSystemMessage base class.  The messages that an
-    ActorSystem can deliver to an Actor are:
+  - The messages that the ActorSystem can synthesize and deliver to an
+    Actor are:
 
        + ActorExitRequest   (see [[#hH-e1d97e35-1d26-4277-b06b-239b6ab4d5d3][Killing an Actor]])
        + ChildActorExited   (see [[#hH-3868571d-e754-42a2-840e-6629e817903b][Parent Actor]])
@@ -491,10 +492,9 @@ described in [[#hH-5af075c1-73b1-4f7c-8515-e55ed96c03a9][Dead Letter Handling]].
        + ActorSystemConventionUpdate  (see [[#hH-3c8aa454-9a21-4d24-a623-ad86bfd4f5a7][Other Actor Systems]])
        + WakeupMessage      (see [[#hH-9cc1acd4-7f35-44ac-94fc-0326dc87a7a5][Timer Messages]])
 
-    Most actors can be written very simply and can safely ignore any
-    and all messages from the ActorSystem.  These messages are
-    intended to be useable by more sophisticated Actors to handle
-    unusual or out-of-band events.
+    Most simple actors can safely ignore any and all messages from the
+    ActorSystem; more sophisticated Actors will handle ActorSystem
+    messages to handle unusual or out-of-band events.
 
   - Use simpleActorSystem for easy testing (and automated unit
     testing).  Then use MultiprocQueue for testing with multiple
@@ -564,27 +564,26 @@ described in [[#hH-5af075c1-73b1-4f7c-8515-e55ed96c03a9][Dead Letter Handling]].
   deliver a message; this is why it is classified as /best-effort/
   instead of /guaranteed delivery/.
 
-  When the recipient is busy, the send request is queued in the
+  When the recipient is busy, the outgoing message is queued in the
   /sending/ Actor's system space.  The sending Actor will retry the
   send periodically.  The sending Actor can have multiple messages
-  queued for different targets, but each target is handled
-  independently: messages queued for a target are ordered but messages
-  queued to different targets are handled independently.  Eventually
+  queued for different targets, but each target is independently handled: messages for a specific target are sent in order but messages
+  queued to different targets are sent independently.  Eventually
   the Actor's ~.send()~ request /will/ block if there are too many
   messages queued for the intended target.  This queueing mechanism
   provides a "back-pressure" mechanism throughout the system to
   prevent too many messages being held in limbo.
 
-  If the recipient exits before the send can be completed, the message
-  is redirected as described in [[#hH-5af075c1-73b1-4f7c-8515-e55ed96c03a9][Dead Letter Handling]].
+  If the recipient exits before the sent message is delivered, the
+  message is redirected as described in [[#hH-5af075c1-73b1-4f7c-8515-e55ed96c03a9][Dead Letter Handling]].
 
 *** Message Mutability
     :PROPERTIES:
     :CUSTOM_ID: hH-23ac66d7-ba55-40dc-ade8-a71e51c7a404
     :END:
 
-  Thespian does not automatically generate copies of messages that are
-  sent, but sends the original directly.  This covers most use cases
+  Thespian does not automatically generate copies of sent messages,
+  but instead sends the original directly.  This covers most use cases
   and has performance advantages in avoidance of extra copying, but it
   does expose a potential for leakage of information between Actors in
   some implementations.
@@ -597,12 +596,12 @@ class MyActor(Actor):
         ...
 #+END_SRC
 
-  The above example shows a common use case where the message to be
-  sent is generated directly, and no longer used or referenced by the
+  The above example shows a common use case where the outgoing message
+  is directly generated, and no longer used or referenced by the
   sending Actor after the ~.send()~ call.  This pattern is entirely
   safe in all instances.  However, if the sending Actor maintains a
-  reference to the sent message, as in the example below, the sending
-  Actor's copy *may* be modified by code in the recipient.
+  reference to the sent message, as in the example below, that message
+  data *may* be modified by code in the recipient.
 
 #+BEGIN_SRC python -n -r -l "#(ref:%s)"
 class ActorA(Actor):
@@ -623,19 +622,19 @@ class ActorB(Actor):
 
   In the example shown above, the assertion in [[(assertFoo)][line (assertFoo)]] may
   fail because ActorB has modified ActorA's original copy in [[(changeFoo)][line
-  (changeFoo)]].  Whether or not modification of ActorA's copy occurs is
-  based on timing of execution between the two actors, and also on the
-  system Base that is used.  When using a multi-process system base,
-  ActorA's version will not be modified because the two Actors run as
-  separate processes and so ActorB has a separate copy of the message,
-  but the [[#hH-924dc0fe-c15b-491e-a6d1-8b88683d4c0d][simpleSystemBase]] (for example) is exposed to this modification.
+  (changeFoo)]].  The system Base being used and the timing of execution
+  between the two actors determines whether or not ActorA's message
+  will pass the asserting test.  When using a multi-process system
+  base, ActorA's version is independent because the two Actors run as
+  separate processes and so ActorB has a separate copy of the message
+  and does not modify the version that ActorA references, but the
+  [[#hH-924dc0fe-c15b-491e-a6d1-8b88683d4c0d][simpleSystemBase]] (for example) would allow this modification.
 
   If an Actor references a message post-send, it should be aware of
-  this potential.  The mutation may be avoided by ActorA sending a
-  copy of the original message (~self.send(actorb,
-  copy.deepcopy(newmsg))~), although this has negative performance
-  implications (which is why Thespian does not automatically perform
-  this copy).
+  this potential for modification.  ActorA can make a copy of the
+  message (e.g. ~self.send(actorb, copy.deepcopy(newmsg))~) to avoid
+  this issue although this has negative performance implications
+  (which is why Thespian does not automatically perform this copy).
 
 
 ** Dead Letter Handling
@@ -644,10 +643,10 @@ class ActorB(Actor):
    :END:
 
   If the ActorSystem is unable to deliver a message to the target
-  Actor (usually because the target Actor has been killed or otherwise
+  Actor (usually because the target Actor is dead or has otherwise
   exited), the ActorSystem will route that message to Dead Letter
-  handling.  The routed message will be wrapped in a [[#hH-e3d4bfa0-7fad-4622-b707-8f67e4f75d5c][DeadEnvelope]]
-  message to indicate it's disposition.
+  handling.  A [[#hH-e3d4bfa0-7fad-4622-b707-8f67e4f75d5c][DeadEnvelope]] wrapper is placed around the message to
+  indicate this situation.
 
   By default, the Dead Letter handling will discard the message in
   question (possibly logging the event).
@@ -656,15 +655,15 @@ class ActorB(Actor):
   In this case, the dead-letter handling Actor receives all messages
   that could not be delivered to their target address.
 
-  Dead letter handling should be considered as a fail-safe to prevent
-  messages from getting lost, but it is recommended that Actors update
+  Dead letter handling is not a fail-safe to prevent messages from
+  getting lost, but it is a recommended method by which Actors update
   their knowledge about other Actors that no longer exist and cease
   sending messages to those other Actors.  One reason for this is that
   the address of the Actor that no longer exists may---at some
   point---be assigned to a new and completely different Actor; if the
-  original Actor persisted in sending messages to the dead Actor,
-  those messages would eventually start being routed to the new Actor,
-  which would undoubtably cause confusion.
+  original Actor persisted in sending messages to the dead Actor the
+  new Actor would receive those messages which would undoubtably cause
+  confusion.
 
 ** Non-startable Actors
    :PROPERTIES:
@@ -674,8 +673,8 @@ class ActorB(Actor):
   Actors that cannot be started at all will be Dead Lettered by the
   ActorSystem.  If an Actor has registered for receiving Dead Letters
   (see [[#hH-5af075c1-73b1-4f7c-8515-e55ed96c03a9][Dead Letter Handling]]) then it can perform special actions to
-  handle the non-starting Actor, but by default all messages sent to a
-  non-starting Actor are discarded by the default Dead Letter Handling.
+  handle the non-starting Actor, but by default Dead Letter Handling
+  discards all messages sent to a non-starting Actor.
 
 ** PoisonMessage Returns
    :PROPERTIES:
@@ -692,7 +691,7 @@ class ActorB(Actor):
    message has caused the failure and will wrap the message in a
    ~PoisonMessage~ wrapper object and send it back to the sender of
    the original message.  The Actor experiencing the exception is
-   still live, and other messages will still be delivered to it.
+   still live, and delivery of subsequent messages still occurs.
 
    See [[#hH-407c4c79-2a05-442d-b6e8-5bf7c2f2d068][PoisonMessage]] for details on the ~PoisonMessage~ object.
 
@@ -716,11 +715,11 @@ class ActorB(Actor):
    :END:
 
   Most Actors are created and subsequently referenced by the
-  ActorAddress. This ActorAddress can be used by any Actor in the
-  system to send a message to that created Actor.
+  ActorAddress. Any Actor can use this ActorAddress to send a message
+  to the created Actor.
 
-  At times, however, it may be convenient to very explicitly refer to
-  a single Actor in the entire system---a Singleton---without knowing
+  At times, however, it may be convenient to explicitly refer to a
+  single Actor in the entire system---a Singleton---without knowing
   the Address of that Actor.  To support this, Thespian allows the
   creation of "Named Actors" where the name given uniquely identifies
   the Actor.
@@ -736,14 +735,14 @@ class ActorB(Actor):
   although it is the responsibility of the creators to manage the
   namespace of those Actors.
 
-  There are a couple of disadvantages to Named Actors that must be
-  considered relative to their convenience:
+  There are a couple of disadvantages to Named Actors to consider as
+  offsets relative to their convenience:
 
-   1. All Named Actors are similar to [[#hH-91e3dc4e-af22-4076-94ee-43f60458f0e0][Top-Level Actors]] in that they
-      are managed by the ActorSystem itself rather than a Parent
-      Actor and therefore there is no notification when a Named Actor
-      exits, and any messages sent to a Named Actor that has exited
-      will be sent to the Dead Letter Handler.
+   1. The ActorSystem itself manages all Named Actors (similar to
+      [[#hH-91e3dc4e-af22-4076-94ee-43f60458f0e0][Top-Level Actors]]) rather than a Parent Actor and therefore there
+      is no notification when a Named Actor exits, and any messages
+      sent to a Named Actor that has exited will be sent to the Dead
+      Letter Handler.
 
    1. Interaction with Named Actors can be slower than for standard
       Actors because of the need to perform global lookup and
@@ -754,7 +753,7 @@ class ActorB(Actor):
       Systems running and communicating as part of a Convention (see
       [[#hH-3c8aa454-9a21-4d24-a623-ad86bfd4f5a7][Other Actor Systems]]), but the uniqueness of the globalName (and
       corresponding Actor instance) applies only to the system that
-      has created it.  See [[id:hH-33d27852-9cfd-4583-b0c0-5c05f2cb8e5a][Multi-system Global Name support]] for more
+      has created it.  See [[#hH-33d27852-9cfd-4583-b0c0-5c05f2cb8e5a][Multi-system Global Name support]] for more
       details and recommendations.
 
 
