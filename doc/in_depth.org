@@ -180,7 +180,7 @@ the code and resulting system state:
     ~Actor~ baseclass provided by the ~thespian~ import.  The ~Actor~
     baseclass provides methods for all of the actions that Actor might
     take that would interact with other Actors or the Actor System
-    itself (see the [[using][Using Thespian]] documentation for more details).
+    itself (see the [[file:using][Using Thespian]] documentation for more details).
 
 
   * [[(receiveMessage)][Line (receiveMessage)]] is the main entry point into any Actor.  It
@@ -534,7 +534,7 @@ deactivate Goodbye
   arguments to the very first call).  Different "bases" provide
   different Actor System-level functionality; they do not change the
   way that Actors work but they change the way that they are
-  implemented. The [[using][Using Thespian]] guide defines the set of available
+  implemented. The [[file:using][Using Thespian]] guide defines the set of available
   system bases available for Thespian.
 
   By default, the "~simpleSystemBase~" is used, which runs all Actors
@@ -616,7 +616,7 @@ kquick 5595 5594  0 21:51 pts/86  00:00:00 logger ActorAddr-(TCP|10.56.10.5:5186
   automatically connect to the existing Admin for that system base, so
   shutting down that Admin will stop all Actors in that Actor System.
 
-  As mentioned above, the [[using][Using Thespian]] document provides much more
+  As mentioned above, the [[file:using][Using Thespian]] document provides much more
   detail about the available System Bases for Thespian and their
   capabilities.  Other Actor System implemntations may or may not have
   similar configurability.
@@ -727,7 +727,7 @@ $ python
 Thespian supports the standard ~logging~ library, but provides some
 enhanced handling of log messages to accomodate the different system
 bases that may implement Actors in separate processes (or even on
-separate systems): as described in the Logging section of the [[using][Using
+separate systems): as described in the Logging section of the [[file:using][Using
 Thespian]] documentation, log messages are forwarded to a "Logging"
 process to be written according to the logging configuration supplied
 when the ~ActorSystem()~ initialization call was made.  In addition,
@@ -872,7 +872,7 @@ configuration which overrides the default.
 
 Some system bases are capable of specifying the current Actor's
 address when generating log output lines by setting the "actorAddress"
-attribute, as described in the [[using][Using Thespian]] documentation.
+attribute, as described in the [[file:using][Using Thespian]] documentation.
 Unfortunately, the log formatter must handle the case where the
 actorAddress attribute is not present.  To do this, a filter can be
 used to select the right formatter based on the presence or absence of
