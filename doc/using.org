@@ -3255,6 +3255,88 @@ Note that a transient actor which is created but which never receives
 any messages does not exit; the timer for transient exit is only
 started after receipt of the actor's first message.
 
+** Initialization Messages
+   :PROPERTIES:
+   :CUSTOM_ID: h:5f80e194-ab38-406e-b077-984496b37073
+   :END:
+
+It is common for an Actor to require one or more messages to
+"initialize" the Actor and prepare it for normal operations.
+
+The ~thespian.initmsgs~ module provides a ~initializing_messages~
+decorator that can assist with managing this initialization.
+
+This pattern is especially useful for Actors which should receive
+multiple different messages to initialize their state before normal
+processing begins.  Each message is stored in a corresponding
+attribute on the Actor class, and (unless init_passthru is True) no
+messages are delivered to the receiveMessages entrypoint until all of
+the initialization messages have been received.
+
+#+BEGIN_SRC python
+from thespian.initmsgs import initializing_messages
+# initializing_messages(initset, initdone=None, init_passthru=False)
+#+END_SRC
+
+The required argument to the ~@initializing_messages~ decorator is a
+list of tuples, where the first tuple value is the name of an
+attribute to be set on this actor and the second tuple value is the
+type of the corresponding message.  If the tuple has three entries and
+the third is True, then when the message type is matched, an attribute
+corresponding to the first element plus the suffix "_sender" is set to
+the sender of that message.
+
+If multiple initialization messages of the same type are received, the
+corresponding attribute will be set to the last messages received.
+
+The initdone argument, if set, specifies a method name (as a string)
+that should be called when all initialization message have been
+received.
+
+The init_passthru can be set to True to pass *all* messages received
+during initialization to the normal Actor handling; the default is
+false and init messages are discarded and non-init messages are saved
+and delivered after initialization is completed.  (All
+ActorSystemMessage messages are treated as if init_passthru was True).
+
+Example:
+
+#+BEGIN_SRC python
+    @initializing_messages([('init_m1', Msg1, True),
+                            ('init_tgt', ActorAddress),
+                            ('frog', str)],
+                            initdone='init_completed')
+    class FooActor(ActorTypeDispatcher):
+        def init_completed(self):
+            self.send(self.init_m1_sender, 'Running')
+        def receiveMsg_Croak(self, croakmsg, sender):
+            self.send(sender, self.frog)
+            self.send(self.init_m1_sender, self.init_m1)
+            self.send(self.init_tgt, croakmsg)
+#+END_SRC
+
+This actor will wait for three different initialization messages
+(Msg1, an ActorAddress, and a string) and store each as an attribute,
+as well as storing the sender address for the Msg1 message.  When all
+three have been received, the init_completed method is called, and
+then all Croak messages cause three messages to be sent.  Note that
+any Croak messages received before all three initialization messages
+will be stored and delivered after initialization is complete.
+
+This decorator is incompatible with the ~@troupe~ decorator.
+
+This decorator must appear before the ~@transient~ or ~@transient_idle~
+decorator:
+
+#+BEGIN_SRC python
+    @initializing_messages([('init_m1', Msg1, True),
+                            ('init_tgt', ActorAddress),
+                            ('frog', str)],
+                            initdone='init_completed')
+    @transient(timedelta(seconds=2, milliseconds=250))
+    class FooActor(ActorTypeDispatcher): ...
+#+END_SRC
+
 ** Thespian Director
    :PROPERTIES:
    :CUSTOM_ID: h:523e1df1-8cab-44dc-a46b-f7638dded176
@@ -3267,6 +3349,7 @@ started after receipt of the actor's first message.
   Director to provide a base set of support functionality.
 
   See the [[file:director.org][Thespian Director]] document for more information on the Director.
+
 
 
 * ActorSystem Implementations
