@@ -3351,6 +3351,19 @@ decorator:
   See the [[file:director.org][Thespian Director]] document for more information on the Director.
 
 
+** RunCommand support
+   :PROPERTIES:
+   :CUSTOM_ID: h:108786e0-6ddd-46c3-974b-ffa353c4f1f1
+   :END:
+
+The ~thespian.runcommand~ helper module can be used to execute
+commands on the local system and collect results.  This effectively
+encapsulates the Python ~subprocess.Popen~ functionality into an Actor
+which isolates the Popen operation, using messages to request the
+execution of a command and retrieve the results of the command.
+
+See the docstrings in the ~thespian/runcommand.py~ file for more
+details and the ~test/test_runcommand.py~ file for example usage.
 
 * ActorSystem Implementations
   :PROPERTIES:
