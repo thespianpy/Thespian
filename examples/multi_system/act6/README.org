@@ -27,7 +27,14 @@ validating the new source against a digital signature or performing
 some other type of validation to maintain executable security.
 
 The Source Authority Actor is automatically loaded by the ~start.py~
-in this example.
+in this example.  Begin by starting up three actor systems, as in [[file:../act4][Act 4]]:
+
+#+BEGIN_EXAMPLE
+$ export PYTHONPATH=../../..:$PYTHONPATH
+$ python start.py 1900
+$ python start.py 10000 "morse,Caesar cipher"
+$ python start.py 10101 "64bit encoder"
+#+END_EXAMPLE
 
 Loadable sources can be created by running the ~makeload.sh~ shell
 script, and the resulting ~src.zip~ file can be loaded via the
@@ -103,7 +110,7 @@ consume otherwise unused resources.  The ~unload.py~ script
 demonstrates the ability to unload sources on-demand:
 
 #+BEGIN_EXAMPLE
-$ python load.py 1900 a3ad084f02e92c6a2e3eb70e5d72a6c2
+$ python unload.py 1900 a3ad084f02e92c6a2e3eb70e5d72a6c2
 $ echo hello | python app.py a3ad084f02e92c6a2e3eb70e5d72a6c2
 ...exception...
 thespian.actors.InvalidActorSourceHash: Source hash
@@ -113,6 +120,14 @@ $
 #+END_EXAMPLE
 
 (The above exception output was line-wrapped for easier reading.)
+
+** Shutdown
+
+At the end of the test, don't forget to shutdown all the Actor systems:
+
+#+BEGIN_EXAMPLE
+$ python stop.py 10101 10000 1900
+#+END_EXAMPLE
 
 ** Conclusion
 
