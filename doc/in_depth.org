@@ -1315,6 +1315,11 @@ all Actors default to executing from the same image.  System images
 may be explicitly unloaded from Thespian by calling the
 ~ActorSystem.unloadSource()~ method.
 
+** Security via the Source Authority
+   :PROPERTIES:
+   :CUSTOM_ID: h:83443489-5818-47b4-a8dc-a94764bb6e99
+   :END:
+
 For security purposes, there is a special Actor that can register
 itself as the "Source Authority".  Any loaded image is passed to the
 Source Authority for validation before it is useable for
@@ -1322,6 +1327,42 @@ Source Authority for validation before it is useable for
 validation it chooses on the loaded image (e.g. validating a
 signature); images which are not approved by the Source Authority are
 rejected and cannot be used.
+
+For the example in the section below, the following script is run
+first to startup an actor system and load a Source Authority that will
+accept any loaded sources.
+
+#+CAPTION: runsys.py:
+#+NAME: runsys.py
+#+BEGIN_SRC python -n -r -l "#(ref:%s)" :file runsys.py :tangle code/runsys.py
+from thespian.actors import ActorSystem, Actor, ValidateSource, ValidatedSource
+import sys
+
+class SimpleSourceAuthority(Actor):
+    def receiveMessage(self, msg, sender):
+        if msg is True:
+            self.registerSourceAuthority()
+        if isinstance(msg, ValidateSource):
+            self.send(sender,
+                      ValidatedSource(msg.sourceHash,
+                                      msg.sourceData,
+                                      # Thespian pre 3.2.0 has no sourceInfo
+                                      getattr(msg, 'sourceInfo', None)))
+
+
+if __name__ == "__main__":
+    if "shutdown" in sys.argv:
+        ActorSystem('multiprocTCPBase').shutdown()
+        sys.exit(0)
+    asys = ActorSystem('multiprocTCPBase')
+    sa = asys.createActor(SimpleSourceAuthority)
+    asys.tell(sa, True)
+#+END_SRC
+
+** Loading Sources
+   :PROPERTIES:
+   :CUSTOM_ID: h:d8372ab6-e508-4c4d-94e5-93834936d365
+   :END:
 
 Because the Thespian Actor Systems communicate as part of a
 Convention, the source image only needs to be loaded on the Convention
@@ -1440,10 +1481,16 @@ be created is referred to by name instead of by reference, and that
 name is qualified by the zipfile name to match standard Python import
 semantics.
 
+** Running the example
+   :PROPERTIES:
+   :CUSTOM_ID: h:94ab2102-4a80-433b-b276-43238ffd9f3d
+   :END:
+
 Running this and changing the source in between runs clearly shows
 that the changes are loaded and used in subsequent runs:
 
 #+BEGIN_EXAMPLE
+$ python runsys.py
 $ python hi.py
 Hello, world!
 $ python hi.py
@@ -1451,6 +1498,7 @@ Hello, world!
 $ edit hi.py  # <-- change "world" to "universe"
 $ python hi.py
 Hello, universe!
+$ python runsys.py shutdown
 #+END_EXAMPLE
 
 The sources loaded remain loaded until unloaded via a call to
