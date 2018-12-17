@@ -294,11 +294,19 @@ class asyncTransportBase(object):
                 return
 
         if not self._canSendNow():
+            drainer = False
             if self._exclusively_processing():
+                if not self._aTB_sending:
+                    self._aTB_sending = True
+                    drainer = True
+                self._not_processing()
+            if drainer:
                 try:
                     self._drain_tx_queue_if_needed(transmitIntent.delay())
                 finally:
-                    self._aTB_processing = False
+                    self._aTB_sending = False
+            else:
+                time.sleep(0.1)  # slow down threads not performing draining
 
         while self._canSendNow():
             if not self._runQueued():
