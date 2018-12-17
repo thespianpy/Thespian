@@ -9,7 +9,7 @@
 #+LATEX_HEADER: \product{Thespian}
 #+LATEX_HEADER: \component{Python Actor System}
 #+LATEX_HEADER: \doctype{Release Notes}
-#+LATEX_HEADER: \docrev{3.9.4}{2018 Aug 05}
+#+LATEX_HEADER: \docrev{3.9.5}{2018 Dec 17}
 #+LATEX_HEADER: \docid{TheDoc-06}
 #+OPTIONS: ^:nil num:nil
 
@@ -23,6 +23,7 @@ do not change the API.
 
  | Release |       Date | Significant Bugfixes                           | Significant Features             |
  |---------+------------+------------------------------------------------+----------------------------------|
+ |   3.9.5 | 2018-12-17 | Fix [[https://github.com/kquick/Thespian/issues/32][Issue #32]]: Deadlock in TX backoff          |                                  |
  |   3.9.4 | 2018-08-05 | Fix [[https://github.com/kquick/Thespian/issues/28][Issue #28]]: Enable offline                  |                                  |
  |   3.9.3 | 2018-07-31 | Log deserialization errors at ERROR level      | ~THESPLOG_THRESHOLD~             |
  |         |            | More thread-safety fixes                       |                                  |
@@ -145,6 +146,10 @@ do not change the API.
 
 ** 3.9
 
+*** 3.9.5 <2018-12-17 Mon>
+    * Fixed [[https://github.com/kquick/Thespian/issues/32][Issue #32]] which caused an actor to hang due to an internal
+      deadlock if the number of queued messages reached the backoff
+      threshold.
 *** 3.9.4 <2018-08-05 Sun>
     * Fixed [[https://github.com/kquick/Thespian/issues/28][Issue #28]] which prevented using the multiprocTCPBase or
       multiprocUDPBase ActorSystem bases offline (i.e. when internet
