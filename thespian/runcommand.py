@@ -15,7 +15,7 @@ input to the command.
 """
 
 from datetime import datetime, timedelta
-import fcntl,os
+import os
 import logging
 import subprocess
 import time
@@ -357,6 +357,7 @@ class RunCommand(ActorTypeDispatcher):
         if can_watch:
             # magic.2: must nonblock these to allow reading from
             # subprocess before it is shutdown.
+            import fcntl
             fcntl.fcntl(self.p.stdout.fileno(), fcntl.F_SETFL,
                         fcntl.fcntl(self.p.stdout.fileno(), fcntl.F_GETFL) | os.O_NONBLOCK)
             fcntl.fcntl(self.p.stderr.fileno(), fcntl.F_SETFL,

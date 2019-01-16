@@ -135,15 +135,6 @@ class TestFuncLoad(object):
 
 
 
-noLogging = { 'version' : 1,
-              # n.b. NullHandler is not available until Python 2.7
-              'handlers': { 'discarder': { 'class': 'logging.StreamHandler',
-                                           'stream': open('/dev/null','w'),
-                                       } },
-              'root': { 'level': 'CRITICAL', 'handlers' : ['discarder'] },
-              'disable_existing_loggers': True,
-              }
-
 testAdminPort = 59300
 
 def start_actor_system(name):
