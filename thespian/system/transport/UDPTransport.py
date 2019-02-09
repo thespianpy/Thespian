@@ -163,7 +163,7 @@ class UDPTransport(asyncTransportBase, wakeupTransportBase):
         """
         ss = socket.socket(*addr.addressDetails.socketArgs)
         try:
-            ss.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+            ss.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 0)
             try:
                 ss.bind(*addr.addressDetails.bindArgs)
                 # no other process bound
