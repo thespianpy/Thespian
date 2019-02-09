@@ -38,7 +38,7 @@ class _Common_StatusResp(ActorSystemMessage):
     def addReceived(self, count): self._numReceived += count
     def addKeyVal(self, key, value): self.miscKeyVals[key] = value
     def addTXPendingAddressCount(self, address, count):
-        self._pendingAddrCnts[str(address)] = count + self._pendingAddrCnts.get(address, 0)
+        self._pendingAddrCnts[str(address)] = count + self._pendingAddrCnts.get(str(address), 0)
 
 
 class Thespian_SystemStatus(_Common_StatusResp):
