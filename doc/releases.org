@@ -9,7 +9,7 @@
 #+LATEX_HEADER: \product{Thespian}
 #+LATEX_HEADER: \component{Python Actor System}
 #+LATEX_HEADER: \doctype{Release Notes}
-#+LATEX_HEADER: \docrev{3.9.5}{2018 Dec 17}
+#+LATEX_HEADER: \docrev{3.9.6}{2019 Feb 09}
 #+LATEX_HEADER: \docid{TheDoc-06}
 #+OPTIONS: ^:nil num:nil
 
@@ -19,6 +19,14 @@ added functionality that is backwards compatible, and bugfix changes
 do not change the API.
 
 * Summary
+** 2019
+
+ | Release |       Date | Significant Bugfixes              | Significant Features |
+ |---------+------------+-----------------------------------+----------------------|
+ |   3.9.6 | 2019-02-09 | Improve [[https://github.com/kquick/Thespian/issues/35][Issue #35]]: Windows issues |                      |
+ |         |            | Improve [[https://github.com/kquick/Thespian/issues/38][Issue #38]]: system limits  |                      |
+ |---------+------------+-----------------------------------+----------------------|
+
 ** 2018
 
  | Release |       Date | Significant Bugfixes                           | Significant Features             |
@@ -146,6 +154,13 @@ do not change the API.
 
 ** 3.9
 
+*** 3.9.6 <2019-02-05 Sat>
+    * Improved [[https://github.com/kquick/Thespian/issues/35][Issue #35]] which addressed some issues running under
+      Windows and also with the multiprocUDPBase.  The improvements
+      include [[https://github.com/kquick/Thespian/pull/36][PullReq #36]] from TTimo (thanks!).
+    * Improved [[https://github.com/kquick/Thespian/issues/38][Issue #38]] which addresses the behavour of Thespian when
+      system limits (e.g. process count or file-descriptor count) are
+      reached.
 *** 3.9.5 <2018-12-17 Mon>
     * Fixed [[https://github.com/kquick/Thespian/issues/32][Issue #32]] which caused an actor to hang due to an internal
       deadlock if the number of queued messages reached the backoff
