@@ -92,6 +92,11 @@ class ActorManager(systemCommonBase):
                     # been shutdown gracefully.
                     self.drainTransmits()
                     break
+            except ActorStartupFailed:
+                thesplog('Actor %s @ %s failed successful startup, aborting',
+                         self._actorClass, self.transport.myAddress,
+                         level=logging.ERROR)
+                # No other cleanup because startup didn't complete far enough.
             except Exception as ex:
                 # This is usually an internal problem, since the
                 # request handling itself catches any exceptions from

@@ -146,6 +146,19 @@ class AddressWaitTransmits(object):
 len_second = lambda x: (x[0], len(x[1]))
 
 
+class ActorStartupFailed(Exception):
+    """This is an exception thrown when the actor's startup attempt and
+       connection back to its parent has failed.  Because the actor
+       did not complete startup operations, it cannot perform a
+       graceful shutdown and so should exit immediately.
+    """
+    pass
+
+
+def actorStartupFailed(*args, **kw):
+    # Useable as a callback function
+    raise ActorStartupFailed()
+
 
 class systemCommonBase(object):
 
