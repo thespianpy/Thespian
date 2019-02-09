@@ -634,6 +634,7 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
                 socket.socket,
                 *self.myAddress.addressDetails.socketArgs)) as ts:
             try:
+                ts.setblocking(0)
                 ts.connect(*self.myAddress.addressDetails.connectArgs)
             except Exception:
                 pass
