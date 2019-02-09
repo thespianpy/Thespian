@@ -99,6 +99,12 @@ class TestFuncCreateActor_LoadTorture():
         max_count = self.max_count(asys)
         for count in range(max_count):
             asys.tell(cow, count)
+            if asys.base_name == 'multiprocUDPBase' and max_count % 4 == 0:
+                # Slow down a little for UDP to avoid dropped packets.
+                # Dropped packets will not fail the test, but will
+                # cause the CowActor to not exit because it is waiting
+                # for child exits (that got dropped).
+                time.sleep(0.10)
         for count in range(max_count):
             answers.append(asys.listen(max_ask_wait * 3))
         assert len(answers) == max_count

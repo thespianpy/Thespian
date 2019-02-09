@@ -142,6 +142,21 @@ class TestFuncActors():
             invchar = ''.join([c for c in str(addr)
                                if c not in string.ascii_letters + string.digits + "-~/():., '|>"])
             assert str(addr) == str(addr) + invchar  # invchar should be blank
+        if asys.base_name.startswith('multiprocUDP'):
+            # Normally the asys.shutdown() following this test will
+            # shutdown all actors, but for the multiprocUDP base, the
+            # ActorSystem (and logger) process are left behind because
+            # UDP does not have guaranteed delivery and 100 processes
+            # sending a UDP message to the ActorSystem nearly
+            # simultaneously overloads and drops packets.  Use a more
+            # regulated shutdown here for UDP to avoid this overflow
+            # (which does not hurt anything but leaves actor processes
+            # behind).
+            per_loop = 10
+            for ii in range(0, len(addresses), per_loop):
+                for jj in range(ii, ii + per_loop):
+                    asys.tell(addresses[jj], ActorExitRequest())
+                time.sleep(0.25)
 
     def test07_SingleNonListeningActorTell(self, asys):
         rosalineA = asys.createActor(rosaline)
