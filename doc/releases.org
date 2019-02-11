@@ -9,7 +9,7 @@
 #+LATEX_HEADER: \product{Thespian}
 #+LATEX_HEADER: \component{Python Actor System}
 #+LATEX_HEADER: \doctype{Release Notes}
-#+LATEX_HEADER: \docrev{3.9.6}{2019 Feb 09}
+#+LATEX_HEADER: \docrev{3.9.7}{2019 Feb 09}
 #+LATEX_HEADER: \docid{TheDoc-06}
 #+OPTIONS: ^:nil num:nil
 
@@ -23,6 +23,7 @@ do not change the API.
 
  | Release |       Date | Significant Bugfixes              | Significant Features |
  |---------+------------+-----------------------------------+----------------------|
+ |   3.9.7 | 2019-02-11 | Further bugfixes and efficiencies |                      |
  |   3.9.6 | 2019-02-09 | Improve [[https://github.com/kquick/Thespian/issues/35][Issue #35]]: Windows issues |                      |
  |         |            | Improve [[https://github.com/kquick/Thespian/issues/38][Issue #38]]: system limits  |                      |
  |---------+------------+-----------------------------------+----------------------|
@@ -154,6 +155,10 @@ do not change the API.
 
 ** 3.9
 
+*** 3.9.7 <2019-02-11 Mon>
+    * Remove extraneous messages to ActorSystem at Actor shutdown time.
+    * Additional shutdown activity suppression on failed startup.
+    * Update multiprocUDPBase handling of signal interruptions.
 *** 3.9.6 <2019-02-05 Sat>
     * Improved [[https://github.com/kquick/Thespian/issues/35][Issue #35]] which addressed some issues running under
       Windows and also with the multiprocUDPBase.  The improvements
