@@ -178,7 +178,8 @@ class TestFuncActorAdder(object):
         if 'pypy' in sys.executable:
             pytest.skip("Pypy adder processes will consume all available system"
                         " memory for no good reason")
-        addTens = [ asys.createActor(AddTen) for x in range(0, 50, 10) ]
+        testSize = 250
+        addTens = [ asys.createActor(AddTen) for x in range(0, testSize, 10) ]
         for (frmA, toA) in zip(addTens, addTens[1:]):
             asys.tell(frmA, (1, toA))
         drop = asys.createActor(DropResults)
@@ -189,7 +190,7 @@ class TestFuncActorAdder(object):
             asys.tell(start, addEvery(asker=drop))  # drop results
         asys.tell(addTens[-1], addEvery(asker=drop))  # drop results
         sum = asys.ask(addTens[0], addEvery(), max_wait)
-        assert sum.value == 50
+        assert sum.value == testSize
         for ii in range(0, len(addTens)):
             asys.tell(addTens[ii], ActorExitRequest())
             if asys.base_name == "multiprocUDPBase" and ii % 4 == 0:
