@@ -6,7 +6,7 @@ import copy
 import atexit
 from thespian.actors import *
 from thespian.system.utilis import thesplog, withPossibleInitArgs
-from thespian.system.systemCommon import systemCommonBase
+from thespian.system.systemCommon import systemCommonBase, ActorStartupFailed
 from thespian.system.addressManager import CannotPickleAddress
 from thespian.system.transport import *
 from thespian.system.messages.admin import *

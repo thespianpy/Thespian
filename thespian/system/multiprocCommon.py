@@ -6,6 +6,7 @@ direct usage."""
 import logging
 from thespian.actors import *
 from thespian.system.systemBase import systemBase
+from thespian.system.systemCommon import actorStartupFailed
 from thespian.system.utilis import thesplog, checkActorCapabilities, partition
 from thespian.system.transport import *
 from thespian.system.logdirector import *
@@ -173,7 +174,8 @@ def startAdmin(adminClass, addrOfStarter, endpointPrep, transportClass,
                            concurrency_context)
     except Exception:
         transport.scheduleTransmit(None,
-                                   TransmitIntent(addrOfStarter, EndpointConnected(0)))
+                                   TransmitIntent(addrOfStarter, EndpointConnected(0))
+                                   .addCallback(onFailure=actorStartupFailed))
         raise
     # Send of EndpointConnected is deferred until the logger is setup.  See MultiProcReplicator.h_LoggerConnected below.
 
@@ -436,7 +438,8 @@ class MultiProcReplicator(object):
 
         # Now that logging is started, Admin startup can be confirmed
         self.transport.scheduleTransmit(None,
-                                        TransmitIntent(self.addrOfStarter, EndpointConnected(0)))
+                                        TransmitIntent(self.addrOfStarter, EndpointConnected(0))
+                                        .addCallback(onFailure=actorStartupFailed))
 
         self._activate()
         return True
@@ -568,7 +571,7 @@ def startChild(childClass, globalName, endpoint, transportClass,
         None,
         TransmitIntent(notifyAddr,
                        EndpointConnected(endpoint.addrInst))
-        .addCallback(onFailure=am.actor_send_fail))
+        .addCallback(onFailure=actorStartupFailed))
     setProcName(getattr(childClass, '__name__',
                         str(childClass)).rpartition('.')[-1],
                 am.transport.myAddress)
