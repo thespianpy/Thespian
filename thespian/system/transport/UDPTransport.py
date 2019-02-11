@@ -33,6 +33,7 @@ except Exception:
     import pickle
 from thespian.system.transport.asyncTransportBase import asyncTransportBase
 from thespian.system.transport.wakeupTransportBase import wakeupTransportBase
+from thespian.system.transport.errmgmt import err_select_retry
 
 
 DEAD_ADDRESS_TIMEOUT = timedelta(seconds=15)
@@ -222,26 +223,28 @@ class UDPTransport(asyncTransportBase, wakeupTransportBase):
     def interrupt_wait(self,
                        signal_shutdown=False,
                        check_children=False):
-        self._interruptWaitCounter = 0
-        self._interruptWaitSilencer = None
         self._shutdownSignalled |= signal_shutdown
         self._checkChildren |= check_children
-        if self._interruptWaitSilencer:
+        if getattr(self, '_interruptWaitSilencer', None):
             if not self._interruptWaitSilencer.view().expired():
                 return
             self._interruptWaitSilencer = None
             self._interruptWaitCounter = 0
         else:
-            if self._interruptWaitCounter > 10:
-                self._interruptWaitSilencer = ExpirationTimer(INTERRUPT_SUPPRESSION_TIME)
-                return
-            self._interruptWaitCounter += 1
-        # Under some python implementations, signal handling (which
-        # could generate an ActorShutdownRequest) can be performed
-        # without interrupting the underlying syscall, so this message
-        # is otherwise ignored but causes the select.select below to
-        # return.
-        self.socket.sendto(b'BuMP', self.myAddress.addressDetails.sockname)
+            if hasattr(self, '_interruptWaitCounter'):
+                if self._interruptWaitCounter > 10:
+                    self._interruptWaitSilencer = ExpirationTimer(INTERRUPT_SUPPRESSION_TIME)
+                    return
+                self._interruptWaitCounter += 1
+            else:
+                self._interruptWaitCounter = 0
+        if self._shutdownSignalled or self._checkChildren:
+            # Under some python implementations, signal handling (which
+            # could generate an ActorShutdownRequest) can be performed
+            # without interrupting the underlying syscall, so this message
+            # is otherwise ignored but causes the select.select below to
+            # return.
+            self.socket.sendto(b'BuMP', self.myAddress.addressDetails.sockname)
 
 
     def _scheduleTransmitActual(self, transmitIntent):
@@ -273,7 +276,13 @@ class UDPTransport(asyncTransportBase, wakeupTransportBase):
             ct = currentTime()
             if self.run_time.view(ct).expired():
                 break
-            if self._rcvd:
+            if self._checkChildren:
+                self._checkChildren = False
+                rcvdEnv = ReceiveEnvelope(self.myAddress, ChildMayHaveDied())
+            elif self._shutdownSignalled:
+                self._shutdownSignalled = False
+                rcvdEnv = ReceiveEnvelope(self.myAddress, ActorExitRequest())
+            elif self._rcvd:
                 rcvdEnv = self._rcvd.pop()
             else:
                 next_action_timeout = self.check_pending_actions(ct)
@@ -281,13 +290,13 @@ class UDPTransport(asyncTransportBase, wakeupTransportBase):
                     sresp, _ign1, _ign2 = select.select([self.socket.fileno()], [], [],
                                                         min(self.run_time, next_action_timeout)
                                                         .view(ct).remainingSeconds())
-                except select.error as se:
-                    import errno
-                    if se.args[0] != errno.EINTR:
-                        thesplog('Error during select: %s', se,
-                                 level=logging.CRITICAL)
-                        return Thespian__Run_Errored(se)
-                    continue
+                except (OSError, select.error) as se:
+                    errnum = getattr(se, 'errno', se.args[0])
+                    if err_select_retry(errnum):
+                        thesplog('UDP select retry on %s', se, level=logging.DEBUG)
+                        continue
+                    thesplog('Error during UDP select: %s', se, level=logging.CRITICAL)
+                    return Thespian__Run_Errored(se)
                 except ValueError:
                     # self.run_time can expire between the while test
                     # and the use in the select statement.
@@ -301,15 +310,9 @@ class UDPTransport(asyncTransportBase, wakeupTransportBase):
                     continue
                 rawmsg, sender = self.socket.recvfrom(65535)
                 if rawmsg == b'BuMP':
-                    sendAddr = self.myAddress
-                    if self._checkChildren:
-                        self._checkChildren = False
-                        msg = ChildMayHaveDied()
-                    elif self._shutdownSignalled:
-                        self._shutdownSignalled = False
-                        msg = ActorExitRequest()
-                    else:
-                        return Thespian__UpdateWork()
+                    if self._checkChildren or self._shutdownSignalled:
+                        continue
+                    return Thespian__UpdateWork()
                 else:
                     sendAddr = ActorAddress(UDPv4ActorAddress(*sender, external=True))
                     try:
