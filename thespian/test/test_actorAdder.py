@@ -190,5 +190,8 @@ class TestFuncActorAdder(object):
         asys.tell(addTens[-1], addEvery(asker=drop))  # drop results
         sum = asys.ask(addTens[0], addEvery(), max_wait)
         assert sum.value == 50
-        for killA in addTens:
-            asys.tell(killA, ActorExitRequest())
+        for ii in range(0, len(addTens)):
+            asys.tell(addTens[ii], ActorExitRequest())
+            if asys.base_name == "multiprocUDPBase" and ii % 4 == 0:
+                # slow down a little to avoid dropping ChildExited packets
+                time.sleep(0.10)
