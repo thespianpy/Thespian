@@ -39,6 +39,7 @@ class ActorManager(systemCommonBase):
         self._childReqs  = childRequirements
         self.actorInst   = None
         self.globalName  = globalName
+        self._srcNotifyEnabled = False
         atexit.register(self._shutdownActor)
         thesplog('Starting Actor %s at %s (parent %s, admin %s, srcHash %s)',
                  childClass, self.transport.myAddress,
@@ -239,10 +240,11 @@ class ActorManager(systemCommonBase):
 
 
     def _sayGoodbye(self):
-        self._send_intent(
-            TransmitIntent(self._adminAddr,
-                           NotifyOnSourceAvailability(self.transport.myAddress,
-                                                      False)))
+        if self._srcNotifyEnabled:
+            self._send_intent(
+                TransmitIntent(self._adminAddr,
+                               NotifyOnSourceAvailability(self.transport.myAddress,
+                                                          False)))
         self._send_intent(
             TransmitIntent(self._parentAddr,
                            ChildActorExited(self.transport.myAddress)))
@@ -417,6 +419,7 @@ class ActorManager(systemCommonBase):
         self._send_intent(
             TransmitIntent(self._adminAddr,
                            NotifyOnSystemRegistration(watcherAddress, enable)))
+        self._srcNotifyEnabled = True
 
 
     def updateCapability(self, capabilityName, capabilityValue):
