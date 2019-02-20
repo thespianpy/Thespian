@@ -28,6 +28,9 @@ RATE_THROTTLE = (lambda sizeAvg, linkSpeed, percentage:
 
 
 class PendingTransmits(object):
+    """Holds transmits that are awaiting eithe rprevious transmits or
+       address resolution.
+    """
     def __init__(self, address_manager):
         self._addrmgr = address_manager
         # There are expected to be a low number of pending transmits
@@ -40,6 +43,11 @@ class PendingTransmits(object):
         self._ptl = []
 
     def _intent_addresses(self, intent):
+        # Returns all possible addresses associated with an intent:
+        # the original address (which may be local), the actual
+        # address that the local address translates to (if known), and
+        # the deal letter handler if the address has been declared as
+        # dead.
         yield intent.targetAddr
         xlated_addr = self._addrmgr.sendToAddress(intent.targetAddr)
         if xlated_addr:
@@ -52,6 +60,8 @@ class PendingTransmits(object):
                 yield xlated_addr
 
     def p_can_send_now(self, stats, intent):
+        # Checks to make sure that there are no other intents
+        # in-progress for the intent target address.
         addrs = list(self._intent_addresses(intent))
         for idx, addr in enumerate(addrs):
             ptloc = self._atd.find(addr)
@@ -71,6 +81,8 @@ class PendingTransmits(object):
         return False
 
     def get_next(self, completed_intent):
+        # Returns the next intent to be sent to the indicated target,
+        # or None if there are no more intents for that target.
         for addr in self._intent_addresses(completed_intent):
             ptloc = self._atd.find(addr)
             if ptloc is not None:
@@ -91,9 +103,20 @@ class PendingTransmits(object):
         return None
 
     def cannot_send_now(self, intent):
+        # The passed intent cannot be sent at the current time; this
+        # is most likely because it is awaiting a remote address, but
+        # the caller will have placed the intent on some other list
+        # associated with the reason.  This method should remove any
+        # block that this intent has on any other intents for the same
+        # target and return the next intent to send to the similar
+        # target (if there is one).
         return self.get_next(intent)
 
     def change_address_for_transmit(self, oldaddr, newaddr):
+        # When an address resolution is known (usually from a local
+        # address to an actual address), this method is called to
+        # store that mapping (and update any pending intents to the
+        # actual address).
         oldidx = self._atd.find(oldaddr)
         if oldidx is None:
             # Have not scheduled any transmits for this (probably new)
