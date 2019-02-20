@@ -86,9 +86,10 @@ class _TroupeManager(object):
         self._idle_troupers = []
         self._pending_work = []
 
-    def is_ready(self, troupe_member):
+    def is_ready(self, managerActor, troupe_member):
         if self._pending_work:
-            return [(troupe_member, self._pending_work.pop(0))]
+            w = self._pending_work.pop(0)
+            return [(troupe_member, w)]
         if self.idle_count is not None and \
            len(self._troupers) > self.idle_count:
             self._troupers.remove(troupe_member)
@@ -152,7 +153,7 @@ def troupe(max_count=10, idle_count=2):
             if isinstance(message, ChildActorExited):
                 self._troupe_mgr.worker_exited(message.childAddress)
             elif isinstance(message, _TroupeMemberReady):
-                for sendargs in self._troupe_mgr.is_ready(sender):
+                for sendargs in self._troupe_mgr.is_ready(self, sender):
                     self.send(*sendargs)
             elif message == 'troupe:status?':
                 self.send(sender, self._troupe_mgr.status())
