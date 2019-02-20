@@ -27,130 +27,6 @@ RATE_THROTTLE = (lambda sizeAvg, linkSpeed, percentage:
                  int((linkSpeed / sizeAvg) * (percentage / 100.0)))(2048, 12.5*1024*1024, 70)
 
 
-class PendingTransmits(object):
-    """Holds transmits that are awaiting eithe rprevious transmits or
-       address resolution.
-    """
-    def __init__(self, address_manager):
-        self._addrmgr = address_manager
-        # There are expected to be a low number of pending transmits
-        # for a typical actor.  At present time, this is an array of
-        # intents.  Note that an intent may fail due to a
-        # CannotPickleAddress (which calls cannot_send_now() ), and
-        # then later be passed here again to can_send_now() when the
-        # address becomes known.
-        self._atd = AssocList()  # address -> ptl index
-        self._ptl = []
-
-    def _intent_addresses(self, intent):
-        # Returns all possible addresses associated with an intent:
-        # the original address (which may be local), the actual
-        # address that the local address translates to (if known), and
-        # the deal letter handler if the address has been declared as
-        # dead.
-        yield intent.targetAddr
-        xlated_addr = self._addrmgr.sendToAddress(intent.targetAddr)
-        if xlated_addr:
-            yield xlated_addr
-        deadaddr = getattr(intent.message, 'deadAddress', None)
-        if deadaddr:
-            yield deadaddr
-            xlated_addr = self._addrmgr.sendToAddress(deadaddr)
-            if xlated_addr:
-                yield xlated_addr
-
-    def p_can_send_now(self, stats, intent):
-        # Checks to make sure that there are no other intents
-        # in-progress for the intent target address.
-        return True
-        addrs = list(self._intent_addresses(intent))
-        for idx, addr in enumerate(addrs):
-            ptloc = self._atd.find(addr)
-            if ptloc is not None:
-                for ii in range(idx):
-                    self._atd.add(addrs[ii], ptloc)
-                break
-        else:
-            ptloc = len(self._ptl)
-            self._ptl.append([])
-            for addr in addrs:
-                self._atd.add(addr, ptloc)
-        if not(self._ptl[ptloc]):
-            self._ptl[ptloc] = [intent]
-            return True
-        self._ptl[ptloc].append(intent)
-        return False
-
-    def get_next(self, completed_intent):
-        # Returns the next intent to be sent to the indicated target,
-        # or None if there are no more intents for that target.
-        return None
-        for addr in self._intent_addresses(completed_intent):
-            ptloc = self._atd.find(addr)
-            if ptloc is not None:
-                break
-        else:
-            thesplog('No pending transmits for completed intent: %s',
-                     completed_intent, level=logging.ERROR)
-            return None
-        if not(self._ptl[ptloc]):
-            thesplog('No pending entry for completed intent: %s',
-                     completed_intent, level=logging.ERROR)
-            return None
-        self._ptl[ptloc].pop(0)
-        if self._ptl[ptloc]:
-            return self._ptl[ptloc][0]
-
-        # Trim here...
-        return None
-
-    def cannot_send_now(self, intent):
-        # The passed intent cannot be sent at the current time; this
-        # is most likely because it is awaiting a remote address, but
-        # the caller will have placed the intent on some other list
-        # associated with the reason.  This method should remove any
-        # block that this intent has on any other intents for the same
-        # target and return the next intent to send to the similar
-        # target (if there is one).
-        return None
-        return self.get_next(intent)
-
-    def change_address_for_transmit(self, oldaddr, newaddr):
-        # When an address resolution is known (usually from a local
-        # address to an actual address), this method is called to
-        # store that mapping (and update any pending intents to the
-        # actual address).
-        oldidx = self._atd.find(oldaddr)
-        if oldidx is None:
-            # Have not scheduled any transmits for this (probably new)
-            # child yet.
-            return
-        newidx = self._atd.find(newaddr)
-        if newidx is None:
-            self._atd.add(newaddr, oldidx)
-        elif newidx != oldidx:
-            if isinstance(oldaddr.addressDetails, ActorLocalAddress):
-                # This can happen if sends are made to createActor
-                # results with a globalName before the actual address
-                # is known.  Each createActor creates a local address,
-                # but all those local addresses map back to the same
-                # actual address.
-                self._ptl[newidx].extend(self._ptl[oldidx])
-                self._atd.add(oldaddr, newidx)
-                self._ptl[oldidx] = []  # should not be used anymore
-            else:
-                thesplog('Duplicate pending transmit indices'
-                         ': %s -> %s, %s -> %s',
-                         oldaddr, oldidx, newaddr, newidx,
-                         level=logging.ERROR)
-
-    def update_status_response(self, stats, my_address):
-        for group in self._ptl:
-            for each in group:
-                stats.addPendingMessage(my_address, each.targetAddr,
-                                        each.message)
-
-
 class AddressWaitTransmits(object):
     def __init__(self):
         self._awt = []
@@ -193,7 +69,6 @@ class systemCommonBase(object):
         self.transport    = transport
         self._addrManager = ActorAddressManager(adminAddr, self.transport.myAddress)
         self.transport.setAddressManager(self._addrManager)
-        self._pendingTransmits = PendingTransmits(self._addrManager)
         self._awaitingAddressUpdate = AddressWaitTransmits()
         self._receiveQueue = []  # array of ReceiveMessage to be processed
         self._children = []  # array of Addresses of children of this Actor/Admin
@@ -237,7 +112,6 @@ class systemCommonBase(object):
         for each in self._receiveQueue:
             resp.addReceivedMessage(each.sender, self.myAddress, each.message)
         self._sCBStats.copyToStatusResponse(resp)
-        self._pendingTransmits.update_status_response(resp, self.myAddress)
         resp.governer = str(self._governer)
         fmap(lambda x: resp.addTXPendingAddressCount(*len_second(x)),
              self._awaitingAddressUpdate)
@@ -260,8 +134,7 @@ class systemCommonBase(object):
         # this address (on either the input address or the validated
         # address); if so, just add the new one to the list and
         # return.
-        if self._pendingTransmits.p_can_send_now(self._sCBStats, intent):
-            self._send_intent_to_transport(intent)
+        self._send_intent_to_transport(intent)
 
 
     def _retryPendingChildOperations(self, childInstance, actualAddress):
@@ -271,9 +144,6 @@ class systemCommonBase(object):
         if not actualAddress:
             self._receiveQueue.append(ReceiveEnvelope(lcladdr,
                                                       ChildActorExited(lcladdr)))
-        else:
-            self._pendingTransmits.change_address_for_transmit(lcladdr,
-                                                               actualAddress)
 
         for each in self._awaitingAddressUpdate\
                         .remove_intents_for_address(lcladdr):
@@ -291,20 +161,7 @@ class systemCommonBase(object):
 
 
     def _send_intent_to_transport(self, intent):
-        r = lambda: intent
-        while r is not None:
-            next_intent = r()
-            if not next_intent:
-                break
-            r = self._send_intent_to_transport_attempt(next_intent)
-
-    def _send_intent_to_transport_attempt(self, intent):
         thesplog('Attempting intent %s', intent.identify(), level=logging.DEBUG)
-        if not hasattr(intent, '_addedCheckNextTransmitCB'):
-            intent.addCallback(self._checkNextTransmit, self._checkNextTransmit)
-            # Protection against duplicate callback additions in case
-            # of a retry due to the CannotPickleAddress exception below.
-            intent._addedCheckNextTransmitCB = True
         # Set a flag on this intent indicating that it has been passed
         # down to the actual transport layer.  This is used in
         # completion callbacks to determine if the completion means
@@ -312,28 +169,16 @@ class systemCommonBase(object):
         # alternative is intents that never reached the actual
         # transport layer lower down, and therefore did not consume
         # resources there.
-        intent._lT = True
-        self._lTC = id(intent)  # which intent actively sending now
         try:
             self.transport.scheduleTransmit(self._addrManager, intent)
-            self._lTC = None  # no longer active call on this intent
             self._sCBStats.inc('Actor.Message Send.Transmit Started')
-            if intent.result:
-                # Intent was completed on call above, but callback was
-                # not allowed to try the next intent (to prevent
-                # excessive recursion); indicate that the next intent
-                # should be tried now.
-                return lambda i=intent: self._pendingTransmits.get_next(i)
             return None  # no retry
         except CannotPickleAddress as ex:
             thesplog('CannotPickleAddress, appending intent for %s',
                      ex.address, level=logging.DEBUG)
             self._sCBStats.inc('Actor.Message Send.Postponed for Address')
             self._awaitingAddressUpdate.add(ex.address, intent)
-            # Callback is still registered, so callback can use the
-            # _lT to determine if it was actually being transmitted.
-            intent._lT = False
-            return lambda i=intent: self._pendingTransmits.cannot_send_now(i)
+            return None
         except Exception:
             import traceback
             thesplog('Declaring transmit of %s as Poison: %s', intent.identify(),
@@ -348,22 +193,7 @@ class systemCommonBase(object):
                                                   traceback.format_exc())))
             self._sCBStats.inc('Actor.Message Send.Transmit Poison Rejection')
             intent.tx_done(SendStatus.Failed)
-            return lambda i=intent: self._pendingTransmits.get_next(i)
-
-
-    def _checkNextTransmit(self, result, completedIntent):
-        # This is the callback for (all) TransmitIntents that will
-        # send the next queued intent for that destination if the
-        # just-completed intent was processed by the lower/actual
-        # transport.  However, if this was a direct call chain
-        # originating from the scheduleTransmit() call above (_lTC
-        # check) then do not invoke the callback because this could
-        # result in excessive recursion.
-        if getattr(completedIntent, '_lT', False) and \
-           id(completedIntent) !=  getattr(self, '_lTC', None):
-            next_intent = self._pendingTransmits.get_next(completedIntent)
-            if next_intent:
-                self._send_intent_to_transport(next_intent)
+            return None
 
 
     def drainTransmits(self):
