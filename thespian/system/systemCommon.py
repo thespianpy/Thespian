@@ -62,6 +62,7 @@ class PendingTransmits(object):
     def p_can_send_now(self, stats, intent):
         # Checks to make sure that there are no other intents
         # in-progress for the intent target address.
+        return True
         addrs = list(self._intent_addresses(intent))
         for idx, addr in enumerate(addrs):
             ptloc = self._atd.find(addr)
@@ -83,6 +84,7 @@ class PendingTransmits(object):
     def get_next(self, completed_intent):
         # Returns the next intent to be sent to the indicated target,
         # or None if there are no more intents for that target.
+        return None
         for addr in self._intent_addresses(completed_intent):
             ptloc = self._atd.find(addr)
             if ptloc is not None:
@@ -110,6 +112,7 @@ class PendingTransmits(object):
         # block that this intent has on any other intents for the same
         # target and return the next intent to send to the similar
         # target (if there is one).
+        return None
         return self.get_next(intent)
 
     def change_address_for_transmit(self, oldaddr, newaddr):
