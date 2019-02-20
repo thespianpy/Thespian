@@ -69,7 +69,8 @@ DISMISS_EXTRA_PERIOD = timedelta(seconds=2)
 
 
 class _TroupeMemberReady(object):
-    pass
+    def __init__(self, work_ident):
+        self.ident_done = work_ident
 
 
 class _TroupeWork(object):
@@ -77,6 +78,7 @@ class _TroupeWork(object):
         self.message = message
         self.orig_sender = orig_sender
         self.troupe_mgr = troupe_mgr
+        self.ident = None
 
     def __str__(self):
         return '_TroupeWork(from=%s, msg=%s)' % \
@@ -92,11 +94,16 @@ class _TroupeManager(object):
         self._idle_troupers = []
         self._extra_troupers = []
         self._pending_work = []
+        self._handling_work = {}
         self._pending_dismissal = False
+        self._work_ident = 0
 
-    def is_ready(self, managerActor, troupe_member):
+    def is_ready(self, managerActor, ready_msg, troupe_member):
+        if ready_msg.ident_done >= 0:
+            del self._handling_work[ready_msg.ident_done]
         if self._pending_work:
             w = self._pending_work.pop(0)
+            self._handling_work[w.ident] = (troupe_member, w)
             return [(troupe_member, w)]
         if self.idle_count is not None and \
            len(self._troupers) > self.idle_count and \
@@ -120,19 +127,27 @@ class _TroupeManager(object):
         self._pending_dismissal = False
 
     def new_work(self, msg, sender):
-        work = _TroupeWork(msg, sender, self.mgr_addr)
-        if self._idle_troupers:
-            return [(self._idle_troupers.pop(), work)]
-        if self._extra_troupers:
-            return [(self._extra_troupers.pop(), work)]
+        if isinstance(msg, _TroupeWork):
+            work = msg
+        else:
+            work = _TroupeWork(msg, sender, self.mgr_addr)
+            work.ident = self._work_ident
+            # limit of 0xffffffff is > max reasonable pending work items
+            self._work_ident = (self._work_ident + 1) & 0xffffffff
+        worker = self._idle_troupers.pop() if self._idle_troupers else \
+                 (self._extra_troupers.pop() if self._extra_troupers else None)
+        if worker:
+            self._handling_work[work.ident] = (worker, work)
+            return [(worker, work)]
         if len(self._troupers) < self.max_count:
             return [(None, work)]
         self._pending_work.append(work)
         return []
 
-    def add_trouper(self, trouper_addr):
+    def add_trouper(self, trouper_addr, trouper_work):
         if trouper_addr not in self._troupers:
             self._troupers.append(trouper_addr)
+        self._handling_work[trouper_work.ident] = (trouper_addr, trouper_work)
 
     def worker_exited(self, trouper_addr):
         try:
@@ -144,8 +159,19 @@ class _TroupeManager(object):
         try:
             self._extra_troupers.remove(trouper_addr)
         except ValueError: pass
-        # n.b. work held by an exited trouper must be recovered by the
-        # dead letter handler
+        wcheck = filter(lambda e: e[0] == trouper_addr, self._handling_work.values())
+        # n.b. list(wcheck): removing from self._handling_work, which
+        # will cause a RuntimeError of "dictionary changed size during
+        # iteration" if done on the iterator.
+        for (_,wfnd) in list(wcheck):  # should be 0 or 1 entry
+            del self._handling_work[wfnd.ident]
+            if self._idle_troupers:
+                # If idle, re-attempt this work immediately; if not
+                # idle, place it on the pending queue to be handled by
+                # an existing worker to avoid a fork bomb.
+                return wfnd
+            self._pending_work.append(wfnd)
+        return None
 
     def status(self):
         return 'Idle=%d, Max=%d, Troupers [%d, %d idle, %d extra]: %s, Pending=%d' % (
@@ -181,28 +207,30 @@ def troupe(max_count=10, idle_count=2):
                     r = self._orig_receiveMessage(message, sender)
                 if (isTroupeWork or was_in_prog) and \
                    not getattr(self, 'troupe_work_in_progress', False):
-                    self.send(self._is_a_troupe_worker, _TroupeMemberReady())
+                    self.send(self._is_a_troupe_worker,
+                              _TroupeMemberReady(message.ident if isTroupeWork else -1))
                 return r
             # The following is only run for the primary/manager of the troupe
             if not hasattr(self, '_troupe_mgr'):
                 self._troupe_mgr = _TroupeManager(
                     self.__class__, self.myAddress, idle_count, max_count)
             if isinstance(message, ChildActorExited):
-                self._troupe_mgr.worker_exited(message.childAddress)
+                message = self._troupe_mgr.worker_exited(message.childAddress)
             elif isinstance(message, _TroupeMemberReady):
-                for sendargs in self._troupe_mgr.is_ready(self, sender):
+                for sendargs in self._troupe_mgr.is_ready(self, message, sender):
                     self.send(*sendargs)
+                return
             elif message == 'troupe:status?':
                 self.send(sender, self._troupe_mgr.status())
+                return
             elif isinstance(message, WakeupMessage):
                 self._troupe_mgr.dismiss_extras(self)
-            else:
+                return
+            if message:
                 for sendargs in self._troupe_mgr.new_work(message, sender):
                     if sendargs[0] is None:
-                        sendargs = (
-                            self.createActor(actorName),
-                            ) + sendargs[1:]
-                        self._troupe_mgr.add_trouper(sendargs[0])
+                        sendargs = (self.createActor(actorName), sendargs[1])
+                        self._troupe_mgr.add_trouper(*sendargs)
                     self.send(*sendargs)
         actorClass._orig_receiveMessage = actorClass.receiveMessage
         actorClass.receiveMessage = manageTroupe
