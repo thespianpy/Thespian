@@ -246,18 +246,22 @@ class asyncTransportBase(object):
             # because it looks like we're getting really behind.  This
             # is dangerous though, because if other Actors are having
             # the same issue this can create a deadlock.
-            thesplog('Entering tx-only mode to drain excessive queue'
-                     ' (%s > %s, drain-to %s)',
-                     v, MAX_QUEUED_TRANSMITS,
-                     QUEUE_TRANSMIT_UNBLOCK_THRESHOLD,
-                     level=logging.WARNING)
             finish_time = ExpirationTimer(max_delay if max_delay else None)
+            thesplog('Entering tx-only mode to drain excessive queue'
+                     ' (%s > %s, drain-to %s in %s)',
+                     v, MAX_QUEUED_TRANSMITS,
+                     QUEUE_TRANSMIT_UNBLOCK_THRESHOLD, finish_time,
+                     level=logging.WARNING)
             while v > QUEUE_TRANSMIT_UNBLOCK_THRESHOLD:
                 with finish_time as rem_time:
                     if rem_time.expired():
                         break
                     if 0 == self.run(TransmitOnly, rem_time.remaining()):
                         thesplog('Exiting tx-only mode because no transport work available.')
+                        # This may happend because the lower-level
+                        # subtransport layer has nothing left to send,
+                        # so it has to return to allow this layer to
+                        # queue more transmits.
                         break
                     v, _ = self._complete_expired_intents()
             thesplog('Exited tx-only mode after draining excessive queue (%s)',
