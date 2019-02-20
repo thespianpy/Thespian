@@ -7,6 +7,11 @@ from datetime import timedelta
 ###
 
 
+# This is the time equivalence range: two time values that are withing
+# this period of each other are judged to be equal
+time_equivalence = timedelta(microseconds=10)
+
+
 # Use the function currentTime in this module to get a number representing the current time. The time
 # will be denoted in seconds but the return value is not suitable for wall clock time measurement
 # but only for measuring time intervals.
@@ -69,7 +74,7 @@ class TimerView(object):
     def __str__(self):
         return 'Started_on_' + str(self._start)
     def __eq__(self, o):
-        return abs(self._start - o._start) < timedelta(microseconds=1)
+        return abs(self._start - o._start) < time_equivalence
     def __lt__(self, o):
         return self._start < o._start
     def __gt__(self, o):
@@ -122,7 +127,7 @@ class ExpirationTimer(object):
             if self._time_to_quit == None or o._time_to_quit == None: return False
             if self.view(ct).expired() and o.view(ct).expired(): return True
             return abs(self._time_to_quit - o._time_to_quit) < \
-                timePeriodSeconds(seconds=timedelta(microseconds=1))
+                timePeriodSeconds(time_equivalence)
         except Exception:
             return False
     @staticmethod
@@ -210,7 +215,7 @@ class ExpirationTimerView(ExpirationTimer):
             if self._time_to_quit == None or o._time_to_quit == None: return False
             if self.expired() and o.view(self._current_time).expired(): return True
             return abs(self._time_to_quit - o._time_to_quit) < \
-                timePeriodSeconds(seconds=timedelta(microseconds=1))
+                timePeriodSeconds(time_equivalence)
         except Exception:
             return False
     def __bool__(self): return self.expired()
