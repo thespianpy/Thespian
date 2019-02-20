@@ -133,8 +133,13 @@ def troupe(max_count=10, idle_count=2):
 
         def manageTroupe(self, message, sender):
             isTroupeWork = isinstance(message, _TroupeWork)
-            if isinstance(message, ActorSystemMessage) or \
-               isTroupeWork or getattr(self, '_is_a_troupe_worker', False):
+            troupeWorker = getattr(self, '_is_a_troupe_worker', False)
+            # If a worker, or this message indicates we are a
+            # worker... or we haven't been decided yet but this is a
+            # system message so we shouldn't create a troupe because
+            # of it.
+            if troupeWorker or isTroupeWork or \
+               (not hasattr(self, '_troupe_mgr') and isinstance(message, ActorSystemMessage)):
                 was_in_prog = getattr(self, 'troupe_work_in_progress', False)
                 if isTroupeWork:
                     self._is_a_troupe_worker = message.troupe_mgr
