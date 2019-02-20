@@ -58,8 +58,14 @@ never be killed until the troupe manager itself is killed.
 """
 
 from thespian.actors import (ActorSystemMessage, ActorExitRequest,
-                             ChildActorExited)
+                             ChildActorExited, WakeupMessage)
+from datetime import timedelta
 import inspect
+
+
+# If at least some troupe members have been idle for this long and
+# they are over the idle count, they can be dismissed (killed).
+DISMISS_EXTRA_PERIOD = timedelta(seconds=2)
 
 
 class _TroupeMemberReady(object):
@@ -84,23 +90,41 @@ class _TroupeManager(object):
         self.max_count = max_count
         self._troupers = []
         self._idle_troupers = []
+        self._extra_troupers = []
         self._pending_work = []
+        self._pending_dismissal = False
 
     def is_ready(self, managerActor, troupe_member):
         if self._pending_work:
             w = self._pending_work.pop(0)
             return [(troupe_member, w)]
         if self.idle_count is not None and \
-           len(self._troupers) > self.idle_count:
-            self._troupers.remove(troupe_member)
-            return [(troupe_member, ActorExitRequest())]
+           len(self._troupers) > self.idle_count and \
+           len(self._idle_troupers) >= self.idle_count:
+            self._trouper_is_extra(managerActor, troupe_member)
+            return []
         self._idle_troupers.append(troupe_member)
         return []
+
+    def _trouper_is_extra(self, managerActor, troupe_member):
+        if not self._pending_dismissal:
+            managerActor.wakeupAfter(DISMISS_EXTRA_PERIOD)
+            self._pending_dismissal = True
+        self._extra_troupers.append(troupe_member)
+
+    def dismiss_extras(self, managerActor):
+        exitReq = ActorExitRequest()
+        for each in self._extra_troupers:
+            managerActor.send(each, exitReq)
+        self._extra_troupers = []
+        self._pending_dismissal = False
 
     def new_work(self, msg, sender):
         work = _TroupeWork(msg, sender, self.mgr_addr)
         if self._idle_troupers:
             return [(self._idle_troupers.pop(), work)]
+        if self._extra_troupers:
+            return [(self._extra_troupers.pop(), work)]
         if len(self._troupers) < self.max_count:
             return [(None, work)]
         self._pending_work.append(work)
@@ -111,16 +135,24 @@ class _TroupeManager(object):
             self._troupers.append(trouper_addr)
 
     def worker_exited(self, trouper_addr):
-        self._troupers.remove(trouper_addr)
-        self._idle_troupers.remove(trouper_addr)
+        try:
+            self._troupers.remove(trouper_addr)
+        except ValueError: pass
+        try:
+            self._idle_troupers.remove(trouper_addr)
+        except ValueError: pass
+        try:
+            self._extra_troupers.remove(trouper_addr)
+        except ValueError: pass
         # n.b. work held by an exited trouper must be recovered by the
         # dead letter handler
 
     def status(self):
-        return 'Idle=%d, Max=%d, Troupers [%d, %d idle]: %s, Pending=%d' % (
+        return 'Idle=%d, Max=%d, Troupers [%d, %d idle, %d extra]: %s, Pending=%d' % (
             self.idle_count, self.max_count,
-            len(self._troupers), len(self._idle_troupers),
-            ['%s%s' % (('I:' if A in self._idle_troupers else ''), str(A))
+            len(self._troupers), len(self._idle_troupers), len(self._extra_troupers),
+            ['%s%s' % (('I:' if A in self._idle_troupers else
+                        'E:' if A in self._extra_troupers else ''), str(A))
              for A in self._troupers],
             len(self._pending_work)
         )
@@ -162,6 +194,8 @@ def troupe(max_count=10, idle_count=2):
                     self.send(*sendargs)
             elif message == 'troupe:status?':
                 self.send(sender, self._troupe_mgr.status())
+            elif isinstance(message, WakeupMessage):
+                self._troupe_mgr.dismiss_extras(self)
             else:
                 for sendargs in self._troupe_mgr.new_work(message, sender):
                     if sendargs[0] is None:
