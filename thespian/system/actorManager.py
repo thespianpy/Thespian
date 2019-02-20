@@ -319,6 +319,7 @@ class ActorManager(systemCommonBase):
                                       sourceToLoad = self._sources.get(sourceHash, None) if sourceHash else None)
                 # transport will contrive to call _pendingActorReady when the
                 # child is initialized and connected to this parent.
+                self._sCBStats.inc('Actor.Child.Created')
                 return naa
             except NoCompatibleSystemForActor:
                 pass
@@ -336,10 +337,12 @@ class ActorManager(systemCommonBase):
                                         targetActorRequirements,
                                         globalName=globalName,
                                         sourceHash=sourceHash or self._sourceHash)))
+        self._sCBStats.inc('Actor.Child.Requested')
         return naa
 
 
     def _pendingActorReady(self, childInstance, actualAddress, isMyChild=True):
+        self._sCBStats.inc('Actor.Child.Created.Success')
         self._addrManager.associateUseableAddress(self.myAddress,
                                                   childInstance,
                                                   actualAddress)
@@ -356,11 +359,13 @@ class ActorManager(systemCommonBase):
                      envelope.message, dir(envelope.message), level=logging.ERROR)
             return True
         if not getattr(envelope.message, 'errorCode', 'Failed'):
+            self._sCBStats.inc('Actor.Child.Requested.Success')
             self._pendingActorReady(envelope.message.instanceNum,
                                     envelope.message.actualAddress,
                                     isMyChild = not envelope.message.globalName)
             return True
         # Pending Actor Creation failed, clean up all the stuff associated with the intended Actor
+        self._sCBStats.inc('Actor.Child.Requested.Failure')
         thesplog('Pending Actor create for %s failed (%s): %s',
                  envelope.message.forActor,
                  getattr(envelope.message, 'errorCode', '??'),
