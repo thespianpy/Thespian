@@ -138,7 +138,7 @@ class systemCommonBase(object):
 
 
     def _retryPendingChildOperations(self, childInstance, actualAddress):
-        # actualAddress will be none if the child could not be created
+        # actualAddress will be None if the child could not be created
         lcladdr = self._addrManager.getLocalAddress(childInstance)
 
         if not actualAddress:

@@ -325,6 +325,11 @@ class ActorManager(systemCommonBase):
                 pass
             except ImportError:  # hash source may not be available locally
                 pass
+            except Exception as ex:
+                thesplog('_startChildActor exception %s', ex, level=logging.ERROR)
+                self._sCBStats.inc('Actor.Child.Created.Failure')
+                self._retryPendingChildOperations(naa.addressDetails.addressInstanceNum, None)
+                return naa
 
         # Cannot create the actor directly, so ask the Admin for help
         actorClassName = '%s.%s'%(newActorClass.__module__,
