@@ -695,7 +695,6 @@ the update.
     thesplogs.cfg -- specifies the maximum size of the thespian
                      internal logging file in bytes.  The default is
                      51200.
-
     """
 
     ask_wait = timedelta(seconds=5)
