@@ -17,12 +17,12 @@ from thespian.system.timing import timePeriodSeconds
 import pytest
 
 
-class TestMessage(object):
+class LoadMessage(object):
     count = 0
     def __init__(self, routing):
         self.routing = routing
-        self.name = 'TestMessage.%s'%self.count
-        TestMessage.count += 1
+        self.name = 'LoadMessage.%s'%self.count
+        LoadMessage.count += 1
         self.sum  = 0
     def __str__(self): return self.name
 
@@ -33,7 +33,7 @@ class LoadTestActor(Actor):
         self.sum = 0
 
     def receiveMessage(self, msg, sender):
-        if isinstance(msg, TestMessage):
+        if isinstance(msg, LoadMessage):
             if not hasattr(msg, 'origSender'):
                 msg.origSender = sender
             self.sum = self.sum + 1
@@ -76,7 +76,7 @@ class TestFuncLoad(object):
         actors = [asys.createActor(LoadTestActor) for X in range(actorDepth)]
         starttime = datetime.now()
         for X in range(nMessages):  # messages to send
-            msg = TestMessage(actors[1:])
+            msg = LoadMessage(actors[1:])
             msg.origSender = None
             asys.tell(actors[0], msg)
         endtime = datetime.now()
@@ -101,11 +101,11 @@ class TestFuncLoad(object):
                 raise ValueError('Actor address %s is %s!'%(ii, actor))
         starttime = datetime.now()
         for X in range(nMessages):  # messages to send
-            msg = TestMessage(actors[1:])
+            msg = LoadMessage(actors[1:])
             msg.origSender = None
             asys.tell(actors[0], msg)
 
-        msg = TestMessage(actors[1:])
+        msg = LoadMessage(actors[1:])
         rmsg = asys.ask(actors[0], msg, 30)
         endtime = datetime.now()
         elapsed = endtime - starttime
@@ -126,7 +126,7 @@ class TestFuncLoad(object):
         actors = [asys.createActor(LoadTestActor) for X in range(actorDepth)]
         starttime = datetime.now()
         for X in range(nMessages):  # messages to send
-            msg = TestMessage(actors[1:])
+            msg = LoadMessage(actors[1:])
             asys.ask(actors[0], msg, 30)
         endtime = datetime.now()
         elapsed = endtime - starttime
