@@ -230,6 +230,12 @@ more detailed introduction can be found in the [[https://thespianpy.com/doc/in_d
 Introduction]] document, and [[https://thespianpy.com/doc/using][Using Thespian]] is the primary API and
 utilization document.
 
+There are also a number of examples in the code repository itself
+(https://github.com/kquick/Thespian/tree/master/examples), including a
+hands-on tutorial on using multiple actor systems:
+(https://github.com/kquick/Thespian/tree/master/examples/multi_system).
+
+
 * Documentation
   :PROPERTIES:
   :CUSTOM_ID: hH-e8dd9cdc-1a23-4f11-9d4b-017a12b07593
