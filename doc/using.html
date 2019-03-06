@@ -3,7 +3,7 @@
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
-<!-- 2018-08-05 Sun 21:26 -->
+<!-- 2019-03-05 Tue 23:55 -->
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Thespian Actors User's Guide</title>
@@ -195,6 +195,7 @@
 <link href="https://fonts.googleapis.com/css?family=Actor" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css?family=Inconsolata" rel="stylesheet">
 <link href="thespian.css" rel="stylesheet" type="text/css"/>
+<link href="thespian_using.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript">
 /*
 @licstart  The following is the entire license notice for the
@@ -454,7 +455,9 @@ for the JavaScript code in this tag.
 <ul>
 <li><a href="#hH-c796bc0d-a150-4fb9-8918-58f470813175">8.1. Actor Troupe Support</a></li>
 <li><a href="#hH-99783a4a-183f-4b69-8910-014d01edbf1c">8.2. Transient Actors</a></li>
-<li><a href="#h:523e1df1-8cab-44dc-a46b-f7638dded176">8.3. Thespian Director</a></li>
+<li><a href="#h:5f80e194-ab38-406e-b077-984496b37073">8.3. Initialization Messages</a></li>
+<li><a href="#h:523e1df1-8cab-44dc-a46b-f7638dded176">8.4. Thespian Director</a></li>
+<li><a href="#h:108786e0-6ddd-46c3-974b-ffa353c4f1f1">8.5. RunCommand support</a></li>
 </ul>
 </li>
 <li><a href="#hH-2a5fa63d-e6eb-43b9-bea8-47223b27544e">9. ActorSystem Implementations</a>
@@ -480,13 +483,13 @@ for the JavaScript code in this tag.
 </div>
 
 
-<div id="outline-container-org06480cc" class="outline-2">
-<h2 id="hH-f23d674d-ce24-48b4-8ad8-be8eb299e89e"><a id="org06480cc"></a><span class="section-number-2">1</span> Actor Overview</h2>
+<div id="outline-container-org44c5e4b" class="outline-2">
+<h2 id="hH-f23d674d-ce24-48b4-8ad8-be8eb299e89e"><a id="org44c5e4b"></a><span class="section-number-2">1</span> Actor Overview</h2>
 <div class="outline-text-2" id="text-hH-f23d674d-ce24-48b4-8ad8-be8eb299e89e">
 </div>
 
-<div id="outline-container-org96c38ec" class="outline-3">
-<h3 id="hH-2889c112-6505-4b32-9dce-ac3e4a16ad11"><a id="org96c38ec"></a><span class="section-number-3">1.1</span> Actors</h3>
+<div id="outline-container-org112e6dd" class="outline-3">
+<h3 id="hH-2889c112-6505-4b32-9dce-ac3e4a16ad11"><a id="org112e6dd"></a><span class="section-number-3">1.1</span> Actors</h3>
 <div class="outline-text-3" id="text-hH-2889c112-6505-4b32-9dce-ac3e4a16ad11">
 <p>
 At the core, an Actor system is simple.  An Actor is a standalone
@@ -527,8 +530,8 @@ application-specific processing as a result.
 </div>
 </div>
 
-<div id="outline-container-org092dbc6" class="outline-3">
-<h3 id="hH-1348ab18-1a45-495b-ad27-84810a0b42f4"><a id="org092dbc6"></a><span class="section-number-3">1.2</span> Actor Addresses</h3>
+<div id="outline-container-orgda49371" class="outline-3">
+<h3 id="hH-1348ab18-1a45-495b-ad27-84810a0b42f4"><a id="orgda49371"></a><span class="section-number-3">1.2</span> Actor Addresses</h3>
 <div class="outline-text-3" id="text-hH-1348ab18-1a45-495b-ad27-84810a0b42f4">
 <p>
 All Actors have an Address which identifies them uniquely within the
@@ -564,8 +567,8 @@ property.
 </div>
 </div>
 
-<div id="outline-container-org4609a03" class="outline-3">
-<h3 id="hH-4adf735c-f237-4a8e-98db-ec52567353ac"><a id="org4609a03"></a><span class="section-number-3">1.3</span> ActorSystem</h3>
+<div id="outline-container-org4e0e8e1" class="outline-3">
+<h3 id="hH-4adf735c-f237-4a8e-98db-ec52567353ac"><a id="org4e0e8e1"></a><span class="section-number-3">1.3</span> ActorSystem</h3>
 <div class="outline-text-3" id="text-hH-4adf735c-f237-4a8e-98db-ec52567353ac">
 <p>
 The ActorSystem is the framework within which the Actors reside.  The
@@ -581,8 +584,8 @@ and terminating Actors) and message delivery functions.
 </div>
 
 
-<div id="outline-container-org9430b90" class="outline-4">
-<h4 id="hH-27f1994d-f66e-4be7-a671-8eeeb81bbd4b"><a id="org9430b90"></a><span class="section-number-4">1.3.1</span> Different Implementations</h4>
+<div id="outline-container-orgd5141e4" class="outline-4">
+<h4 id="hH-27f1994d-f66e-4be7-a671-8eeeb81bbd4b"><a id="orgd5141e4"></a><span class="section-number-4">1.3.1</span> Different Implementations</h4>
 <div class="outline-text-4" id="text-hH-27f1994d-f66e-4be7-a671-8eeeb81bbd4b">
 <p>
 There are multiple different types of ActorSystem implementations.
@@ -629,8 +632,8 @@ their level of feature support and any known issues.
 </div>
 </div>
 
-<div id="outline-container-org5db6060" class="outline-4">
-<h4 id="hH-461f4dc3-4bd6-46fe-a33e-2ad2a8d82d53"><a id="org5db6060"></a><span class="section-number-4">1.3.2</span> Multiple Systems</h4>
+<div id="outline-container-orgd289ab5" class="outline-4">
+<h4 id="hH-461f4dc3-4bd6-46fe-a33e-2ad2a8d82d53"><a id="orgd289ab5"></a><span class="section-number-4">1.3.2</span> Multiple Systems</h4>
 <div class="outline-text-4" id="text-hH-461f4dc3-4bd6-46fe-a33e-2ad2a8d82d53">
 <p>
 There can be more than one ActorSystem running on the current host
@@ -660,8 +663,8 @@ essentially unlimited scalability of the underlying support environment.
 </div>
 </div>
 
-<div id="outline-container-org2cbc719" class="outline-3">
-<h3 id="hH-c183ae4b-b397-433f-aa4e-69a6838ece38"><a id="org2cbc719"></a><span class="section-number-3">1.4</span> External Communications</h3>
+<div id="outline-container-org7fff34a" class="outline-3">
+<h3 id="hH-c183ae4b-b397-433f-aa4e-69a6838ece38"><a id="org7fff34a"></a><span class="section-number-3">1.4</span> External Communications</h3>
 <div class="outline-text-3" id="text-hH-c183ae4b-b397-433f-aa4e-69a6838ece38">
 <p>
 Actors run in an ActorSystem and communicate with each other using the
@@ -706,8 +709,8 @@ operations.
 </div>
 </div>
 
-<div id="outline-container-orge7998ae" class="outline-3">
-<h3 id="hH-f9386620-2d2e-4f28-b971-0f106881f583"><a id="orge7998ae"></a><span class="section-number-3">1.5</span> Effects</h3>
+<div id="outline-container-org06b8f06" class="outline-3">
+<h3 id="hH-f9386620-2d2e-4f28-b971-0f106881f583"><a id="org06b8f06"></a><span class="section-number-3">1.5</span> Effects</h3>
 <div class="outline-text-3" id="text-hH-f9386620-2d2e-4f28-b971-0f106881f583">
 <p>
 Using an Actor system like Thespian tends to be a transformative
@@ -720,13 +723,13 @@ the Actors to focus on the primary needs of the application itself.
 </div>
 </div>
 
-<div id="outline-container-orgc6377dd" class="outline-3">
-<h3 id="hH-4f420b34-24a5-49a0-b70b-e34a925e7c17"><a id="orgc6377dd"></a><span class="section-number-3">1.6</span> Comparisons</h3>
+<div id="outline-container-org98b58c6" class="outline-3">
+<h3 id="hH-4f420b34-24a5-49a0-b70b-e34a925e7c17"><a id="org98b58c6"></a><span class="section-number-3">1.6</span> Comparisons</h3>
 <div class="outline-text-3" id="text-hH-4f420b34-24a5-49a0-b70b-e34a925e7c17">
 </div>
 
-<div id="outline-container-org9a64506" class="outline-4">
-<h4 id="hH-357ddb80-542c-47d6-aa68-1964639777e9"><a id="org9a64506"></a><span class="section-number-4">1.6.1</span> Message Bus (Pub/Sub) Architecture</h4>
+<div id="outline-container-orgd23c48b" class="outline-4">
+<h4 id="hH-357ddb80-542c-47d6-aa68-1964639777e9"><a id="orgd23c48b"></a><span class="section-number-4">1.6.1</span> Message Bus (Pub/Sub) Architecture</h4>
 <div class="outline-text-4" id="text-hH-357ddb80-542c-47d6-aa68-1964639777e9">
 <p>
 The Actor model provides a higher level of abstraction than a Message
@@ -737,8 +740,8 @@ Actors themselves are unaware of this implementation method.
 </div>
 </div>
 
-<div id="outline-container-orgc614817" class="outline-4">
-<h4 id="hH-aeed6732-198c-41a6-8d2b-45c3b57a120f"><a id="orgc614817"></a><span class="section-number-4">1.6.2</span> Logging Systems</h4>
+<div id="outline-container-orge3aadf2" class="outline-4">
+<h4 id="hH-aeed6732-198c-41a6-8d2b-45c3b57a120f"><a id="orge3aadf2"></a><span class="section-number-4">1.6.2</span> Logging Systems</h4>
 <div class="outline-text-4" id="text-hH-aeed6732-198c-41a6-8d2b-45c3b57a120f">
 <p>
 Log-based architectures (e.g. Kafka) are fundamentally "pub/sub"
@@ -762,8 +765,8 @@ easily mimic a Logging System.
 </div>
 
 
-<div id="outline-container-org6059b7e" class="outline-2">
-<h2 id="hH-bfd7e2ce-64cc-4267-85ce-091a3fd29a8b"><a id="org6059b7e"></a><span class="section-number-2">2</span> Using Thespian</h2>
+<div id="outline-container-org8bc5249" class="outline-2">
+<h2 id="hH-bfd7e2ce-64cc-4267-85ce-091a3fd29a8b"><a id="org8bc5249"></a><span class="section-number-2">2</span> Using Thespian</h2>
 <div class="outline-text-2" id="text-hH-bfd7e2ce-64cc-4267-85ce-091a3fd29a8b">
 <p>
 In order to use Thespian, it must be installed in the current Python
@@ -778,8 +781,8 @@ package:
 </div>
 </div>
 
-<div id="outline-container-org9d0cb8d" class="outline-3">
-<h3 id="hH-0c5d14ea-e462-4a9c-b078-58341cc70e6d"><a id="org9d0cb8d"></a><span class="section-number-3">2.1</span> Starting an Actor System</h3>
+<div id="outline-container-org01af07b" class="outline-3">
+<h3 id="hH-0c5d14ea-e462-4a9c-b078-58341cc70e6d"><a id="org01af07b"></a><span class="section-number-3">2.1</span> Starting an Actor System</h3>
 <div class="outline-text-3" id="text-hH-0c5d14ea-e462-4a9c-b078-58341cc70e6d">
 <p>
 An ActorSystem is created simply by instantiating an <code>ActorSystem()</code>
@@ -809,8 +812,8 @@ above) or another <code>ActorSystem()</code> instantiation with no parameters.
 </div>
 
 
-<div id="outline-container-org0d94411" class="outline-3">
-<h3 id="hH-41cd5450-c34f-4672-aafa-c96ed29c3f01"><a id="org0d94411"></a><span class="section-number-3">2.2</span> Actor Lifecycle</h3>
+<div id="outline-container-org1fd4fb6" class="outline-3">
+<h3 id="hH-41cd5450-c34f-4672-aafa-c96ed29c3f01"><a id="org1fd4fb6"></a><span class="section-number-3">2.2</span> Actor Lifecycle</h3>
 <div class="outline-text-3" id="text-hH-41cd5450-c34f-4672-aafa-c96ed29c3f01">
 <p>
 Actors are created on demand and then persist until they receive a
@@ -826,8 +829,8 @@ itself is shutdown.
 </p>
 </div>
 
-<div id="outline-container-org625d716" class="outline-4">
-<h4 id="hH-df9e99d0-dac0-4cbb-8852-6a3bb95c68f9"><a id="org625d716"></a><span class="section-number-4">2.2.1</span> Creating a Top-Level Actor</h4>
+<div id="outline-container-org8b5a93e" class="outline-4">
+<h4 id="hH-df9e99d0-dac0-4cbb-8852-6a3bb95c68f9"><a id="org8b5a93e"></a><span class="section-number-4">2.2.1</span> Creating a Top-Level Actor</h4>
 <div class="outline-text-4" id="text-hH-df9e99d0-dac0-4cbb-8852-6a3bb95c68f9">
 <p>
 Actors can be created by other Actors or by external applications
@@ -858,8 +861,8 @@ communicate with the created Actor.
 </div>
 </div>
 
-<div id="outline-container-org8fc80ab" class="outline-4">
-<h4 id="hH-de8ad884-0d69-4734-abf5-eb3f1e4a8723"><a id="org8fc80ab"></a><span class="section-number-4">2.2.2</span> Creating an Actor</h4>
+<div id="outline-container-org99667e0" class="outline-4">
+<h4 id="hH-de8ad884-0d69-4734-abf5-eb3f1e4a8723"><a id="org99667e0"></a><span class="section-number-4">2.2.2</span> Creating an Actor</h4>
 <div class="outline-text-4" id="text-hH-de8ad884-0d69-4734-abf5-eb3f1e4a8723">
 <p>
 Within the ActorSystem, and Actor can create another Actor by making
@@ -889,8 +892,8 @@ address.
 </div>
 </div>
 
-<div id="outline-container-org8d80b88" class="outline-4">
-<h4 id="hH-e1d97e35-1d26-4277-b06b-239b6ab4d5d3"><a id="org8d80b88"></a><span class="section-number-4">2.2.3</span> Killing an Actor</h4>
+<div id="outline-container-orgddcfef8" class="outline-4">
+<h4 id="hH-e1d97e35-1d26-4277-b06b-239b6ab4d5d3"><a id="orgddcfef8"></a><span class="section-number-4">2.2.3</span> Killing an Actor</h4>
 <div class="outline-text-4" id="text-hH-e1d97e35-1d26-4277-b06b-239b6ab4d5d3">
 <p>
 Actors normally continue to exist and handle messages until they are
@@ -915,8 +918,8 @@ Letter Handling</a>.
 </div>
 
 
-<div id="outline-container-org581bbf1" class="outline-4">
-<h4 id="hH-3868571d-e754-42a2-840e-6629e817903b"><a id="org581bbf1"></a><span class="section-number-4">2.2.4</span> Parent Actor</h4>
+<div id="outline-container-orgac5676d" class="outline-4">
+<h4 id="hH-3868571d-e754-42a2-840e-6629e817903b"><a id="orgac5676d"></a><span class="section-number-4">2.2.4</span> Parent Actor</h4>
 <div class="outline-text-4" id="text-hH-3868571d-e754-42a2-840e-6629e817903b">
 <p>
 An Actor which creates other Actors automatically becomes the
@@ -943,8 +946,8 @@ message.  This message has the following attributes:
 </div>
 </div>
 
-<div id="outline-container-orgf6754e4" class="outline-4">
-<h4 id="hH-fb0eba5e-9d12-4cfe-8e8c-fe77b6658065"><a id="orgf6754e4"></a><span class="section-number-4">2.2.5</span> Actor Failure</h4>
+<div id="outline-container-org21c258c" class="outline-4">
+<h4 id="hH-fb0eba5e-9d12-4cfe-8e8c-fe77b6658065"><a id="org21c258c"></a><span class="section-number-4">2.2.5</span> Actor Failure</h4>
 <div class="outline-text-4" id="text-hH-fb0eba5e-9d12-4cfe-8e8c-fe77b6658065">
 <p>
 If the Actor code handling a message fails, the ActorSystem will
@@ -965,8 +968,8 @@ message.  See <a href="#hH-62e20202-9bff-4455-968e-73fee0b9f66a">PoisonMessage R
 </div>
 </div>
 
-<div id="outline-container-org556da1b" class="outline-2">
-<h2 id="hH-bb3655d6-66df-42d5-9486-e81c8687e9d6"><a id="org556da1b"></a><span class="section-number-2">3</span> Guidelines for Actors and their messages</h2>
+<div id="outline-container-org66697b5" class="outline-2">
+<h2 id="hH-bb3655d6-66df-42d5-9486-e81c8687e9d6"><a id="org66697b5"></a><span class="section-number-2">3</span> Guidelines for Actors and their messages</h2>
 <div class="outline-text-2" id="text-hH-bb3655d6-66df-42d5-9486-e81c8687e9d6">
 <ul class="org-ul">
 <li>The ActorSystemMessage class is the base class all ActorSystem
@@ -1057,8 +1060,8 @@ for the expected utilization.
 </div>
 </div>
 
-<div id="outline-container-orgd5db804" class="outline-2">
-<h2 id="hH-330e09d9-4a98-4814-8a1c-6003ce6a7995"><a id="orgd5db804"></a><span class="section-number-2">4</span> Thespian Actor Feature Extensions</h2>
+<div id="outline-container-orgd57bb9e" class="outline-2">
+<h2 id="hH-330e09d9-4a98-4814-8a1c-6003ce6a7995"><a id="orgd57bb9e"></a><span class="section-number-2">4</span> Thespian Actor Feature Extensions</h2>
 <div class="outline-text-2" id="text-hH-330e09d9-4a98-4814-8a1c-6003ce6a7995">
 <p>
 The Thespian system provides several extended features not present
@@ -1068,8 +1071,8 @@ scalability, and enterprise-level deployment of Thespian-based code.
 </p>
 </div>
 
-<div id="outline-container-org8427566" class="outline-3">
-<h3 id="hH-3d280f21-4a99-416f-8cd7-9c9380a1c86c"><a id="org8427566"></a><span class="section-number-3">4.1</span> Message Delivery</h3>
+<div id="outline-container-org2272446" class="outline-3">
+<h3 id="hH-3d280f21-4a99-416f-8cd7-9c9380a1c86c"><a id="org2272446"></a><span class="section-number-3">4.1</span> Message Delivery</h3>
 <div class="outline-text-3" id="text-hH-3d280f21-4a99-416f-8cd7-9c9380a1c86c">
 <p>
 Messages are delivered to Actors on a <i>best-effort</i> basis.  This
@@ -1100,8 +1103,8 @@ message is redirected as described in <a href="#hH-5af075c1-73b1-4f7c-8515-e55ed
 </p>
 </div>
 
-<div id="outline-container-org22f97f0" class="outline-4">
-<h4 id="hH-23ac66d7-ba55-40dc-ade8-a71e51c7a404"><a id="org22f97f0"></a><span class="section-number-4">4.1.1</span> Message Mutability</h4>
+<div id="outline-container-orgfa3ca36" class="outline-4">
+<h4 id="hH-23ac66d7-ba55-40dc-ade8-a71e51c7a404"><a id="orgfa3ca36"></a><span class="section-number-4">4.1.1</span> Message Mutability</h4>
 <div class="outline-text-4" id="text-hH-23ac66d7-ba55-40dc-ade8-a71e51c7a404">
 <p>
 Thespian does not automatically generate copies of sent messages,
@@ -1171,8 +1174,8 @@ this issue although this has negative performance implications
 </div>
 
 
-<div id="outline-container-org5bbabe2" class="outline-3">
-<h3 id="hH-5af075c1-73b1-4f7c-8515-e55ed96c03a9"><a id="org5bbabe2"></a><span class="section-number-3">4.2</span> Dead Letter Handling</h3>
+<div id="outline-container-org8b96e71" class="outline-3">
+<h3 id="hH-5af075c1-73b1-4f7c-8515-e55ed96c03a9"><a id="org8b96e71"></a><span class="section-number-3">4.2</span> Dead Letter Handling</h3>
 <div class="outline-text-3" id="text-hH-5af075c1-73b1-4f7c-8515-e55ed96c03a9">
 <p>
 If the ActorSystem is unable to deliver a message to the target
@@ -1207,8 +1210,8 @@ confusion.
 </div>
 </div>
 
-<div id="outline-container-org69072f0" class="outline-3">
-<h3 id="hH-badcba33-bc39-4009-833f-07617ec72e12"><a id="org69072f0"></a><span class="section-number-3">4.3</span> Non-startable Actors</h3>
+<div id="outline-container-orga6d8a7d" class="outline-3">
+<h3 id="hH-badcba33-bc39-4009-833f-07617ec72e12"><a id="orga6d8a7d"></a><span class="section-number-3">4.3</span> Non-startable Actors</h3>
 <div class="outline-text-3" id="text-hH-badcba33-bc39-4009-833f-07617ec72e12">
 <p>
 Actors that cannot be started at all will be Dead Lettered by the
@@ -1220,8 +1223,8 @@ discards all messages sent to a non-starting Actor.
 </div>
 </div>
 
-<div id="outline-container-org654a939" class="outline-3">
-<h3 id="hH-62e20202-9bff-4455-968e-73fee0b9f66a"><a id="org654a939"></a><span class="section-number-3">4.4</span> PoisonMessage Returns</h3>
+<div id="outline-container-orgfeeb44e" class="outline-3">
+<h3 id="hH-62e20202-9bff-4455-968e-73fee0b9f66a"><a id="orgfeeb44e"></a><span class="section-number-3">4.4</span> PoisonMessage Returns</h3>
 <div class="outline-text-3" id="text-hH-62e20202-9bff-4455-968e-73fee0b9f66a">
 <p>
 If an Actor experiences a failure (an uncaught exception) when
@@ -1245,8 +1248,8 @@ See <a href="#hH-407c4c79-2a05-442d-b6e8-5bf7c2f2d068">PoisonMessage</a> for det
 </div>
 </div>
 
-<div id="outline-container-org1fa7eec" class="outline-3">
-<h3 id="hH-91e3dc4e-af22-4076-94ee-43f60458f0e0"><a id="org1fa7eec"></a><span class="section-number-3">4.5</span> Top-Level Actors</h3>
+<div id="outline-container-org8d3b074" class="outline-3">
+<h3 id="hH-91e3dc4e-af22-4076-94ee-43f60458f0e0"><a id="org8d3b074"></a><span class="section-number-3">4.5</span> Top-Level Actors</h3>
 <div class="outline-text-3" id="text-hH-91e3dc4e-af22-4076-94ee-43f60458f0e0">
 <p>
 Actors created by the external environment are called "Top-Level
@@ -1263,8 +1266,8 @@ redirected to the Dead Letter Handler (see <a href="#hH-5af075c1-73b1-4f7c-8515-
 </div>
 </div>
 
-<div id="outline-container-org99ac06a" class="outline-3">
-<h3 id="hH-2d5ef9c7-2132-45f9-b6eb-6f2729f5b232"><a id="org99ac06a"></a><span class="section-number-3">4.6</span> Named Actors</h3>
+<div id="outline-container-orgab54b52" class="outline-3">
+<h3 id="hH-2d5ef9c7-2132-45f9-b6eb-6f2729f5b232"><a id="orgab54b52"></a><span class="section-number-3">4.6</span> Named Actors</h3>
 <div class="outline-text-3" id="text-hH-2d5ef9c7-2132-45f9-b6eb-6f2729f5b232">
 <p>
 Most Actors are created and subsequently referenced by the
@@ -1329,8 +1332,8 @@ system be unnamed Actors to avoid these disadvantages.
 </div>
 </div>
 
-<div id="outline-container-orgf6e5ee0" class="outline-3">
-<h3 id="hH-9cc1acd4-7f35-44ac-94fc-0326dc87a7a5"><a id="orgf6e5ee0"></a><span class="section-number-3">4.7</span> Timer Messages</h3>
+<div id="outline-container-org0a63a9b" class="outline-3">
+<h3 id="hH-9cc1acd4-7f35-44ac-94fc-0326dc87a7a5"><a id="org0a63a9b"></a><span class="section-number-3">4.7</span> Timer Messages</h3>
 <div class="outline-text-3" id="text-hH-9cc1acd4-7f35-44ac-94fc-0326dc87a7a5">
 <p>
 Normally Actors respond to messages sent to them by other Actors,
@@ -1365,8 +1368,8 @@ should simply ignore the <code>WakeupMessage</code> when it is received.
 </div>
 </div>
 
-<div id="outline-container-org6034806" class="outline-3">
-<h3 id="hH-94edef18-154e-4847-864f-027dff4f6e0a"><a id="org6034806"></a><span class="section-number-3">4.8</span> Watching File Descriptors</h3>
+<div id="outline-container-org71845df" class="outline-3">
+<h3 id="hH-94edef18-154e-4847-864f-027dff4f6e0a"><a id="org71845df"></a><span class="section-number-3">4.8</span> Watching File Descriptors</h3>
 <div class="outline-text-3" id="text-hH-94edef18-154e-4847-864f-027dff4f6e0a">
 <p>
 The Actor model itself is a pure specification that is good for
@@ -1443,8 +1446,8 @@ limit the portability of these Actors.
 </p>
 </div>
 
-<div id="outline-container-org9f52aa2" class="outline-4">
-<h4 id="hH-df96b2ed-e292-4ded-a614-30cfa1557858"><a id="org9f52aa2"></a><span class="section-number-4">4.8.1</span> Blocking Actors</h4>
+<div id="outline-container-org1b05a75" class="outline-4">
+<h4 id="hH-df96b2ed-e292-4ded-a614-30cfa1557858"><a id="org1b05a75"></a><span class="section-number-4">4.8.1</span> Blocking Actors</h4>
 <div class="outline-text-4" id="text-hH-df96b2ed-e292-4ded-a614-30cfa1557858">
 <p>
 There are some cases where the desired functionality of the Actor is
@@ -1472,8 +1475,8 @@ be used as well.
 </div>
 </div>
 
-<div id="outline-container-orgb6b4dd0" class="outline-3">
-<h3 id="hH-19cf92bf-a6ae-492c-844c-b0831c108a3a"><a id="orgb6b4dd0"></a><span class="section-number-3">4.9</span> Actor Troupes</h3>
+<div id="outline-container-org83d3eb1" class="outline-3">
+<h3 id="hH-19cf92bf-a6ae-492c-844c-b0831c108a3a"><a id="org83d3eb1"></a><span class="section-number-3">4.9</span> Actor Troupes</h3>
 <div class="outline-text-3" id="text-hH-19cf92bf-a6ae-492c-844c-b0831c108a3a">
 <p>
 If specified appropriately, multiple instances of an Actor can be
@@ -1504,8 +1507,8 @@ See <a href="#hH-c796bc0d-a150-4fb9-8918-58f470813175">Actor Troupe Support</a> 
 </div>
 </div>
 
-<div id="outline-container-org0096077" class="outline-3">
-<h3 id="hH-a17e6c70-5592-4d06-b818-bd25350c4c53"><a id="org0096077"></a><span class="section-number-3">4.10</span> ActorSystem Capabilities</h3>
+<div id="outline-container-org40d4b5f" class="outline-3">
+<h3 id="hH-a17e6c70-5592-4d06-b818-bd25350c4c53"><a id="org40d4b5f"></a><span class="section-number-3">4.10</span> ActorSystem Capabilities</h3>
 <div class="outline-text-3" id="text-hH-a17e6c70-5592-4d06-b818-bd25350c4c53">
 <p>
 Actors can stipulate the requirements of the ActorSystem that they
@@ -1536,8 +1539,8 @@ common capabilities described in the <a href="#hH-2a4bcad4-9fe0-4399-86d4-4bbf0b
 </div>
 </div>
 
-<div id="outline-container-org315d983" class="outline-3">
-<h3 id="hH-3c8aa454-9a21-4d24-a623-ad86bfd4f5a7"><a id="org315d983"></a><span class="section-number-3">4.11</span> Other Actor Systems</h3>
+<div id="outline-container-org1c928e6" class="outline-3">
+<h3 id="hH-3c8aa454-9a21-4d24-a623-ad86bfd4f5a7"><a id="org1c928e6"></a><span class="section-number-3">4.11</span> Other Actor Systems</h3>
 <div class="outline-text-3" id="text-hH-3c8aa454-9a21-4d24-a623-ad86bfd4f5a7">
 <p>
 The current ActorSystem can communicate with other ActorSystems to
@@ -1572,8 +1575,8 @@ that do are normally of the multi-process variety.
 </p>
 </div>
 
-<div id="outline-container-orgfb33963" class="outline-4">
-<h4 id="hH-bd57f29e-4a5e-4725-9ced-7e0c5fa5bcbd"><a id="orgfb33963"></a><span class="section-number-4">4.11.1</span> Convention Establishment</h4>
+<div id="outline-container-org4519473" class="outline-4">
+<h4 id="hH-bd57f29e-4a5e-4725-9ced-7e0c5fa5bcbd"><a id="org4519473"></a><span class="section-number-4">4.11.1</span> Convention Establishment</h4>
 <div class="outline-text-4" id="text-hH-bd57f29e-4a5e-4725-9ced-7e0c5fa5bcbd">
 <p>
 The ActorSystem implementation determines the manner in which
@@ -1608,8 +1611,8 @@ initiate inbound connections to the Leader.
 </div>
 </div>
 
-<div id="outline-container-org8b6eb39" class="outline-4">
-<h4 id="hH-0500ead3-28ea-440c-9ad6-56cb9fbdd648"><a id="org8b6eb39"></a><span class="section-number-4">4.11.2</span> Convention Administrator Communications</h4>
+<div id="outline-container-org0d5aeb5" class="outline-4">
+<h4 id="hH-0500ead3-28ea-440c-9ad6-56cb9fbdd648"><a id="org0d5aeb5"></a><span class="section-number-4">4.11.2</span> Convention Administrator Communications</h4>
 <div class="outline-text-4" id="text-hH-0500ead3-28ea-440c-9ad6-56cb9fbdd648">
 <p>
 The communications between the Convention Leader admin process and the
@@ -1631,8 +1634,8 @@ utilization of Thespian.
 </div>
 </div>
 
-<div id="outline-container-org4308836" class="outline-4">
-<h4 id="hH-33d27852-9cfd-4583-b0c0-5c05f2cb8e5a"><a id="org4308836"></a><span class="section-number-4">4.11.3</span> Multi-system Global Name support</h4>
+<div id="outline-container-orgdb9ba34" class="outline-4">
+<h4 id="hH-33d27852-9cfd-4583-b0c0-5c05f2cb8e5a"><a id="orgdb9ba34"></a><span class="section-number-4">4.11.3</span> Multi-system Global Name support</h4>
 <div class="outline-text-4" id="text-hH-33d27852-9cfd-4583-b0c0-5c05f2cb8e5a">
 <p>
 Actor creation is first attempted locally, but if the Actor's
@@ -1671,8 +1674,8 @@ address.
 </div>
 </div>
 
-<div id="outline-container-org0ed1417" class="outline-3">
-<h3 id="hH-5e670e59-8334-477e-a9d2-0c2dc39d82dd"><a id="org0ed1417"></a><span class="section-number-3">4.12</span> Performance</h3>
+<div id="outline-container-org9dc73fc" class="outline-3">
+<h3 id="hH-5e670e59-8334-477e-a9d2-0c2dc39d82dd"><a id="org9dc73fc"></a><span class="section-number-3">4.12</span> Performance</h3>
 <div class="outline-text-3" id="text-hH-5e670e59-8334-477e-a9d2-0c2dc39d82dd">
 <p>
 The Thespian implementation is design principles are: correctness,
@@ -1698,8 +1701,8 @@ is adversely affecting your Actor-base application.
 </div>
 </div>
 
-<div id="outline-container-orga5a35dc" class="outline-3">
-<h3 id="hH-ce55494c-dd7a-4258-a1e8-b090c3bbb1e6"><a id="orga5a35dc"></a><span class="section-number-3">4.13</span> Logging</h3>
+<div id="outline-container-org2a53cef" class="outline-3">
+<h3 id="hH-ce55494c-dd7a-4258-a1e8-b090c3bbb1e6"><a id="org2a53cef"></a><span class="section-number-3">4.13</span> Logging</h3>
 <div class="outline-text-3" id="text-hH-ce55494c-dd7a-4258-a1e8-b090c3bbb1e6">
 <p>
 The standard Python logging can be used with the Thespian Actor
@@ -1787,8 +1790,8 @@ captured in an auxiliary file and is only needed for passing to the
 </p>
 </div>
 
-<div id="outline-container-org2c63f97" class="outline-4">
-<h4 id="hH-856a7ffe-676b-42a9-95eb-bd89a5810f53"><a id="org2c63f97"></a><span class="section-number-4">4.13.1</span> Thespian Internals Logging</h4>
+<div id="outline-container-orgef0c102" class="outline-4">
+<h4 id="hH-856a7ffe-676b-42a9-95eb-bd89a5810f53"><a id="orgef0c102"></a><span class="section-number-4">4.13.1</span> Thespian Internals Logging</h4>
 <div class="outline-text-4" id="text-hH-856a7ffe-676b-42a9-95eb-bd89a5810f53">
 <p>
 Because Thespian instruments the standard logging functionality to
@@ -1827,8 +1830,8 @@ following log levels are recognized: <code>CRITICAL</code>, <code>ERROR</code>, 
 </div>
 </div>
 
-<div id="outline-container-org3e1bbc4" class="outline-3">
-<h3 id="hH-955ec990-a267-4d08-8f4d-5f980c777173"><a id="org3e1bbc4"></a><span class="section-number-3">4.14</span> Actor Code Distribution</h3>
+<div id="outline-container-orga3596e1" class="outline-3">
+<h3 id="hH-955ec990-a267-4d08-8f4d-5f980c777173"><a id="orga3596e1"></a><span class="section-number-3">4.14</span> Actor Code Distribution</h3>
 <div class="outline-text-3" id="text-hH-955ec990-a267-4d08-8f4d-5f980c777173">
 <p>
 The Thespian ActorSystem provides an feature to specify the code
@@ -1923,8 +1926,8 @@ practical manner.
 </div>
 </div>
 
-<div id="outline-container-orge3f4003" class="outline-2">
-<h2 id="hH-c3ba9430-5229-44ad-bbd5-ff5426e03e5e"><a id="orge3f4003"></a><span class="section-number-2">5</span> Actor API</h2>
+<div id="outline-container-org72197c9" class="outline-2">
+<h2 id="hH-c3ba9430-5229-44ad-bbd5-ff5426e03e5e"><a id="org72197c9"></a><span class="section-number-2">5</span> Actor API</h2>
 <div class="outline-text-2" id="text-hH-c3ba9430-5229-44ad-bbd5-ff5426e03e5e">
 <p>
 The Actor API is the set of operations that a running Actor can
@@ -1954,8 +1957,8 @@ Versioning of the Actor API and the ActorSystem are described in
 </p>
 </div>
 
-<div id="outline-container-orgdabe763" class="outline-3">
-<h3 id="hH-584dd408-9496-4f6f-8a86-0f0236f73893"><a id="orgdabe763"></a><span class="section-number-3">5.1</span> myAddress</h3>
+<div id="outline-container-org8e68a3f" class="outline-3">
+<h3 id="hH-584dd408-9496-4f6f-8a86-0f0236f73893"><a id="org8e68a3f"></a><span class="section-number-3">5.1</span> myAddress</h3>
 <div class="outline-text-3" id="text-hH-584dd408-9496-4f6f-8a86-0f0236f73893">
 <div class="org-src-container">
 <pre class="src src-python"><span class="org-keyword">self</span>.myAddress
@@ -1968,8 +1971,8 @@ This property is the ActorAddress of this Actor.
 </div>
 </div>
 
-<div id="outline-container-org062891d" class="outline-3">
-<h3 id="hH-f89540de-f853-42e3-9d52-23b1f84a251e"><a id="org062891d"></a><span class="section-number-3">5.2</span> receiveMessage</h3>
+<div id="outline-container-org02892ed" class="outline-3">
+<h3 id="hH-f89540de-f853-42e3-9d52-23b1f84a251e"><a id="org02892ed"></a><span class="section-number-3">5.2</span> receiveMessage</h3>
 <div class="outline-text-3" id="text-hH-f89540de-f853-42e3-9d52-23b1f84a251e">
 <div class="org-src-container">
 <pre class="src src-python">    <span class="org-keyword">def</span> <span class="org-function-name">receiveMessage</span>(<span class="org-keyword">self</span>, message, sender): ...
@@ -2007,8 +2010,8 @@ will contain the modifications made by the original attempt.
 </p>
 </div>
 
-<div id="outline-container-orgfcde5df" class="outline-4">
-<h4 id="hH-c7c7275c-fa32-4466-9d1a-e888f993e67c"><a id="orgfcde5df"></a><span class="section-number-4">5.2.1</span> Return Value</h4>
+<div id="outline-container-org088ae27" class="outline-4">
+<h4 id="hH-c7c7275c-fa32-4466-9d1a-e888f993e67c"><a id="org088ae27"></a><span class="section-number-4">5.2.1</span> Return Value</h4>
 <div class="outline-text-4" id="text-hH-c7c7275c-fa32-4466-9d1a-e888f993e67c">
 <p>
 Ordinarily the return value from an Actor's <code>receiveMessage()</code>
@@ -2026,7 +2029,7 @@ ignored.
 </p>
 
 <p>
-The <a id="org8426e89"></a> object is initialized with the list of file
+The <a id="orgbe85d96"></a> object is initialized with the list of file
 numbers to watch for incoming data from.
 </p>
 
@@ -2051,8 +2054,8 @@ the set of file descriptors that should be watched when it exits.
 </div>
 </div>
 
-<div id="outline-container-orgb0efbc2" class="outline-3">
-<h3 id="hH-3663d87d-8a2f-485b-aeef-c6e9cf418b4c"><a id="orgb0efbc2"></a><span class="section-number-3">5.3</span> createActor</h3>
+<div id="outline-container-orge2b3a9f" class="outline-3">
+<h3 id="hH-3663d87d-8a2f-485b-aeef-c6e9cf418b4c"><a id="orge2b3a9f"></a><span class="section-number-3">5.3</span> createActor</h3>
 <div class="outline-text-3" id="text-hH-3663d87d-8a2f-485b-aeef-c6e9cf418b4c">
 <div class="org-src-container">
 <pre class="src src-python"><span class="org-variable-name">newAddress</span> = <span class="org-keyword">self</span>.createActor(<span class="org-keyword">self</span>, actorClass,
@@ -2142,8 +2145,8 @@ will be handled as described in the <a href="#hH-5af075c1-73b1-4f7c-8515-e55ed96
 </div>
 
 
-<div id="outline-container-org0b1ef5e" class="outline-4">
-<h4 id="hH-c5ae8d61-9358-463d-b0f0-d15ae0246059"><a id="org0b1ef5e"></a><span class="section-number-4">5.3.1</span> globalName</h4>
+<div id="outline-container-org14f5977" class="outline-4">
+<h4 id="hH-c5ae8d61-9358-463d-b0f0-d15ae0246059"><a id="org14f5977"></a><span class="section-number-4">5.3.1</span> globalName</h4>
 <div class="outline-text-4" id="text-hH-c5ae8d61-9358-463d-b0f0-d15ae0246059">
 <p>
 The parent for a Named Actor (created when the <code>globalName</code> argument
@@ -2167,8 +2170,8 @@ that requested the creation of the Named Actor.
 </div>
 </div>
 
-<div id="outline-container-org758667b" class="outline-4">
-<h4 id="hH-57dd8b71-0f60-4ad2-9628-08edf2c5b00c"><a id="org758667b"></a><span class="section-number-4">5.3.2</span> Actor Creation Gotchas</h4>
+<div id="outline-container-org1573067" class="outline-4">
+<h4 id="hH-57dd8b71-0f60-4ad2-9628-08edf2c5b00c"><a id="org1573067"></a><span class="section-number-4">5.3.2</span> Actor Creation Gotchas</h4>
 <div class="outline-text-4" id="text-hH-57dd8b71-0f60-4ad2-9628-08edf2c5b00c">
 <p>
 There are a few issues to be aware of when creating Actors:
@@ -2229,8 +2232,8 @@ a name/import-path string.</li>
 </div>
 </div>
 
-<div id="outline-container-org1cba33b" class="outline-3">
-<h3 id="hH-28cb6d46-fa93-4efd-bc83-88bbbd50df66"><a id="org1cba33b"></a><span class="section-number-3">5.4</span> send</h3>
+<div id="outline-container-org8a362fe" class="outline-3">
+<h3 id="hH-28cb6d46-fa93-4efd-bc83-88bbbd50df66"><a id="org8a362fe"></a><span class="section-number-3">5.4</span> send</h3>
 <div class="outline-text-3" id="text-hH-28cb6d46-fa93-4efd-bc83-88bbbd50df66">
 <div class="org-src-container">
 <pre class="src src-python"><span class="org-keyword">self</span>.send(targetAddress, message)
@@ -2256,8 +2259,8 @@ delivered.
 </div>
 </div>
 
-<div id="outline-container-orge7b890e" class="outline-3">
-<h3 id="hH-b2b4b63a-c256-4793-8591-1ce8dbd87131"><a id="orge7b890e"></a><span class="section-number-3">5.5</span> wakeupAfter</h3>
+<div id="outline-container-org28e46c9" class="outline-3">
+<h3 id="hH-b2b4b63a-c256-4793-8591-1ce8dbd87131"><a id="org28e46c9"></a><span class="section-number-3">5.5</span> wakeupAfter</h3>
 <div class="outline-text-3" id="text-hH-b2b4b63a-c256-4793-8591-1ce8dbd87131">
 <div class="org-src-container">
 <pre class="src src-python"><span class="org-keyword">self</span>.wakeupAfter(timePeriod, payload=<span class="org-constant">None</span>)
@@ -2284,8 +2287,8 @@ reasonably small.
 </div>
 </div>
 
-<div id="outline-container-org8b64e1b" class="outline-3">
-<h3 id="hH-4022d522-cdc6-487a-b5d5-5d992572c531"><a id="org8b64e1b"></a><span class="section-number-3">5.6</span> handleDeadLetters</h3>
+<div id="outline-container-org6e5852a" class="outline-3">
+<h3 id="hH-4022d522-cdc6-487a-b5d5-5d992572c531"><a id="org6e5852a"></a><span class="section-number-3">5.6</span> handleDeadLetters</h3>
 <div class="outline-text-3" id="text-hH-4022d522-cdc6-487a-b5d5-5d992572c531">
 <div class="org-src-container">
 <pre class="src src-python">    <span class="org-keyword">self</span>.handleDeadLetters(startHandling=<span class="org-constant">True</span>)
@@ -2299,8 +2302,8 @@ handling Dead Letters.
 </div>
 </div>
 
-<div id="outline-container-orgeda2ea2" class="outline-3">
-<h3 id="hH-b9f7a2f0-7d2a-4cc0-8241-1fee7c62c44e"><a id="orgeda2ea2"></a><span class="section-number-3">5.7</span> notifyOnSystemRegistrationChanges</h3>
+<div id="outline-container-orged3cd21" class="outline-3">
+<h3 id="hH-b9f7a2f0-7d2a-4cc0-8241-1fee7c62c44e"><a id="orged3cd21"></a><span class="section-number-3">5.7</span> notifyOnSystemRegistrationChanges</h3>
 <div class="outline-text-3" id="text-hH-b9f7a2f0-7d2a-4cc0-8241-1fee7c62c44e">
 <div class="org-src-container">
 <pre class="src src-python"><span class="org-keyword">self</span>.notifyOnSystemRegistrationChanges(startHandling=<span class="org-constant">True</span>)
@@ -2315,8 +2318,8 @@ handling system registration events from other ActorSystems (see
 </div>
 </div>
 
-<div id="outline-container-org0b23112" class="outline-3">
-<h3 id="hH-5ae05479-5a6d-4f01-bd7d-c4f544f7b98a"><a id="org0b23112"></a><span class="section-number-3">5.8</span> registerSourceAuthority</h3>
+<div id="outline-container-org0f9d049" class="outline-3">
+<h3 id="hH-5ae05479-5a6d-4f01-bd7d-c4f544f7b98a"><a id="org0f9d049"></a><span class="section-number-3">5.8</span> registerSourceAuthority</h3>
 <div class="outline-text-3" id="text-hH-5ae05479-5a6d-4f01-bd7d-c4f544f7b98a">
 <div class="org-src-container">
 <pre class="src src-python"><span class="org-keyword">self</span>.registerSourceAuthority()
@@ -2338,8 +2341,8 @@ Actor registers for this role.
 </div>
 </div>
 
-<div id="outline-container-org6d7290f" class="outline-3">
-<h3 id="hH-731cff6e-674d-4341-bd92-80a08113d5df"><a id="org6d7290f"></a><span class="section-number-3">5.9</span> loadActorSource</h3>
+<div id="outline-container-org3940151" class="outline-3">
+<h3 id="hH-731cff6e-674d-4341-bd92-80a08113d5df"><a id="org3940151"></a><span class="section-number-3">5.9</span> loadActorSource</h3>
 <div class="outline-text-3" id="text-hH-731cff6e-674d-4341-bd92-80a08113d5df">
 <div class="org-src-container">
 <pre class="src src-python"><span class="org-variable-name">sourceHash</span> = <span class="org-keyword">self</span>.loadActorSource(fileref)
@@ -2369,8 +2372,8 @@ section for more details.
 </div>
 </div>
 
-<div id="outline-container-org9db8b7d" class="outline-3">
-<h3 id="hH-02eaa317-996a-419b-b9e5-462a28a749c0"><a id="org9db8b7d"></a><span class="section-number-3">5.10</span> unloadActorSource</h3>
+<div id="outline-container-orge745559" class="outline-3">
+<h3 id="hH-02eaa317-996a-419b-b9e5-462a28a749c0"><a id="orge745559"></a><span class="section-number-3">5.10</span> unloadActorSource</h3>
 <div class="outline-text-3" id="text-hH-02eaa317-996a-419b-b9e5-462a28a749c0">
 <div class="org-src-container">
 <pre class="src src-python"><span class="org-keyword">self</span>.unloadActorSource(sourceHash)
@@ -2389,8 +2392,8 @@ section for more details.
 </div>
 </div>
 
-<div id="outline-container-orgd92c785" class="outline-3">
-<h3 id="hH-460d04d8-3961-43c4-a4c3-8282c2e4a892"><a id="orgd92c785"></a><span class="section-number-3">5.11</span> notifyOnSourceAvailability</h3>
+<div id="outline-container-org535f4c3" class="outline-3">
+<h3 id="hH-460d04d8-3961-43c4-a4c3-8282c2e4a892"><a id="org535f4c3"></a><span class="section-number-3">5.11</span> notifyOnSourceAvailability</h3>
 <div class="outline-text-3" id="text-hH-460d04d8-3961-43c4-a4c3-8282c2e4a892">
 <div class="org-src-container">
 <pre class="src src-python">    <span class="org-keyword">self</span>.notifyOnSourceAvailability(enable=<span class="org-constant">True</span>)
@@ -2414,8 +2417,8 @@ available, but are not triggered by local load or unload events.
 </div>
 </div>
 
-<div id="outline-container-org8c28eb4" class="outline-3">
-<h3 id="hH-0e9f4a6a-3083-40fa-a75b-ced37d70eef0"><a id="org8c28eb4"></a><span class="section-number-3">5.12</span> actorSystemCapabilityCheck</h3>
+<div id="outline-container-org16f81a4" class="outline-3">
+<h3 id="hH-0e9f4a6a-3083-40fa-a75b-ced37d70eef0"><a id="org16f81a4"></a><span class="section-number-3">5.12</span> actorSystemCapabilityCheck</h3>
 <div class="outline-text-3" id="text-hH-0e9f4a6a-3083-40fa-a75b-ced37d70eef0">
 <div class="org-src-container">
 <pre class="src src-python"><span class="org-keyword">def</span> <span class="org-function-name">actorSystemCapabilityCheck</span>(capabilities, requirements=<span class="org-constant">None</span>):
@@ -2458,8 +2461,8 @@ message.
 </p>
 </div>
 
-<div id="outline-container-org1099d2a" class="outline-4">
-<h4 id="hH-3bafc1e2-9e3d-4073-8e75-c01ad792b5be"><a id="org1099d2a"></a><span class="section-number-4">5.12.1</span> requireCapability decorator</h4>
+<div id="outline-container-org583860b" class="outline-4">
+<h4 id="hH-3bafc1e2-9e3d-4073-8e75-c01ad792b5be"><a id="org583860b"></a><span class="section-number-4">5.12.1</span> requireCapability decorator</h4>
 <div class="outline-text-4" id="text-hH-3bafc1e2-9e3d-4073-8e75-c01ad792b5be">
 <p>
 To facilitate easy specification of requirements, there is a
@@ -2583,8 +2586,8 @@ is equivalent to:
 </div>
 </div>
 </div>
-<div id="outline-container-org1d37138" class="outline-3">
-<h3 id="hH-1dc4362f-78dd-4adf-833c-d7bebda07ef8"><a id="org1d37138"></a><span class="section-number-3">5.13</span> updateCapability</h3>
+<div id="outline-container-org2dc5a1d" class="outline-3">
+<h3 id="hH-1dc4362f-78dd-4adf-833c-d7bebda07ef8"><a id="org2dc5a1d"></a><span class="section-number-3">5.13</span> updateCapability</h3>
 <div class="outline-text-3" id="text-hH-1dc4362f-78dd-4adf-833c-d7bebda07ef8">
 <p>
 The <code>updateCapability()</code> method is used update the capabilities of
@@ -2628,8 +2631,8 @@ issuing a <a href="#hH-6428fa90-8749-4777-a0b1-752ec5eb1650">Thespian_StatusReq<
 </div>
 </div>
 
-<div id="outline-container-org81125da" class="outline-3">
-<h3 id="hH-956e30d5-c035-4e1e-86cb-73332e28d8d4"><a id="org81125da"></a><span class="section-number-3">5.14</span> preRegisterRemoteSystem</h3>
+<div id="outline-container-org641e769" class="outline-3">
+<h3 id="hH-956e30d5-c035-4e1e-86cb-73332e28d8d4"><a id="org641e769"></a><span class="section-number-3">5.14</span> preRegisterRemoteSystem</h3>
 <div class="outline-text-3" id="text-hH-956e30d5-c035-4e1e-86cb-73332e28d8d4">
 <p>
 The <code>preRegisterRemoteSystem()</code> method is used to inform the local
@@ -2692,8 +2695,8 @@ established communications.
 </div>
 </div>
 
-<div id="outline-container-org23a0d0f" class="outline-3">
-<h3 id="hH-ce801678-bcff-497d-be2a-439cb34fc519"><a id="org23a0d0f"></a><span class="section-number-3">5.15</span> deRegisterRemoteSystem</h3>
+<div id="outline-container-org7641986" class="outline-3">
+<h3 id="hH-ce801678-bcff-497d-be2a-439cb34fc519"><a id="org7641986"></a><span class="section-number-3">5.15</span> deRegisterRemoteSystem</h3>
 <div class="outline-text-3" id="text-hH-ce801678-bcff-497d-be2a-439cb34fc519">
 <p>
 The <code>deRegisterRemoteSystem()</code> method is used to unregister a
@@ -2730,8 +2733,8 @@ same value that was originally passed to the latter method.  The
 </div>
 </div>
 
-<div id="outline-container-org8ad7d9f" class="outline-3">
-<h3 id="hH-9e800ed1-ed40-4ff3-8445-f795719f6218"><a id="org8ad7d9f"></a><span class="section-number-3">5.16</span> actorSystemShutdown</h3>
+<div id="outline-container-orgab05f0e" class="outline-3">
+<h3 id="hH-9e800ed1-ed40-4ff3-8445-f795719f6218"><a id="orgab05f0e"></a><span class="section-number-3">5.16</span> actorSystemShutdown</h3>
 <div class="outline-text-3" id="text-hH-9e800ed1-ed40-4ff3-8445-f795719f6218">
 <p>
 The <code>actorSystemShutdown()</code> method can be called by an actor to
@@ -2757,8 +2760,8 @@ Use this method with caution.
 </div>
 </div>
 
-<div id="outline-container-org9d48e15" class="outline-3">
-<h3 id="hH-2f5b52bd-72b8-41eb-b879-809d174c0e30"><a id="org9d48e15"></a><span class="section-number-3">5.17</span> ActorTypeDispatcher</h3>
+<div id="outline-container-orge86550a" class="outline-3">
+<h3 id="hH-2f5b52bd-72b8-41eb-b879-809d174c0e30"><a id="orge86550a"></a><span class="section-number-3">5.17</span> ActorTypeDispatcher</h3>
 <div class="outline-text-3" id="text-hH-2f5b52bd-72b8-41eb-b879-809d174c0e30">
 <p>
 An alternative base class for creating Actors is the
@@ -2828,8 +2831,8 @@ Got a message
 </pre>
 </div>
 
-<div id="outline-container-org9b41a11" class="outline-4">
-<h4 id="h:96440ac7-3db5-4cb4-9496-6c8c46075f14"><a id="org9b41a11"></a><span class="section-number-4">5.17.1</span> Derived Classes</h4>
+<div id="outline-container-org288b8a1" class="outline-4">
+<h4 id="h:96440ac7-3db5-4cb4-9496-6c8c46075f14"><a id="org288b8a1"></a><span class="section-number-4">5.17.1</span> Derived Classes</h4>
 <div class="outline-text-4" id="text-h:96440ac7-3db5-4cb4-9496-6c8c46075f14">
 <p>
 This receive method lookup also works for derived classes:
@@ -2867,13 +2870,13 @@ namespace prefix:
 </p>
 
 <div class="org-src-container">
-<pre class="src src-python" id="org94f4e17"><span class="linenr">1: </span><span class="org-keyword">class</span> <span class="org-type">Message1</span>: ...
+<pre class="src src-python" id="org149d03a"><span class="linenr">1: </span><span class="org-keyword">class</span> <span class="org-type">Message1</span>: ...
 <span class="linenr">2: </span><span class="org-keyword">class</span> <span class="org-type">Message2</span>: ...
 </pre>
 </div>
 
 <div class="org-src-container">
-<pre class="src src-python" id="orge3d38b1"><span class="linenr">1: </span><span class="org-keyword">import</span> messagedefs
+<pre class="src src-python" id="org525db95"><span class="linenr">1: </span><span class="org-keyword">import</span> messagedefs
 <span class="linenr">2: </span>
 <span class="linenr">3: </span><span class="org-keyword">class</span> <span class="org-type">SendActor</span>(ActorTypeDispatcher):
 <span class="linenr">4: </span>    <span class="org-keyword">def</span> <span class="org-function-name">receiveMsg_Message1</span>(<span class="org-keyword">self</span>, msg, sender):
@@ -2888,8 +2891,8 @@ namespace prefix:
 </div>
 
 
-<div id="outline-container-org4ed085a" class="outline-4">
-<h4 id="h:d92333c1-bb53-48d1-8323-f6013e479750"><a id="org4ed085a"></a><span class="section-number-4">5.17.2</span> Unrecognized Messages</h4>
+<div id="outline-container-org516cc8f" class="outline-4">
+<h4 id="h:d92333c1-bb53-48d1-8323-f6013e479750"><a id="org516cc8f"></a><span class="section-number-4">5.17.2</span> Unrecognized Messages</h4>
 <div class="outline-text-4" id="text-h:d92333c1-bb53-48d1-8323-f6013e479750">
 <p>
 Normally the ActorTypeDispatcher will quietly discard messages that do
@@ -2924,7 +2927,7 @@ Did not recognize the message type: &lt;type 'float'&gt;
 
 <p>
 It is important to note that an Actor based on the
-ActorTypeDispatcher that is also using the <a href="#org8426e89">5.2.1</a>
+ActorTypeDispatcher that is also using the <a href="#orgbe85d96">5.2.1</a>
 functionality should implement the <code>receiveUnrecognizedMessage</code>
 entrypointto ensure that a proper <code>ThespianWatch</code> message is
 returned when an unrecognized message is received.
@@ -2932,8 +2935,8 @@ returned when an unrecognized message is received.
 </div>
 </div>
 
-<div id="outline-container-orgbdff528" class="outline-4">
-<h4 id="hH-e58ce3a1-df40-4d3f-bc1f-e7743e3c1dc1"><a id="orgbdff528"></a><span class="section-number-4">5.17.3</span> Type Handling Deferral</h4>
+<div id="outline-container-orgac064a6" class="outline-4">
+<h4 id="hH-e58ce3a1-df40-4d3f-bc1f-e7743e3c1dc1"><a id="orgac064a6"></a><span class="section-number-4">5.17.3</span> Type Handling Deferral</h4>
 <div class="outline-text-4" id="text-hH-e58ce3a1-df40-4d3f-bc1f-e7743e3c1dc1">
 <p>
 In a normal Python subclass, it is possible for a method in the
@@ -3011,8 +3014,8 @@ Got a message
 </div>
 </div>
 
-<div id="outline-container-orgce84afa" class="outline-2">
-<h2 id="hH-7d2b4986-95d3-4460-9d19-ea0dcdb34fca"><a id="orgce84afa"></a><span class="section-number-2">6</span> ActorSystem API</h2>
+<div id="outline-container-orgcdf8aff" class="outline-2">
+<h2 id="hH-7d2b4986-95d3-4460-9d19-ea0dcdb34fca"><a id="orgcdf8aff"></a><span class="section-number-2">6</span> ActorSystem API</h2>
 <div class="outline-text-2" id="text-hH-7d2b4986-95d3-4460-9d19-ea0dcdb34fca">
 <p>
 The ActorSystem is created or connected-to by instantiating the
@@ -3031,8 +3034,8 @@ The ActorSystem API is made available by importing the
 </div>
 </div>
 
-<div id="outline-container-org6b40411" class="outline-3">
-<h3 id="hH-a91e6169-660d-4df0-af13-15b3ad5e63bc"><a id="org6b40411"></a><span class="section-number-3">6.1</span> Exceptions</h3>
+<div id="outline-container-org87be870" class="outline-3">
+<h3 id="hH-a91e6169-660d-4df0-af13-15b3ad5e63bc"><a id="org87be870"></a><span class="section-number-3">6.1</span> Exceptions</h3>
 <div class="outline-text-3" id="text-hH-a91e6169-660d-4df0-af13-15b3ad5e63bc">
 <p>
 All exceptions generated by the ActorSystem itself are based on the
@@ -3068,8 +3071,8 @@ The following shows the heirarchy of defined Thespian exceptions:
 </div>
 </div>
 
-<div id="outline-container-org0115ecc" class="outline-3">
-<h3 id="hH-f71b7bfa-c57b-4716-a2c7-ad83a2ed3582"><a id="org0115ecc"></a><span class="section-number-3">6.2</span> ActorSystem</h3>
+<div id="outline-container-org9fa43f9" class="outline-3">
+<h3 id="hH-f71b7bfa-c57b-4716-a2c7-ad83a2ed3582"><a id="org9fa43f9"></a><span class="section-number-3">6.2</span> ActorSystem</h3>
 <div class="outline-text-3" id="text-hH-f71b7bfa-c57b-4716-a2c7-ad83a2ed3582">
 <div class="org-src-container">
 <pre class="src src-python"><span class="org-variable-name">actorSys</span> = ActorSystem(systemBase = <span class="org-constant">None</span>,
@@ -3186,8 +3189,8 @@ names) will prevent the new ActorSystem from being created.</dd>
 </div>
 
 
-<div id="outline-container-org615eefe" class="outline-3">
-<h3 id="hH-654a6c81-b326-4c0a-98bc-638ac5ce631f"><a id="org615eefe"></a><span class="section-number-3">6.3</span> ActorSystem.shutdown</h3>
+<div id="outline-container-org718aeec" class="outline-3">
+<h3 id="hH-654a6c81-b326-4c0a-98bc-638ac5ce631f"><a id="org718aeec"></a><span class="section-number-3">6.3</span> ActorSystem.shutdown</h3>
 <div class="outline-text-3" id="text-hH-654a6c81-b326-4c0a-98bc-638ac5ce631f">
 <div class="org-src-container">
 <pre class="src src-python">actorSys.shutdown()
@@ -3222,8 +3225,8 @@ unaffected by stopping the transient unique ActorSystem.
 </div>
 </div>
 
-<div id="outline-container-org5242448" class="outline-3">
-<h3 id="hH-a565af1b-aabb-4336-a51d-7505c072c319"><a id="org5242448"></a><span class="section-number-3">6.4</span> ActorSystem.createActor</h3>
+<div id="outline-container-orgd16870d" class="outline-3">
+<h3 id="hH-a565af1b-aabb-4336-a51d-7505c072c319"><a id="orgd16870d"></a><span class="section-number-3">6.4</span> ActorSystem.createActor</h3>
 <div class="outline-text-3" id="text-hH-a565af1b-aabb-4336-a51d-7505c072c319">
 <div class="org-src-container">
 <pre class="src src-python"><span class="org-variable-name">actorAddr</span> = actorSys.createActor(actorClass,
@@ -3310,8 +3313,8 @@ not match any currently loaded source.</li>
 </div>
 </div>
 
-<div id="outline-container-orgfe21691" class="outline-3">
-<h3 id="hH-a5dcf9d2-7bda-43c7-ab44-86265992e972"><a id="orgfe21691"></a><span class="section-number-3">6.5</span> tell</h3>
+<div id="outline-container-orgc45067a" class="outline-3">
+<h3 id="hH-a5dcf9d2-7bda-43c7-ab44-86265992e972"><a id="orgc45067a"></a><span class="section-number-3">6.5</span> tell</h3>
 <div class="outline-text-3" id="text-hH-a5dcf9d2-7bda-43c7-ab44-86265992e972">
 <p>
 Tell is used to inject a message into the Actor system (targeting a
@@ -3340,8 +3343,8 @@ until the send is completed.
 </div>
 </div>
 
-<div id="outline-container-orge20070e" class="outline-3">
-<h3 id="hH-8e52624b-cda1-4218-bc9f-693cf06b0758"><a id="orge20070e"></a><span class="section-number-3">6.6</span> ask</h3>
+<div id="outline-container-org87fce7c" class="outline-3">
+<h3 id="hH-8e52624b-cda1-4218-bc9f-693cf06b0758"><a id="org87fce7c"></a><span class="section-number-3">6.6</span> ask</h3>
 <div class="outline-text-3" id="text-hH-8e52624b-cda1-4218-bc9f-693cf06b0758">
 <p>
 Ask is used to send a message to an Actor (injecting it into the
@@ -3376,8 +3379,8 @@ value will be accepted as a specification of a number of seconds.
 </p>
 </div>
 
-<div id="outline-container-org33ed2a2" class="outline-4">
-<h4 id="hH-b660216f-003b-4041-93cb-566be7edf72c"><a id="org33ed2a2"></a><span class="section-number-4">6.6.1</span> Gotchas</h4>
+<div id="outline-container-orga791cc2" class="outline-4">
+<h4 id="hH-b660216f-003b-4041-93cb-566be7edf72c"><a id="orga791cc2"></a><span class="section-number-4">6.6.1</span> Gotchas</h4>
 <div class="outline-text-4" id="text-hH-b660216f-003b-4041-93cb-566be7edf72c">
 <ul class="org-ul">
 <li>The response may come from a previous <code>tell()</code> (or <code>ask()</code> if that
@@ -3401,8 +3404,8 @@ the application must be prepared to use techniques like no-response
 </div>
 </div>
 
-<div id="outline-container-org9b0193f" class="outline-3">
-<h3 id="hH-c68f8ef8-94e9-46d6-8e67-634d04c16562"><a id="org9b0193f"></a><span class="section-number-3">6.7</span> listen</h3>
+<div id="outline-container-org0068b37" class="outline-3">
+<h3 id="hH-c68f8ef8-94e9-46d6-8e67-634d04c16562"><a id="org0068b37"></a><span class="section-number-3">6.7</span> listen</h3>
 <div class="outline-text-3" id="text-hH-c68f8ef8-94e9-46d6-8e67-634d04c16562">
 <p>
 Listen is used to wait for a message.
@@ -3433,8 +3436,8 @@ seconds.
 </div>
 </div>
 
-<div id="outline-container-org6d7ca4b" class="outline-3">
-<h3 id="actorsystem.private"><a id="org6d7ca4b"></a><span class="section-number-3">6.8</span> private</h3>
+<div id="outline-container-orgcc64228" class="outline-3">
+<h3 id="actorsystem.private"><a id="orgcc64228"></a><span class="section-number-3">6.8</span> private</h3>
 <div class="outline-text-3" id="text-actorsystem.private">
 <p>
 The <code>tell()</code>, <code>ask()</code>, and <code>listen()</code> operations are used by external
@@ -3482,8 +3485,8 @@ the actor at <code>addr5</code> will only be sent to thread2.
 </div>
 </div>
 
-<div id="outline-container-org27404a9" class="outline-3">
-<h3 id="hH-bf228654-b542-48f0-a5b5-78bc883528b9"><a id="org27404a9"></a><span class="section-number-3">6.9</span> updateCapability</h3>
+<div id="outline-container-orgf37f2f9" class="outline-3">
+<h3 id="hH-bf228654-b542-48f0-a5b5-78bc883528b9"><a id="orgf37f2f9"></a><span class="section-number-3">6.9</span> updateCapability</h3>
 <div class="outline-text-3" id="text-hH-bf228654-b542-48f0-a5b5-78bc883528b9">
 <p>
 The <code>updateCapability()</code> method is used update the capabilities of
@@ -3527,8 +3530,8 @@ issuing a <a href="#hH-6428fa90-8749-4777-a0b1-752ec5eb1650">Thespian_StatusReq<
 </div>
 
 
-<div id="outline-container-orge192a41" class="outline-3">
-<h3 id="hH-73b564d2-faa3-4fc8-bfdf-5362626c03be"><a id="orge192a41"></a><span class="section-number-3">6.10</span> loadActorSource</h3>
+<div id="outline-container-orgffd0454" class="outline-3">
+<h3 id="hH-73b564d2-faa3-4fc8-bfdf-5362626c03be"><a id="orgffd0454"></a><span class="section-number-3">6.10</span> loadActorSource</h3>
 <div class="outline-text-3" id="text-hH-73b564d2-faa3-4fc8-bfdf-5362626c03be">
 <div class="org-src-container">
 <pre class="src src-python"><span class="org-variable-name">sourceHash</span> = actorSys.loadActorSource(fileref)
@@ -3568,8 +3571,8 @@ feedback (excepting perhaps the <code>/tmp/Thespian.log</code> logfile).
 </p>
 </div>
 
-<div id="outline-container-org81d144d" class="outline-4">
-<h4 id="hH-e23490e4-d720-4e84-9b9a-e768fa3e717d"><a id="org81d144d"></a><span class="section-number-4">6.10.1</span> Source Loading Issues</h4>
+<div id="outline-container-orgaf7783d" class="outline-4">
+<h4 id="hH-e23490e4-d720-4e84-9b9a-e768fa3e717d"><a id="orgaf7783d"></a><span class="section-number-4">6.10.1</span> Source Loading Issues</h4>
 <div class="outline-text-4" id="text-hH-e23490e4-d720-4e84-9b9a-e768fa3e717d">
 <p>
 Although the <code>loadActorSource()</code> functionality works quite well,
@@ -3638,8 +3641,8 @@ conventional format (e.g. JSON).</li>
 </div>
 </div>
 
-<div id="outline-container-org9be7277" class="outline-4">
-<h4 id="hH-b26e4f60-d3fa-40b1-bc33-bb20b61ff2d4"><a id="org9be7277"></a><span class="section-number-4">6.10.2</span> Security Considerations</h4>
+<div id="outline-container-org0c22091" class="outline-4">
+<h4 id="hH-b26e4f60-d3fa-40b1-bc33-bb20b61ff2d4"><a id="org0c22091"></a><span class="section-number-4">6.10.2</span> Security Considerations</h4>
 <div class="outline-text-4" id="text-hH-b26e4f60-d3fa-40b1-bc33-bb20b61ff2d4">
 <p>
 When <code>loadActorSource()</code> is not used, the source for all
@@ -3712,7 +3715,7 @@ Authority that will reject all loaded sources.
 </div>
 
 <ol class="org-ol">
-<li><a id="hH-059157fd-4272-4d2e-a1c8-aa0069e5b1f5"></a><a id="org7e082ff"></a>Multi-System Source Authorization<br />
+<li><a id="hH-059157fd-4272-4d2e-a1c8-aa0069e5b1f5"></a><a id="org40cec2e"></a>Multi-System Source Authorization<br />
 <div class="outline-text-5" id="text-hH-059157fd-4272-4d2e-a1c8-aa0069e5b1f5">
 <p>
 The Source Authority registration is unique to an ActorSystem.
@@ -3774,8 +3777,8 @@ practical manner.
 </div>
 
 
-<div id="outline-container-orgce2f439" class="outline-3">
-<h3 id="hH-3e2f292f-2797-46d7-9fc6-48c1619d4bec"><a id="orgce2f439"></a><span class="section-number-3">6.11</span> unloadActorSource</h3>
+<div id="outline-container-org943c768" class="outline-3">
+<h3 id="hH-3e2f292f-2797-46d7-9fc6-48c1619d4bec"><a id="org943c768"></a><span class="section-number-3">6.11</span> unloadActorSource</h3>
 <div class="outline-text-3" id="text-hH-3e2f292f-2797-46d7-9fc6-48c1619d4bec">
 <div class="org-src-container">
 <pre class="src src-python">actorSys.unloadActorSource(sourceHash)
@@ -3810,8 +3813,8 @@ that sourceHash this request does nothing silently.
 </div>
 </div>
 
-<div id="outline-container-org6c21436" class="outline-2">
-<h2 id="hH-b889aca8-b50d-4920-8496-34b1420cf664"><a id="org6c21436"></a><span class="section-number-2">7</span> ActorSystem Messages</h2>
+<div id="outline-container-org00e0c45" class="outline-2">
+<h2 id="hH-b889aca8-b50d-4920-8496-34b1420cf664"><a id="org00e0c45"></a><span class="section-number-2">7</span> ActorSystem Messages</h2>
 <div class="outline-text-2" id="text-hH-b889aca8-b50d-4920-8496-34b1420cf664">
 <p>
 The following Messages can be delivered to Actors by the ActorSystem
@@ -3828,8 +3831,8 @@ returned to an <code>ask()</code> or <code>tell()</code> call.
 </p>
 </div>
 
-<div id="outline-container-org518fbf8" class="outline-3">
-<h3 id="hH-407c4c79-2a05-442d-b6e8-5bf7c2f2d068"><a id="org518fbf8"></a><span class="section-number-3">7.1</span> PoisonMessage</h3>
+<div id="outline-container-orgffa5b1a" class="outline-3">
+<h3 id="hH-407c4c79-2a05-442d-b6e8-5bf7c2f2d068"><a id="orgffa5b1a"></a><span class="section-number-3">7.1</span> PoisonMessage</h3>
 <div class="outline-text-3" id="text-hH-407c4c79-2a05-442d-b6e8-5bf7c2f2d068">
 <p>
 The <code>PoisonMessage</code> object is delivered to an Actor or to external
@@ -3841,8 +3844,8 @@ cleanup or alternative work based on the target Actor failure (see <a href="#hH-
 </p>
 </div>
 
-<div id="outline-container-orgafc208d" class="outline-4">
-<h4 id="hH-7655532a-ec5a-49c0-9f4e-0b4207f21080"><a id="orgafc208d"></a><span class="section-number-4">7.1.1</span> Attributes</h4>
+<div id="outline-container-orge3435e4" class="outline-4">
+<h4 id="hH-7655532a-ec5a-49c0-9f4e-0b4207f21080"><a id="orge3435e4"></a><span class="section-number-4">7.1.1</span> Attributes</h4>
 <div class="outline-text-4" id="text-hH-7655532a-ec5a-49c0-9f4e-0b4207f21080">
 <ul class="org-ul">
 <li><code>.poisonMessage</code> is the original message causing the target Actor
@@ -3856,8 +3859,8 @@ exception stack trace).</li>
 </div>
 </div>
 
-<div id="outline-container-orge1a3e9d" class="outline-3">
-<h3 id="hH-32b3df34-552e-4398-83bb-b78f3f6483bc"><a id="orge1a3e9d"></a><span class="section-number-3">7.2</span> WakeupMessage</h3>
+<div id="outline-container-orgbc2e980" class="outline-3">
+<h3 id="hH-32b3df34-552e-4398-83bb-b78f3f6483bc"><a id="orgbc2e980"></a><span class="section-number-3">7.2</span> WakeupMessage</h3>
 <div class="outline-text-3" id="text-hH-32b3df34-552e-4398-83bb-b78f3f6483bc">
 <p>
 The <code>WakeupMessage</code> is delivered to the Actor by the ActorSystem as
@@ -3866,8 +3869,8 @@ call (see <a href="#hH-9cc1acd4-7f35-44ac-94fc-0326dc87a7a5">Timer Messages</a>)
 </p>
 </div>
 
-<div id="outline-container-org502ce3d" class="outline-4">
-<h4 id="hH-865814f4-6d08-4657-bb89-c3be8b8a9453"><a id="org502ce3d"></a><span class="section-number-4">7.2.1</span> Attributes</h4>
+<div id="outline-container-orgaa696ff" class="outline-4">
+<h4 id="hH-865814f4-6d08-4657-bb89-c3be8b8a9453"><a id="orgaa696ff"></a><span class="section-number-4">7.2.1</span> Attributes</h4>
 <div class="outline-text-4" id="text-hH-865814f4-6d08-4657-bb89-c3be8b8a9453">
 <ul class="org-ul">
 <li><code>.delayPeriod</code> which is the python <code>datetime.timedelta</code> value of
@@ -3880,8 +3883,8 @@ specified on the original <code>.wakeupAfter()</code> call.</li>
 </div>
 </div>
 
-<div id="outline-container-org8b43599" class="outline-3">
-<h3 id="hH-8a46cfae-7ccc-407a-91c1-d4301b7a653c"><a id="org8b43599"></a><span class="section-number-3">7.3</span> WatchMessage</h3>
+<div id="outline-container-org522dd5d" class="outline-3">
+<h3 id="hH-8a46cfae-7ccc-407a-91c1-d4301b7a653c"><a id="org522dd5d"></a><span class="section-number-3">7.3</span> WatchMessage</h3>
 <div class="outline-text-3" id="text-hH-8a46cfae-7ccc-407a-91c1-d4301b7a653c">
 <p>
 The <code>WatchMessage</code> is delivered to the Actor by the ActorSystem when
@@ -3896,21 +3899,21 @@ information.
 </p>
 </div>
 
-<div id="outline-container-org483e3a0" class="outline-4">
-<h4 id="hH-a4719aee-2054-466c-a013-03b6938b084e"><a id="org483e3a0"></a><span class="section-number-4">7.3.1</span> Attributes</h4>
+<div id="outline-container-orgd50d91d" class="outline-4">
+<h4 id="hH-a4719aee-2054-466c-a013-03b6938b084e"><a id="orgd50d91d"></a><span class="section-number-4">7.3.1</span> Attributes</h4>
 <div class="outline-text-4" id="text-hH-a4719aee-2054-466c-a013-03b6938b084e">
 <ul class="org-ul">
 <li><code>.ready</code> specifies a list of file numbers for which data is
 available.  This will be a subset of the original set of file
 numbers returned from the Actor's <code>receiveMessage()</code> method in the
-<a href="#org8426e89">5.2.1</a> return value.</li>
+<a href="#orgbe85d96">5.2.1</a> return value.</li>
 </ul>
 </div>
 </div>
 </div>
 
-<div id="outline-container-org9695df1" class="outline-3">
-<h3 id="hH-7e6106e4-a631-47a4-9d22-3fd63f7e1951"><a id="org9695df1"></a><span class="section-number-3">7.4</span> ActorExitRequest</h3>
+<div id="outline-container-org6ca01ac" class="outline-3">
+<h3 id="hH-7e6106e4-a631-47a4-9d22-3fd63f7e1951"><a id="org6ca01ac"></a><span class="section-number-3">7.4</span> ActorExitRequest</h3>
 <div class="outline-text-3" id="text-hH-7e6106e4-a631-47a4-9d22-3fd63f7e1951">
 <p>
 The <code>ActorExitRequest</code> object is sent to any Actor to request that
@@ -3929,8 +3932,8 @@ Actor within the system.
 </p>
 </div>
 
-<div id="outline-container-org781536d" class="outline-4">
-<h4 id="hH-8155fe0d-ad17-4677-b606-f830c6f9f249"><a id="org781536d"></a><span class="section-number-4">7.4.1</span> Attributes</h4>
+<div id="outline-container-org05bc982" class="outline-4">
+<h4 id="hH-8155fe0d-ad17-4677-b606-f830c6f9f249"><a id="org05bc982"></a><span class="section-number-4">7.4.1</span> Attributes</h4>
 <div class="outline-text-4" id="text-hH-8155fe0d-ad17-4677-b606-f830c6f9f249">
 <ul class="org-ul">
 <li><code>.isRecursive</code> indicates that this ActorExitRequest will
@@ -3944,8 +3947,8 @@ propagation to all child Actors.</li>
 </div>
 </div>
 
-<div id="outline-container-org636f2b3" class="outline-3">
-<h3 id="hH-ed408390-5a74-4955-9f7d-a84e87595459"><a id="org636f2b3"></a><span class="section-number-3">7.5</span> ChildActorExited</h3>
+<div id="outline-container-org4210d44" class="outline-3">
+<h3 id="hH-ed408390-5a74-4955-9f7d-a84e87595459"><a id="org4210d44"></a><span class="section-number-3">7.5</span> ChildActorExited</h3>
 <div class="outline-text-3" id="text-hH-ed408390-5a74-4955-9f7d-a84e87595459">
 <p>
 The <code>ChildActorExited</code> object is delivered to the Parent Actor of
@@ -3967,8 +3970,8 @@ unremarked.
 </p>
 </div>
 
-<div id="outline-container-orge3707f1" class="outline-4">
-<h4 id="hH-c32348b6-fed3-4ff1-bf95-3cf491049518"><a id="orge3707f1"></a><span class="section-number-4">7.5.1</span> Attributes</h4>
+<div id="outline-container-orge336351" class="outline-4">
+<h4 id="hH-c32348b6-fed3-4ff1-bf95-3cf491049518"><a id="orge336351"></a><span class="section-number-4">7.5.1</span> Attributes</h4>
 <div class="outline-text-4" id="text-hH-c32348b6-fed3-4ff1-bf95-3cf491049518">
 <ul class="org-ul">
 <li><code>.childAddress</code> is the address of the child Actor that exited.
@@ -3979,8 +3982,8 @@ argument passed to the current Actor's <code>.receiveMessage()</code> method.</l
 </div>
 </div>
 
-<div id="outline-container-org20e7251" class="outline-3">
-<h3 id="hH-e3d4bfa0-7fad-4622-b707-8f67e4f75d5c"><a id="org20e7251"></a><span class="section-number-3">7.6</span> DeadEnvelope</h3>
+<div id="outline-container-org2ab9090" class="outline-3">
+<h3 id="hH-e3d4bfa0-7fad-4622-b707-8f67e4f75d5c"><a id="org2ab9090"></a><span class="section-number-3">7.6</span> DeadEnvelope</h3>
 <div class="outline-text-3" id="text-hH-e3d4bfa0-7fad-4622-b707-8f67e4f75d5c">
 <p>
 The <code>DeadEnvelope</code> object is delivered to the Dead Letter handler as
@@ -3990,8 +3993,8 @@ target Actor because the target is no longer running.
 </p>
 </div>
 
-<div id="outline-container-orgedfe872" class="outline-4">
-<h4 id="hH-fc0fb45a-a981-42ce-9922-705dabbbda37"><a id="orgedfe872"></a><span class="section-number-4">7.6.1</span> Attributes</h4>
+<div id="outline-container-orga2d749f" class="outline-4">
+<h4 id="hH-fc0fb45a-a981-42ce-9922-705dabbbda37"><a id="orga2d749f"></a><span class="section-number-4">7.6.1</span> Attributes</h4>
 <div class="outline-text-4" id="text-hH-fc0fb45a-a981-42ce-9922-705dabbbda37">
 <ul class="org-ul">
 <li><code>.deadMessage</code> &#x2013; the original, undeliverable message</li>
@@ -4001,8 +4004,8 @@ target Actor because the target is no longer running.
 </div>
 </div>
 
-<div id="outline-container-orgac739a2" class="outline-3">
-<h3 id="hH-f311fc02-d355-4d68-b9af-958404637e57"><a id="orgac739a2"></a><span class="section-number-3">7.7</span> ActorSystemConventionUpdate</h3>
+<div id="outline-container-org96322ae" class="outline-3">
+<h3 id="hH-f311fc02-d355-4d68-b9af-958404637e57"><a id="org96322ae"></a><span class="section-number-3">7.7</span> ActorSystemConventionUpdate</h3>
 <div class="outline-text-3" id="text-hH-f311fc02-d355-4d68-b9af-958404637e57">
 <p>
 The <code>ActorSystemConventionUpdate</code> object is delivered to an Actor
@@ -4012,8 +4015,8 @@ message is generated by the ActorSystem itself.
 </p>
 </div>
 
-<div id="outline-container-org315466d" class="outline-4">
-<h4 id="hH-a1cda86c-ca86-4aaa-bcb5-935e92435647"><a id="org315466d"></a><span class="section-number-4">7.7.1</span> Attributes</h4>
+<div id="outline-container-orge884f6e" class="outline-4">
+<h4 id="hH-a1cda86c-ca86-4aaa-bcb5-935e92435647"><a id="orge884f6e"></a><span class="section-number-4">7.7.1</span> Attributes</h4>
 <div class="outline-text-4" id="text-hH-a1cda86c-ca86-4aaa-bcb5-935e92435647">
 <ul class="org-ul">
 <li><code>.remoteAdminAddress</code> &#x2013; Address of the Admin for the remote ActorSystem.</li>
@@ -4028,8 +4031,8 @@ de-registered for failing to checkin.</li>
 </div>
 </div>
 
-<div id="outline-container-orgf05f382" class="outline-3">
-<h3 id="hH-3119580d-80a6-4061-a217-1b2b21014172"><a id="orgf05f382"></a><span class="section-number-3">7.8</span> ValidateSource</h3>
+<div id="outline-container-orgc49b43d" class="outline-3">
+<h3 id="hH-3119580d-80a6-4061-a217-1b2b21014172"><a id="orgc49b43d"></a><span class="section-number-3">7.8</span> ValidateSource</h3>
 <div class="outline-text-3" id="text-hH-3119580d-80a6-4061-a217-1b2b21014172">
 <p>
 The <code>ValidateSource</code> object is delivered to the registered Source
@@ -4075,8 +4078,8 @@ load via the <a href="#hH-6428fa90-8749-4777-a0b1-752ec5eb1650">Thespian_StatusR
 </p>
 </div>
 
-<div id="outline-container-orgc6e89b1" class="outline-4">
-<h4 id="hH-d6db3148-7664-4e50-9061-6733fe5d3a3f"><a id="orgc6e89b1"></a><span class="section-number-4">7.8.1</span> Attributes</h4>
+<div id="outline-container-org035ea71" class="outline-4">
+<h4 id="hH-d6db3148-7664-4e50-9061-6733fe5d3a3f"><a id="org035ea71"></a><span class="section-number-4">7.8.1</span> Attributes</h4>
 <div class="outline-text-4" id="text-hH-d6db3148-7664-4e50-9061-6733fe5d3a3f">
 <ul class="org-ul">
 <li><code>.sourceHash</code> &#x2013; the hash associated with this loaded source.</li>
@@ -4087,8 +4090,8 @@ load via the <a href="#hH-6428fa90-8749-4777-a0b1-752ec5eb1650">Thespian_StatusR
 </div>
 </div>
 
-<div id="outline-container-org0ffa9e3" class="outline-3">
-<h3 id="hH-1db8e94e-ca54-4817-b120-b4c51c680cdd"><a id="org0ffa9e3"></a><span class="section-number-3">7.9</span> ValidatedSource</h3>
+<div id="outline-container-org144e63d" class="outline-3">
+<h3 id="hH-1db8e94e-ca54-4817-b120-b4c51c680cdd"><a id="org144e63d"></a><span class="section-number-3">7.9</span> ValidatedSource</h3>
 <div class="outline-text-3" id="text-hH-1db8e94e-ca54-4817-b120-b4c51c680cdd">
 <p>
 This message is not sent by the ActorSystem to an Actor, but is
@@ -4115,8 +4118,8 @@ is being actively rejected.
 </p>
 </div>
 
-<div id="outline-container-org28a314e" class="outline-4">
-<h4 id="hH-92e91efa-fdc2-42bb-94f8-8a329618214c"><a id="org28a314e"></a><span class="section-number-4">7.9.1</span> Attributes</h4>
+<div id="outline-container-orga361a03" class="outline-4">
+<h4 id="hH-92e91efa-fdc2-42bb-94f8-8a329618214c"><a id="orga361a03"></a><span class="section-number-4">7.9.1</span> Attributes</h4>
 <div class="outline-text-4" id="text-hH-92e91efa-fdc2-42bb-94f8-8a329618214c">
 <ul class="org-ul">
 <li><code>.sourceHash</code> &#x2013; the hash associated with the loaded source as
@@ -4129,8 +4132,8 @@ the load attempt.</li>
 </div>
 </div>
 
-<div id="outline-container-orgdedd642" class="outline-3">
-<h3 id="hH-7cc41555-6b60-4844-8cea-0ec3714cf8f8"><a id="orgdedd642"></a><span class="section-number-3">7.10</span> LoadedSource</h3>
+<div id="outline-container-org9520d29" class="outline-3">
+<h3 id="hH-7cc41555-6b60-4844-8cea-0ec3714cf8f8"><a id="org9520d29"></a><span class="section-number-3">7.10</span> LoadedSource</h3>
 <div class="outline-text-3" id="text-hH-7cc41555-6b60-4844-8cea-0ec3714cf8f8">
 <p>
 The <code>LoadedSource</code> object is delivered to an Actor that has
@@ -4156,8 +4159,8 @@ present at the time of the registration (via the
 </p>
 </div>
 
-<div id="outline-container-org4178856" class="outline-4">
-<h4 id="hH-54e4613a-3c85-4d1e-a81d-0dd348af4199"><a id="org4178856"></a><span class="section-number-4">7.10.1</span> Attributes</h4>
+<div id="outline-container-org4684506" class="outline-4">
+<h4 id="hH-54e4613a-3c85-4d1e-a81d-0dd348af4199"><a id="org4684506"></a><span class="section-number-4">7.10.1</span> Attributes</h4>
 <div class="outline-text-4" id="text-hH-54e4613a-3c85-4d1e-a81d-0dd348af4199">
 <ul class="org-ul">
 <li><code>.sourceHash</code> &#x2013; The hash value of the source that has been loaded
@@ -4171,8 +4174,8 @@ no specific format or content dictated.</li>
 </div>
 </div>
 
-<div id="outline-container-org5ffc795" class="outline-3">
-<h3 id="hH-72c2180e-97c4-4209-9f09-031069cb5cbe"><a id="org5ffc795"></a><span class="section-number-3">7.11</span> UnloadedSource</h3>
+<div id="outline-container-orgb363bc5" class="outline-3">
+<h3 id="hH-72c2180e-97c4-4209-9f09-031069cb5cbe"><a id="orgb363bc5"></a><span class="section-number-3">7.11</span> UnloadedSource</h3>
 <div class="outline-text-3" id="text-hH-72c2180e-97c4-4209-9f09-031069cb5cbe">
 <p>
 The <code>UnloadedSource</code> object is delivered to an Actor that has
@@ -4187,8 +4190,8 @@ unloaded and is therefore unavailable for creating new actors.
 </p>
 </div>
 
-<div id="outline-container-orgaf5f35f" class="outline-4">
-<h4 id="hH-3b58b48d-4d73-45c1-9486-3f6b8eb80d59"><a id="orgaf5f35f"></a><span class="section-number-4">7.11.1</span> Attributes</h4>
+<div id="outline-container-org891707f" class="outline-4">
+<h4 id="hH-3b58b48d-4d73-45c1-9486-3f6b8eb80d59"><a id="org891707f"></a><span class="section-number-4">7.11.1</span> Attributes</h4>
 <div class="outline-text-4" id="text-hH-3b58b48d-4d73-45c1-9486-3f6b8eb80d59">
 <ul class="org-ul">
 <li><code>.sourceHash</code> &#x2013; The hash value of the source that has been unloaded
@@ -4202,8 +4205,8 @@ no specific format or content dictated.</li>
 </div>
 </div>
 
-<div id="outline-container-org2831e2f" class="outline-3">
-<h3 id="hH-6428fa90-8749-4777-a0b1-752ec5eb1650"><a id="org2831e2f"></a><span class="section-number-3">7.12</span> Thespian_StatusReq</h3>
+<div id="outline-container-orgc4fc7a2" class="outline-3">
+<h3 id="hH-6428fa90-8749-4777-a0b1-752ec5eb1650"><a id="orgc4fc7a2"></a><span class="section-number-3">7.12</span> Thespian_StatusReq</h3>
 <div class="outline-text-3" id="text-hH-6428fa90-8749-4777-a0b1-752ec5eb1650">
 <p>
 The <code>Thespian_StatusReq</code> object can be sent to any Actor (or to the
@@ -4221,8 +4224,8 @@ an Actor or the ActorSystem.
 </p>
 </div>
 
-<div id="outline-container-org16f12e0" class="outline-4">
-<h4 id="hH-02212902-4a42-4f1e-ae6a-59464043ff50"><a id="org16f12e0"></a><span class="section-number-4">7.12.1</span> Attributes</h4>
+<div id="outline-container-org7b40c34" class="outline-4">
+<h4 id="hH-02212902-4a42-4f1e-ae6a-59464043ff50"><a id="org7b40c34"></a><span class="section-number-4">7.12.1</span> Attributes</h4>
 <div class="outline-text-4" id="text-hH-02212902-4a42-4f1e-ae6a-59464043ff50">
 <p>
 The <code>Thespian_StatusReq</code> object has no attributes.
@@ -4231,8 +4234,8 @@ The <code>Thespian_StatusReq</code> object has no attributes.
 </div>
 </div>
 
-<div id="outline-container-orga4ed35f" class="outline-3">
-<h3 id="hH-704cb0e0-30c0-4e30-82cb-52718839704f"><a id="orga4ed35f"></a><span class="section-number-3">7.13</span> Thespian_SystemStatus</h3>
+<div id="outline-container-orge679a54" class="outline-3">
+<h3 id="hH-704cb0e0-30c0-4e30-82cb-52718839704f"><a id="orge679a54"></a><span class="section-number-3">7.13</span> Thespian_SystemStatus</h3>
 <div class="outline-text-3" id="text-hH-704cb0e0-30c0-4e30-82cb-52718839704f">
 <p>
 The <code>Thespian_SystemStatus</code> object is returned by the
@@ -4244,8 +4247,8 @@ recommended.
 </div>
 </div>
 
-<div id="outline-container-org7826589" class="outline-3">
-<h3 id="hH-1a0b5d02-e4b6-4c8c-9687-6e5f939d3827"><a id="org7826589"></a><span class="section-number-3">7.14</span> Thespian_ActorStatus</h3>
+<div id="outline-container-org923aaaf" class="outline-3">
+<h3 id="hH-1a0b5d02-e4b6-4c8c-9687-6e5f939d3827"><a id="org923aaaf"></a><span class="section-number-3">7.14</span> Thespian_ActorStatus</h3>
 <div class="outline-text-3" id="text-hH-1a0b5d02-e4b6-4c8c-9687-6e5f939d3827">
 <p>
 The <code>Thespian_ActorStatus</code> object is returned by the
@@ -4258,8 +4261,8 @@ recommended.
 </div>
 </div>
 
-<div id="outline-container-org2c99211" class="outline-2">
-<h2 id="hH-d4e592db-8bab-45bd-9643-e952510bd7dc"><a id="org2c99211"></a><span class="section-number-2">8</span> Patterns and Helpers</h2>
+<div id="outline-container-org4d50f01" class="outline-2">
+<h2 id="hH-d4e592db-8bab-45bd-9643-e952510bd7dc"><a id="org4d50f01"></a><span class="section-number-2">8</span> Patterns and Helpers</h2>
 <div class="outline-text-2" id="text-hH-d4e592db-8bab-45bd-9643-e952510bd7dc">
 <p>
 The elements described in this section is supplemental to the base
@@ -4270,8 +4273,8 @@ actor-based application.
 </p>
 </div>
 
-<div id="outline-container-org3afccf9" class="outline-3">
-<h3 id="hH-c796bc0d-a150-4fb9-8918-58f470813175"><a id="org3afccf9"></a><span class="section-number-3">8.1</span> Actor Troupe Support</h3>
+<div id="outline-container-orgb65237e" class="outline-3">
+<h3 id="hH-c796bc0d-a150-4fb9-8918-58f470813175"><a id="orgb65237e"></a><span class="section-number-3">8.1</span> Actor Troupe Support</h3>
 <div class="outline-text-3" id="text-hH-c796bc0d-a150-4fb9-8918-58f470813175">
 <p>
 The use of <a href="#hH-19cf92bf-a6ae-492c-844c-b0831c108a3a">Actor Troupes</a> is supported by importing the
@@ -4356,8 +4359,8 @@ non-troupe actors has no effect on their behavior and is safe to do.
 </div>
 </div>
 
-<div id="outline-container-org2bb647b" class="outline-3">
-<h3 id="hH-99783a4a-183f-4b69-8910-014d01edbf1c"><a id="org2bb647b"></a><span class="section-number-3">8.2</span> Transient Actors</h3>
+<div id="outline-container-orga7abd1d" class="outline-3">
+<h3 id="hH-99783a4a-183f-4b69-8910-014d01edbf1c"><a id="orga7abd1d"></a><span class="section-number-3">8.2</span> Transient Actors</h3>
 <div class="outline-text-3" id="text-hH-99783a4a-183f-4b69-8910-014d01edbf1c">
 <p>
 Some actors should automatically die at some period after they are
@@ -4412,8 +4415,115 @@ started after receipt of the actor's first message.
 </div>
 </div>
 
-<div id="outline-container-orgc05d7ab" class="outline-3">
-<h3 id="h:523e1df1-8cab-44dc-a46b-f7638dded176"><a id="orgc05d7ab"></a><span class="section-number-3">8.3</span> Thespian Director</h3>
+<div id="outline-container-org3c4e411" class="outline-3">
+<h3 id="h:5f80e194-ab38-406e-b077-984496b37073"><a id="org3c4e411"></a><span class="section-number-3">8.3</span> Initialization Messages</h3>
+<div class="outline-text-3" id="text-h:5f80e194-ab38-406e-b077-984496b37073">
+<p>
+It is common for an Actor to require one or more messages to
+"initialize" the Actor and prepare it for normal operations.
+</p>
+
+<p>
+The <code>thespian.initmsgs</code> module provides a <code>initializing_messages</code>
+decorator that can assist with managing this initialization.
+</p>
+
+<p>
+This pattern is especially useful for Actors which should receive
+multiple different messages to initialize their state before normal
+processing begins.  Each message is stored in a corresponding
+attribute on the Actor class, and (unless init_passthru is True) no
+messages are delivered to the receiveMessages entrypoint until all of
+the initialization messages have been received.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-python"><span class="org-keyword">from</span> thespian.initmsgs <span class="org-keyword">import</span> initializing_messages
+<span class="org-comment-delimiter"># </span><span class="org-comment">initializing_messages(initset, initdone=None, init_passthru=False)</span>
+</pre>
+</div>
+
+<p>
+The required argument to the <code>@initializing_messages</code> decorator is a
+list of tuples, where the first tuple value is the name of an
+attribute to be set on this actor and the second tuple value is the
+type of the corresponding message.  If the tuple has three entries and
+the third is True, then when the message type is matched, an attribute
+corresponding to the first element plus the suffix "_sender" is set to
+the sender of that message.
+</p>
+
+<p>
+If multiple initialization messages of the same type are received, the
+corresponding attribute will be set to the last messages received.
+</p>
+
+<p>
+The initdone argument, if set, specifies a method name (as a string)
+that should be called when all initialization message have been
+received.
+</p>
+
+<p>
+The init_passthru can be set to True to pass <b>all</b> messages received
+during initialization to the normal Actor handling; the default is
+false and init messages are discarded and non-init messages are saved
+and delivered after initialization is completed.  (All
+ActorSystemMessage messages are treated as if init_passthru was True).
+</p>
+
+<p>
+Example:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-python">    <span class="org-type">@initializing_messages</span>([(<span class="org-string">'init_m1'</span>, Msg1, <span class="org-constant">True</span>),
+                            (<span class="org-string">'init_tgt'</span>, ActorAddress),
+                            (<span class="org-string">'frog'</span>, <span class="org-builtin">str</span>)],
+                            initdone=<span class="org-string">'init_completed'</span>)
+    <span class="org-keyword">class</span> <span class="org-type">FooActor</span>(ActorTypeDispatcher):
+        <span class="org-keyword">def</span> <span class="org-function-name">init_completed</span>(<span class="org-keyword">self</span>):
+            <span class="org-keyword">self</span>.send(<span class="org-keyword">self</span>.init_m1_sender, <span class="org-string">'Running'</span>)
+        <span class="org-keyword">def</span> <span class="org-function-name">receiveMsg_Croak</span>(<span class="org-keyword">self</span>, croakmsg, sender):
+            <span class="org-keyword">self</span>.send(sender, <span class="org-keyword">self</span>.frog)
+            <span class="org-keyword">self</span>.send(<span class="org-keyword">self</span>.init_m1_sender, <span class="org-keyword">self</span>.init_m1)
+            <span class="org-keyword">self</span>.send(<span class="org-keyword">self</span>.init_tgt, croakmsg)
+</pre>
+</div>
+
+<p>
+This actor will wait for three different initialization messages
+(Msg1, an ActorAddress, and a string) and store each as an attribute,
+as well as storing the sender address for the Msg1 message.  When all
+three have been received, the init_completed method is called, and
+then all Croak messages cause three messages to be sent.  Note that
+any Croak messages received before all three initialization messages
+will be stored and delivered after initialization is complete.
+</p>
+
+<p>
+This decorator is incompatible with the <code>@troupe</code> decorator.
+</p>
+
+<p>
+This decorator must appear before the <code>@transient</code> or <code>@transient_idle</code>
+decorator:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-python">    <span class="org-type">@initializing_messages</span>([(<span class="org-string">'init_m1'</span>, Msg1, <span class="org-constant">True</span>),
+                            (<span class="org-string">'init_tgt'</span>, ActorAddress),
+                            (<span class="org-string">'frog'</span>, <span class="org-builtin">str</span>)],
+                            initdone=<span class="org-string">'init_completed'</span>)
+    <span class="org-type">@transient</span>(timedelta(seconds=2, milliseconds=250))
+    <span class="org-keyword">class</span> <span class="org-type">FooActor</span>(ActorTypeDispatcher): ...
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgd79ebda" class="outline-3">
+<h3 id="h:523e1df1-8cab-44dc-a46b-f7638dded176"><a id="orgd79ebda"></a><span class="section-number-3">8.4</span> Thespian Director</h3>
 <div class="outline-text-3" id="text-h:523e1df1-8cab-44dc-a46b-f7638dded176">
 <p>
 The Thespian Director is a support utility that provides
@@ -4428,11 +4538,29 @@ See the <a href="director.html">Thespian Director</a> document for more informat
 </p>
 </div>
 </div>
+
+
+<div id="outline-container-org83047ea" class="outline-3">
+<h3 id="h:108786e0-6ddd-46c3-974b-ffa353c4f1f1"><a id="org83047ea"></a><span class="section-number-3">8.5</span> RunCommand support</h3>
+<div class="outline-text-3" id="text-h:108786e0-6ddd-46c3-974b-ffa353c4f1f1">
+<p>
+The <code>thespian.runcommand</code> helper module can be used to execute
+commands on the local system and collect results.  This effectively
+encapsulates the Python <code>subprocess.Popen</code> functionality into an Actor
+which isolates the Popen operation, using messages to request the
+execution of a command and retrieve the results of the command.
+</p>
+
+<p>
+See the docstrings in the <code>thespian/runcommand.py</code> file for more
+details and the <code>test/test_runcommand.py</code> file for example usage.
+</p>
+</div>
+</div>
 </div>
 
-
-<div id="outline-container-org401f9a7" class="outline-2">
-<h2 id="hH-2a5fa63d-e6eb-43b9-bea8-47223b27544e"><a id="org401f9a7"></a><span class="section-number-2">9</span> ActorSystem Implementations</h2>
+<div id="outline-container-org8296d29" class="outline-2">
+<h2 id="hH-2a5fa63d-e6eb-43b9-bea8-47223b27544e"><a id="org8296d29"></a><span class="section-number-2">9</span> ActorSystem Implementations</h2>
 <div class="outline-text-2" id="text-hH-2a5fa63d-e6eb-43b9-bea8-47223b27544e">
 <p>
 One of the convenient aspects of an Actor architecture is that the
@@ -4519,8 +4647,8 @@ details are available in each section:
 
 
 
-<div id="outline-container-org09db900" class="outline-3">
-<h3 id="hH-2a4bcad4-9fe0-4399-86d4-4bbf0ba0acb7"><a id="org09db900"></a><span class="section-number-3">9.1</span> Common Capabilities</h3>
+<div id="outline-container-orge320dc1" class="outline-3">
+<h3 id="hH-2a4bcad4-9fe0-4399-86d4-4bbf0ba0acb7"><a id="orge320dc1"></a><span class="section-number-3">9.1</span> Common Capabilities</h3>
 <div class="outline-text-3" id="text-hH-2a4bcad4-9fe0-4399-86d4-4bbf0ba0acb7">
 <p>
 As described in <a href="#hH-a17e6c70-5592-4d06-b818-bd25350c4c53">ActorSystem Capabilities</a> each ActorSystem has a set of
@@ -4667,8 +4795,8 @@ Convention.
 </div>
 </div>
 
-<div id="outline-container-orgb62c3fe" class="outline-3">
-<h3 id="hH-924dc0fe-c15b-491e-a6d1-8b88683d4c0d"><a id="orgb62c3fe"></a><span class="section-number-3">9.2</span> simpleSystemBase</h3>
+<div id="outline-container-org3e86bc5" class="outline-3">
+<h3 id="hH-924dc0fe-c15b-491e-a6d1-8b88683d4c0d"><a id="org3e86bc5"></a><span class="section-number-3">9.2</span> simpleSystemBase</h3>
 <div class="outline-text-3" id="text-hH-924dc0fe-c15b-491e-a6d1-8b88683d4c0d">
 <p>
 The simpleSystemBase implementation is primarily designed for Unit
@@ -4733,8 +4861,8 @@ The simpleSystemBase uses the following <a href="#hH-a17e6c70-5592-4d06-b818-bd2
 </div>
 </div>
 
-<div id="outline-container-org76e7d8b" class="outline-3">
-<h3 id="hH-59ea5ca7-a167-4d51-bd1b-78119eab6df6"><a id="org76e7d8b"></a><span class="section-number-3">9.3</span> multiprocQueueBase</h3>
+<div id="outline-container-org0555c01" class="outline-3">
+<h3 id="hH-59ea5ca7-a167-4d51-bd1b-78119eab6df6"><a id="org0555c01"></a><span class="section-number-3">9.3</span> multiprocQueueBase</h3>
 <div class="outline-text-3" id="text-hH-59ea5ca7-a167-4d51-bd1b-78119eab6df6">
 <p>
 The multiprocQueueBase runs each Actor in its own separate process
@@ -4816,8 +4944,8 @@ does not support the "forkserver" method.</dd>
 </div>
 
 
-<div id="outline-container-org9f754e9" class="outline-3">
-<h3 id="hH-9d33a877-b4f0-4012-9510-442d81b0837c"><a id="org9f754e9"></a><span class="section-number-3">9.4</span> multiprocTCPBase</h3>
+<div id="outline-container-org9b4f9cb" class="outline-3">
+<h3 id="hH-9d33a877-b4f0-4012-9510-442d81b0837c"><a id="org9b4f9cb"></a><span class="section-number-3">9.4</span> multiprocTCPBase</h3>
 <div class="outline-text-3" id="text-hH-9d33a877-b4f0-4012-9510-442d81b0837c">
 <p>
 The multiprocTCPBase runs each Actor in its own separate process
@@ -5018,8 +5146,8 @@ method.</dd>
 </div>
 
 
-<div id="outline-container-org540d767" class="outline-3">
-<h3 id="hH-25cfa213-13a6-4265-8828-86ffffed0e12"><a id="org540d767"></a><span class="section-number-3">9.5</span> multiprocUDPBase</h3>
+<div id="outline-container-org5de7f5a" class="outline-3">
+<h3 id="hH-25cfa213-13a6-4265-8828-86ffffed0e12"><a id="org5de7f5a"></a><span class="section-number-3">9.5</span> multiprocUDPBase</h3>
 <div class="outline-text-3" id="text-hH-25cfa213-13a6-4265-8828-86ffffed0e12">
 <p>
 The multiprocUDPBase runs each Actor in its own separate process
@@ -5130,8 +5258,8 @@ method.</dd>
 </div>
 
 
-<div id="outline-container-orgd908b5a" class="outline-2">
-<h2 id="hH-23bdc6e2-a5c4-4228-a75c-fb213f537732"><a id="orgd908b5a"></a><span class="section-number-2">10</span> Deploying Actor-based Projects</h2>
+<div id="outline-container-orgacc6419" class="outline-2">
+<h2 id="hH-23bdc6e2-a5c4-4228-a75c-fb213f537732"><a id="orgacc6419"></a><span class="section-number-2">10</span> Deploying Actor-based Projects</h2>
 <div class="outline-text-2" id="text-hH-23bdc6e2-a5c4-4228-a75c-fb213f537732">
 <p>
 Possible Methods for deployment:
@@ -5167,8 +5295,8 @@ to enhance and support this latter method.
 </div>
 
 
-<div id="outline-container-org282b14d" class="outline-3">
-<h3 id="hH-7e109f00-76ff-49a1-b307-2166154c3921"><a id="org282b14d"></a><span class="section-number-3">10.1</span> Overall Security Considerations</h3>
+<div id="outline-container-org034c15b" class="outline-3">
+<h3 id="hH-7e109f00-76ff-49a1-b307-2166154c3921"><a id="org034c15b"></a><span class="section-number-3">10.1</span> Overall Security Considerations</h3>
 <div class="outline-text-3" id="text-hH-7e109f00-76ff-49a1-b307-2166154c3921">
 <dl class="org-dl">
 <dt><b>ActorSystem Startup</b></dt><dd>ActorSystem startup will inherit the
@@ -5223,8 +5351,8 @@ remember the guideline: "Fail Early, Fail Often."</dd>
 </dl>
 </div>
 
-<div id="outline-container-orgb3a0d9f" class="outline-4">
-<h4 id="hH-fcabc7dd-327f-47cf-bcb7-5dd4d202ebdc"><a id="orgb3a0d9f"></a><span class="section-number-4">10.1.1</span> Security Scenarios</h4>
+<div id="outline-container-orga0311cf" class="outline-4">
+<h4 id="hH-fcabc7dd-327f-47cf-bcb7-5dd4d202ebdc"><a id="orga0311cf"></a><span class="section-number-4">10.1.1</span> Security Scenarios</h4>
 <div class="outline-text-4" id="text-hH-fcabc7dd-327f-47cf-bcb7-5dd4d202ebdc">
 <p>
 On any particular host where an ActorSystem is running, the primary
@@ -5272,7 +5400,7 @@ difference will remain unaddressed.
 </div></div>
 <div id="postamble" class="status">
 <p class="author">Author: Kevin Quick &lt;quick@sparq.org&gt;</p>
-<p class="date">Created: 2018-08-05 Sun 21:26</p>
+<p class="date">Created: 2019-03-05 Tue 23:55</p>
 <p class="validation"><a href="http://validator.w3.org/check?uri=referer">Validate</a></p>
 </div>
 </body>
