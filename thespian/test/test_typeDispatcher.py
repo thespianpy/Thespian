@@ -193,7 +193,7 @@ class TestFuncTypeDispatching(object):
         self.verifyExpectedResponses(
             asys, middle, StrangeMessage2(),
             [re.compile("didn't recognize: <class "
-                        "'.*\.StrangeMessage2'"
+                        "'.*[.]StrangeMessage2'"
                         "(| at 0x[0-9a-f]+)>")])
 
     def testTopStrangeSubclass(self, asys, top):
@@ -205,6 +205,6 @@ class TestFuncTypeDispatching(object):
         self.verifyExpectedResponses(
             asys, top, StrangeMessage2(),
             [re.compile("didn't recognize: <class "
-                        "'.*\.StrangeMessage2'"
+                        "'.*[.]StrangeMessage2'"
                         "(| at 0x[0-9a-f]+)>")])
 
