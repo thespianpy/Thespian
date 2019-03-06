@@ -79,7 +79,11 @@ def lcs2():
                                  'apple pie': 'hot'},
                                 StatsManager(),
                                lambda x: ActorAddress(1))
-    ret._expected_setup_convreg = convreg2_first(ret)
+    # Next message is similar to ~convreg2_first(ret)~
+    ret._expected_setup_convreg = ConventionRegister(ret.myAddress,
+                                                     ret.capabilities,
+                                                     firstTime=True,
+                                                     preRegister=False)
     # Activate the system
     verify_io(ret.setup_convention(activation=True),
               [ (ConventionRegister, Sends(ret._expected_setup_convreg) >= ActorAddress(1)),
