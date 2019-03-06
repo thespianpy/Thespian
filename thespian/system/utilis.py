@@ -4,6 +4,7 @@ import os
 import tempfile
 from thespian.actors import InvalidActorSpecification
 import inspect
+import warnings
 
 
 ###
@@ -320,8 +321,10 @@ class withPossibleInitArgs(object):
                        for P in inspect.signature(klass.__init__).parameters]
         except (ValueError, NameError, AttributeError):
             try:
-                initsig = inspect.getargspec(klass.__init__).args
-            except (ValueError, NameError, AttributeError):
+                with warnings.catch_warnings():
+                    warnings.simplefilter('error', category=DeprecationWarning)
+                    initsig = inspect.getargspec(klass.__init__).args
+            except (ValueError, NameError, AttributeError, DeprecationWarning):
                 try:
                     initsig = inspect.getfullargspec(klass.__init__).args
                 except (ValueError, NameError, AttributeError):
