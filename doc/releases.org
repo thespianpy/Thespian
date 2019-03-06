@@ -9,7 +9,7 @@
 #+LATEX_HEADER: \product{Thespian}
 #+LATEX_HEADER: \component{Python Actor System}
 #+LATEX_HEADER: \doctype{Release Notes}
-#+LATEX_HEADER: \docrev{3.9.7}{2019 Feb 09}
+#+LATEX_HEADER: \docrev{3.9.8}{2019 Mar 05}
 #+LATEX_HEADER: \docid{TheDoc-06}
 #+OPTIONS: ^:nil num:nil
 
@@ -21,12 +21,13 @@ do not change the API.
 * Summary
 ** 2019
 
- | Release |       Date | Significant Bugfixes              | Significant Features |
- |---------+------------+-----------------------------------+----------------------|
- |   3.9.7 | 2019-02-11 | Further bugfixes and efficiencies |                      |
- |   3.9.6 | 2019-02-09 | Improve [[https://github.com/kquick/Thespian/issues/35][Issue #35]]: Windows issues |                      |
- |         |            | Improve [[https://github.com/kquick/Thespian/issues/38][Issue #38]]: system limits  |                      |
- |---------+------------+-----------------------------------+----------------------|
+ | Release |       Date | Significant Bugfixes                        | Significant Features      |
+ |---------+------------+---------------------------------------------+---------------------------|
+ |   3.9.8 | 2019-03-04 | Transmit queueing/overrun fixes ([[https://github.com/kquick/Thespian/issues/38][Issue #38]]) | Troupe worker exit delays |
+ |   3.9.7 | 2019-02-11 | Further bugfixes and efficiencies           |                           |
+ |   3.9.6 | 2019-02-09 | Improve [[https://github.com/kquick/Thespian/issues/35][Issue #35]]: Windows issues           |                           |
+ |         |            | Improve [[https://github.com/kquick/Thespian/issues/38][Issue #38]]: system limits            |                           |
+ |---------+------------+---------------------------------------------+---------------------------|
 
 ** 2018
 
@@ -155,6 +156,22 @@ do not change the API.
 
 ** 3.9
 
+*** 3.9.8 <2019-03-05 Tue>
+    * Fixes for transmit handling to prevent excessive recursion.
+      This improves the backoff and retry logic in cases where a large
+      number of messages is sent more quickly than can acutally be
+      sent, allowing them to be eventually sent.
+    * Added stats for number of actor create requests and completions.
+    * Enhance timer drain message with time limit.
+    * Update to allow troupe leader to receive ActorSystemMessages.
+    * Allow troupe workers to remain present for a short period of
+      time after completing any current work to reduce the churn on
+      creation/deletion of troupe workers.
+    * Catch exceptions during child actor creation and handle as
+      ChildActorExited events.
+    * Many of the above fixes were as a result of extended testing and
+      patience from Andrew (andatt) via [[https://github.com/kquick/Thespian/issues/38][Issue #38]]... thanks, Andrew!
+    * Miscellaneous test warning cleanups.
 *** 3.9.7 <2019-02-11 Mon>
     * Remove extraneous messages to ActorSystem at Actor shutdown time.
     * Additional shutdown activity suppression on failed startup.
