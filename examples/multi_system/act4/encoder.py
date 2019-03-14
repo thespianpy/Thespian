@@ -48,9 +48,9 @@ class Rot13Encoder(Encoder):
     @staticmethod
     def rot13(val):
         if val >= ord('a') and val <= ord('z'):
-            return ((val + 13) % 26) + ord('a')
+            return ((val - ord('a') + 13) % 26) + ord('a')
         if val >= ord('A') and val <= ord('Z'):
-            return ((val + 13) % 26) + ord('A')
+            return ((val - ord('A') + 13) % 26) + ord('A')
         return val
 
 
