@@ -201,6 +201,7 @@ def troupe(max_count=10, idle_count=2):
                 was_in_prog = getattr(self, 'troupe_work_in_progress', False)
                 if isTroupeWork:
                     self._is_a_troupe_worker = message.troupe_mgr
+                    self._work_ident = message.ident
                     r = self._orig_receiveMessage(message.message,
                                                   message.orig_sender)
                 else:
@@ -208,7 +209,8 @@ def troupe(max_count=10, idle_count=2):
                 if (isTroupeWork or was_in_prog) and \
                    not getattr(self, 'troupe_work_in_progress', False):
                     self.send(self._is_a_troupe_worker,
-                              _TroupeMemberReady(message.ident if isTroupeWork else -1))
+                              _TroupeMemberReady(self._work_ident))
+                    self._work_ident = -1
                 return r
             # The following is only run for the primary/manager of the troupe
             if not hasattr(self, '_troupe_mgr'):
