@@ -134,8 +134,8 @@ class _TroupeManager(object):
             work.ident = self._work_ident
             # limit of 0xffffffff is > max reasonable pending work items
             self._work_ident = (self._work_ident + 1) & 0xffffffff
-        worker = self._idle_troupers.pop() if self._idle_troupers else \
-                 (self._extra_troupers.pop() if self._extra_troupers else None)
+        worker = self._idle_troupers.pop(0) if self._idle_troupers else \
+                 (self._extra_troupers.pop(0) if self._extra_troupers else None)
         if worker:
             self._handling_work[work.ident] = (worker, work)
             return [(worker, work)]
