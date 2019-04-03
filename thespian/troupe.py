@@ -50,7 +50,7 @@ work before it has completed the previous work, or (b) the actor will
 be killed by the troupe manager before finishing the work because the
 manager believes the actor is finished.
 
-Failure to reset the "troup_work_in_progress" attribute to False will
+Failure to reset the "troupe_work_in_progress" attribute to False will
 cause the troupe manager to never send any more work requests to the
 troupe actor, even if the latter is idle.  The troupe actor will also
 never be killed until the troupe manager itself is killed.
