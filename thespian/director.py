@@ -684,9 +684,9 @@ the update.
                     format) for the logging performed by running
                     Actors.
 
-    thesplogd.cfg -- specifies the director for thespian internal
+    thesplogd.cfg -- specifies the directory for thespian internal
                      logging.  The default is /var/log under Posix and
-                     c:\Windows\temp under Windows.
+                     c:\Windows\\temp under Windows.
 
     thesplogf.cfg -- specifies the name of the thespian internal
                      logging file.  The default is
