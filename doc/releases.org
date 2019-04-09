@@ -10,7 +10,7 @@
 #+LATEX_HEADER: \product{Thespian}
 #+LATEX_HEADER: \component{Python Actor System}
 #+LATEX_HEADER: \doctype{Release Notes}
-#+LATEX_HEADER: \docrev{3.9.8}{2019 Mar 05}
+#+LATEX_HEADER: \docrev{3.9.9}{2019 Apr 08}
 #+LATEX_HEADER: \docid{TheDoc-06}
 #+OPTIONS: ^:nil num:nil
 
@@ -22,13 +22,14 @@ do not change the API.
 * Summary
 ** 2019
 
- | Release |       Date | Significant Bugfixes                        | Significant Features      |
- |---------+------------+---------------------------------------------+---------------------------|
- |   3.9.8 | 2019-03-04 | Transmit queueing/overrun fixes ([[https://github.com/kquick/Thespian/issues/38][Issue #38]]) | Troupe worker exit delays |
- |   3.9.7 | 2019-02-11 | Further bugfixes and efficiencies           |                           |
- |   3.9.6 | 2019-02-09 | Improve [[https://github.com/kquick/Thespian/issues/35][Issue #35]]: Windows issues           |                           |
- |         |            | Improve [[https://github.com/kquick/Thespian/issues/38][Issue #38]]: system limits            |                           |
- |---------+------------+---------------------------------------------+---------------------------|
+ | Release |       Date | Significant Bugfixes                        | Significant Features              |
+ |---------+------------+---------------------------------------------+-----------------------------------|
+ |   3.9.9 | 2019-04-08 | Fixed message duplication in troupe         | Round-robin use of troupe workers |
+ |   3.9.8 | 2019-03-04 | Transmit queueing/overrun fixes ([[https://github.com/kquick/Thespian/issues/38][Issue #38]]) | Troupe worker exit delays         |
+ |   3.9.7 | 2019-02-11 | Further bugfixes and efficiencies           |                                   |
+ |   3.9.6 | 2019-02-09 | Improve [[https://github.com/kquick/Thespian/issues/35][Issue #35]]: Windows issues           |                                   |
+ |         |            | Improve [[https://github.com/kquick/Thespian/issues/38][Issue #38]]: system limits            |                                   |
+ |---------+------------+---------------------------------------------+-----------------------------------|
 
 ** 2018
 
@@ -157,6 +158,13 @@ do not change the API.
 
 ** 3.9
 
+*** 3.9.9 <2019-04-08 Mon>
+    * Fixed issue in the troupe where a single message might get
+      delivered to multiple troupe members for handling.  This error
+      was revealed during handling of [[https://github.com/kquick/Thespian/issues/43][Issue #43]] (thanks, andatt!).
+    * Updated the troupe worker usage to be round-robin, spreading the
+      work more equably across troupe members instead of using a LIFO
+      strategy which focused the work on a single member.
 *** 3.9.8 <2019-03-05 Tue>
     * Fixes for transmit handling to prevent excessive recursion.
       This improves the backoff and retry logic in cases where a large
