@@ -123,9 +123,9 @@ class TestFuncThreadedExternal(object):
 
 
     @pytest.mark.parametrize('count', [1,2,5,10,100])
-    def test_multiple_threads_private_context(self, asys, count):
+    def test_multiple_threads_private_context(self, asys, count, run_unstable_tests):
         # The Queue base has undiagnosed issues with threading shutdown
-        unstable_test(asys, 'multiprocQueueBase')
+        unstable_test(run_unstable_tests, asys, 'multiprocQueueBase')
         # The simpleSystemBase is unsupported in this mode because the
         # main thread does not perform any ActorSystem operations, so
         # it never provides the context for the other threads to have
@@ -134,7 +134,7 @@ class TestFuncThreadedExternal(object):
         # UDP does not have delivery confirmation, it is unreliable,
         # especially at higher counts.
         if count > 10:
-            unstable_test(asys, 'multiprocUDPBase', 'multiprocQueueBase')
+            unstable_test(run_unstable_tests, asys, 'multiprocUDPBase', 'multiprocQueueBase')
         global finishes_lock, success_finishes, failure_finishes
         starting_successes = success_finishes
         tl = [threading.Thread(target=context_asker, args=(asys, 20))
@@ -148,13 +148,13 @@ class TestFuncThreadedExternal(object):
         assert success_finishes == starting_successes + count
 
     @pytest.mark.parametrize('count', [1,2,5,10,100])
-    def test_multiple_threads_private_context_ask(self, asys, count):
+    def test_multiple_threads_private_context_ask(self, asys, count, run_unstable_tests):
         # The Queue base has undiagnosed issues with threading shutdown
-        unstable_test(asys, 'multiprocQueueBase')
+        unstable_test(run_unstable_tests, asys, 'multiprocQueueBase')
         # UDP does not have delivery confirmation, it is unreliable,
         # especially at higher counts.
         if count > 10:
-            unstable_test(asys, 'multiprocUDPBase')
+            unstable_test(run_unstable_tests, asys, 'multiprocUDPBase')
         global finishes_lock, success_finishes, failure_finishes
         starting_successes = success_finishes
         transfer = asys.createActor(Transfer)

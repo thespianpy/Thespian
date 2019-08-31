@@ -65,8 +65,8 @@ def actorDepth(request):
 
 class TestFuncLoad(object):
 
-    def testSamePathLengthTenAndDiscard(self, asys, nMessages, actorDepth):
-        unstable_test(asys, 'multiprocQueueBase')
+    def testSamePathLengthTenAndDiscard(self, asys, nMessages, actorDepth, run_unstable_tests):
+        unstable_test(run_unstable_tests, asys, 'multiprocQueueBase')
         nodoc = 1
         """This test pushes a large number of messages into the system and
            does not wait for them to be processed.  If nMessages is
@@ -85,8 +85,8 @@ class TestFuncLoad(object):
         [asys.tell(A, ActorExitRequest()) for A in actors]
 
 
-    def testSamePathLengthTenAndDiscardAndFinalAsk(self, asys, nMessages, actorDepth):
-        unstable_test(asys, 'multiprocQueueBase')
+    def testSamePathLengthTenAndDiscardAndFinalAsk(self, asys, nMessages, actorDepth, run_unstable_tests):
+        unstable_test(run_unstable_tests, asys, 'multiprocQueueBase')
         nodoc = 1
         """This test pushes a large number of messages into the system and
            does not wait for them to be processed.  At the end, it
@@ -115,8 +115,8 @@ class TestFuncLoad(object):
         [asys.tell(A, ActorExitRequest()) for A in actors]
 
 
-    def testSamePathLengthTenAsking(self, asys, nMessages, actorDepth):
-        unstable_test(asys, 'multiprocQueueBase')
+    def testSamePathLengthTenAsking(self, asys, nMessages, actorDepth, run_unstable_tests):
+        unstable_test(run_unstable_tests, asys, 'multiprocQueueBase')
         nodoc = 1
         """This test pushes a large number of messages into the system and
            does not wait for them to be processed.  If nMessages is

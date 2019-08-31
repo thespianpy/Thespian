@@ -244,10 +244,13 @@ def asys_pair(request, asys):
     request.addfinalizer(lambda asys=asys2: asys2.shutdown())
     return (asys, asys2)
 
+@pytest.fixture
+def run_unstable_tests(request):
+    return request.config.getoption('unstable', default=False)
 
-def unstable_test(asys, *unstable_bases):
-    if asys.base_name in unstable_bases and \
-       not pytest.config.getoption('unstable', default=False):
+
+def unstable_test(run_unstable_tests, asys, *unstable_bases):
+    if asys.base_name in unstable_bases and not run_unstable_tests:
         pytest.skip("Test unstable for %s system base"%asys.base_name)
 
 

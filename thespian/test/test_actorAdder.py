@@ -75,8 +75,8 @@ class TestFuncActorAdder(object):
         pass
 
 
-    def test01_TenEvery(self, asys):
-        unstable_test(asys, 'multiprocQueueBase')
+    def test01_TenEvery(self, asys, run_unstable_tests):
+        unstable_test(run_unstable_tests, asys, 'multiprocQueueBase')
         addOnes = [ asys.createActor(AddOne) for x in range(10) ]
         for (frmA, toA) in zip(addOnes, addOnes[1:]):
             asys.tell(frmA, (1, toA))
@@ -85,8 +85,8 @@ class TestFuncActorAdder(object):
         sum2 = asys.ask(addOnes[0], addEvery(actorList = addOnes[1:]), max_wait)
         assert sum2.value == 10
 
-    def test02_TenEvens(self, asys):
-        unstable_test(asys, 'multiprocQueueBase')
+    def test02_TenEvens(self, asys, run_unstable_tests):
+        unstable_test(run_unstable_tests, asys, 'multiprocQueueBase')
         if 'pypy' in sys.executable:
             pytest.skip("Pypy adder processes will consume all available system"
                         " memory for no good reason")
@@ -114,8 +114,8 @@ class TestFuncActorAdder(object):
         assert sum4.value == 3
 
 
-    def test03_LotsOfActorsEvery(self, asys):
-        unstable_test(asys, 'multiprocQueueBase')
+    def test03_LotsOfActorsEvery(self, asys, run_unstable_tests):
+        unstable_test(run_unstable_tests, asys, 'multiprocQueueBase')
         if 'pypy' in sys.executable:
             pytest.skip("Pypy adder processes will consume all available system"
                         " memory for no good reason")
@@ -129,8 +129,8 @@ class TestFuncActorAdder(object):
         for killA in addOnes:
             asys.tell(killA, ActorExitRequest())
 
-    def test04_LotsOfActorsEveryTen(self, asys):
-        unstable_test(asys, 'multiprocQueueBase')
+    def test04_LotsOfActorsEveryTen(self, asys, run_unstable_tests):
+        unstable_test(run_unstable_tests, asys, 'multiprocQueueBase')
         if 'pypy' in sys.executable:
             pytest.skip("Pypy adder processes will consume all available system"
                         " memory for no good reason")
@@ -148,8 +148,8 @@ class TestFuncActorAdder(object):
         for killA in addTens:
             asys.tell(killA, ActorExitRequest())
 
-    def test05_UniqueAddresses(self, asys):
-        unstable_test(asys, 'multiprocQueueBase')
+    def test05_UniqueAddresses(self, asys, run_unstable_tests):
+        unstable_test(run_unstable_tests, asys, 'multiprocQueueBase')
         if 'pypy' in sys.executable:
             pytest.skip("Pypy adder processes will consume all available system"
                         " memory for no good reason")
@@ -163,8 +163,8 @@ class TestFuncActorAdder(object):
         #Not needed: asys.tell(addTen, ActorExitRequest())
 
 
-    def test06_TenEveryTen(self, asys):
-        unstable_test(asys, 'multiprocQueueBase')
+    def test06_TenEveryTen(self, asys, run_unstable_tests):
+        unstable_test(run_unstable_tests, asys, 'multiprocQueueBase')
         if 'pypy' in sys.executable:
             pytest.skip("Pypy adder processes will consume all available system"
                         " memory for no good reason")
@@ -173,8 +173,8 @@ class TestFuncActorAdder(object):
         assert sum.value == 10
 
 
-    def test07_LotsOfActorsEveryTenWithBackground(self, asys):
-        unstable_test(asys, 'multiprocQueueBase')
+    def test07_LotsOfActorsEveryTenWithBackground(self, asys, run_unstable_tests):
+        unstable_test(run_unstable_tests, asys, 'multiprocQueueBase')
         if 'pypy' in sys.executable:
             pytest.skip("Pypy adder processes will consume all available system"
                         " memory for no good reason")

@@ -82,8 +82,8 @@ class TestFuncDeadLettering(object):
         assert cnt > oldCount
         return cnt
 
-    def test01_registerDeadLetter(self, asys):
-        unstable_test(asys, 'multiprocUDPBase')
+    def test01_registerDeadLetter(self, asys, run_unstable_tests):
+        unstable_test(run_unstable_tests, asys, 'multiprocUDPBase')
         handler = asys.createActor(DLHandler)
         assert 0 == asys.ask(handler, 'Count', ASK_WAIT)
         asys.tell(handler, 'Start')
@@ -91,8 +91,8 @@ class TestFuncDeadLettering(object):
         asys.tell(handler, 'Stop')
         assert 0 == asys.ask(handler, 'Count', ASK_WAIT)
 
-    def test11_registerDeadLetterSubActor(self, asys):
-        unstable_test(asys, 'multiprocUDPBase')
+    def test11_registerDeadLetterSubActor(self, asys, run_unstable_tests):
+        unstable_test(run_unstable_tests, asys, 'multiprocUDPBase')
         handler = asys.createActor(DLParent)
         assert 0 == asys.ask(handler, 'Count', ASK_WAIT)
         asys.tell(handler, 'Start')
@@ -100,8 +100,8 @@ class TestFuncDeadLettering(object):
         asys.tell(handler, 'Stop')
         assert 0 == asys.ask(handler, 'Count', ASK_WAIT)
 
-    def test02_GetDeadLetter(self, asys):
-        unstable_test(asys, 'multiprocUDPBase')
+    def test02_GetDeadLetter(self, asys, run_unstable_tests):
+        unstable_test(run_unstable_tests, asys, 'multiprocUDPBase')
         handler = asys.createActor(DLHandler)
         assert 0 == asys.ask(handler, 'Count', ASK_WAIT)
         asys.tell(handler, 'Start')
@@ -124,8 +124,8 @@ class TestFuncDeadLettering(object):
         asys.tell(pawn, 'and another')
         assert cnt == asys.ask(handler, 'Count', ASK_WAIT)
 
-    def test12_GetDeadLetterSubActor(self, asys):
-        unstable_test(asys, 'multiprocUDPBase')
+    def test12_GetDeadLetterSubActor(self, asys, run_unstable_tests):
+        unstable_test(run_unstable_tests, asys, 'multiprocUDPBase')
         handler = asys.createActor(DLParent)
         r = asys.ask(handler, 'Count', ASK_WAIT)
         assert 0 == r
@@ -151,8 +151,8 @@ class TestFuncDeadLettering(object):
         r = asys.ask(handler, 'Count', ASK_WAIT)
         assert cnt == r
 
-    def test03_DLRegisterOnlyOnce(self, asys):
-        unstable_test(asys, 'multiprocUDPBase')
+    def test03_DLRegisterOnlyOnce(self, asys, run_unstable_tests):
+        unstable_test(run_unstable_tests, asys, 'multiprocUDPBase')
         handler = asys.createActor(DLHandler)
         assert 0 == asys.ask(handler, 'Count', ASK_WAIT)
         asys.tell(handler, 'Start')
@@ -183,8 +183,8 @@ class TestFuncDeadLettering(object):
         asys.tell(pawn, 'and another')
         cnt = self.checkNewDLCount(asys, handler, cnt)
 
-    def test13_DLRegisterOnlyOnce(self, asys):
-        unstable_test(asys, 'multiprocUDPBase')
+    def test13_DLRegisterOnlyOnce(self, asys, run_unstable_tests):
+        unstable_test(run_unstable_tests, asys, 'multiprocUDPBase')
         handler = asys.createActor(DLParent)
         assert 0 == asys.ask(handler, 'Count', ASK_WAIT)
         asys.tell(handler, 'Start')
@@ -215,8 +215,8 @@ class TestFuncDeadLettering(object):
         asys.tell(pawn, 'and another')
         cnt = self.checkNewDLCount(asys, handler, cnt)
 
-    def test04_DLMultipleHandlers(self, asys):
-        unstable_test(asys, 'multiprocUDPBase')
+    def test04_DLMultipleHandlers(self, asys, run_unstable_tests):
+        unstable_test(run_unstable_tests, asys, 'multiprocUDPBase')
         handler = asys.createActor(DLHandler)
         assert 0 == asys.ask(handler, 'Count', ASK_WAIT)
         asys.tell(handler, 'Start')
@@ -285,8 +285,8 @@ class TestFuncDeadLettering(object):
         cnt = self.checkNewDLCount(asys, handler, cnt)
         assert cnt2 == asys.ask(handler2, 'Count', ASK_WAIT)
 
-    def test14_DLMultipleHandlers(self, asys):
-        unstable_test(asys, 'multiprocUDPBase')
+    def test14_DLMultipleHandlers(self, asys, run_unstable_tests):
+        unstable_test(run_unstable_tests, asys, 'multiprocUDPBase')
         handler = asys.createActor(DLParent)
         assert 0 == asys.ask(handler, 'Count', ASK_WAIT)
         asys.tell(handler, 'Start')
@@ -355,8 +355,8 @@ class TestFuncDeadLettering(object):
         cnt = self.checkNewDLCount(asys, handler, cnt)
         assert cnt2 == asys.ask(handler2, 'Count', ASK_WAIT)
 
-    def test05_DLAutoRemoval(self, asys):
-        unstable_test(asys, 'multiprocUDPBase')
+    def test05_DLAutoRemoval(self, asys, run_unstable_tests):
+        unstable_test(run_unstable_tests, asys, 'multiprocUDPBase')
         handler = asys.createActor(DLHandler)
         assert 0 == asys.ask(handler, 'Count', ASK_WAIT)
         asys.tell(handler, 'Start')
@@ -407,8 +407,8 @@ class TestFuncDeadLettering(object):
         asys.tell(pawn, 'another again')
         cnt = self.checkNewDLCount(asys, handler, cnt)
 
-    def test15_DLAutoRemoval(self, asys):
-        unstable_test(asys, 'multiprocUDPBase')
+    def test15_DLAutoRemoval(self, asys, run_unstable_tests):
+        unstable_test(run_unstable_tests, asys, 'multiprocUDPBase')
         handler = asys.createActor(DLParent)
         assert 0 == asys.ask(handler, 'Count', ASK_WAIT)
         asys.tell(handler, 'Start')
