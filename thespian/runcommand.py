@@ -419,7 +419,7 @@ class RunCommand(ActorTypeDispatcher):
            len(self.output[outmark]) + \
            len(self.output[outmark+'_fh']) > command.max_bufsize:
             if not self.output[outmark+'_fh']:
-                self.output[outmark+'_fh'] = self.output[outmark][:command_max_bufsize/2]
+                self.output[outmark+'_fh'] = self.output[outmark][:int(command.max_bufsize/2)]
                 self.output[outmark] = self.output[len(self.output[outmark+'_fh']):]
             self.output = self.output[-command.max_bufsize-len(self.firsth_output):]
         updates_to = self.pending_commands[-1].output_updates
