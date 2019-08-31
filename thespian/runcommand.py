@@ -469,9 +469,18 @@ class RunCommand(ActorTypeDispatcher):
                     break
         return oli
 
+    def _drain_output(self, command, outmark, fd):
+        while True:
+            out = fd.read(8192)
+            if not out:
+                return
+            self._add_output(command, outmark, out)
+
     def _finished_command(self, errorcode=None):
         command = self.pending_commands[-1]
         subp = getattr(self, 'p', None)
+        self._drain_output(command, 'normal', subp.stdout)
+        self._drain_output(command, 'error', subp.stderr)
         result = CommandResult(command,
                                errorcode or
                                (-4 if not subp or subp.returncode is None else subp.returncode),
