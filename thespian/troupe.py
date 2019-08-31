@@ -100,7 +100,8 @@ class _TroupeManager(object):
 
     def is_ready(self, managerActor, ready_msg, troupe_member):
         if ready_msg.ident_done >= 0:
-            del self._handling_work[ready_msg.ident_done]
+            if ready_msg.ident_done in self._handling_work:
+                del self._handling_work[ready_msg.ident_done]
         if self._pending_work:
             w = self._pending_work.pop(0)
             self._handling_work[w.ident] = (troupe_member, w)
