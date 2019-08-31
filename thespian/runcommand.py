@@ -288,6 +288,8 @@ class RunCommand(ActorTypeDispatcher):
             return ThespianWatch([subp.stdout.fileno(), subp.stderr.fileno()])
         except IOError:
             return self_finished_command() # command must have finished just now
+        except ValueError:
+            return self_finished_command() # command must have finished just now
 
     def _set_command_timeout(self, command):
         if command.timeout:
@@ -372,20 +374,36 @@ class RunCommand(ActorTypeDispatcher):
         # This Thespian base does not support ThespianWatch, so this
         # will have to use a blocking wait on the command completion
         if command.timeout:
-            end_time = datetime.now() + command.timeout
-            while datetime.now() < end_time:
+            now = datetime.now()
+            end_time = now + command.timeout
+            while now < end_time:
                 time.sleep(0.5)
-                if self.p.poll():
+                if self.p.poll() is not None:
                     break
-            if datetime.now() >= end_time:
-                self.p.terminate()
+                now = datetime.now()
+            if now >= end_time:
+                try:
+                    self.p.terminate()
+                except OSError as ex:
+                    if ex.errno == 3:
+                        pass  # process already gone
+                    else:
+                        raise
                 end_time += timedelta(seconds=2)
-                while datetime.now() < end_time:
-                    if self.p.poll():
+                now = datetime.now()
+                while now < end_time:
+                    if self.p.poll() is not None:
                         break
                     time.sleep(0.5)
-                if not self.p.poll():
-                    self.p.kill()
+                    now = datetime.now()
+                if self.p.poll() is None:
+                    try:
+                        self.p.kill()
+                    except OSError as ex:
+                        if ex.errno == 3:
+                            pass  # process already gone
+                        else:
+                            raise
                     time.sleep(0.5)
         out, err = self.p.communicate(None)
         self._add_output(self.pending_commands[-1], 'normal', out)
@@ -471,7 +489,10 @@ class RunCommand(ActorTypeDispatcher):
 
     def _drain_output(self, command, outmark, fd):
         while True:
-            out = fd.read(8192)
+            try:
+                out = fd.read(8192)
+            except ValueError:  # read on a closed file
+                return
             if not out:
                 return
             self._add_output(command, outmark, out)
@@ -479,8 +500,9 @@ class RunCommand(ActorTypeDispatcher):
     def _finished_command(self, errorcode=None):
         command = self.pending_commands[-1]
         subp = getattr(self, 'p', None)
-        self._drain_output(command, 'normal', subp.stdout)
-        self._drain_output(command, 'error', subp.stderr)
+        if subp:
+            self._drain_output(command, 'normal', subp.stdout)
+            self._drain_output(command, 'error', subp.stderr)
         result = CommandResult(command,
                                errorcode or
                                (-4 if not subp or subp.returncode is None else subp.returncode),
