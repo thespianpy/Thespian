@@ -19,7 +19,7 @@ else:
     b64inp = lambda s: s.encode('ascii')
     to_bytelist = lambda s: list(s)
     import array
-    list_to_str = lambda l: array.array('B', l).tostring()
+    list_to_str = lambda l: array.array('B', l).tobytes()
 
 try:
     from functools import reduce # Python3
