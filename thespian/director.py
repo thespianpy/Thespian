@@ -1458,7 +1458,7 @@ with the highest version at the top of the list:
                 for actor in gi['Running'].get(srchash, []):
                     role = actor.get('Role', None)
                     print('      %s -- %s%s  (since %s)' %
-                          (actor['ActorAddress'],
+                          (actor['ActorAddress'] or "LOAD FAILED... no address",
                            actor['ActorClass'],
                            (' (%s)' % role) if role else '',
                           # n.b. StartTime was added after v3.8.3
