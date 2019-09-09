@@ -743,27 +743,9 @@ class ConventioneerAdmin(GlobalNamesAdmin):
                  ' (%s)'%sourceHash if sourceHash else '',
                  childRequirements, envelope.sender)
 
-        if sourceHash:
-            if sourceHash not in self._sources:
-                # If this request was forwarded by a remote Admin and the
-                # sourceHash is not known locally, request it from the sending
-                # remote Admin
-                if self._cstate.sentByRemoteAdmin(envelope) and \
-                   self._acceptsRemoteLoadedSourcesFrom(envelope):
-                    self._sources[sourceHash] = PendingSource(sourceHash, None)
-                    self._sources[sourceHash].pending_actors.append(envelope)
-                    self._hysteresisSender.sendWithHysteresis(
-                        TransmitIntent(
-                            envelope.sender,
-                            SourceHashTransferRequest(sourceHash,
-                                                      bool(self._sourceAuthority))))
-                    # sent with hysteresis, so break out to local _run
-                    return False
-            if sourceHash in self._sources and \
-               not self._sources[sourceHash].source_valid:
-                # Still pending, add this create request to the waiting list
-                self._sources[sourceHash].pending_actors.append(envelope)
-                return True
+        sourceLoad = self._get_source_for_hash(sourceHash, envelope)
+        if sourceLoad is True or sourceLoad is False:
+            return sourceLoad
 
         # If the requested ActorClass is compatible with this
         # ActorSystem, attempt to start it, otherwise forward the
@@ -831,6 +813,28 @@ class ConventioneerAdmin(GlobalNamesAdmin):
                 errorStr=str(ex))
             return True
         return super(ConventioneerAdmin, self).h_PendingActor(envelope)
+
+
+    def _get_missing_source_for_hash(self, sourceHash, createActorEnvelope):
+        # If this request was forwarded by a remote Admin and the
+        # sourceHash is not known locally, request it from the sending
+        # remote Admin
+        if self._cstate.sentByRemoteAdmin(createActorEnvelope) and \
+           self._acceptsRemoteLoadedSourcesFrom(createActorEnvelope):
+            self._sources[sourceHash] = PendingSource(sourceHash, None)
+            self._sources[sourceHash].pending_actors.append(createActorEnvelope)
+            self._hysteresisSender.sendWithHysteresis(
+                TransmitIntent(
+                    createActorEnvelope.sender,
+                    SourceHashTransferRequest(sourceHash,
+                                              bool(self._sourceAuthority))))
+            # sent with hysteresis, so break out to local _run
+            return False
+
+        # No remote Admin to send the source, so fail as normal.
+        return super(ConventioneerAdmin, self)._get_missing_source_for_hash(
+            sourceHash,
+            createActorEnvelope)
 
 
     def _pending_send_failed(self, result, intent):

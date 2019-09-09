@@ -298,16 +298,9 @@ class AdminCore(systemCommonBase):
             return True
 
         sourceHash = envelope.message.sourceHash
-        if sourceHash:
-            self._remove_expired_sources()
-            if sourceHash not in self._sources:
-                self._sendPendingActorResponse(
-                    envelope, None,
-                    errorCode = PendingActorResponse.ERROR_Invalid_SourceHash)
-                return True
-            if not self._sources[sourceHash].source_valid:
-                self._sources[sourceHash].pending_actors.append(envelope)
-                return True
+        sourceLoad = self._get_source_for_hash(sourceHash, envelope)
+        if sourceLoad is True or sourceLoad is False:
+            return sourceLoad
 
         # Note, both Admin and remote requester will have a local
         # child address for the child (with a different instanceNumber
@@ -323,8 +316,7 @@ class AdminCore(systemCommonBase):
                 notifyAddr=self.myAddress,
                 childRequirements=envelope.message.targetActorReq,
                 sourceHash=sourceHash,
-                sourceToLoad=(self._sources[sourceHash]
-                              if sourceHash else None))
+                sourceToLoad=sourceLoad)
         except NoCompatibleSystemForActor:
             self._sendPendingActorResponse(
                 envelope, None,
@@ -334,6 +326,41 @@ class AdminCore(systemCommonBase):
 
         # transport will contrive to call _pendingActorReady when the
         # child is initialized and connected to this parent.
+        return True
+
+
+    def _get_source_for_hash(self, sourceHash, createActorEnvelope):
+        if not sourceHash:
+            # Continue, with no source override
+            return None
+
+        self._remove_expired_sources()
+
+        # If this source isn't known, see if there's some activity
+        # that can be initiated to obtain the source.  The expectation
+        # is that the activity (if any) is asynchronous, so there's no
+        # reason to continue processing here.
+        if sourceHash not in self._sources:
+            return self._get_missing_source_for_hash(sourceHash,
+                                                     createActorEnvelope)
+
+        # If the source load is in-progress, save this request and
+        # return with "continue" indication.
+        if not self._sources[sourceHash].source_valid:
+            self._sources[sourceHash].pending_actors.append(createActorEnvelope)
+            return True
+
+        # Return the requested source
+        return self._sources[sourceHash]
+
+
+    def _get_missing_source_for_hash(self, sourceHash, createActorEnvelope):
+        # For a standard Actor System, if the source isn't currently
+        # loaded then there's nothing that can be done, so reject the
+        # createActor request and "continue".
+        self._sendPendingActorResponse(
+            createActorEnvelope, None,
+            errorCode = PendingActorResponse.ERROR_Invalid_SourceHash)
         return True
 
 
