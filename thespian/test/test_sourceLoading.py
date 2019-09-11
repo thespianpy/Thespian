@@ -829,7 +829,7 @@ class TestFuncLoadSource(object):
         foo = asys.createActor('foo.FooActor', sourceHash=srchash)
         r = asys.ask(foo, 'good one', ask_wait)
         assert 'GOT: good one' == r
-        r = asys.ask(foo, ('discard', 'great'))
+        r = asys.ask(foo, ('discard', 'great'), ask_wait)
         assert 'And MOO: great' == r
 
         # Update the foo sources
@@ -877,7 +877,7 @@ class TestFuncLoadSource(object):
         dog = asys.createActor('dog.DogActor', sourceHash=srchash2)
         r = asys.ask(foo, 'good one', ask_wait)
         assert 'GOT: good one' == r
-        r = asys.ask(foo, ('discard', 'great'))
+        r = asys.ask(foo, ('discard', 'great'), ask_wait)
         assert 'And MOO: great' == r
         r = asys.ask(dog, 'bark', ask_wait)
         assert 'Woof! bark' == r
@@ -897,7 +897,7 @@ class TestFuncLoadSource(object):
         dog = asys.createActor('dog.DogActor', sourceHash=srchash2)
         r = asys.ask(foo, 'good one', ask_wait)
         assert 'GOT: good one' == r
-        r = asys.ask(foo, ('discard', 'great'))
+        r = asys.ask(foo, ('discard', 'great'), ask_wait)
         assert 'And MOO: great' == r
         r = asys.ask(dog, 'bark', ask_wait)
         assert 'Woof! bark' == r
@@ -917,7 +917,7 @@ class TestFuncLoadSource(object):
         dog = asys.createActor('dog.DogActor', sourceHash=srchash2)
         r = asys.ask(foo, 'good one', ask_wait)
         assert 'GOT: good one' == r
-        r = asys.ask(foo, ('discard', 'great'))
+        r = asys.ask(foo, ('discard', 'great'), ask_wait)
         assert 'And MOO: great' == r
         r = asys.ask(dog, 'bark', ask_wait)
         assert 'Woof! bark' == r
@@ -1102,7 +1102,7 @@ class TestFuncLoadSource(object):
         foo = asys.createActor('foo.FooActor', sourceHash=srchash)
         r = asys.ask(foo, 'good one', ask_wait)
         assert 'GOT: good one' == r
-        r = asys.ask(foo, ('discard', 'great'))
+        r = asys.ask(foo, ('discard', 'great'), ask_wait)
         assert 'And MOO: great' == r
 
         # Update the foo sources
@@ -1172,7 +1172,7 @@ class TestFuncLoadSource(object):
         foo = asys.createActor('foo.FooActor', sourceHash=srchash)
         r = asys.ask(foo, 'good one', ask_wait)
         assert 'GOT: good one' == r
-        r = asys.ask(foo, ('discard', 'great'))
+        r = asys.ask(foo, ('discard', 'great'), ask_wait)
         assert 'And MOO: great' == r
 
     def test07_sourceAuthorityAcceptsValidSourceAfterBadSource(self, asys, source_zips):
@@ -1189,7 +1189,7 @@ class TestFuncLoadSource(object):
         foo = asys.createActor('foo.FooActor', sourceHash=srchash)
         r = asys.ask(foo, 'good one', ask_wait)
         assert 'GOT: good one' == r
-        r = asys.ask(foo, ('discard', 'great'))
+        r = asys.ask(foo, ('discard', 'great'), ask_wait)
         assert 'And MOO: great' == r
         raises(InvalidActorSourceHash,
                asys.createActor,
@@ -1211,7 +1211,7 @@ class TestFuncLoadSource(object):
         dog = asys.createActor('dog.DogActor', sourceHash=srchash2)
         r = asys.ask(foo, 'good one', ask_wait)
         assert 'GOT: good one' == r
-        r = asys.ask(foo, ('discard', 'great'))
+        r = asys.ask(foo, ('discard', 'great'), ask_wait)
         assert 'And MOO: great' == r
         r = asys.ask(dog, 'bark', ask_wait)
         assert 'Woof! bark' == r
