@@ -735,84 +735,33 @@ class ConventioneerAdmin(GlobalNamesAdmin):
     # ---- Remote Actor interactions ----------------------------------------------
 
 
-    def h_PendingActor(self, envelope):
-        sourceHash = envelope.message.sourceHash
-        childRequirements = envelope.message.targetActorReq
-        thesplog('Pending Actor request received for %s%s reqs %s from %s',
-                 envelope.message.actorClassName,
-                 ' (%s)'%sourceHash if sourceHash else '',
-                 childRequirements, envelope.sender)
-
-        sourceLoad = self._get_source_for_hash(sourceHash, envelope)
-        if sourceLoad is True or sourceLoad is False:
-            return sourceLoad
-
-        # If the requested ActorClass is compatible with this
-        # ActorSystem, attempt to start it, otherwise forward the
-        # request to any known compatible ActorSystem.
-        childClass = envelope.message.actorClassName
-        try:
-            childClass = actualActorClass(envelope.message.actorClassName,
-                                          partial(loadModuleFromHashSource,
-                                                  sourceHash,
-                                                  self._sources)
-                                          if sourceHash else None)
-            acceptsCaps = lambda caps: checkActorCapabilities(childClass, caps,
-                                                              childRequirements)
-            if not acceptsCaps(self.capabilities):
-                if envelope.message.forActor is None:
-                    # Request from external; use sender address
-                    envelope.message.forActor = envelope.sender
-                iolist = self._cstate.forward_pending_to_remote_system(
-                    childClass, envelope, sourceHash, acceptsCaps)
-                for each in iolist:
-                    # Expected to be only one; if the transmit fails,
-                    # route it back here so that the next possible
-                    # remote can be tried.
-                    each.addCallback(onFailure=self._pending_send_failed)
-                self._performIO(iolist)
-                return True
-        except NoCompatibleSystemForActor as ex:
-            thesplog(str(ex), level=logging.WARNING, primary=True)
-            self._sendPendingActorResponse(
-                envelope, None,
-                errorCode=PendingActorResponse.ERROR_No_Compatible_ActorSystem)
-            return True
-        except InvalidActorSourceHash:
-            self._sendPendingActorResponse(
-                envelope, None,
-                errorCode=PendingActorResponse.ERROR_Invalid_SourceHash)
-            return True
-        except InvalidActorSpecification as ex:
-            thesplog('Error: InvalidActorSpecification: %s', str(ex), exc_info=True)
-            self._sendPendingActorResponse(
-                envelope, None,
-                errorCode=PendingActorResponse.ERROR_Invalid_ActorClass,
-                errorStr=str(ex))
-            return True
-        except ImportError as ex:
-            self._sendPendingActorResponse(
-                envelope, None,
-                errorCode=PendingActorResponse.ERROR_Import,
-                errorStr=str(ex))
-            return True
-        except AttributeError as ex:
-            # Usually when the module has no attribute FooActor
-            thesplog('Error: AttributeError: %s', str(ex), exc_info=True)
-            self._sendPendingActorResponse(
-                envelope, None,
-                errorCode=PendingActorResponse.ERROR_Invalid_ActorClass,
-                errorStr=str(ex))
-            return True
-        except Exception as ex:
-            import traceback
-            thesplog('Exception "%s" handling PendingActor: %s', ex, traceback.format_exc(), level=logging.ERROR)
-            self._sendPendingActorResponse(
-                envelope, None,
-                errorCode=PendingActorResponse.ERROR_Invalid_ActorClass,
-                errorStr=str(ex))
-            return True
-        return super(ConventioneerAdmin, self).h_PendingActor(envelope)
+    def _not_compatible(self, createActorEnvelope):
+        # Called when the current Actor System is not compatible with
+        # the Actor's actorSystemCapabilityCheck.  Forward this
+        # createActor request to another system that it's compatible
+        # with.
+        sourceHash = createActorEnvelope.message.sourceHash
+        childRequirements = createActorEnvelope.message.targetActorReq
+        childCName = createActorEnvelope.message.actorClassName
+        childClass = actualActorClass(childCName,
+                                      partial(loadModuleFromHashSource,
+                                              sourceHash,
+                                              self._sources)
+                                      if sourceHash else None)
+        acceptsCaps = lambda caps: checkActorCapabilities(childClass, caps,
+                                                          childRequirements)
+        if createActorEnvelope.message.forActor is None:
+            # Request from external; use sender address
+            createActorEnvelope.message.forActor = createActorEnvelope.sender
+        iolist = self._cstate.forward_pending_to_remote_system(
+            childClass, createActorEnvelope, sourceHash, acceptsCaps)
+        for each in iolist:
+            # Expected to be only one; if the transmit fails,
+            # route it back here so that the next possible
+            # remote can be tried.
+            each.addCallback(onFailure=self._pending_send_failed)
+        self._performIO(iolist)
+        return True
 
 
     def _get_missing_source_for_hash(self, sourceHash, createActorEnvelope):

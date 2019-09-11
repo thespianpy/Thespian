@@ -290,6 +290,12 @@ class AdminCore(systemCommonBase):
 
         """
         self._sCBStats.inc('Admin Message Received.Type.Pending Actor Request')
+        sourceHash = envelope.message.sourceHash
+        thesplog('Pending Actor request received for %s%s reqs %s from %s',
+                 envelope.message.actorClassName,
+                 ' (%s)'%sourceHash if sourceHash else '',
+                 envelope.message.targetActorReq, envelope.sender)
+
 
         if self.isShuttingDown():
             self._sendPendingActorResponse(
@@ -297,7 +303,6 @@ class AdminCore(systemCommonBase):
                 errorCode=PendingActorResponse.ERROR_ActorSystem_Shutting_Down)
             return True
 
-        sourceHash = envelope.message.sourceHash
         sourceLoad = self._get_source_for_hash(sourceHash, envelope)
         if sourceLoad is True or sourceLoad is False:
             return sourceLoad
@@ -317,17 +322,49 @@ class AdminCore(systemCommonBase):
                 childRequirements=envelope.message.targetActorReq,
                 sourceHash=sourceHash,
                 sourceToLoad=sourceLoad)
-        except NoCompatibleSystemForActor:
-            self._sendPendingActorResponse(
-                envelope, None,
-                errorCode=PendingActorResponse.ERROR_No_Compatible_ActorSystem)
-            self._retryPendingChildOperations(childInstance, None)
+            # transport will contrive to call _pendingActorReady when the
+            # child is initialized and connected to this parent.
             return True
-
-        # transport will contrive to call _pendingActorReady when the
-        # child is initialized and connected to this parent.
+        except NoCompatibleSystemForActor as ex:
+            thesplog(str(ex), level=logging.WARNING, primary=True)
+            try:
+                ret = self._not_compatible(envelope)
+                if ret:
+                    return ret
+            except NoCompatibleSystemForActor:
+                pass
+            errcode = PendingActorResponse.ERROR_No_Compatible_ActorSystem
+            errstr = ""
+        except InvalidActorSourceHash:
+            errcode = PendingActorResponse.ERROR_Invalid_SourceHash
+            errstr = ""
+        except InvalidActorSpecification as ex:
+            thesplog('Error: InvalidActorSpecification: %s', str(ex), exc_info=True)
+            errcode = PendingActorResponse.ERROR_Invalid_ActorClass
+            errstr = str(ex)
+        except ImportError as ex:
+            errcode = PendingActorResponse.ERROR_Import
+            errstr = str(ex)
+        except AttributeError as ex:
+            # Usually when the module has no attribute FooActor
+            thesplog('Error: AttributeError: %s', str(ex), exc_info=True)
+            errcode = PendingActorResponse.ERROR_Invalid_ActorClass
+            errstr = str(ex)
+        except Exception as ex:
+            import traceback
+            thesplog('Exception "%s" handling PendingActor: %s', ex, traceback.format_exc(), level=logging.ERROR)
+            errcode = PendingActorResponse.ERROR_Invalid_ActorClass
+            errstr = str(ex)
+        self._sendPendingActorResponse(envelope, None,
+                                       errorCode=errcode,
+                                       errorStr=errstr)
+        self._retryPendingChildOperations(childInstance, None)
         return True
 
+
+    def _not_compatible(self, createActorEnvelope):
+        # Cannot do anything
+        return False
 
     def _get_source_for_hash(self, sourceHash, createActorEnvelope):
         if not sourceHash:
