@@ -5,7 +5,8 @@ from thespian.test import *
 
 class ThereCanBeOnlyOne(Actor):
     def receiveMessage(self, msg, sender):
-        self.send(sender, "ONE: %s"%msg)
+        if not isinstance(msg, ActorSystemMessage):
+            self.send(sender, "ONE: %s"%msg)
 
 class GlobalNameReporter(Actor):
     def receiveMessage(self, msg, sender):
@@ -141,3 +142,17 @@ class TestFuncGlobalName(object):
 
         unnamed = asys.createActor(GlobalNameReporter)
         assert asys.ask(unnamed, "") is None
+
+    def testGlobalNameOverridesClass(self, asys):
+        named = asys.createActor(ThereCanBeOnlyOne, globalName='mine')
+        assert "ONE: running" == asys.ask(named, "running")
+        referenced = asys.createActor('This.is.bogus', globalName='mine')
+        assert named == referenced
+        assert "ONE: still running" == asys.ask(named, "still running")
+        assert "ONE: the same" == asys.ask(referenced, "the same")
+
+        asys.tell(referenced, ActorExitRequest())
+        delay_for_next_of_kin_notification(asys)
+
+        assert None == asys.ask(named, "ok?", 1)
+        assert None == asys.ask(referenced, "hello?", 1)
