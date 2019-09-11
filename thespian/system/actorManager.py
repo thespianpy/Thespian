@@ -16,7 +16,8 @@ from thespian.system.messages.convention import NotifyOnSystemRegistration
 from thespian.system.messages.logcontrol import SetLogging
 from thespian.system.messages.multiproc import EndpointConnected
 from thespian.system.utilis import actualActorClass
-from thespian.system.sourceLoader import loadModuleFromHashSource
+from thespian.system.sourceLoader import ( loadModuleFromHashSource,
+                                           SourceHashNotLocallyAvailable )
 from datetime import timedelta
 from functools import partial
 
@@ -322,6 +323,8 @@ class ActorManager(systemCommonBase):
                 self._sCBStats.inc('Actor.Child.Created')
                 return naa
             except NoCompatibleSystemForActor:
+                pass
+            except SourceHashNotLocallyAvailable:
                 pass
             except ImportError:  # hash source may not be available locally
                 pass

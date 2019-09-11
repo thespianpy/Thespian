@@ -140,6 +140,12 @@ def py3_source_converter(s):
                                    b'\n' + s[end_future:]])) + b'\n'
 
 
+class SourceHashNotLocallyAvailable(Exception):
+    def __init__(self, sourceHash, msg):
+        super(SourceHashNotLocallyAvailable, self).__init__(msg)
+        self.sourceHash = sourceHash
+
+
 class ImportRePackage(ast.NodeTransformer):
     def __init__(self, sourceHashDot, topnames):
         self._sourceHashDot = sourceHashDot
@@ -413,7 +419,7 @@ def loadModuleFromHashSource(sourceHash, sources, modName, modClass):
                                               sourceHash)
         raise InvalidActorSourceHash(sourceHash)
     if not sources[sourceHash]:
-        raise ValueError('Local Actor does not have sources for hash %s' % sourceHash)
+        raise SourceHashNotLocallyAvailable(sourceHash, 'Local Actor does not have sources for hash %s' % sourceHash)
 
     for metapath in sys.meta_path:
         if getattr(metapath, 'srcHash', None) == sourceHash:
