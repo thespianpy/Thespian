@@ -10,7 +10,7 @@
 #+LATEX_HEADER: \product{Thespian}
 #+LATEX_HEADER: \component{Python Actor System}
 #+LATEX_HEADER: \doctype{Release Notes}
-#+LATEX_HEADER: \docrev{3.9.10}{2019 Aug 30}
+#+LATEX_HEADER: \docrev{3.9.11}{2019 Sep 10}
 #+LATEX_HEADER: \docid{TheDoc-06}
 #+OPTIONS: ^:nil num:nil
 
@@ -24,6 +24,7 @@ do not change the API.
 
  | Release |       Date | Significant Bugfixes                         | Significant Features              |
  |---------+------------+----------------------------------------------+-----------------------------------|
+ |  3.9.11 | 2019-09-10 | globalName precedence for createActor        |                                   |
  |  3.9.10 | 2019-08-30 | runcommand shutdown, drain, and output fixes |                                   |
  |   3.9.9 | 2019-04-08 | Fixed message duplication in troupe          | Round-robin use of troupe workers |
  |   3.9.8 | 2019-03-04 | Transmit queueing/overrun fixes ([[https://github.com/kquick/Thespian/issues/38][Issue #38]])  | Troupe worker exit delays         |
@@ -159,6 +160,22 @@ do not change the API.
 
 ** 3.9
 
+*** 3.9.11 <2019-09-10 Tue>
+    * Fixed ~createActor()~ calls so that a ~globalName~ match is
+      performed before the actor class lookup.  This is particularly
+      important for loaded sources where the external segment does not
+      need to have the loaded source definitions when invoking a
+      ~globalName~ entry to the loaded source.
+
+      This also consolidated code for actor creation for single
+      implementation of logic and conformity across entrypoints.
+    * Updated the ~rsasig.py~ (used for Thespian Director
+      signing/verification) to use the new ~tobytes()~ instead of the
+      deprecated ~tostring()~ method on ~array~ types.
+    * Updated Thespian Director list output to more clearly indicate
+      when a tli-driven actor startup has failed.
+    * Added some additional timeouts to ~ask()~ calls in the source
+      loading tests.
 *** 3.9.10 <2019-08-30 Fri>
     * Fixed syntax error handling of large output in runcommand that
       would cause a crash when copious amounts of output were
