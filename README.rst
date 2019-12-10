@@ -53,3 +53,6 @@ Thespian (https://github.com/godaddy/Thespian) will be done solely at
 GoDaddy's discretion; the original author will monitor those changes
 and merge them into the author's version at
 https://github.com/kquick/Thespian as appropriate.
+
+As of 10 Dec 2019, GoDaddy and Kevin Quick are working on transfer
+of ownership for the Thespian project to the latter.
