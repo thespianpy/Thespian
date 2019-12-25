@@ -438,8 +438,8 @@ class RunCommand(ActorTypeDispatcher):
            len(self.output[outmark+'_fh']) > command.max_bufsize:
             if not self.output[outmark+'_fh']:
                 self.output[outmark+'_fh'] = self.output[outmark][:int(command.max_bufsize/2)]
-                self.output[outmark] = self.output[len(self.output[outmark+'_fh']):]
-            self.output = self.output[-command.max_bufsize-len(self.firsth_output):]
+                self.output[outmark] = self.output[outmark][len(self.output[outmark+'_fh']):]
+            self.output[outmark] = self.output[outmark][-(command.max_bufsize-len(self.output[outmark+'_fh'])):]
         updates_to = self.pending_commands[-1].output_updates
         if isinstance(updates_to, ActorAddress):
             self.send(updates_to, (CommandOutput
