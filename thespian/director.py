@@ -1493,8 +1493,8 @@ class SourceEncoding(object):
                 getattr(SourceEncoding,
                         '_ztt_' + (format or 'ThespianDirectorFMT1'))(
                             zfpath, sf, shasig)
-                os.rename(sftmp, sfpath)
-                return sfpath
+            os.rename(sftmp, sfpath)
+            return sfpath
         finally:
             try:
                 os.remove(sftmp)
