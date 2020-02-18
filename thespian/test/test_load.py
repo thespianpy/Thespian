@@ -176,7 +176,7 @@ if __name__ == "__main__":
             tci = TestFuncLoad()
             asys = start_actor_system(tbase)
             try:
-                getattr(tci,tm)(asys, 2000, 10)
+                getattr(tci,tm)(asys, 2000, 10, False)
             finally:
                 startstop = datetime.now()
                 stop_actor_system(asys)
