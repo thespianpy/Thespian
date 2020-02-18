@@ -137,12 +137,13 @@ class TCPEndpoint(TransportInit__Base):
 def _safeSocketShutdown(sock):
     if sock:
         sock = getattr(sock, 'socket', sock)
-        try:
-            sock.shutdown(socket.SHUT_RDWR)
-        except socket.error as ex:
-            if ex.errno != errno.ENOTCONN:
-                thesplog('Error during shutdown of socket %s: %s', sock, ex)
-        sock.close()
+        if sock and hasattr(sock, 'shutdown'):
+            try:
+                sock.shutdown(socket.SHUT_RDWR)
+            except socket.error as ex:
+                if ex.errno != errno.ENOTCONN:
+                    thesplog('Error during shutdown of socket %s: %s', sock, ex)
+            sock.close()
 
 
 class TCPIncoming_Common(PauseWithBackoff):
@@ -194,7 +195,7 @@ class TCPIncoming_Common(PauseWithBackoff):
 
 class TCPIncoming(TCPIncoming_Common):
     def __del__(self):
-        _safeSocketShutdown(s.socket)
+        _safeSocketShutdown(self)
         self._openSock = None
 
 
@@ -385,7 +386,7 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
 
     def childResetFileNumList(self):
         return self.protectedFileNumList() + \
-            [self._openSockets[S].socket.fileno() for S in self._openSockets]
+            [self._openSockets[S].socket.fileno() for S in getattr(self, '_openSockets', [])]
 
     @staticmethod
     def getAdminAddr(capabilities):
@@ -452,8 +453,9 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
                                     str(each.message))
         asyncTransportBase._updateStatusResponse(self, resp)
         wakeupTransportBase._updateStatusResponse(self, resp)
-        for num, each in enumerate(self._openSockets.values()):
-            resp.addKeyVal(str(each), 'sock#%d-fd%d' % (num, each.socket.fileno()))
+        if hasattr(self, '_openSockets'):
+            for num, each in enumerate(self._openSockets.values()):
+                resp.addKeyVal(str(each), 'sock#%d-fd%d' % (num, each.socket.fileno()))
 
     @staticmethod
     def probeAdmin(addr):
@@ -531,10 +533,11 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
 
 
     def close_oldest_idle_sockets(self, num_to_close=1):
-        aged_keys = sorted([(self._openSockets[K].validity, K)
-                            for K in self._openSockets])
-        for _,oldkey in aged_keys[:num_to_close]:
-            _safeSocketShutdown(self._openSockets.pop(oldkey))
+        if hasattr(self, '_openSockets'):
+            aged_keys = sorted([(self._openSockets[K].validity, K)
+                                for K in self._openSockets])
+            for _,oldkey in aged_keys[:num_to_close]:
+                _safeSocketShutdown(self._openSockets.pop(oldkey))
 
     def new_socket(self, op, *args, **kw):
         try:
@@ -1235,7 +1238,7 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
 
                 for idle in idleSockets:
                     rmtaddr = idle.rmtaddr
-                    curOpen = self._openSockets.get(opsKey(rmtaddr), None)
+                    curOpen = getattr(self, '_openSockets', dict()).get(opsKey(rmtaddr), None)
                     if curOpen and curOpen != idle:
                         # duplicate sockets to remote, and this one is
                         # no longer tracked, so close it and keep
@@ -1249,7 +1252,8 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
                             if not err_bad_fileno(ex.errno):
                                 raise
                         if fnum is None or fnum in rrecv:
-                            del self._openSockets[opsKey(rmtaddr)]
+                            if hasattr(self, '_openSockets') and opsKey(rmtaddr) in self._openSockets:
+                                del self._openSockets[opsKey(rmtaddr)]
                             if fnum:
                                 incoming = self._handlePossibleIncoming(
                                     TCPIncomingPersistent(rmtaddr, idle.socket),
@@ -1259,7 +1263,8 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
                                         incoming.socket.fileno()] = incoming
                         elif idle.expired():
                             _safeSocketShutdown(idle)
-                            del self._openSockets[opsKey(rmtaddr)]
+                            if hasattr(self, '_openSockets') and opsKey(rmtaddr) in self._openSockets:
+                                del self._openSockets[opsKey(rmtaddr)]
 
                 # Handle timeouts
                 self._processIntentTimeouts()
@@ -1375,7 +1380,8 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
         # there was an error then incomingSocket should be closed and
         # released.
         fromAddr = incomingSocket.fromAddress
-        if fromAddr and isinstance(incomingSocket, TCPIncomingPersistent):
+        if fromAddr and isinstance(incomingSocket, TCPIncomingPersistent) \
+           and hasattr(self, '_openSockets'):
             opskey = opsKey(fromAddr)
             _safeSocketShutdown(self._openSockets.get(opskey, None))
             self._openSockets[opskey] = IdleSocket(incomingSocket.socket,
