@@ -62,11 +62,12 @@ def transient_idle(exit_delay=timedelta(seconds=10)):
             if not getattr(self, '_TransientIdleExitScheduled', None):
                 self.wakeupAfter(exit_delay)
                 self._TransientIdleExitScheduled = datetime.now() + exit_delay
-            if isinstance(msg, WakeupMessage) and \
-               datetime.now() >= self._TransientIdleExitScheduled:
-                self.send(self.myAddress, ActorExitRequest())
+            if isinstance(msg, WakeupMessage):
+                if datetime.now() >= self._TransientIdleExitScheduled:
+                    self.send(self.myAddress, ActorExitRequest())
+                else:
+                    self.wakeupAfter(self._TransientIdleExitScheduled - datetime.now())
             elif not isinstance(msg, ActorSystemMessage):
-                self.wakeupAfter(exit_delay)
                 self._TransientIdleExitScheduled = datetime.now() + exit_delay
             return self._TIA_rcvmsg(msg, sender)
         actor_class._TIA_rcvmsg = actor_class.receiveMessage
