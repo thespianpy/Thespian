@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name = 'thespian',
-    version = '3.9.11',
+    version = '3.10.0',
     description = 'Python Actor concurrency library',
     author = 'Kevin Quick',
     author_email = 'quick@sparq.org',

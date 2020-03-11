@@ -10,7 +10,7 @@
 #+LATEX_HEADER: \product{Thespian}
 #+LATEX_HEADER: \component{Python Actor System}
 #+LATEX_HEADER: \doctype{Release Notes}
-#+LATEX_HEADER: \docrev{3.9.11}{2019 Sep 10}
+#+LATEX_HEADER: \docrev{3.10.0}{2020 Mar 10}
 #+LATEX_HEADER: \docid{TheDoc-06}
 #+OPTIONS: ^:nil num:nil
 
@@ -20,6 +20,13 @@ added functionality that is backwards compatible, and bugfix changes
 do not change the API.
 
 * Summary
+** 2020
+
+ | Release |       Date | Significant Bugfixes   | Significant Features                             |
+ |---------+------------+------------------------+--------------------------------------------------|
+ |  3.10.0 | 2020-03-10 | transient_idle wakeups | Adjustable Troupe limits, ~THESPIAN_BASE_IPADDR~ |
+ |---------+------------+------------------------+--------------------------------------------------|
+
 ** 2019
 
  | Release |       Date | Significant Bugfixes                         | Significant Features              |
@@ -157,6 +164,21 @@ do not change the API.
 
 
 * 3.x
+
+** 3.10
+
+*** 3.10.0 <2020-03-10 Tue>
+
+    * Added ability to dynamically update the Thespian Troupe worker
+      counts (see [[file:using.orghH-c796bc0d-a150-4fb9-8918-58f470813175][the Actor Troupe Support section]].
+    * Added ability to specify the local IP address to use for TCP and
+      UDP actor bases via the ~THESPIAN_BASE_IPADDR~ environment
+      variable.
+    * Fixed bug in the wakeup scheduling for the ~transient_idle~ helper.
+    * Updated the introductory documentation to describe using
+      Thespian for distributed application configurations.
+    * Clarify the TLI file contents and usage in the Director documentation.
+    * Other documentation fixes and updates.
 
 ** 3.9
 
