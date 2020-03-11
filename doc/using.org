@@ -3282,7 +3282,7 @@ the initialization messages have been received.
 
 #+BEGIN_SRC python
 from thespian.initmsgs import initializing_messages
-# initializing_messages(initset, initdone=None, init_passthru=False)
+@initializing_messages(initset, initdone=None, init_passthru=False)
 #+END_SRC
 
 The required argument to the ~@initializing_messages~ decorator is a
