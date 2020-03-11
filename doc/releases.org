@@ -170,7 +170,7 @@ do not change the API.
 *** 3.10.0 <2020-03-10 Tue>
 
     * Added ability to dynamically update the Thespian Troupe worker
-      counts (see [[file:using.orghH-c796bc0d-a150-4fb9-8918-58f470813175][the Actor Troupe Support section]].
+      counts (see [[https://thespianpy.com/doc/using#hH-c796bc0d-a150-4fb9-8918-58f470813175][the Actor Troupe Support section]]).
     * Added ability to specify the local IP address to use for TCP and
       UDP actor bases via the ~THESPIAN_BASE_IPADDR~ environment
       variable.
