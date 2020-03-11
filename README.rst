@@ -40,19 +40,14 @@ See the `Thespian Release Notes`_.
 History
 -------
 
-As of 31 Mar 2017 (corresponding to version 3.7.2 of Thespian), the
-Thespian primary author (Kevin Quick) is no longer working at GoDaddy.
-This author is still committed to the development and maintenance of
-the Thespian library, and is doing so on a forked version at
-https://github.com/kquick/Thespian.  This fork will continue to use
-the above mailing list, the http://thespianpy.com domain, and publish
-via pypi under the "thespian" package name.
+Thespian was developed at GoDaddy as part of the support for GoDaddy's
+dedicate and virtual server product line.  At one point, Thespian was
+helping to manage 10,000 physical servers via a combination of
+on-server and remote actors.
 
-Any modifications and support of GoDaddy's original version of
-Thespian (https://github.com/godaddy/Thespian) will be done solely at
-GoDaddy's discretion; the original author will monitor those changes
-and merge them into the author's version at
-https://github.com/kquick/Thespian as appropriate.
-
-As of 10 Dec 2019, GoDaddy and Kevin Quick are working on transfer
-of ownership for the Thespian project to the latter.
+The primary Thespian author (Kevin Quick) is no longer working at
+GoDaddy, but through GoDaddy's willingness to open-source the Thespian
+code, this repository is still being maintained and developed.  With
+heartfelt thanks to the Vertigo team at GoDaddy, this Python Actor
+model has been developed and refined to provide a highly functional
+library for general use.
