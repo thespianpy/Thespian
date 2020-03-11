@@ -132,15 +132,15 @@ $
 #+END_EXAMPLE
 
 #+BEGIN_NOTES
-Note that any additional `ActorSystem().ask()` calls following the
-tell of `ActorExitRequest` above will return None because the target
+Note that any additional ~ActorSystem().ask()~ calls following the
+tell of ~ActorExitRequest~ above will return None because the target
 actor does not exist
 
-... except the first such `ask()` call, because an Actor is always
-called with its `ActorExitRequest` message before being killed; this
+... except the first such ~ask()~ call, because an Actor is always
+called with its ~ActorExitRequest~ message before being killed; this
 allows the Actor to perform shutdown activities, which is just sending
 another greeting back in the case of the Hello Actor, and the tell
-does not read a response, so the next `ask()` will return that queued
+does not read a response, so the next ~ask()~ will return that queued
 response.
 #+END_NOTES
 
@@ -229,10 +229,10 @@ independently... in some cases, independently can mean that each Actor
 is run on a different system!
 
 Thespian will automatically handle delivery of a message to an Actor
-running on a different system when the `self.send()`,
-`ActorSystem.tell()`, or `ActorSystem.ask()` functions are called.
+running on a different system when the ~self.send()~,
+~ActorSystem.tell()~, or ~ActorSystem.ask()~ functions are called.
 There is no change needed to the logic of each Actor, aside from a
-`staticmethod` that can indicate whether the Actor should run on the
+~staticmethod~ that can indicate whether the Actor should run on the
 current system or not.
 
 Thespian uses a "capabilities"-based methodology, along with the
@@ -243,7 +243,7 @@ Convention that this instance should join, along with a dictionary of
 capabilities for the current ActorSystem instance.
 
 The capabilities are simply a dictionary of values: the keys and
-values are completely up to the implementer.  When `createActor()` is
+values are completely up to the implementer.  When ~createActor()~ is
 called to create a new Actor, and if that Actor class has a special
 staticmethod, that staticmethod is called with the current
 ActorSystem's capabilities dictionary as an argument.  The
@@ -258,7 +258,7 @@ that destination system.
 
 The distribution of Actors across multiple host systems is thusly
 controlled simply by the capabilities that the Thespian instance on
-each host system is initialized with.  The `receiveMessage()` of each
+each host system is initialized with.  The ~receiveMessage()~ of each
 Actor is *unchanged* for supporting distributed systems, and the
 manner and configuration of the distribution is controlled
 independently of the functioning of each Actor.  It is even possible
