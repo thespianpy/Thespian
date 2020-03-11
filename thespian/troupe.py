@@ -68,6 +68,23 @@ import inspect
 DISMISS_EXTRA_PERIOD = timedelta(seconds=2)
 
 
+class UpdateTroupeSettings(object):
+    """A message that can be sent to a Troupe to cause the troupe manager
+       to update either or both of the max_count and idle_count number
+       of workers.  The Troupe manager will respond by sending a
+       message of this type back with the limit values in effect after
+       the update.
+
+    """
+    def __init__(self, max_count=None, idle_count=None):
+        if max_count:
+            assert max_count > 0
+        if idle_count:
+            assert idle_count > 0
+        self.max_count = max_count
+        self.idle_count = idle_count
+
+
 class _TroupeMemberReady(object):
     def __init__(self, work_ident):
         self.ident_done = work_ident
@@ -225,6 +242,13 @@ def troupe(max_count=10, idle_count=2):
                 for sendargs in self._troupe_mgr.is_ready(self, message, sender):
                     self.send(*sendargs)
                 return
+            elif isinstance(message, UpdateTroupeSettings):
+                if message.max_count:
+                    self._troupe_mgr.max_count = message.max_count
+                if message.idle_count:
+                    self._troupe_mgr.idle_count = message.idle_count
+                self.send(sender, UpdateTroupeSettings(max_count=self._troupe_mgr.max_count,
+                                                       idle_count=self._troupe_mgr.idle_count))
             elif isinstance(message, str):
                 if message == 'troupe:status?':
                     self.send(sender, self._troupe_mgr.status())

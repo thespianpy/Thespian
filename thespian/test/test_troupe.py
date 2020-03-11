@@ -1,8 +1,9 @@
 import time
 from datetime import datetime, timedelta
+from pytest import raises
 from thespian.test import *
 from thespian.actors import *
-from thespian.troupe import troupe
+from thespian.troupe import troupe, UpdateTroupeSettings
 
 max_listen_wait = timedelta(seconds=6.5)
 max_ask_wait    = timedelta(seconds=2.5)
@@ -92,7 +93,7 @@ def testHive(asys, run_unstable_tests):
                                            # with a little extra execution time
                                            milliseconds=1))
 
-def testSmallHive(asys, run_unstable_tests):
+def testSmallHive_AdjStr(asys, run_unstable_tests):
     print(len(testdata))
     worker = asys.createActor(Hive)
     r = asys.ask(worker, "troupe:status?")
@@ -131,6 +132,68 @@ def testSmallHive(asys, run_unstable_tests):
     assert "Set troupe max_count to 1" == r
     r = asys.ask(worker, "troupe:set_idle_count=1")
     assert "Set troupe idle_count to 1" == r
+    r = asys.ask(worker, "troupe:status?")
+    assert "Max=1," in r
+    assert "Idle=1," in r
+
+    # Invoke workers, and when each finishes the troupe leader will
+    # see that there are more workers than needed and dismiss the
+    # workers.  This should reduce down to the idle count, which is
+    # reset to 1 (default is 2).
+    for each in range(60):
+        r = asys.tell(worker, "buzz off")
+    time.sleep(2)
+
+    useActorForTest(asys, worker,
+                    # Back to 1 worker, so all work handled sequentially
+                    minimum_time=timedelta(seconds=6))
+
+def testSmallHive_AdjMsg(asys, run_unstable_tests):
+    print(len(testdata))
+    worker = asys.createActor(Hive)
+    r = asys.ask(worker, "troupe:status?")
+    assert "Max=10," in r
+
+    with raises(TypeError) as excinfo:
+        r = asys.ask(worker, UpdateTroupeSettings(max_count="nine"))
+
+    r = asys.ask(worker, UpdateTroupeSettings(max_count=1))
+    assert isinstance(r, UpdateTroupeSettings)
+    assert r.max_count == 1
+    assert r.idle_count == 2
+    r = asys.ask(worker, "troupe:status?")
+    assert "Max=1," in r
+    useActorForTest(asys, worker,
+                    # Only 1 worker, so all work handled sequentially
+                    minimum_time=timedelta(seconds=6),
+                    exit_when_done=False)
+
+    r = asys.ask(worker, UpdateTroupeSettings(max_count=2, idle_count=5))
+    assert isinstance(r, UpdateTroupeSettings)
+    assert r.max_count == 2
+    assert r.idle_count == 5
+    r = asys.ask(worker, "troupe:status?")
+    assert "Max=2," in r
+    useActorForTest(asys, worker,
+                    # Two workers, so the work should take half as long
+                    minimum_time=timedelta(seconds=3),
+                    exit_when_done=False)
+
+
+    # Can mix using strings and UpdateTroupeSettings
+    r = asys.ask(worker, "troupe:set_max_count=52")
+    assert "Set troupe max_count to 52" == r
+    r = asys.ask(worker, "troupe:status?")
+    assert "Max=52," in r
+    useActorForTest(asys, worker,
+                    # One worker for each work item, so the 1 second work for two passes is the dominator
+                    minimum_time=timedelta(seconds=1),
+                    exit_when_done=False)
+
+    r = asys.ask(worker, UpdateTroupeSettings(max_count=1, idle_count=1))
+    assert isinstance(r, UpdateTroupeSettings)
+    assert r.max_count == 1
+    assert r.idle_count == 1
     r = asys.ask(worker, "troupe:status?")
     assert "Max=1," in r
     assert "Idle=1," in r

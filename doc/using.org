@@ -3202,7 +3202,7 @@ change other than adding the decorator.
 The arguments to the troupe decorator are static and are applied at
 the time the Actor source is loaded.  However, it is possible to
 update the ~max_count~ and ~idle_count~ for the troupe dynamically at
-any time:
+any time using either text strings or the ~UpdateTroupeSettings~ object:
 
 #+BEGIN_SRC python
 r = ActorSystem().ask(troupeActor, "troupe:set_max_count=9")
@@ -3210,6 +3210,11 @@ assert r == "Set troupe max_count to 9"
 
 r = ActorSystem().ask(troupeActor, "troupe:set_idle_count=4")
 assert r == "Set troupe idle_count to 4"
+
+r = ActorSystem().ask(troupeActor, UpdateTroupeSettings(max_count=10, idle_count=4))
+assert isinstance(r, UpdateTroupeSettings)
+assert r.max_count == 10
+assert r.idle_count == 4
 
 #+END_SRC
 
