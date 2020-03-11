@@ -741,10 +741,10 @@ $ cat $THESPIAN_DIRECTOR_DIR/other.tli
 $
 #+END_EXAMPLE
 
-The contents of each TLI file is a Python dictionary, where the
-primary key is "Actors".  The value for that key is another
-dictionary, whose keys are the import path specifications of Actors
-within the loaded source.
+The contents of each TLI file is a Python dictionary that is loaded
+via a Python ~eval()~ statement, where the primary key is "Actors".
+The value for that key is another dictionary, whose keys are the
+import path specifications of Actors within the loaded source.
 
 The value for each of those dictionaries can specify 'OnLoad',
 'OnReactivate', and 'OnDeactivate' keys.  When a new loadable source
@@ -753,6 +753,25 @@ GlobalName (if specified), and sent the specified message (if any).
 The "Role" specifies an associated name for that Actor that can be
 retrieved with other Director commands.  Both the 'Message' and the
 'GlobalName' key are optional.
+
+The ~os~ module is in effect for the ~eval()~ of the TLI file, so it
+is possible to pass environment variable values in the messages:
+
+#+BEGIN_EXAMPLE
+$ cat $THESPIAN_DIRECTOR_DIR/other.tli
+{
+  'Actors':
+    { 'other.mainActor':
+      { 'OnLoad':
+        { 'Role': 'other',
+          'Message': 'Start %s' % os.getenv('OTHER_INFO', 'notspec'),
+        },
+      }
+    }
+  'AutoUnload': True,
+  'TLS_Keep_Limit': 3,
+}
+#+END_EXAMPLE
 
 If a previous source was loaded for this group when the new source was
 loaded, the previous source is sent the 'Message' specified in the
@@ -977,7 +996,7 @@ be used.
 
    By default, Thespian uses the pickle module to send messages from
    one actor to another.  This requires that the unpickling operation
-   in the target Actor's environment be able to reconsitute the
+   in the target Actor's environment be able to reconstitute the
    pickled object by name.  
 
    When using loadable sources, all names are prefixed with the hash
