@@ -1345,7 +1345,8 @@ class MyActor(Actor):
 #+begin_src python
 newAddress = self.createActor(self, actorClass,
                               targetActorRequirements=None,
-                              globalName=None)
+                              globalName=None,
+                              sourceHash=None)
 #+end_src
 
    This method is called by the Actor to create a new Actor
@@ -1369,6 +1370,11 @@ newAddress = self.createActor(self, actorClass,
    describe in [[#hH-2d5ef9c7-2132-45f9-b6eb-6f2729f5b232][Named Actors]], this name allows the Actor to be a
    system-wide singleton and to be uniquely identified and referenced
    in a manner additional to the ActorAddress of the actor.
+
+   The ~sourceHash~ argument, if specified, indicates a loaded source
+   in which the ~actorClass~ should be found when attempting to load
+   the ~actorClass~ source and start the Actor.  See
+   [[#hH-a565af1b-aabb-4336-a51d-7505c072c319][ActorSys.createActor()]] for more details.
 
    The context for the created Actor will be the context under which
    the Thespian system was started.  _This means that if the Thespian
