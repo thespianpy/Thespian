@@ -1,12 +1,11 @@
 import time
-import datetime
+from datetime import datetime, timedelta
 from thespian.test import *
 from thespian.actors import *
 from thespian.troupe import troupe
 
-
-max_listen_wait = datetime.timedelta(seconds=4)
-max_ask_wait    = datetime.timedelta(seconds=2.5)
+max_listen_wait = timedelta(seconds=6.5)
+max_ask_wait    = timedelta(seconds=2.5)
 
 
 class Bee(Actor):
@@ -39,15 +38,16 @@ class Colony(ActorTypeDispatcher):
 # some workers get multiple messages
 testdata = [(0.5, 'Fizz'), (1, 'Honey'),
             (0.25, 'Flower'), (0.75, 'Pollen'),
-           ] + ([(0.005, 'Orchid'), (0.005, 'Rose'),
-                 (0.005, 'Carnation'), (0.005, 'Lily'),
-                 (0.005, 'Daffodil'), (0.005, 'Begonia'),
-                 (0.005, 'Violet'), (0.005, 'Aster'),
-           ] * 3)
+           ] + ([(0.013, 'Orchid'), (0.010, 'Rose'),
+                 (0.013, 'Carnation'), (0.010, 'Lily'),
+                 (0.013, 'Daffodil'), (0.010, 'Begonia'),
+                 (0.010, 'Violet'), (0.010, 'Aster'),
+           ] * 6)
 
 
-def useActorForTest(asys, bee):
+def useActorForTest(asys, bee, minimum_time=None, exit_when_done=True):
     # Run multiple passes to allow workers to be reaped between passes
+    start_time = datetime.now()
     for X in range(2):
         print(X)
         for each in testdata:
@@ -60,18 +60,96 @@ def useActorForTest(asys, bee):
             remaining = [R for R in remaining
                          if not rsp.startswith(R[1])]
         assert not remaining
-    asys.tell(bee, ActorExitRequest())
+    if exit_when_done:
+        asys.tell(bee, ActorExitRequest())
+    elapsed = datetime.now() - start_time
+    if minimum_time:
+        assert elapsed > minimum_time
+    else:
+        print(str(elapsed))
 
 
-def testSingleBee(asys):
-    useActorForTest(asys, asys.createActor(Bee))
+def testSingleBee(asys, run_unstable_tests):
+    unstable_test(run_unstable_tests, asys, 'multiprocQueueBase')
+    useActorForTest(asys, asys.createActor(Bee),
+                    minimum_time=timedelta(seconds=6))
 
 
-def testHive(asys):
-    useActorForTest(asys, asys.createActor(Hive))
+def testHive(asys, run_unstable_tests):
+    print(len(testdata))
+
+    useActorForTest(asys, asys.createActor(Hive),
+                    # Default is 10 troupe workers, for 52 work
+                    # elements means approximately 5 each.  The worst
+                    # time of 1 second for each of 2 runs, plus 4 of
+                    # the other test points.  All of the smallest
+                    # should be completed quickly, and since the large
+                    # test points are only 4, that leaves 6 workers to
+                    # quickly complete the majority of the test
+                    # points, so the 1 second test for each run is the
+                    # dominator.
+                    minimum_time=timedelta(seconds=2,
+                                           # with a little extra execution time
+                                           milliseconds=1))
+
+def testSmallHive(asys, run_unstable_tests):
+    print(len(testdata))
+    worker = asys.createActor(Hive)
+    r = asys.ask(worker, "troupe:status?")
+    assert "Max=10," in r
+    r = asys.ask(worker, "troupe:set_max_count=nine")
+    assert "Error changing max_count" in r
+    r = asys.ask(worker, "troupe:set_max_count=1")
+    assert "Set troupe max_count to 1" == r
+    r = asys.ask(worker, "troupe:status?")
+    assert "Max=1," in r
+    useActorForTest(asys, worker,
+                    # Only 1 worker, so all work handled sequentially
+                    minimum_time=timedelta(seconds=6),
+                    exit_when_done=False)
+
+    r = asys.ask(worker, "troupe:set_max_count=2")
+    assert "Set troupe max_count to 2" == r
+    r = asys.ask(worker, "troupe:status?")
+    assert "Max=2," in r
+    useActorForTest(asys, worker,
+                    # Two workers, so the work should take half as long
+                    minimum_time=timedelta(seconds=3),
+                    exit_when_done=False)
 
 
-def testColony(asys):
+    r = asys.ask(worker, "troupe:set_max_count=52")
+    assert "Set troupe max_count to 52" == r
+    r = asys.ask(worker, "troupe:status?")
+    assert "Max=52," in r
+    useActorForTest(asys, worker,
+                    # One worker for each work item, so the 1 second work for two passes is the dominator
+                    minimum_time=timedelta(seconds=1),
+                    exit_when_done=False)
+
+    r = asys.ask(worker, "troupe:set_max_count=1")
+    assert "Set troupe max_count to 1" == r
+    r = asys.ask(worker, "troupe:set_idle_count=1")
+    assert "Set troupe idle_count to 1" == r
+    r = asys.ask(worker, "troupe:status?")
+    assert "Max=1," in r
+    assert "Idle=1," in r
+
+    # Invoke workers, and when each finishes the troupe leader will
+    # see that there are more workers than needed and dismiss the
+    # workers.  This should reduce down to the idle count, which is
+    # reset to 1 (default is 2).
+    for each in range(60):
+        r = asys.tell(worker, "buzz off")
+    time.sleep(2)
+
+    useActorForTest(asys, worker,
+                    # Back to 1 worker, so all work handled sequentially
+                    minimum_time=timedelta(seconds=6))
+
+
+def testColony(asys, run_unstable_tests):
+    unstable_test(run_unstable_tests, asys, 'multiprocQueueBase')
     useActorForTest(asys, asys.createActor(Colony))
 
 # ------------------------------------------------------------

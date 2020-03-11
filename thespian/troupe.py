@@ -214,6 +214,8 @@ def troupe(max_count=10, idle_count=2):
                     self._work_ident = -1
                 return r
             # The following is only run for the primary/manager of the troupe
+            if isinstance(message, ActorExitRequest):
+                return
             if not hasattr(self, '_troupe_mgr'):
                 self._troupe_mgr = _TroupeManager(
                     self.__class__, self.myAddress, idle_count, max_count)
@@ -223,9 +225,34 @@ def troupe(max_count=10, idle_count=2):
                 for sendargs in self._troupe_mgr.is_ready(self, message, sender):
                     self.send(*sendargs)
                 return
-            elif message == 'troupe:status?':
-                self.send(sender, self._troupe_mgr.status())
-                return
+            elif isinstance(message, str):
+                if message == 'troupe:status?':
+                    self.send(sender, self._troupe_mgr.status())
+                    return
+                elif message.startswith('troupe:set_max_count='):
+                    try:
+                        new_max_count = int(message.split('=')[1])
+                    except ValueError as ex:
+                        self.send(sender, 'Error changing max_count'
+                                  ' for troupe based on message "%s": %s' %
+                                  (message, str(ex)))
+                        return
+                    self._troupe_mgr.max_count = new_max_count
+                    self.send(sender,
+                              'Set troupe max_count to %d' % new_max_count)
+                    return
+                elif message.startswith('troupe:set_idle_count='):
+                    try:
+                        new_idle_count = int(message.split('=')[1])
+                    except ValueError as ex:
+                        self.send(sender, 'Error changing idle_count'
+                                  ' for troupe based on message "%s": %s' %
+                                  (message, str(ex)))
+                        return
+                    self._troupe_mgr.idle_count = new_idle_count
+                    self.send(sender,
+                              'Set troupe idle_count to %d' % new_idle_count)
+                    return
             elif isinstance(message, WakeupMessage):
                 self._troupe_mgr.dismiss_extras(self)
                 return

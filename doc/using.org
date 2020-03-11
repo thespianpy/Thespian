@@ -3199,15 +3199,35 @@ that can perform all of the necessary work utilizing only the message
 sent to it; the actor can be turned into a troupe member with no
 change other than adding the decorator.
 
-However, an actor which must interact with other actors to process the
-work requires additional modifications to allow the troupe manager to
-know when the actor has finished performing the work.  A troupe member
-that has not fully performed the work and is exchanging messages with
-other actors to complete the work (or awaiting [[#hH-9cc1acd4-7f35-44ac-94fc-0326dc87a7a5][WakeupMessages]]) must
-set the ~troupe_work_in_progress~ attribute on self to ~True~.  Once the
-work is completed by a subsequent message delivery, it should set this
-attribute to ~False~, which will cause the troupe manager to be notified
-that the actor is ready for more work.
+The arguments to the troupe decorator are static and are applied at
+the time the Actor source is loaded.  However, it is possible to
+update the ~max_count~ and ~idle_count~ for the troupe dynamically at
+any time:
+
+#+BEGIN_SRC python
+r = ActorSystem().ask(troupeActor, "troupe:set_max_count=9")
+assert r == "Set troupe max_count to 9"
+
+r = ActorSystem().ask(troupeActor, "troupe:set_idle_count=4")
+assert r == "Set troupe idle_count to 4"
+
+#+END_SRC
+
+Note that the adjustments of the troupe max and idle counts do not
+necessarily immediately reduce the number of running troupe workers if
+the counts are adjusted lower; troupe workers are reduced after the
+worker has successfully completed work.  Increasing either of these
+counts should make more workers available immediately though.
+
+An actor which must interact with other actors to process the work
+requires additional modifications to allow the troupe manager to know
+when the actor has finished performing the work.  A troupe member that
+has not fully performed the work and is exchanging messages with other
+actors to complete the work (or awaiting [[#hH-9cc1acd4-7f35-44ac-94fc-0326dc87a7a5][WakeupMessages]]) must set the
+~troupe_work_in_progress~ attribute on self to ~True~.  Once the work
+is completed by a subsequent message delivery, it should set this
+attribute to ~False~, which will cause the troupe manager to be
+notified that the actor is ready for more work.
 
    * Failure to set the ~troupe_work_in_progress~ attribute to ~True~
      on a multi-step actor will result in either (a) the actor
