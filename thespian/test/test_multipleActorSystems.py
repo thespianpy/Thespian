@@ -238,16 +238,16 @@ class TestFuncSolitaryActorSystem(object):
         # Actor can never be created... check proper exception is thrown
         with raises(NoCompatibleSystemForActor) as excinfo:
             asys.createActor(Kilmer)
-        assert 'No compatible ActorSystem' in str(excinfo)
-        assert 'Kilmer' in str(excinfo)
+        assert 'No compatible ActorSystem' in str(excinfo.value)
+        assert 'Kilmer' in str(excinfo.value)
 
     def test04_NoCommunicationToInvalidConstraintActor(self, asys):
         actor_system_unsupported(asys, 'simpleSystemBase')
         # Actor cannot be created in primary ActorSystem; no other ActorSystem for Actor
         with raises(NoCompatibleSystemForActor) as excinfo:
             asys.createActor(Stewart)
-        assert 'Stewart' in str(excinfo)
-        assert 'No compatible ActorSystem' in str(excinfo)
+        assert 'Stewart' in str(excinfo.value)
+        assert 'No compatible ActorSystem' in str(excinfo.value)
 
 
 class PreRegActor(ActorTypeDispatcher):
@@ -412,8 +412,8 @@ class TestFuncMultiProcessSystem(object):
         actor_system_unsupported(asys, 'simpleSystemBase', 'multiprocQueueBase')
         with raises(NoCompatibleSystemForActor) as excinfo:
             asys.createActor(Kilmer)
-        assert 'No compatible ActorSystem' in str(excinfo)
-        assert 'Kilmer' in str(excinfo)
+        assert 'No compatible ActorSystem' in str(excinfo.value)
+        assert 'Kilmer' in str(excinfo.value)
 
     def test12_CreateLocalChildActor(self, testsystems):
         asys, asys2 = testsystems
