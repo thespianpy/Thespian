@@ -425,8 +425,9 @@ $ pip install thespian
    :CUSTOM_ID: hH-4c48cbe8-d23b-45e8-a29f-991776c234a2
    :END:
 
-  * [[https://engineering.godaddy.com/why-godaddy-built-an-actor-system-library][GoDaddy blog article introducing Thespian, 2015 Aug]]
+  * [[https://sabaini.at/peterlog/posts/2020/Feb/16/thespian-a-python-actor-system][Thespian overview article by Peter Sabaini, 2020 Feb]]
   * [[file:blog/async_blog_2016Feb/async_2016Feb.org][Article comparing Actors to Python asyncio/await, 2016 Feb]]
+  * [[https://engineering.godaddy.com/why-godaddy-built-an-actor-system-library][GoDaddy blog article introducing Thespian, 2015 Aug]]
 
   If you have a blog, article, or success story you would like
   published here, please contact one of the project administrators.
