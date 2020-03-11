@@ -3831,6 +3831,19 @@ The multiprocTCPBase uses the following [[#hH-a17e6c70-5592-4d06-b818-bd25350c4c
                      two, but closer to the performance of the "spawn"
                      method.
 
+  At startup, the multiprocTCPBase will attempt to determine the local
+  IP address to use for registering Actor Addresses:
+   * If a Convention Leader is specified, then it will be the address
+     on which it can communicate with that Convention Leader.
+   * If no Convention Leader is specified, it attempts to identify a
+     public address (i.e. one that can communicate with IP address
+     8.8.8.8).
+  In a situation where neither of the above is appropriate or yields a
+  useable address, the THESPIAN_BASE_IPADDR environment variable can
+  be set to the IP address to use before starting Thespian; setting
+  this environment variable overrides any address probing above, and
+  setting it to a network address that is not accessible from the
+  local machine will result in the inability to run any Actors.
 
 ** multiprocUDPBase
    :PROPERTIES:
@@ -3912,6 +3925,10 @@ The multiprocUDPBase uses the following [[#hH-a17e6c70-5592-4d06-b818-bd25350c4c
                      two, but closer to the performance of the "spawn"
                      method.
 
+
+  The multiprocUDPBase system base selects a local IP address to use
+  for Actor Addresses in the same manner as described for the
+  multiprocTCPBase above.
 
 * Deploying Actor-based Projects
   :PROPERTIES:

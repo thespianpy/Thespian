@@ -1,6 +1,6 @@
 "Base definitions for transports based on IP networking."
 
-
+import os
 import socket
 import logging
 from thespian.actors import ActorAddress
@@ -44,6 +44,9 @@ def getLocalAddresses():
 class ThisSystem(object):
     def __init__(self):
         self._myAddresses = getLocalAddresses()
+        userspec = os.getenv('THESPIAN_BASE_IPADDR', None)
+        if userspec:
+            self.add_local_addr(userspec)
 
     def cmpIP2Tuple(self, t1, t2):
         """Function to compare two IP 2-tuple addresses.  Direct equality is
@@ -111,6 +114,9 @@ class IPActorAddress(object):
             baseaddr = None
         if baseaddr == '':
             baseaddr = None if external else '127.0.0.1'
+        base2 = os.getenv('THESPIAN_BASE_IPADDR', None)
+        if base2:
+            baseaddr = base2
         if external and not baseaddr:
             # Trick to get the "public" IP address... doesn't work so
             # well if there are multiple routes, or if the public site
