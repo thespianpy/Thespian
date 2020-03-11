@@ -3150,6 +3150,12 @@ without using any of the elements here, but these elements represent
 common patterns or helpers that can be used when developing a Thespian
 actor-based application.
 
+The helpers describe here are all implemented via the Thespian API and
+do not make use of the Thespian implementation internals.  If the
+helpers here do not provide the specific functionality needed for a
+particular use case, please feel free to consider them as examples for
+creating your own helpers.
+
 ** Actor Troupe Support
    :PROPERTIES:
    :CUSTOM_ID: hH-c796bc0d-a150-4fb9-8918-58f470813175
