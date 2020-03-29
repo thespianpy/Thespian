@@ -47,7 +47,7 @@ on-server and remote actors.
 
 The primary Thespian author (Kevin Quick) is no longer working at
 GoDaddy, but through GoDaddy's willingness to open-source the Thespian
-code, this repository is still being maintained and developed.  With
-heartfelt thanks to the Vertigo team at GoDaddy, this Python Actor
-model has been developed and refined to provide a highly functional
-library for general use.
+code and transfer the rights to this author, this repository is still
+being maintained and developed.  With heartfelt thanks to the Vertigo
+team at GoDaddy, this Python Actor model has been developed and
+refined to provide a highly functional library for general use.
