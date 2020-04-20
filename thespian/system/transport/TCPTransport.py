@@ -1142,14 +1142,9 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
             try:
                 rrecv, rsend, rerr = select.select(wrecv, wsend,
                                                    set(wsend+wrecv), delay)
-            except ValueError as ex:
-                thesplog('ValueError on select(#%d: %s, #%d: %s, #%d: %s, %s)',
-                         len(wrecv), wrecv, len(wsend), wsend,
-                         len(set(wsend + wrecv)), set(wsend + wrecv),
-                         delay, level=logging.ERROR)
-                raise
-            except (OSError, select.error) as ex:
-                errnum = getattr(ex, 'errno', ex.args[0])
+            except (OSError, select.error, ValueError) as ex:
+                errnum = errno.EBADF if isinstance(ex, ValueError) \
+                    else getattr(ex, 'errno', ex.args[0])
                 if err_select_retry(errnum):
                     # probably a change in descriptors
                     thesplog('select retry on %s', ex, level=logging.DEBUG)
@@ -1167,25 +1162,25 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
                         for each in self._watches:
                             try:
                                 _ = select.select([each], [], [], 0)
-                            except:
+                            except Exception:
                                 bad.append(each)
                         if not bad:
                             thesplog('bad internal file descriptor!')
                             try:
                                 _ = select.select([self.socket.fileno()], [], [], 0)
-                            except:
+                            except Exception:
                                 thesplog('listen %s is bad', self.socket.fileno)
                                 rerr.append(self.socket.fileno)
                             for each in wrecv:
                                 try:
                                     _ = select.select([each], [], [], 0)
-                                except:
+                                except Exception:
                                     thesplog('wrecv %s is bad', each)
                                     rerr.append(each)
                             for each in wsend:
                                 try:
                                     select.select([each], [], [], 0)
-                                except:
+                                except Exception:
                                     thesplog('wsend %s is bad', each)
                                     rerr.append(each)
                         else:
