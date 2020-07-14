@@ -10,7 +10,7 @@
 #+LATEX_HEADER: \product{Thespian}
 #+LATEX_HEADER: \component{Python Actor System}
 #+LATEX_HEADER: \doctype{Release Notes}
-#+LATEX_HEADER: \docrev{3.10.0}{2020 Mar 10}
+#+LATEX_HEADER: \docrev{3.10.1}{2020 Jul 14}
 #+LATEX_HEADER: \docid{TheDoc-06}
 #+OPTIONS: ^:nil num:nil
 
@@ -22,10 +22,12 @@ do not change the API.
 * Summary
 ** 2020
 
- | Release |       Date | Significant Bugfixes   | Significant Features                             |
- |---------+------------+------------------------+--------------------------------------------------|
- |  3.10.0 | 2020-03-10 | transient_idle wakeups | Adjustable Troupe limits, ~THESPIAN_BASE_IPADDR~ |
- |---------+------------+------------------------+--------------------------------------------------|
+ | Release |       Date | Significant Bugfixes             | Significant Features                             |
+ |---------+------------+----------------------------------+--------------------------------------------------|
+ |  3.10.1 | 2020-07-14 | Fix [[https://github.com/kquick/Thespian/issues/63][Issue #63]]: invalid socket fd | RunCommand buffer limits removed                 |
+ |         |            | Unset ~THESPLOG_THRESHOLD~ fix   |                                                  |
+ |  3.10.0 | 2020-03-10 | transient_idle wakeups           | Adjustable Troupe limits, ~THESPIAN_BASE_IPADDR~ |
+ |---------+------------+----------------------------------+--------------------------------------------------|
 
 ** 2019
 
@@ -166,6 +168,15 @@ do not change the API.
 * 3.x
 
 ** 3.10
+
+*** 3.10.1 <2020-07-14 Tue>
+
+    * Fixed [[https://github.com/kquick/Thespian/issues/63][Issue #63]]: properly handle a socket fd that is no longer valid.
+    * Fixed setting logging threshold level when ~THESPLOG_THRESHOLD~ is not set.
+    * Removed incoming buffer limits for ~RunCommand~, improving
+      performance for running commands with significant amounts of
+      output.
+    * Misc typing comments and initial mypy.ini file.
 
 *** 3.10.0 <2020-03-10 Tue>
 
