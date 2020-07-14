@@ -101,7 +101,7 @@ from datetime import timedelta
 try:
     import cPickle as pickle
 except Exception:
-    import pickle
+    import pickle   # type: ignore
 import errno
 from contextlib import closing
 

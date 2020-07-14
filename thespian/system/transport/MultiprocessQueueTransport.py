@@ -60,12 +60,12 @@ import threading
 try:
     import Queue as Q  # Python 2
 except ImportError:
-    import queue as Q  # Python 3
+    import queue as Q  # type: ignore   # Python 3
 from datetime import datetime
 try:
     import cPickle as pickle
 except Exception:
-    import pickle
+    import pickle   # type: ignore
 
 
 MAX_ADMIN_QUEUESIZE=40  # depth of Admin queue

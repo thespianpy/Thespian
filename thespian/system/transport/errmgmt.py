@@ -49,8 +49,8 @@ def err_too_many_open_sockets(errex):
 
 try:
     # Access these to see if the exist
-    errno.WSAEINVAL
-    errno.WSAEWOULDBLOCK
+    errno.WSAEINVAL           # type: ignore
+    errno.WSAEWOULDBLOCK      # type: ignore
 
     # They exist, so use them
     def err_inprogress(err):

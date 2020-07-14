@@ -110,7 +110,7 @@ class ActorAddress(object):
 
     def __ne__(self, o): return not self.__eq__(o)
 
-    __hash__ = None
+    __hash__ = None     # type: ignore
 
 
 class Actor(object):

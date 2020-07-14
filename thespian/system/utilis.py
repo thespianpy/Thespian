@@ -180,7 +180,7 @@ def actualActorClass(actorClass, sourceHashLoader=None):
 import functools
 
 try:
-    foldl = reduce
+    foldl = reduce    # type: ignore
 except NameError:
     foldl = functools.reduce
 

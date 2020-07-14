@@ -60,7 +60,7 @@ try:
     from zipfile import BadZipFile
 except ImportError:
     from zipfile import BadZipfile
-    BadZipFile = BadZipfile
+    BadZipFile = BadZipfile    # type: ignore
 import posixpath as ospath # because zip only uses posix notation
 import logging
 import ast
@@ -107,7 +107,7 @@ else:
 if sys.version_info >= (3,5):
     import importlib
     newmodule = lambda loader, name: (
-        importlib.util.module_from_spec(
+        importlib.util.module_from_spec(    # type: ignore
             importlib.machinery.ModuleSpec(name, loader)))
 else:
     import imp

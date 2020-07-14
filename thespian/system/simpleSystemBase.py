@@ -47,7 +47,7 @@ import threading
 try:
     import queue as Queue
 except ImportError:
-    import Queue
+    import Queue    # type: ignore
 import weakref
 
 

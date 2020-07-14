@@ -26,7 +26,7 @@ import types
 # import six
 # Minimize dependencies:
 class six:
-    string_types = basestring  # this module only used in Python2.
+    string_types = basestring  # type: ignore  # this module only used in Python2.
 
 IDENTIFIER = re.compile('^[a-z_][a-z0-9_]*$', re.I)
 
@@ -40,7 +40,7 @@ def valid_ident(s):
 # This function is defined in logging only in recent versions of Python
 #
 try:
-    from logging import _checkLevel
+    from logging import _checkLevel   # type: ignore
 except ImportError:
     def _checkLevel(level):
         if isinstance(level, int):

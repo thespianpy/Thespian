@@ -1,10 +1,10 @@
 try:
     import cPickle as pickle
 except ImportError:
-    import pickle
+    import pickle       # type: ignore
 
 try:
-    rangefun = xrange
+    rangefun = xrange   # type: ignore
 except NameError:
     rangefun = range
 
