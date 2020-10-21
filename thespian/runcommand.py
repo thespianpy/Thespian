@@ -443,11 +443,11 @@ class RunCommand(ActorTypeDispatcher):
         updates_to = self.pending_commands[-1].output_updates
         if isinstance(updates_to, ActorAddress):
             self.send(updates_to, (CommandOutput
-                                   if outmark is 'normal' else
+                                   if outmark == 'normal' else
                                    CommandError)(command, new_output))
-        if outmark is 'normal':
+        if outmark == 'normal':
             self._log_normal_output(new_output)
-        elif outmark is 'error':
+        elif outmark == 'error':
             self._log_error_output(new_output)
 
     def _log_normal_output(self, new_output):
