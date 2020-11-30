@@ -164,7 +164,7 @@ class TestFuncThreadedExternal(object):
             print('#',idx,each,each.name)
         [T.start() for T in tl]
         d = 0
-        for t in range(10):
+        for t in range(count):
             if asys.ask(transfer, 'query', ASK_WAIT) is not None:
                 d = d + 1
                 if d == len(tl):
