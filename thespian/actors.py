@@ -10,6 +10,7 @@ Thespian Generation 3.10
 ThespianGeneration = (3, 10)
 
 from contextlib import contextmanager
+import logging
 
 
 class ActorSystemException(Exception):
@@ -232,7 +233,8 @@ class Actor(object):
                                                       startHandling)
 
     def logger(self, name=None):
-        return self._myRef.logger(name)
+        return logging.LoggerAdapter(logging.getLogger(name),
+                                     {'actorAddress': self.myAddress})
 
     def updateCapability(self, capabilityName, capabilityValue=None):
         """Updates the specified capability for the current Actor System

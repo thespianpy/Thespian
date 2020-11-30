@@ -123,10 +123,6 @@ class ActorRef:
     def notifyOnSystemRegistrationChanges(self, address, enable):
         pass # ignored: simple systems don't have registration
 
-    def logger(self, name=None):
-        return logging.LoggerAdapter(logging.getLogger(name),
-                                     {'actorAddress': self._addr})
-
 
 # ----------------------------------------------------------------------
 
