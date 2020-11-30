@@ -27,12 +27,13 @@ class ActorManager(systemCommonBase):
                  transport, sourceHash, sourceToLoad,
                  parentAddr, adminAddr,
                  childRequirements, currentSystemCapabilities,
-                 concurrency_context):
+                 concurrency_context, logdefs):
         super(ActorManager, self).__init__(adminAddr, transport)
         self.init_replicator(transport, concurrency_context)
         self._parentAddr = parentAddr
         self._sourceHash = sourceHash
         self._sources    = { sourceHash: sourceToLoad }
+        self.logdefs     = logdefs
         # Cache the current system capabilities to use for createActor
         # attempts.
         self.capabilities = currentSystemCapabilities

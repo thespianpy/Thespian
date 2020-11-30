@@ -338,7 +338,8 @@ class MultiProcReplicator(object):
                                               childRequirements,
                                               self.capabilities,
                                               fileNumsToClose,
-                                              self.mpcontext),
+                                              self.mpcontext,
+                                              self.logdefs),
                                         name='Actor_%s__%s'%(getattr(childClass,
                                                                      '__name__',
                                                                      childClass),
@@ -388,7 +389,7 @@ class MultiProcReplicator(object):
         if logproc and not self._checkChildLiveness(logproc):
             # Logger has died; need to start another
             if not hasattr(self, '_exiting'):
-                _startLogger(self.transport.__class__, self.transport, self, self.capabilities, self.logdefs,
+                _startLogger(self.transport.__class__, self.transport, self, self.capabilities, self.logDefs,
                              self.mpcontext)
         # Signal handler for SIGCHLD; figure out which child and synthesize a ChildActorExited to handle it
         self._child_procs, dead = partition(self._checkChildLiveness,  getattr(self, '_child_procs', []))
@@ -515,7 +516,7 @@ def startChild(childClass, globalName, endpoint, transportClass,
                sourceHash, sourceToLoad,
                parentAddr, adminAddr, notifyAddr, loggerAddr,
                childRequirements, currentSystemCapabilities,
-               fileNumsToClose, concurrency_context):
+               fileNumsToClose, concurrency_context, logDefs):
 
     closeFileNums(fileNumsToClose)
 
@@ -543,7 +544,24 @@ def startChild(childClass, globalName, endpoint, transportClass,
     # logging.shutdown() because (a) that does not do enough to reset,
     # and (b) it shuts down handlers, but we want to leave the parent's
     # handlers alone.
-    logging.root = ThespianLogForwarder(loggerAddr, transport)
+    if logDefs:
+        levelIn = lambda d: d.get('level', 0)
+        minLevelIn = lambda l: min(list(l)) if list(l) else 0
+        lowestLevel = minLevelIn(
+            filter(None,
+                   ([ minLevelIn([levelIn(logDefs[key][subkey])
+                                  for subkey in logDefs[key]
+                                  # if subkey in [ 'loggers', 'handlers'
+                                  if isinstance(logDefs[key][subkey], dict)
+                   ])
+                      if key in ['loggers', 'handlers'] and isinstance(logDefs[key], dict)
+                      else (levelIn(logDefs[key]) if key == 'root'
+                            else (logDefs[key] if key == 'level'
+                                  else None))
+                      for key in logDefs ])))
+    else:
+        lowestLevel = 0
+    logging.root = ThespianLogForwarder(loggerAddr, transport, logLevel=lowestLevel)
     logging.Logger.root = logging.root
     logging.Logger.manager = logging.Manager(logging.Logger.root)
 
@@ -553,7 +571,7 @@ def startChild(childClass, globalName, endpoint, transportClass,
                           sourceHash, sourceToLoad,
                           parentAddr, adminAddr,
                           childRequirements, currentSystemCapabilities,
-                          concurrency_context)
+                          concurrency_context, logDefs)
     am.asLogger = loggerAddr
     am.transport.scheduleTransmit(
         None,

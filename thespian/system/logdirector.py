@@ -112,8 +112,8 @@ def startupASLogger(addrOfStarter, logEndpoint, logDefs,
 logTransport = None
 
 class ThespianLogForwardHandler(logging.Handler):
-    def __init__(self, toAddr, transport):
-        logging.Handler.__init__(self, 1)  # forward EVERYTHING
+    def __init__(self, toAddr, transport, logLevel=0):
+        logging.Handler.__init__(self, logLevel)
         self._name = 'ThespianLogForwardHandler'
         self._fwdAddr = toAddr
         if not self._fwdAddr:
@@ -123,6 +123,26 @@ class ThespianLogForwardHandler(logging.Handler):
     def handle(self, record):
         # Can't pickle traceback objects, so pre-format them.  Sorry,
         # more logging internals here.
+
+        # Originally *all* messages were forwarded from actors to the
+        # logging actor, and the filtering/level management was
+        # performed by the latter.
+        #
+        # However, some packages
+        # (e.g. sqlalchemy) generate large amounts of debug logging
+        # with the expectation that those are normally filtered and
+        # hidden.  This could cause excessive amounts of transmits
+        # from an actor to the logger, to the point that the TxOnly
+        # threshold was exceeded and actor responsiveness was
+        # degraded.
+        #
+        # To avoid that degradation, the level set for this handler is
+        # used to filter messages prior to sending them to the logger.
+        # The downside is that the logging level cannot be globally
+        # changed, although it can be adjusted on a per-actor basis.
+        if record.levelno < self.level:
+            return
+
         global logTransport
         if record.exc_info:
             if not record.exc_text:
@@ -152,11 +172,11 @@ class ThespianLogForwardHandler(logging.Handler):
 
 
 class ThespianLogForwarder(logging.Logger):
-    def __init__(self, toAddr, transport):
+    def __init__(self, toAddr, transport, logLevel=0):
         # N.B.  In Python2.6, Logger and Handler don't derive from
         # object, so super() cannot be used here.
-        logging.Logger.__init__(self, 'root', 1)  # forward EVERYTHING
-        logging.Logger.addHandler(self, ThespianLogForwardHandler(toAddr, transport))
+        logging.Logger.__init__(self, 'root', logLevel)
+        logging.Logger.addHandler(self, ThespianLogForwardHandler(toAddr, transport, logLevel=logLevel))
     def addHandler(self, hdlr):
         raise NotImplementedError('Cannot add logging handlers for Thespian Actors')
     def removeHandler(self, hdlr):
