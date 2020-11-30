@@ -26,6 +26,7 @@ do not change the API.
  |---------+------------+---------------------------------------+--------------------------------------------------|
  |  3.10.2 | 2020-11-29 | Fix [[https://github.com/kquick/Thespian/issues/69][Issue #69]]: Actor.logger()         |                                                  |
  |         |            | Initialize Actor log forwarding level |                                                  |
+ |         |            | Fix for Python 3.8 "is" literals      |                                                  |
  |  3.10.1 | 2020-07-14 | Fix [[https://github.com/kquick/Thespian/issues/63][Issue #63]]: invalid socket fd      | RunCommand buffer limits removed                 |
  |         |            | Unset ~THESPLOG_THRESHOLD~ fix        |                                                  |
  |  3.10.0 | 2020-03-10 | transient_idle wakeups                | Adjustable Troupe limits, ~THESPIAN_BASE_IPADDR~ |
@@ -181,6 +182,8 @@ do not change the API.
       in the supplied ~logDefs~ at ActorSystem initialization time.
       This helps prevent transmit overruns when performing significant
       amounts of ignored logging (e.g. DEBUG level).
+    * Fix to use "==" instead of "is" for comparing literals (thanks
+      to Peter Sabaini).
 
 *** 3.10.1 <2020-07-14 Tue>
 
