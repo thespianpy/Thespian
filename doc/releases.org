@@ -10,7 +10,7 @@
 #+LATEX_HEADER: \product{Thespian}
 #+LATEX_HEADER: \component{Python Actor System}
 #+LATEX_HEADER: \doctype{Release Notes}
-#+LATEX_HEADER: \docrev{3.10.1}{2020 Jul 14}
+#+LATEX_HEADER: \docrev{3.10.2}{2020 Nov 29}
 #+LATEX_HEADER: \docid{TheDoc-06}
 #+OPTIONS: ^:nil num:nil
 
@@ -22,12 +22,14 @@ do not change the API.
 * Summary
 ** 2020
 
- | Release |       Date | Significant Bugfixes             | Significant Features                             |
- |---------+------------+----------------------------------+--------------------------------------------------|
- |  3.10.1 | 2020-07-14 | Fix [[https://github.com/kquick/Thespian/issues/63][Issue #63]]: invalid socket fd | RunCommand buffer limits removed                 |
- |         |            | Unset ~THESPLOG_THRESHOLD~ fix   |                                                  |
- |  3.10.0 | 2020-03-10 | transient_idle wakeups           | Adjustable Troupe limits, ~THESPIAN_BASE_IPADDR~ |
- |---------+------------+----------------------------------+--------------------------------------------------|
+ | Release |       Date | Significant Bugfixes                  | Significant Features                             |
+ |---------+------------+---------------------------------------+--------------------------------------------------|
+ |  3.10.2 | 2020-11-29 | Fix [[https://github.com/kquick/Thespian/issues/69][Issue #69]]: Actor.logger()         |                                                  |
+ |         |            | Initialize Actor log forwarding level |                                                  |
+ |  3.10.1 | 2020-07-14 | Fix [[https://github.com/kquick/Thespian/issues/63][Issue #63]]: invalid socket fd      | RunCommand buffer limits removed                 |
+ |         |            | Unset ~THESPLOG_THRESHOLD~ fix        |                                                  |
+ |  3.10.0 | 2020-03-10 | transient_idle wakeups                | Adjustable Troupe limits, ~THESPIAN_BASE_IPADDR~ |
+ |---------+------------+---------------------------------------+--------------------------------------------------|
 
 ** 2019
 
@@ -168,6 +170,17 @@ do not change the API.
 * 3.x
 
 ** 3.10
+
+*** 3.10.2 <2020-11-29 Sun>
+
+    * Fixed [[https://github.com/kquick/Thespian/issues/69][Issue #69]]: ensure the Actor self.logger() works for all
+      system bases.  Previously it only worked properly for the
+      simpleSystemBase.
+    * Updated Actor initialization to only forward logging messages to
+      the Logger Actor if the message level is above the minimum level
+      in the supplied ~logDefs~ at ActorSystem initialization time.
+      This helps prevent transmit overruns when performing significant
+      amounts of ignored logging (e.g. DEBUG level).
 
 *** 3.10.1 <2020-07-14 Tue>
 

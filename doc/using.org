@@ -10,7 +10,7 @@
 #+LATEX_HEADER: \product{Thespian}
 #+LATEX_HEADER: \component{Python Actor System}
 #+LATEX_HEADER: \doctype{Usage}
-#+LATEX_HEADER: \docrev{2.21}{2020 Mar 10}
+#+LATEX_HEADER: \docrev{2.22}{2020 Nov 29}
 #+LATEX_HEADER: \docid{TheDoc-02}
 #+OPTIONS: ^:nil auto-id:t
 
