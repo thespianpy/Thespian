@@ -547,7 +547,7 @@ def startChild(childClass, globalName, endpoint, transportClass,
     if logDefs:
         levelIn = lambda d: d.get('level', 0)
         minLevelIn = lambda l: min(list(l)) if list(l) else 0
-        lowestLevel = minLevelIn(
+        levels = list(
             filter(None,
                    ([ minLevelIn([levelIn(logDefs[key][subkey])
                                   for subkey in logDefs[key]
@@ -559,6 +559,7 @@ def startChild(childClass, globalName, endpoint, transportClass,
                             else (logDefs[key] if key == 'level'
                                   else None))
                       for key in logDefs ])))
+        lowestLevel = minLevelIn(levels)
     else:
         lowestLevel = 0
     logging.root = ThespianLogForwarder(loggerAddr, transport, logLevel=lowestLevel)
