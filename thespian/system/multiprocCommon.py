@@ -2,24 +2,23 @@
 python 'multiprocess' module.  Intended as a base class, not for
 direct usage."""
 
-
-import logging
-from thespian.actors import *
-from thespian.system.systemBase import systemBase
-from thespian.system.systemCommon import actorStartupFailed
-from thespian.system.utilis import thesplog, checkActorCapabilities, partition
-from thespian.system.transport import *
-from thespian.system.logdirector import *
-from thespian.system.utilis import setProcName, StatsManager
-from thespian.system.addressManager import ActorLocalAddress, CannotPickleAddress
-from thespian.system.messages.multiproc import *
-from thespian.system.sourceLoader import loadModuleFromHashSource
-from functools import partial
 import multiprocessing
 import signal
-from datetime import timedelta
 import sys
+from datetime import timedelta
+from functools import partial
+from typing import Any, Dict
 
+from thespian.actors import *
+from thespian.system.addressManager import ActorLocalAddress, CannotPickleAddress
+from thespian.system.logdirector import *
+from thespian.system.messages.multiproc import *
+from thespian.system.sourceLoader import loadModuleFromHashSource
+from thespian.system.systemBase import systemBase
+from thespian.system.systemCommon import actorStartupFailed
+from thespian.system.transport import *
+from thespian.system.utilis import checkActorCapabilities, partition
+from thespian.system.utilis import setProcName
 
 MAX_ADMIN_STARTUP_DELAY = timedelta(seconds=5)
 
@@ -511,6 +510,28 @@ def shutdown_signal_detector(name, addr, am):
         am.transport.interrupt_wait(signal_shutdown=True)
     return shutdown_signal_detected
 
+def get_min_log_level(logDefs:Dict[str, Any])->int:
+    """
+    Get the minimum logging level from a logging configuration definition. Tested here using example.
+    >>> import logging
+    >>> logDefs = {'version': 1, 'formatters': {'normal': {'format': '%(levelname)-8s %(message)s'}, 'actor': {'format': '%(levelname)-8s %(actorAddress)s => %(message)s'}}, 'filters': {'isActorLog': {'()': 'actorLogFilter'}, 'notActorLog': {'()': 'notActorLogFilter'}}, 'handlers': {'h1': {'class': 'logging.FileHandler', 'filename': 'example.log', 'formatter': 'normal', 'filters': ['notActorLog'], 'level': 20}, 'h2': {'class': 'logging.FileHandler', 'filename': 'example.log', 'formatter': 'actor', 'filters': ['isActorLog'], 'level': 20}}, 'loggers': {'': {'handlers': ['h1', 'h2'], 'level': 10}}}
+    >>> res = get_min_log_level(logDefs)
+    >>> res == logging.DEBUG
+    True
+
+    """
+    levelIn = lambda d: d.get('level', 0)
+    minLevelIn = lambda l: min(list(l)) if list(l) else 0
+    lowestLevel = minLevelIn(
+        [minLevelIn([levelIn(logDefs[key][subkey])
+                     for subkey in logDefs[key]
+                     if isinstance(logDefs[key][subkey], dict)
+                     ])
+         for key in logDefs
+         if key in ['loggers', 'handlers'] and isinstance(logDefs[key], dict)
+         ])
+    return lowestLevel
+
 
 def startChild(childClass, globalName, endpoint, transportClass,
                sourceHash, sourceToLoad,
@@ -544,24 +565,7 @@ def startChild(childClass, globalName, endpoint, transportClass,
     # logging.shutdown() because (a) that does not do enough to reset,
     # and (b) it shuts down handlers, but we want to leave the parent's
     # handlers alone.
-    if logDefs:
-        levelIn = lambda d: d.get('level', 0)
-        minLevelIn = lambda l: min(list(l)) if list(l) else 0
-        levels = list(
-            filter(None,
-                   ([ minLevelIn([levelIn(logDefs[key][subkey])
-                                  for subkey in logDefs[key]
-                                  # if subkey in [ 'loggers', 'handlers'
-                                  if isinstance(logDefs[key][subkey], dict)
-                   ])
-                      if key in ['loggers', 'handlers'] and isinstance(logDefs[key], dict)
-                      else (levelIn(logDefs[key]) if key == 'root'
-                            else (logDefs[key] if key == 'level'
-                                  else None))
-                      for key in logDefs ])))
-        lowestLevel = minLevelIn(levels)
-    else:
-        lowestLevel = 0
+    lowestLevel = get_min_log_level(logDefs) if logDefs else 0
     logging.root = ThespianLogForwarder(loggerAddr, transport, logLevel=lowestLevel)
     logging.Logger.root = logging.root
     logging.Logger.manager = logging.Manager(logging.Logger.root)
