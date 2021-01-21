@@ -7,7 +7,6 @@ import signal
 import sys
 from datetime import timedelta
 from functools import partial
-from typing import Any, Dict
 
 from thespian.actors import *
 from thespian.system.addressManager import ActorLocalAddress, CannotPickleAddress
@@ -510,27 +509,68 @@ def shutdown_signal_detector(name, addr, am):
         am.transport.interrupt_wait(signal_shutdown=True)
     return shutdown_signal_detected
 
-def get_min_log_level(logDefs:Dict[str, Any])->int:
+
+def get_min_log_level(logDefs):
     """
-    Get the minimum logging level from a logging configuration definition. Tested here using example.
+    Determine the minimum logging level based on the rules in:
+    https://docs.python.org/3/library/logging.config.html#logging.config.dictConfig
+
+    Note: The level and handlers entries are interpreted as for the root logger,
+    except that if a non-root logger’s level is specified as NOTSET, the system
+    consults loggers higher up the hierarchy to determine the effective
+    level of the logger.
+
+    :param logDefs: a logging configuration dictionary object
+    :return: integer value of the lowest log level, or the default level: logging.WARNING.
+
     >>> import logging
-    >>> logDefs = {'version': 1, 'formatters': {'normal': {'format': '%(levelname)-8s %(message)s'}, 'actor': {'format': '%(levelname)-8s %(actorAddress)s => %(message)s'}}, 'filters': {'isActorLog': {'()': 'actorLogFilter'}, 'notActorLog': {'()': 'notActorLogFilter'}}, 'handlers': {'h1': {'class': 'logging.FileHandler', 'filename': 'example.log', 'formatter': 'normal', 'filters': ['notActorLog'], 'level': 20}, 'h2': {'class': 'logging.FileHandler', 'filename': 'example.log', 'formatter': 'actor', 'filters': ['isActorLog'], 'level': 20}}, 'loggers': {'': {'handlers': ['h1', 'h2'], 'level': 10}}}
-    >>> res = get_min_log_level(logDefs)
-    >>> res == logging.DEBUG
+    >>> logDefs = {'version': 1, 'handlers': {'h1': {'class':
+    ... 'logging.FileHandler', 'filename': 'example.log', 'formatter':
+    ... 'normal', 'filters': ['notActorLog'], 'level': "INFO"}, 'h2': {'class':
+    ... 'logging.FileHandler', 'filename': 'example.log', 'formatter':
+    ... 'actor', 'filters': ['isActorLog'], 'level': "INFO"}},
+    ... 'loggers': {'': {'handlers': ['h1', 'h2'], 'level': "DEBUG"}}}
+    >>> get_min_log_level(logDefs) == logging.DEBUG
+    True
+    >>> logDefs = {'version': 1, 'loggers': {'root' : {'level': 10}, 'level': 20}}
+    >>> min1 = get_min_log_level(logDefs)
+    >>> logDefs = {'version': 1, 'loggers': {'root': {'level': 20}, 'level': 10}}
+    >>> min2 = get_min_log_level(logDefs)
+    >>> min1 == min2 == 10
+    True
+    >>> get_min_log_level({"version" : 1}) == logging.WARNING # default log level
+    True
+    >>> logDefs = {'version': 1, 'loggers': {'root': {'level': "INFO"},
+    ... 'handler2': {"level": logging.NOTSET}}}
+    >>> get_min_log_level(logDefs) == logging.INFO
     True
 
     """
-    levelIn = lambda d: d.get('level', 0)
-    minLevelIn = lambda l: min(list(l)) if list(l) else 0
-    lowestLevel = minLevelIn(
-        [minLevelIn([levelIn(logDefs[key][subkey])
-                     for subkey in logDefs[key]
-                     if isinstance(logDefs[key][subkey], dict)
-                     ])
-         for key in logDefs
-         if key in ['loggers', 'handlers'] and isinstance(logDefs[key], dict)
-         ])
-    return lowestLevel
+    levels = []
+    names_to_levels = {"NOTSET": logging.NOTSET, "DEBUG": logging.DEBUG,
+                       "INFO": logging.INFO, "WARNING": logging.WARNING,
+                       "ERROR": logging.ERROR, "CRITICAL": logging.CRITICAL}
+
+    loggers = logDefs.get('loggers', {})
+    root_val = loggers.get("", loggers.get("root", None))
+    if root_val:
+        root_val = root_val.get('level')
+    root_val = names_to_levels.get(root_val, root_val)
+
+    def dfs(mapping):
+        """Traverse and collect"""
+        for key, val in mapping.items():
+            if isinstance(val, dict):
+                dfs(val)
+            if key == 'level':
+                if isinstance(val, str):
+                    val = names_to_levels[val.upper()]
+                if val == logging.NOTSET and root_val and root_val > logging.NOTSET:
+                    continue
+                levels.append(val)
+
+    dfs(logDefs)
+    return min(levels) if levels else logging.WARNING
 
 
 def startChild(childClass, globalName, endpoint, transportClass,
