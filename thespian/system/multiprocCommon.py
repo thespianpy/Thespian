@@ -605,7 +605,7 @@ def startChild(childClass, globalName, endpoint, transportClass,
     # logging.shutdown() because (a) that does not do enough to reset,
     # and (b) it shuts down handlers, but we want to leave the parent's
     # handlers alone.
-    lowestLevel = get_min_log_level(logDefs) if logDefs else 0
+    lowestLevel = get_min_log_level(logDefs)
     logging.root = ThespianLogForwarder(loggerAddr, transport, logLevel=lowestLevel)
     logging.Logger.root = logging.root
     logging.Logger.manager = logging.Manager(logging.Logger.root)
