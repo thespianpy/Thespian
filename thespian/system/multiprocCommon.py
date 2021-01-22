@@ -2,10 +2,8 @@
 python 'multiprocess' module.  Intended as a base class, not for
 direct usage."""
 
-import multiprocessing
 import signal
 import sys
-from datetime import timedelta
 from functools import partial
 
 from thespian.actors import *
@@ -17,7 +15,7 @@ from thespian.system.systemBase import systemBase
 from thespian.system.systemCommon import actorStartupFailed
 from thespian.system.transport import *
 from thespian.system.utilis import checkActorCapabilities, partition
-from thespian.system.utilis import setProcName
+from thespian.system.utilis import setProcName, _name_to_level
 
 MAX_ADMIN_STARTUP_DELAY = timedelta(seconds=5)
 
@@ -516,7 +514,7 @@ def get_min_log_level(logDefs):
     https://docs.python.org/3/library/logging.config.html#logging.config.dictConfig
 
     Note: The level and handlers entries are interpreted as for the root logger,
-    except that if a non-root logger’s level is specified as NOTSET, the system
+    except that if a non-root logger's level is specified as NOTSET, the system
     consults loggers higher up the hierarchy to determine the effective
     level of the logger.
 
@@ -524,38 +522,50 @@ def get_min_log_level(logDefs):
     :return: integer value of the lowest log level, or the default level: logging.WARNING.
 
     >>> import logging
-    >>> logDefs = {'version': 1, 'handlers': {'h1': {'class':
-    ... 'logging.FileHandler', 'filename': 'example.log', 'formatter':
-    ... 'normal', 'filters': ['notActorLog'], 'level': "INFO"}, 'h2': {'class':
-    ... 'logging.FileHandler', 'filename': 'example.log', 'formatter':
-    ... 'actor', 'filters': ['isActorLog'], 'level': "INFO"}},
-    ... 'loggers': {'': {'handlers': ['h1', 'h2'], 'level': "DEBUG"}}}
+    >>> import logging.config
+    >>> logDefs = {'version': 1, 'handlers': {
+    ... 'h1': {'class': 'logging.FileHandler', 'filename': 'example.log', 'filters': [],
+    ...        'level': "INFO"},
+    ... 'h2': {'class': 'logging.FileHandler', 'filename': 'example.log', 'filters': [],
+    ...        'level': "INFO"}}, 'loggers': {'': {'handlers': ['h1', 'h2'], 'level': "DEBUG"}}}
+    >>> logging.config.dictConfig(logDefs) # prove the config is considered valid
     >>> get_min_log_level(logDefs) == logging.DEBUG
     True
-    >>> logDefs = {'version': 1, 'loggers': {'root' : {'level': 10}, 'level': 20}}
+
+    >>> logDefs = {'version': 1, 'root': {'level': 10}, 'loggers': {'one': {'level': 20}}}
+    >>> logging.config.dictConfig(logDefs)
     >>> min1 = get_min_log_level(logDefs)
-    >>> logDefs = {'version': 1, 'loggers': {'root': {'level': 20}, 'level': 10}}
+    >>> logDefs = {'version': 1, 'root': {'level': 20}, 'loggers': {'one': {'level': 10}}}
+    >>> logging.config.dictConfig(logDefs)
     >>> min2 = get_min_log_level(logDefs)
     >>> min1 == min2 == 10
     True
-    >>> get_min_log_level({"version" : 1}) == logging.WARNING # default log level
+
+    >>> get_min_log_level({'version' : 1}) == logging.WARNING # default log level
     True
-    >>> logDefs = {'version': 1, 'loggers': {'root': {'level': "INFO"},
-    ... 'handler2': {"level": logging.NOTSET}}}
+
+    >>> logDefs = {'version': 1,
+    ...            'loggers': {'root': {'level': "INFO"}, 'handler2': {'level': logging.NOTSET}}}
+    >>> logging.config.dictConfig(logDefs)
     >>> get_min_log_level(logDefs) == logging.INFO
     True
 
     """
-    levels = []
-    names_to_levels = {"NOTSET": logging.NOTSET, "DEBUG": logging.DEBUG,
-                       "INFO": logging.INFO, "WARNING": logging.WARNING,
-                       "ERROR": logging.ERROR, "CRITICAL": logging.CRITICAL}
 
-    loggers = logDefs.get('loggers', {})
-    root_val = loggers.get("", loggers.get("root", None))
+    levels = []
+    root_data = logDefs.get('root')
+    if root_data and root_data.get('level'):
+        if isinstance( root_data.get('level'), str):
+            root_val = _name_to_level.get(root_data.get('level'). upper())
+        else:
+            root_val = root_data.get('level')
+    else:
+        loggers = logDefs.get('loggers', {})
+        root_val_empty = loggers.get("", {}).get("level")
+        root_val_named = loggers.get("root", {}).get("level")
+        root_val = root_val_empty if root_val_empty else root_val_named
     if root_val:
-        root_val = root_val.get('level')
-    root_val = names_to_levels.get(root_val, root_val)
+        root_val = _name_to_level.get(root_val, root_val)
 
     def dfs(mapping):
         """Traverse and collect"""
@@ -564,7 +574,7 @@ def get_min_log_level(logDefs):
                 dfs(val)
             if key == 'level':
                 if isinstance(val, str):
-                    val = names_to_levels[val.upper()]
+                    val = _name_to_level[val.upper()]
                 if val == logging.NOTSET and root_val and root_val > logging.NOTSET:
                     continue
                 levels.append(val)

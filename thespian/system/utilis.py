@@ -17,7 +17,8 @@ _name_to_level = {
     "ERROR": logging.ERROR,
     "WARNING": logging.WARNING,
     "INFO": logging.INFO,
-    "DEBUG": logging.DEBUG
+    "DEBUG": logging.DEBUG,
+    "NOTSET": logging.NOTSET
 }
 
 # Default/current logging controls
