@@ -340,7 +340,7 @@ describe in the [[#hH-2a5fa63d-e6eb-43b9-bea8-47223b27544e][ActorSystem Implemen
 
 Once created, the running ActorSystem is (by default) a singleton
 instance for the current process.  This means that subsequent
-references can either use the direct reference (e.g. ~asys~ from the
+references can either use the direct reference (e.g. ~asys~ in the example
 above) or another ~ActorSystem()~ instantiation with no parameters.
 
 
@@ -420,8 +420,8 @@ explicitly killed.  An Actor can be killed by sending it an
 
 The Actor will receive that message directly on its
 ~.receiveMessage()~ method, which allows the Actor to make any
-preparations for its demise, but it cannot refuse to exit and it
-returns from the ~.receiveMessage()~, the ActorSystem will killed the
+preparations for its demise, but it cannot refuse to exit and when it
+returns from ~.receiveMessage()~, the ActorSystem will kill the
 Actor.
 
 A killed Actor's Address is dead-lettered; any subsequent messages
@@ -442,9 +442,10 @@ Letter Handling]].
     The ActorSystem notifies the Parent Actor when any of its child
     Actors exit.  Child Actors are killed when the Parent dies unless
     the Parent indicates that the ActorExitRequest should not
-    propagate to the children.
+    propagate to the children (see method
+    [[#hH-7e6106e4-a631-47a4-9d22-3fd63f7e1951][notRecursive]]()).
 
-    Notification of exited children is via the ~ChildActorExited~
+    Notification of exited children is done via the ~ChildActorExited~
     message.  This message has the following attributes:
 
       * ~.childAddress~ to specify the ActorAddress of the child
