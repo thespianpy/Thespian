@@ -3379,7 +3379,7 @@ decorator that can assist with managing this initialization.
 This pattern is especially useful for Actors which need to receive
 multiple different messages to initialize their state before normal
 processing begins.  Each message is stored in a corresponding
-attribute on the Actor class, and (unless init_passthru is True) no
+attribute on the Actor class, and (unless ~init_passthru~ is True) no
 messages are delivered to the receiveMessages entrypoint until all of
 the initialization messages have been received.
 
@@ -3399,15 +3399,15 @@ the sender of that message.
 If multiple initialization messages of the same type are received, the
 corresponding attribute will be set to the last messages received.
 
-The initdone argument, if set, specifies a method name (as a string)
+The ~initdone~ argument, if set, specifies a method name (as a string)
 that should be called when all initialization message have been
 received.
 
-The init_passthru can be set to True to pass *all* messages received
+The ~init_passthru~ can be set to True to pass *all* messages received
 during initialization to the normal Actor handling; the default is
 false and init messages are discarded and non-init messages are saved
 and delivered after initialization is completed.  (All
-ActorSystemMessage messages are treated as if init_passthru was True).
+ActorSystemMessage messages are treated as if ~init_passthru~ was True).
 
 Example:
 
@@ -3504,7 +3504,7 @@ When external code calls the ~ActorSystem()~ constructor, an
 ActorSystem is started if one is not already running.
 
 An argument may be passed to the [[#hH-4adf735c-f237-4a8e-98db-ec52567353ac][ActorSystem]] constructor to specify
-the systemBase (a.k.a ActorSystem implementation) that should be used
+the ~systemBase~ (a.k.a ActorSystem implementation) that should be used
 for starting the ActorSystem if one is not already running; if an
 ActorSystem is already running, this argument is ignored.  If no
 argument is specified and no ActorSystem is running, the default
