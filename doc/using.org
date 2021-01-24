@@ -470,7 +470,7 @@ Letter Handling]].
   :CUSTOM_ID: hH-bb3655d6-66df-42d5-9486-e81c8687e9d6
   :END:
 
-  - The ActorSystemMessage class is the base class all ActorSystem
+  - The ActorSystemMessage class is the base class of all ActorSystem
     internal messages.  Messages sent by Actors should not subclass
     ActorSystemMessage, but Actors may differentiate their messages
     from Thespian messages by ~isinstance()~ testing against the
@@ -1236,7 +1236,7 @@ before the ActorSystem is started:
    :CUSTOM_ID: hH-955ec990-a267-4d08-8f4d-5f980c777173
    :END:
 
-  The Thespian ActorSystem provides an feature to specify the code
+  The Thespian ActorSystem provides a feature to specify the code
   used for Actor implementations.
 
   By default, an Actor implementation is obtained by importing from
@@ -1839,7 +1839,7 @@ class MyActor(Actor):
    :CUSTOM_ID: hH-1dc4362f-78dd-4adf-833c-d7bebda07ef8
    :END:
 
-   The ~updateCapability()~ method is used update the capabilities of
+   The ~updateCapability()~ method is used to update the capabilities of
    the current ActorSystem this Actor is running in (there is a
    corresponding method on the ActorSystem for externally-specified
    updates; see the [[#hH-7d2b4986-95d3-4460-9d19-ea0dcdb34fca][ActorSystem API]] for that version).
@@ -3373,10 +3373,10 @@ started after receipt of the actor's first message.
 It is common for an Actor to require one or more messages to
 "initialize" the Actor and prepare it for normal operations.
 
-The ~thespian.initmsgs~ module provides a ~initializing_messages~
+The ~thespian.initmsgs~ module provides an ~initializing_messages~
 decorator that can assist with managing this initialization.
 
-This pattern is especially useful for Actors which should receive
+This pattern is especially useful for Actors which need to receive
 multiple different messages to initialize their state before normal
 processing begins.  Each message is stored in a corresponding
 attribute on the Actor class, and (unless init_passthru is True) no
