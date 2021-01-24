@@ -388,8 +388,9 @@ communicate with the created Actor.
     :CUSTOM_ID: hH-de8ad884-0d69-4734-abf5-eb3f1e4a8723
     :END:
 
-Within the ActorSystem, and Actor can create another Actor by making
-the request to the ActorSystem through the [[#hH-3663d87d-8a2f-485b-aeef-c6e9cf418b4c][createActor]]() method on its
+Within the ActorSystem an Actor can create another Actor by making
+a request to the ActorSystem. This is done by calling the
+[[#hH-3663d87d-8a2f-485b-aeef-c6e9cf418b4c][createActor]]() method on its
 own instance:
 
 #+BEGIN_SRC python
@@ -404,10 +405,13 @@ own instance:
 #+END_SRC
 
 As with the creation of a Top-Level actor, the ~createActor()~ method
-returns an ActorAddress associated with the new Actor.  The creating
-Actor's sends messages to the new Actor via the creator's [[#hH-28cb6d46-fa93-4efd-bc83-88bbbd50df66][send]]()
-method, passing the ActorAddress of the new Actor as the target
-address.
+of class Actor creates a new Actor instance and returns the ActorAddress
+associated with it.  The creating Actor can then send messages to the new
+Actor via its own [[#hH-28cb6d46-fa93-4efd-bc83-88bbbd50df66][send]]()
+method while passing the ActorAddress of the new Actor
+(which is ~newActor~ in the example above) as the target address.
+The creating Actor becomes the
+[[#hH-3868571d-e754-42a2-840e-6629e817903b][Parent Actor]] of the created Actor.
 
 *** Killing an Actor
     :PROPERTIES:
