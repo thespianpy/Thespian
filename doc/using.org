@@ -340,7 +340,7 @@ describe in the [[#hH-2a5fa63d-e6eb-43b9-bea8-47223b27544e][ActorSystem Implemen
 
 Once created, the running ActorSystem is (by default) a singleton
 instance for the current process.  This means that subsequent
-references can either use the direct reference (e.g. ~asys~ from the
+references can either use the direct reference (e.g. ~asys~ in the example
 above) or another ~ActorSystem()~ instantiation with no parameters.
 
 
@@ -388,8 +388,9 @@ communicate with the created Actor.
     :CUSTOM_ID: hH-de8ad884-0d69-4734-abf5-eb3f1e4a8723
     :END:
 
-Within the ActorSystem, and Actor can create another Actor by making
-the request to the ActorSystem through the [[#hH-3663d87d-8a2f-485b-aeef-c6e9cf418b4c][createActor]]() method on its
+Within the ActorSystem an Actor can create another Actor by making
+a request to the ActorSystem. This is done by calling the
+[[#hH-3663d87d-8a2f-485b-aeef-c6e9cf418b4c][createActor]]() method on its
 own instance:
 
 #+BEGIN_SRC python
@@ -404,10 +405,13 @@ own instance:
 #+END_SRC
 
 As with the creation of a Top-Level actor, the ~createActor()~ method
-returns an ActorAddress associated with the new Actor.  The creating
-Actor's sends messages to the new Actor via the creator's [[#hH-28cb6d46-fa93-4efd-bc83-88bbbd50df66][send]]()
-method, passing the ActorAddress of the new Actor as the target
-address.
+of class Actor creates a new Actor instance and returns the ActorAddress
+associated with it.  The creating Actor can then send messages to the new
+Actor via its own [[#hH-28cb6d46-fa93-4efd-bc83-88bbbd50df66][send]]()
+method while passing the ActorAddress of the new Actor
+(which is ~newActor~ in the example above) as the target address.
+The creating Actor becomes the
+[[#hH-3868571d-e754-42a2-840e-6629e817903b][Parent Actor]] of the created Actor.
 
 *** Killing an Actor
     :PROPERTIES:
@@ -420,8 +424,8 @@ explicitly killed.  An Actor can be killed by sending it an
 
 The Actor will receive that message directly on its
 ~.receiveMessage()~ method, which allows the Actor to make any
-preparations for its demise, but it cannot refuse to exit and it
-returns from the ~.receiveMessage()~, the ActorSystem will killed the
+preparations for its demise, but it cannot refuse to exit and when it
+returns from ~.receiveMessage()~, the ActorSystem will kill the
 Actor.
 
 A killed Actor's Address is dead-lettered; any subsequent messages
@@ -442,9 +446,10 @@ Letter Handling]].
     The ActorSystem notifies the Parent Actor when any of its child
     Actors exit.  Child Actors are killed when the Parent dies unless
     the Parent indicates that the ActorExitRequest should not
-    propagate to the children.
+    propagate to the children (see method
+    [[#hH-7e6106e4-a631-47a4-9d22-3fd63f7e1951][notRecursive]]()).
 
-    Notification of exited children is via the ~ChildActorExited~
+    Notification of exited children is done via the ~ChildActorExited~
     message.  This message has the following attributes:
 
       * ~.childAddress~ to specify the ActorAddress of the child
@@ -470,7 +475,7 @@ Letter Handling]].
   :CUSTOM_ID: hH-bb3655d6-66df-42d5-9486-e81c8687e9d6
   :END:
 
-  - The ActorSystemMessage class is the base class all ActorSystem
+  - The ActorSystemMessage class is the base class of all ActorSystem
     internal messages.  Messages sent by Actors should not subclass
     ActorSystemMessage, but Actors may differentiate their messages
     from Thespian messages by ~isinstance()~ testing against the
@@ -1236,7 +1241,7 @@ before the ActorSystem is started:
    :CUSTOM_ID: hH-955ec990-a267-4d08-8f4d-5f980c777173
    :END:
 
-  The Thespian ActorSystem provides an feature to specify the code
+  The Thespian ActorSystem provides a feature to specify the code
   used for Actor implementations.
 
   By default, an Actor implementation is obtained by importing from
@@ -1839,7 +1844,7 @@ class MyActor(Actor):
    :CUSTOM_ID: hH-1dc4362f-78dd-4adf-833c-d7bebda07ef8
    :END:
 
-   The ~updateCapability()~ method is used update the capabilities of
+   The ~updateCapability()~ method is used to update the capabilities of
    the current ActorSystem this Actor is running in (there is a
    corresponding method on the ActorSystem for externally-specified
    updates; see the [[#hH-7d2b4986-95d3-4460-9d19-ea0dcdb34fca][ActorSystem API]] for that version).
@@ -3373,13 +3378,13 @@ started after receipt of the actor's first message.
 It is common for an Actor to require one or more messages to
 "initialize" the Actor and prepare it for normal operations.
 
-The ~thespian.initmsgs~ module provides a ~initializing_messages~
+The ~thespian.initmsgs~ module provides an ~initializing_messages~
 decorator that can assist with managing this initialization.
 
-This pattern is especially useful for Actors which should receive
+This pattern is especially useful for Actors which need to receive
 multiple different messages to initialize their state before normal
 processing begins.  Each message is stored in a corresponding
-attribute on the Actor class, and (unless init_passthru is True) no
+attribute on the Actor class, and (unless ~init_passthru~ is True) no
 messages are delivered to the receiveMessages entrypoint until all of
 the initialization messages have been received.
 
@@ -3399,15 +3404,15 @@ the sender of that message.
 If multiple initialization messages of the same type are received, the
 corresponding attribute will be set to the last messages received.
 
-The initdone argument, if set, specifies a method name (as a string)
+The ~initdone~ argument, if set, specifies a method name (as a string)
 that should be called when all initialization message have been
 received.
 
-The init_passthru can be set to True to pass *all* messages received
+The ~init_passthru~ can be set to True to pass *all* messages received
 during initialization to the normal Actor handling; the default is
 false and init messages are discarded and non-init messages are saved
 and delivered after initialization is completed.  (All
-ActorSystemMessage messages are treated as if init_passthru was True).
+ActorSystemMessage messages are treated as if ~init_passthru~ was True).
 
 Example:
 
@@ -3504,7 +3509,7 @@ When external code calls the ~ActorSystem()~ constructor, an
 ActorSystem is started if one is not already running.
 
 An argument may be passed to the [[#hH-4adf735c-f237-4a8e-98db-ec52567353ac][ActorSystem]] constructor to specify
-the systemBase (a.k.a ActorSystem implementation) that should be used
+the ~systemBase~ (a.k.a ActorSystem implementation) that should be used
 for starting the ActorSystem if one is not already running; if an
 ActorSystem is already running, this argument is ignored.  If no
 argument is specified and no ActorSystem is running, the default
