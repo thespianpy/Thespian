@@ -529,8 +529,8 @@ def get_min_log_level(logDefs):
     ... 'h2': {'class': 'logging.FileHandler', 'filename': 'example.log', 'filters': [],
     ...        'level': "INFO"}}, 'loggers': {'': {'handlers': ['h1', 'h2'], 'level': "DEBUG"}}}
     >>> logging.config.dictConfig(logDefs) # prove the config is considered valid
-    >>> get_min_log_level(logDefs) == logging.DEBUG
-    True
+    >>> get_min_log_level(logDefs) # logging.DEBUG
+    10
 
     >>> logDefs = {'version': 1, 'root': {'level': 10}, 'loggers': {'one': {'level': 20}}}
     >>> logging.config.dictConfig(logDefs)
@@ -541,14 +541,26 @@ def get_min_log_level(logDefs):
     >>> min1 == min2 == 10
     True
 
-    >>> get_min_log_level({'version' : 1}) == logging.WARNING # default log level
-    True
+    >>> get_min_log_level({'version' : 1}) # logging.WARNING is default log level
+    30
 
     >>> logDefs = {'version': 1,
     ...            'loggers': {'root': {'level': "INFO"}, 'handler2': {'level': logging.NOTSET}}}
     >>> logging.config.dictConfig(logDefs)
-    >>> get_min_log_level(logDefs) == logging.INFO
-    True
+    >>> get_min_log_level(logDefs) # logging.INFO
+    20
+
+    >>> logDefs = {'version': 1, 'loggers': {'one': {'level': logging.NOTSET}}}
+    >>> logging.config.dictConfig(logDefs)
+    >>> get_min_log_level(logDefs) # logging.WARNING
+    30
+
+    >>> logDefs = {'version': 1,
+    ...                            'root': {'level': None},
+    ...                            'loggers': {'one': {'level': logging.NOTSET}}}
+    >>> logging.config.dictConfig(logDefs)
+    >>> get_min_log_level(logDefs) # logging.WARNING
+    30
 
     """
 
@@ -580,6 +592,7 @@ def get_min_log_level(logDefs):
                 levels.append(val)
 
     dfs(logDefs)
+    levels = [tmp for tmp in levels if tmp] # swallow None values
     return min(levels) if levels else logging.WARNING
 
 
