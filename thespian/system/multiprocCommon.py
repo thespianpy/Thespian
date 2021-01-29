@@ -563,12 +563,13 @@ def get_min_log_level(logDefs):
     30
 
     """
-
+    if logDefs is None:
+        return logging.WARNING
     levels = []
     root_data = logDefs.get('root')
     if root_data and root_data.get('level'):
-        if isinstance( root_data.get('level'), str):
-            root_val = _name_to_level.get(root_data.get('level'). upper())
+        if isinstance(root_data.get('level'), str):
+            root_val = _name_to_level.get(root_data.get('level').upper())
         else:
             root_val = root_data.get('level')
     else:
