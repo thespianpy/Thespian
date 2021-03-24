@@ -1,3 +1,6 @@
+import logging
+from thespian.system.utilis import thesplog
+
 try:
     import cPickle as pickle
 except ImportError:
