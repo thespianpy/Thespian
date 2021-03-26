@@ -244,7 +244,14 @@ def startASLogger(loggerAddr, logDefs, transport, capabilities,
                   aggregatorAddress=None,
                   concurrency_context = None):
     endpointPrep = transport.prepEndpoint(loggerAddr, capabilities)
-    multiprocessing.process._current_process._daemonic = False
+    try:
+        multiprocessing.process._current_process._daemonic = False # PY 2.7
+    except Exception:
+        pass
+    try:
+        multiprocessing.process._current_process.daemon = False  # PY 3
+    except Exception:
+        pass
     NewProc = concurrency_context.Process if concurrency_context else multiprocessing.Process
     logProc = NewProc(target=startupASLogger,
                       args = (transport.myAddress, endpointPrep,
