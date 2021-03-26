@@ -86,7 +86,11 @@ class multiprocessCommon(systemBase):
         mp = self.mpcontext if self.mpcontext else multiprocessing
         endpointPrep = self.transport.prepEndpoint(adminAddr, capabilities)
 
-        multiprocessing.process._current_process._daemonic = False
+        if hasattr(multiprocessing.process._current_process, "_daemonic"):
+            multiprocessing.process._current_process._daemonic = False  # PY 2.7
+        elif hasattr(multiprocessing.process._current_process, "daemon"):
+            multiprocessing.process._current_process.daemon = False  # PY 3
+
         admin = mp.Process(target=startAdmin,
                                         args=(MultiProcAdmin,
                                               addrOfStarter,
@@ -244,14 +248,12 @@ def startASLogger(loggerAddr, logDefs, transport, capabilities,
                   aggregatorAddress=None,
                   concurrency_context = None):
     endpointPrep = transport.prepEndpoint(loggerAddr, capabilities)
-    try:
-        multiprocessing.process._current_process._daemonic = False # PY 2.7
-    except Exception:
-        pass
-    try:
+
+    if hasattr(multiprocessing.process._current_process, "_daemonic"):
+        multiprocessing.process._current_process._daemonic = False  # PY 2.7
+    elif hasattr(multiprocessing.process._current_process, "daemon"):
         multiprocessing.process._current_process.daemon = False  # PY 3
-    except Exception:
-        pass
+
     NewProc = concurrency_context.Process if concurrency_context else multiprocessing.Process
     logProc = NewProc(target=startupASLogger,
                       args = (transport.myAddress, endpointPrep,
@@ -316,7 +318,10 @@ class MultiProcReplicator(object):
         # KWQ: when child starts it will have this parent address and it will initialize its transport and notify the parent, whereupon the parent will see the incoming message from the child with the id# indicated in the addressmanager localaddress and update the localaddress.  All this should happen in the transport though, not here.
         endpointPrep = self.transport.prepEndpoint(childAddr, self.capabilities)
 
-        multiprocessing.process._current_process._daemonic = False
+        if hasattr(multiprocessing.process._current_process, "_daemonic"):
+            multiprocessing.process._current_process._daemonic = False  # PY 2.7
+        elif hasattr(multiprocessing.process._current_process, "daemon"):
+            multiprocessing.process._current_process.daemon = False  # PY 3
 
         # Ensure fileNumsToClose is a list, not an iterator because it
         # is an argument passed to the child.
@@ -625,7 +630,10 @@ def startChild(childClass, globalName, endpoint, transportClass,
     # and it's detached from its parent.  The following simply clears
     # that flag locally so that other processes can be created from
     # this one.
-    multiprocessing.process._current_process._daemonic = False
+    if hasattr(multiprocessing.process._current_process, "_daemonic"):
+        multiprocessing.process._current_process._daemonic = False  # PY 2.7
+    elif hasattr(multiprocessing.process._current_process, "daemon"):
+        multiprocessing.process._current_process.daemon = False  # PY 3
 
     transport = transportClass(endpoint)
     #closeUnusedFiles(transport)
