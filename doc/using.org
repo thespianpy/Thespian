@@ -1994,11 +1994,12 @@ self.actorSystemShutdown()
 
 An alternative base class for creating Actors is the
 ~ActorTypeDispatcher~ which extends the ~Actor~ base class.  The
-~ActorTypeDispatcher~ automatically determines the type of incoming
-messages and calls a receive method related to that type instead of
-the generic ~receiveMessage()~ called by the Actor base class.  The
-type-based receive methods are named "receiveMsg_TYPE" where TYPE is
-the actual type.
+~ActorTypeDispatcher~ defines a `receiveMessage` method that
+automatically determines the type of incoming messages and calls a
+receive method related to that type instead of the generic
+~receiveMessage()~ called by the Actor base class.  The type-based
+receive methods are named "receiveMsg_TYPE" where TYPE is the actual
+type.
 
 #+BEGIN_SRC python
 class Typer(ActorTypeDispatcher):
@@ -2052,6 +2053,12 @@ Got a long message
 Got a message
 >>>
 #+END_EXAMPLE
+
+The `receiveMessage` method is defined by `ActorTypeDispatcher` so the
+actor subclassing it should not define that method; if the
+`receiveMessage` is defined in the subclass then it will override the
+`ActorTypeDispatcher`'s implementation and all message handling will
+revert to the subclass's `receiveMessage` method.
 
 *** Derived Classes
     :PROPERTIES:
