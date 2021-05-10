@@ -1338,6 +1338,22 @@ class MyActor(Actor): ...
   Versioning of the Actor API and the ActorSystem are described in
   [[#hH-a17e6c70-5592-4d06-b818-bd25350c4c53][ActorSystem Capabilities]].
 
+  It is important to note that the Actor is not fully initialized
+  until the ~__init__~ function completes, so no actor-level
+  operations (e.g. ~self.send()~, ~self.createActor()~) should be
+  performed in the class's ~__init__~ function.  Actor initialization
+  can be handled in the ~receiveMessage~ in a number of ways,
+  including:
+
+   * detecting ~None~ values of members and replacing them with the
+     results of initialization at that time
+
+   * Handling a specific initialization message sent by some other
+     entity.
+
+   * A combination of the above, using the ~initializing_messages~
+     decorator provided by the ~thespian/initmsgs.py~ helper.
+
 ** myAddress
    :PROPERTIES:
    :CUSTOM_ID: hH-584dd408-9496-4f6f-8a86-0f0236f73893
