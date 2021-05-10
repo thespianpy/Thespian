@@ -142,7 +142,9 @@ def testSmallHive_AdjStr(asys, run_unstable_tests):
     # reset to 1 (default is 2).
     for each in range(60):
         r = asys.tell(worker, "buzz off")
-    time.sleep(2)
+    # dismissal is done after a debounce time in troupe.  This sleep
+    # should be > troupe.DISMISS_EXTRA_PERIOD
+    time.sleep(2.5)
 
     useActorForTest(asys, worker,
                     # Back to 1 worker, so all work handled sequentially
@@ -204,7 +206,9 @@ def testSmallHive_AdjMsg(asys, run_unstable_tests):
     # reset to 1 (default is 2).
     for each in range(60):
         r = asys.tell(worker, "buzz off")
-    time.sleep(2)
+    # dismissal is done after a debounce time in troupe.  This sleep
+    # should be > troupe.DISMISS_EXTRA_PERIOD
+    time.sleep(2.5)
 
     useActorForTest(asys, worker,
                     # Back to 1 worker, so all work handled sequentially
