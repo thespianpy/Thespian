@@ -15,6 +15,7 @@ input to the command.
 """
 
 from datetime import datetime, timedelta
+import errno
 import os
 import logging
 import subprocess

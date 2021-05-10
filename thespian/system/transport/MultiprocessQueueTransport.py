@@ -54,7 +54,7 @@ from thespian.system.transport import *
 from thespian.system.transport.asyncTransportBase import asyncTransportBase
 from thespian.system.transport.wakeupTransportBase import wakeupTransportBase
 from thespian.system.messages.multiproc import ChildMayHaveDied
-from thespian.system.addressManager import ActorLocalAddress
+from thespian.system.addressManager import ActorLocalAddress, CannotPickleAddress
 from multiprocessing import Queue
 import threading
 try:
