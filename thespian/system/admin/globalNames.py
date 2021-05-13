@@ -24,12 +24,18 @@ class GlobalNamesAdmin(AdminCore):
                                            self._globalNames[gName])
             return True
 
+        for each in self._pendingChildren:
+            if self._pendingChildren[each][0].message.globalName == gName:
+                # Already a pending global creation for this name
+                self._pendingChildren[each].append(envelope)
+                return True
+
         return super(GlobalNamesAdmin, self).h_PendingActor(envelope)
 
 
     def _pendingActorReady(self, childInstance, actualAddress):
         if childInstance in self._pendingChildren:
-            gName = self._pendingChildren[childInstance].message.globalName
+            gName = self._pendingChildren[childInstance][0].message.globalName
             if gName:
                 if gName in self._globalNames:
                     # This is the loser of the race... just kill it.

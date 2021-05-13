@@ -47,7 +47,7 @@ class AdminCore(systemCommonBase):
         self.init_replicator(transport, concurrency_context)
         self.capabilities = capabilities
         self.logdefs = logdefs
-        self._pendingChildren = {}  # Use: childLocalAddr instance # : PendingActorEnvelope
+        self._pendingChildren = {}  # Use: childLocalAddr instance # : [PendingActorEnvelope]
         # Things that help us look like an Actor, even though we're not
         self._sourceHash = None
         thesplog('++++ Admin started @ %s / gen %s',
@@ -192,15 +192,15 @@ class AdminCore(systemCommonBase):
         # any pending child ready notifications are received after
         # this, they will automatically be sent an ActorExitRequest.
         for each in self._pendingChildren:
-            pendingReq = self._pendingChildren[each]
-            self._send_intent(
-                TransmitIntent(
-                    pendingReq.sender,
-                    PendingActorResponse(
-                        pendingReq.message.forActor,
-                        pendingReq.message.instanceNum,
-                        pendingReq.message.globalName,
-                        errorCode=PendingActorResponse.ERROR_ActorSystem_Shutting_Down)))
+            for pendingReq in self._pendingChildren[each]:
+                self._send_intent(
+                    TransmitIntent(
+                        pendingReq.sender,
+                        PendingActorResponse(
+                            pendingReq.message.forActor,
+                            pendingReq.message.instanceNum,
+                            pendingReq.message.globalName,
+                            errorCode=PendingActorResponse.ERROR_ActorSystem_Shutting_Down)))
         self._pendingChildren = []
 
         if not self.childAddresses:  # no children?
@@ -312,7 +312,7 @@ class AdminCore(systemCommonBase):
         # each).
         childAddr = self._addrManager.createLocalAddress()
         childInstance = childAddr.addressDetails.addressInstanceNum
-        self._pendingChildren[childInstance] = envelope
+        self._pendingChildren[childInstance] = [envelope]
 
         try:
             self._startChildActor(
@@ -426,10 +426,10 @@ class AdminCore(systemCommonBase):
                 TransmitIntent(actualAddress, ActorExitRequest(recursive=True)))
             return
 
-        requestEnvelope = self._pendingChildren[childInstance]
+        requestEnvelopes = self._pendingChildren[childInstance]
         del self._pendingChildren[childInstance]
-        if requestEnvelope.message.globalName or \
-           not requestEnvelope.message.forActor:
+        if requestEnvelopes[0].message.globalName or \
+           not requestEnvelopes[0].message.forActor:
             # The Admin is the responsible Parent for these children
             self._registerChild(actualAddress)
         else:
@@ -437,15 +437,16 @@ class AdminCore(systemCommonBase):
             # child and should be killed when the Admin exits.
             self._registerChild(actualAddress)
 
-        if requestEnvelope.message.forActor:
+        if requestEnvelopes[0].message.forActor:
             # Proxy-parenting; remember the real parent
-            self._nannying.add(actualAddress, requestEnvelope.message.forActor)
+            self._nannying.add(actualAddress, requestEnvelopes[0].message.forActor)
         self._addrManager.associateUseableAddress(self.myAddress,
                                                   childInstance,
                                                   actualAddress)
         # n.b. childInstance is for this Admin, but caller's
         # childInstance is in original request
-        self._sendPendingActorResponse(requestEnvelope, actualAddress)
+        for requestEnvelope in requestEnvelopes:
+            self._sendPendingActorResponse(requestEnvelope, actualAddress)
         self._retryPendingChildOperations(childInstance, actualAddress)
 
 
