@@ -1200,10 +1200,6 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
                 origPendingSends = len(self._transmitIntents) + \
                                    len(self._waitingTransmits)
 
-                # Handle newly sendable data
-                for eachs in rsend:
-                    self._processIntents(eachs)
-
                 # Get idleSockets before checking incoming and
                 # transmit; those latter may modify _openSockets
                 # (including replacing the element) so ensure that
@@ -1264,7 +1260,15 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
                             if hasattr(self, '_openSockets') and opsKey(rmtaddr) in self._openSockets:
                                 del self._openSockets[opsKey(rmtaddr)]
 
-                # Handle timeouts
+                # Handle newly sendable data.  Handle this after
+                # receives since receives might create outbound
+                # traffic that we can immediately start processing.
+                for eachs in rsend:
+                    self._processIntents(eachs)
+
+                # Handle timeouts.  Do this after transmits in case
+                # the transmit can be completed just at the timeout
+                # boundary: we prefer success to timeout.
                 self._processIntentTimeouts()
                 rmvIncoming = []
                 for I in self._incomingSockets:
