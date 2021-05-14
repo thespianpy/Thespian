@@ -247,7 +247,7 @@ class UDPTransport(asyncTransportBase, wakeupTransportBase):
             self.socket.sendto(b'BuMP', self.myAddress.addressDetails.sockname)
 
 
-    def _scheduleTransmitActual(self, transmitIntent):
+    def _scheduleTransmitActual(self, transmitIntent, has_exclusive_flag=False):
         if transmitIntent.targetAddr == self.myAddress:
             self._rcvd.append(ReceiveEnvelope(transmitIntent.targetAddr,
                                               transmitIntent.message))

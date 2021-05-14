@@ -718,5 +718,5 @@ class MultiprocessQueueTransport(asyncTransportBase, wakeupTransportBase):
     def interrupt_wait(self, signal_shutdown=False, check_children=False):
         self._QCore.interrupt_run(signal_shutdown, check_children)
 
-    def _scheduleTransmitActual(self, transmitIntent):
+    def _scheduleTransmitActual(self, transmitIntent, has_exclusive_flag=False):
         self._QCore.core_transmit(transmitIntent, self.myAddress)

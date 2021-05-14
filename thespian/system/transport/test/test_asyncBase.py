@@ -10,7 +10,7 @@ class FakeTransport(asyncTransportBase):
         super(FakeTransport, self).__init__()
         self.intents = []
 
-    def _scheduleTransmitActual(self, intent):
+    def _scheduleTransmitActual(self, intent, has_exclusive_flag=False):
         self.intents.append(intent)
 
     def serializer(self, intent):

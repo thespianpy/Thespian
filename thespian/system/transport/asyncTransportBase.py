@@ -117,7 +117,7 @@ class asyncTransportBase(object):
             if not self._runQueued():
                 break
 
-    def _runQueued(self):
+    def _runQueued(self, has_exclusive_flag=False):
         """Perform queued transmits; returns False if there are no transmits
            or if another process is already in this critical section
            (and will therefore be perform the transmits).
@@ -130,7 +130,7 @@ class asyncTransportBase(object):
         while True:
             nextTransmit = None
             with self._aTB_lock:
-                if not self._aTB_processing:
+                if has_exclusive_flag or not self._aTB_processing:
                     # 2. If another process is in the sending critical
                     # section, defer to it
                     if self._aTB_sending:
@@ -152,7 +152,7 @@ class asyncTransportBase(object):
             time.sleep(0.00001)
 
 
-    def scheduleTransmit(self, addressManager, transmitIntent):
+    def scheduleTransmit(self, addressManager, transmitIntent, has_exclusive_flag=False):
 
         """Requests that a transmit be performed.  The message and target
            address must be fully valid at this point; any local
@@ -211,7 +211,7 @@ class asyncTransportBase(object):
         # serialization should be idempotent).
 
         transmitIntent.serMsg = self.serializer(transmitIntent)
-        self._schedulePreparedIntent(transmitIntent)
+        self._schedulePreparedIntent(transmitIntent, has_exclusive_flag=has_exclusive_flag)
 
     def _qtx(self, transmitIntent):
         with self._aTB_lock:
@@ -280,7 +280,7 @@ class asyncTransportBase(object):
         "Exit from critical section"
         self._aTB_processing = False
 
-    def _schedulePreparedIntent(self, transmitIntent):
+    def _schedulePreparedIntent(self, transmitIntent, has_exclusive_flag=False):
         # If there's nothing to send, that's implicit success
         if not transmitIntent.serMsg:
             transmitIntent.tx_done(SendStatus.Sent)
@@ -299,7 +299,7 @@ class asyncTransportBase(object):
 
         if not self._canSendNow():
             drainer = False
-            if self._exclusively_processing():
+            if has_exclusive_flag or self._exclusively_processing():
                 if not self._aTB_sending:
                     self._aTB_sending = True
                     drainer = True
@@ -313,7 +313,7 @@ class asyncTransportBase(object):
                 time.sleep(0.1)  # slow down threads not performing draining
 
         while self._canSendNow():
-            if not self._runQueued():
+            if not self._runQueued(has_exclusive_flag=has_exclusive_flag):
                 # Before exiting, ensure that if the main thread
                 # is waiting for input on select() that it is
                 # awakened in case it needs to monitor new
@@ -324,13 +324,13 @@ class asyncTransportBase(object):
                 break
 
 
-    def _submitTransmit(self, transmitIntent):
+    def _submitTransmit(self, transmitIntent, has_exclusive_flag=False):
         self._aTB_numPendingTransmits += 1
         transmitIntent.addCallback(self._async_txdone, self._async_txdone)
 
         thesplog('actualTransmit of %s', transmitIntent.identify(),
                  level=logging.DEBUG)
-        self._scheduleTransmitActual(transmitIntent)
+        self._scheduleTransmitActual(transmitIntent, has_exclusive_flag=has_exclusive_flag)
 
     def deadAddress(self, addressManager, childAddr):
         # Go through pending transmits and update any to this child to

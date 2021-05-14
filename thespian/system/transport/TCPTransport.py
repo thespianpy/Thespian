@@ -642,13 +642,14 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
             except Exception:
                 pass
 
-    def _scheduleTransmitActual(self, intent):
+    def _scheduleTransmitActual(self, intent, has_exclusive_flag=False):
         intent = self._forwardIfNeeded(intent)
         if not intent:
             return
         if intent.targetAddr == self.myAddress:
             self._processReceivedEnvelope(ReceiveEnvelope(intent.targetAddr,
-                                                          intent.message))
+                                                          intent.message),
+                                          has_exclusive_flag=has_exclusive_flag)
             if not isinstance(intent.message, ForwardMessage):
                 self.interrupt_wait()
             return self._finishIntent(intent)
@@ -1222,7 +1223,8 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
                     if each in self._incomingSockets:
                         incoming = self._incomingSockets[each]
                         del self._incomingSockets[each]
-                        incoming = self._handlePossibleIncoming(incoming, each)
+                        incoming = self._handlePossibleIncoming(incoming, each,
+                                                                has_exclusive_flag=True)
                         if incoming:
                             self._incomingSockets[
                                 incoming.socket.fileno()] = incoming
@@ -1252,7 +1254,8 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
                             if fnum:
                                 incoming = self._handlePossibleIncoming(
                                     TCPIncomingPersistent(rmtaddr, idle.socket),
-                                    fnum)
+                                    fnum,
+                                    has_exclusive_flag=True)
                                 if incoming:
                                     self._incomingSockets[
                                         incoming.socket.fileno()] = incoming
@@ -1266,7 +1269,8 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
                 rmvIncoming = []
                 for I in self._incomingSockets:
                     newI = self._handlePossibleIncoming(self._incomingSockets[I],
-                                                        -1)
+                                                        -1,
+                                                        has_exclusive_flag=True)
                     if newI:
                         # newI will possibly be new incoming data, but
                         # it's going to use the same socket
@@ -1354,7 +1358,8 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
              TCPIncoming)
             (ActorAddress(None), lsock))
 
-    def _handlePossibleIncoming(self, incomingSocket, fileno, closed=False):
+    def _handlePossibleIncoming(self, incomingSocket, fileno, closed=False,
+                                has_exclusive_flag=False):
         if closed:
             # Remote closed, so unconditionally drop this socket
             incomingSocket.close()
@@ -1362,7 +1367,8 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
         elif incomingSocket.socket and \
              (incomingSocket.socket.fileno() == fileno or
               not incomingSocket.delay()):
-            return self._handleReadableIncoming(incomingSocket)
+            return self._handleReadableIncoming(incomingSocket,
+                                                has_exclusive_flag=has_exclusive_flag)
         else:
             if not incomingSocket.delay():
                 # No more delay time left
@@ -1394,7 +1400,7 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
             incomingSocket.close()
         return None
 
-    def _handleReadableIncoming(self, inc):
+    def _handleReadableIncoming(self, inc, has_exclusive_flag=False):
         try:
             rdata = inc.socket.recv(min(1024000, inc.remainingSize()))
             inc.failCount = 0
@@ -1422,9 +1428,9 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
                      level=logging.WARNING)
             inc.close()
             return None
-        return self._addedDataToIncoming(inc)
+        return self._addedDataToIncoming(inc, has_exclusive_flag=has_exclusive_flag)
 
-    def _addedDataToIncoming(self, inc, skipFinish=False):
+    def _addedDataToIncoming(self, inc, skipFinish=False, has_exclusive_flag=False):
         if not inc.receivedAllData():
             # Continue running and monitoring this socket
             return inc
@@ -1457,7 +1463,7 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
             else:
                 raise
         inc.fromAddress = rdata[0]
-        self._processReceivedEnvelope(rEnv)
+        self._processReceivedEnvelope(rEnv, has_exclusive_flag=has_exclusive_flag)
         if extra and isinstance(inc, TCPIncomingPersistent):
             newinc = TCPIncomingPersistent(inc.fromAddress, inc.socket)
             try:
@@ -1467,12 +1473,12 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
                 thesplog('discarding bad incoming trailing data')
                 pass
             else:
-                return self._addedDataToIncoming(newinc)
+                return self._addedDataToIncoming(newinc, has_exclusive_flag=has_exclusive_flag)
         if not skipFinish:
             self._finishIncoming(inc, rEnv.sender)
         return None
 
-    def _processReceivedEnvelope(self, envelope):
+    def _processReceivedEnvelope(self, envelope, has_exclusive_flag=False):
         if not isinstance(envelope.message, ForwardMessage):
             self._incomingEnvelopes.append(envelope)
             return
@@ -1496,7 +1502,8 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
         nextTgt = envelope.message.fwdTargets[0]
         envelope.message.fwdTargets = envelope.message.fwdTargets[1:]
         self.scheduleTransmit(getattr(self, '_addressMgr', None),
-                              TransmitIntent(nextTgt, envelope.message))
+                              TransmitIntent(nextTgt, envelope.message),
+                              has_exclusive_flag=has_exclusive_flag)
 
     def abort_run(self, drain=False):
         self._aborting_run = drain
