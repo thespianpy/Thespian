@@ -3784,6 +3784,11 @@ The multiprocQueueBase uses the following [[#hH-a17e6c70-5592-4d06-b818-bd25350c
                      "forkserver" method, but this multiprocQueueBase
                      does not support the "forkserver" method.
 
+*** Potential issues
+
+ * The multiprocessQueueBase is not efficient for non-adjacent actor messaging
+ * There is a unexplained, core-level concern about dropped
+   messages/deadlocks for the queue messaging in overload conditions.
 
 ** multiprocTCPBase
    :PROPERTIES:
@@ -4034,6 +4039,11 @@ The multiprocUDPBase uses the following [[#hH-a17e6c70-5592-4d06-b818-bd25350c4c
   The multiprocUDPBase system base selects a local IP address to use
   for Actor Addresses in the same manner as described for the
   multiprocTCPBase above.
+
+* Potential Concerns
+
+ * Dropped messages
+ * Message size limitations
 
 * Deploying Actor-based Projects
   :PROPERTIES:
