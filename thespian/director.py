@@ -678,7 +678,8 @@ the update.
                       although it may be a convention leader.
 
     othercaps.cfg -- specifies other capabilities to set when
-                     starting up the Actor System.
+                     starting up the Actor System.  Displayed raw
+                     before eval (see note below).
 
     thesplog.cfg -- specifies the logging configuration (in dict
                     format) for the logging performed by running
@@ -695,6 +696,20 @@ the update.
     thesplogs.cfg -- specifies the maximum size of the thespian
                      internal logging file in bytes.  The default is
                      51200.
+
+    Each .cfg file is expected to be a valid Python expression: the
+    eval() function is applied to each file read to interpret the
+    contents of the file.  The file therefore cannot contain
+    statements (e.g. `import`, `if`, etc.) but it does have access to a
+    few globally imported modules, including `os`.
+
+    WARNING: the configuration files can execute operations via the
+    `os` module.  This can be useful to provide operations such as
+    os.getenv(), but it can also be used to perform malicious
+    operations, so care should be taken to protect these files as is
+    appropriate to the permissions context in which the director will
+    be run.
+
     """
 
     ask_wait = timedelta(seconds=5)
