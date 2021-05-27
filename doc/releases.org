@@ -10,7 +10,7 @@
 #+LATEX_HEADER: \product{Thespian}
 #+LATEX_HEADER: \component{Python Actor System}
 #+LATEX_HEADER: \doctype{Release Notes}
-#+LATEX_HEADER: \docrev{3.10.4}{2021 May 12}
+#+LATEX_HEADER: \docrev{3.10.5}{2021 May 26}
 #+LATEX_HEADER: \docid{TheDoc-06}
 #+OPTIONS: ^:nil num:nil
 
@@ -22,9 +22,10 @@ do not change the API.
 * Summary
 ** 2021
 
- | Release |       Date | Significant Bugfixes                       | Significant Features |
- |---------+------------+--------------------------------------------+----------------------|
- |  3.10.4 | 2021-05-12 | Fix [[https://github.com/thespianpy/Thespian/issues/62][Issue #62]]: logDefs no ~get~ for ~None~ |                      |
+ | Release |       Date | Significant Bugfixes                                       | Significant Features |
+ |---------+------------+------------------------------------------------------------+----------------------|
+ |  3.10.5 | 2021-05-26 | Admin forwarding; [[https://github.com/thespianpy/Thespian/issues/75][Issue #75]]: idempotent globalName creates |                      |
+ |  3.10.4 | 2021-05-12 | Fix [[https://github.com/thespianpy/Thespian/issues/62][Issue #62]]: logDefs no ~get~ for ~None~                 |                      |
 
 ** 2020
 
@@ -178,6 +179,23 @@ do not change the API.
 * 3.x
 
 ** 3.10
+
+*** 3.10.4 <2021-05-26 Wed>
+
+    * Simultaneous create actor requests for a globalName actor could
+      result in duplicates if processing overlapped in the Admin.
+      This fixes them to ensure they are idempotent. Fixes
+      [[https://github.com/kquick/Thespian/issues/75][Issue #75]].
+
+    * Fixed an issue in Admin forwarding where message forwarding
+      could suffer significant delays in the absense of any other
+      traffic.
+
+    * Updates to the documentation of the Thespian Director, as noted in
+      [[https://github.com/kquick/Thespian/issues/77][Issue #77]].  Contributed by htarnacki.
+
+    * Additional documentation of potential issues with various system
+      bases in the Using Thespian documentation.
 
 *** 3.10.4 <2021-05-12 Wed>
 
