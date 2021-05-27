@@ -10,7 +10,7 @@
 #+LATEX_HEADER: \product{Thespian}
 #+LATEX_HEADER: \component{Director Utility}
 #+LATEX_HEADER: \doctype{Director}
-#+LATEX_HEADER: \docrev{1.1}{2017 Dec 22}
+#+LATEX_HEADER: \docrev{1.2}{2021 May 26}
 #+LATEX_HEADER: \docid{TheDoc-07}
 #+OPTIONS: ^:nil auto-id:t
 
