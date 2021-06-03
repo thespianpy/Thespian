@@ -265,14 +265,9 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
             adminRouting     = False
             self.txOnly      = False  # communications from outside-in are always local and therefore not restricted.
             self._convntn_ipv4_marker = 0
-            #TODO - remove me once done
-            thesplog('*** Convention Addresses: %s, Type: %s', \
-                type(capabilities.get(CURR_CONV_ADDR_IPV4, '')), \
-                capabilities.get(CURR_CONV_ADDR_IPV4, ''), \
-                level=logging.DEBUG)
             if isinstance(capabilities.get(CURR_CONV_ADDR_IPV4), list):
                 curr_marker = self.getCurrentCounter(capabilities)
-                thesplog('*** Convention Addresses Current Marker: %s', str(curr_marker), level=logging.DEBUG)
+                thesplog('Convention Addresses Current Marker: %s', str(curr_marker), level=logging.DEBUG)
                 convAddr = capabilities.get(CURR_CONV_ADDR_IPV4, '')[curr_marker]
                 #TODO - needed?
             else:
@@ -429,15 +424,14 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
                      addrparts[1] if addrparts[1:] else DEFAULT_ADMIN_PORT,
                      external=True))
 
+    #TODO - We need to gracefully handle the scenario when host suffers catastrophic failure
     @staticmethod
     def getConventionAddress(capabilities):
-        thesplog('*** getConventionAddress ***', level=logging.DEBUG)
         if isinstance(capabilities.get(CURR_CONV_ADDR_IPV4), list):
             curr_marker = capabilities[CURR_CONV_ADDR_MARKER]
             convAddr = capabilities.get(CURR_CONV_ADDR_IPV4, '')[curr_marker]
         else:
             convAddr = capabilities.get(CURR_CONV_ADDR_IPV4, '')
-        #convAddr = capabilities.get(CURR_CONV_ADDR_IPV4, None)[0]
         if not convAddr:
             return None
         try:
@@ -445,32 +439,7 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
         except Exception as ex:
             thesplog('Invalid TCP convention address "%s": %s', convAddr, ex,
                      level=logging.ERROR)
-            # AC - This is just temporary. This shouldnt exist in exception block.
-            #capabilities.get('Convention Address.IPv4', None)[0] = capabilities.get('Convention Address.IPv4', None)[1]
-            #capabilities.get('Convention Address.IPv4', None)[1] = convAddr
-            #thesplog('*** getConventionAddress: exception block: %s', \
-            #    str(capabilities.get('Convention Address.IPv4', None)), \
-            #    level=logging.DEBUG)
-            return TCPTransport.getAddressFromString(TCPTransport.getConventionSupporters(capabilities)[0])
-            #raise InvalidActorAddress(convAddr, str(ex))
-
-    @staticmethod
-    def getConventionSupporters(capabilities):
-        thesplog('*** getConventionSupporters ***', level=logging.DEBUG)
-        convSupporters = capabilities.get('Convention Address.IPv4', '')[1:]
-        conv_supporters_list = []
-        if not convSupporters:
-            return conv_supporters_list
-        try:
-            thesplog('*** Current supporters : %s', convSupporters, level=logging.DEBUG)
-            #TODO - this is actual code
-            for curr_supporter in convSupporters:
-                conv_supporters_list.append(TCPTransport.getAddressFromString(curr_supporter))
-            return conv_supporters_list
-        except Exception as ex:
-            thesplog('Unable to get convention supporters details "%s": %s', convSupporters, ex,
-                     level=logging.ERROR)
-            raise InvalidActorAddress(convSupporters, str(ex))
+            raise InvalidActorAddress(convAddr, str(ex))
 
     def getCurrentCounter(self, capabilities):
         if not hasattr(capabilities,CURR_CONV_ADDR_MARKER):
@@ -773,8 +742,6 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
         # the target address requires forwarding; if so, wrap the
         # message in a ForwardMessage wrapper and set the routing
         # path.
-        thesplog('      <<< target address: %s', str(intent.targetAddr), level=logging.DEBUG)
-        thesplog('      target address details: %s >>>', str(intent.targetAddr.addressDetails), level=logging.DEBUG)
         if intent.targetAddr == self.myAddress or \
            isinstance(intent.message, ForwardMessage) or \
            not isinstance(intent.targetAddr.addressDetails,
