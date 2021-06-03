@@ -443,9 +443,8 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
 
     def getCurrentCounter(self, capabilities):
         if not hasattr(capabilities,CURR_CONV_ADDR_MARKER):
-            thesplog('*** In getCurrentCounter, attribute %s not found.', CURR_CONV_ADDR_MARKER, level=logging.DEBUG)
             capabilities[CURR_CONV_ADDR_MARKER] = self._convntn_ipv4_marker
-        thesplog('*** getCurrentCounter: %s ***', capabilities.get(CURR_CONV_ADDR_MARKER), level=logging.DEBUG)
+        thesplog('  Current convention address marker: %s', capabilities.get(CURR_CONV_ADDR_MARKER), level=logging.DEBUG)
         return capabilities.get(CURR_CONV_ADDR_MARKER)
         
     def external_transport_clone(self):
