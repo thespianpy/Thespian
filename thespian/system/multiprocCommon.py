@@ -214,7 +214,8 @@ def _startLogger(transportClass, transport, admin, capabilities, logDefs,
     # a normal child.
     loggerAddr = ActorAddress(ActorLocalAddress(transport.myAddress, -1, None))
     admin.asLogger = None
-    logAggregator = capabilities.get('Convention Address.IPv4', None)
+    #TODO - we need to fix this as well
+    logAggregator = capabilities.get('Convention Address.IPv4', '')[0]
     if logAggregator:
         try:
             logAggregator = transportClass.getAddressFromString(logAggregator)

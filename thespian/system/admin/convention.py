@@ -16,12 +16,18 @@ from thespian.system.transport.hysteresis import HysteresisDelaySender
 from functools import partial
 from datetime import timedelta
 
-
-CONVENTION_REREGISTRATION_PERIOD  = timedelta(minutes=7, seconds=22)
-CONVENTION_RESTART_PERIOD         = timedelta(minutes=3, seconds=22)
-CONVENTION_REGISTRATION_MISS_MAX  = 3  # # of missing convention registrations before death declared
+#TODO - uncomment me before check-in
+#CONVENTION_REREGISTRATION_PERIOD  = timedelta(minutes=7, seconds=22)
+#CONVENTION_RESTART_PERIOD         = timedelta(minutes=3, seconds=22)
+CONVENTION_REREGISTRATION_PERIOD  = timedelta(minutes=0, seconds=45)
+CONVENTION_RESTART_PERIOD         = timedelta(minutes=0, seconds=45)
+#TODO - when we have supporters, perhaps this may be changed to 1?
+#CONVENTION_REGISTRATION_MISS_MAX  = 3  # # of missing convention registrations before death declared
+CONVENTION_REGISTRATION_MISS_MAX  = 1  # # of missing convention registrations before death declared
 CONVENTION_REINVITE_ADJUSTMENT    = 1.1  # multiply by remote checkin expected time for new invite timeout period
 
+CURR_CONV_ADDR_IPV4 = 'Convention Address.IPv4'
+CURR_CONV_ADDR_MARKER = 'Convention Address.IPv4.Current Marker'
 
 def convention_reinvite_adjustment(t):
     try:
@@ -120,7 +126,7 @@ class LostRemote(object):
 
 class LocalConventionState(object):
     def __init__(self, myAddress, capabilities, sCBStats,
-                 getConventionAddressFunc):
+                 getConventionAddressFunc, getConventionSupportersFunc=[]):
         self._myAddress = myAddress
         self._capabilities = capabilities
         self._sCBStats = sCBStats
@@ -128,6 +134,7 @@ class LocalConventionState(object):
         self._conventionNotificationHandlers = []
         self._getConventionAddr = getConventionAddressFunc
         self._conventionAddress = getConventionAddressFunc(capabilities)
+        self._conventionSupporters = getConventionSupportersFunc(capabilities)
         self._conventionRegistration = ExpirationTimer(CONVENTION_REREGISTRATION_PERIOD)
         self._has_been_activated = False
         self._invited = False  # entered convention as a result of an explicit invite
@@ -143,6 +150,7 @@ class LocalConventionState(object):
 
     def updateStatusResponse(self, resp):
         resp.setConventionLeaderAddress(self.conventionLeaderAddr)
+        #TODO - set convention supporters here
         resp.setConventionRegisterTime(self._conventionRegistration)
         for each in self._conventionMembers.values():
             resp.addConventioneer(each.remoteAddress, each.registryValid)
@@ -164,6 +172,10 @@ class LocalConventionState(object):
     def isConventionLeader(self):
         # Might also be the leader if self.conventionLeaderAddr is None
         return self.conventionLeaderAddr == self.myAddress
+
+    @property
+    def conventionSupportersAddr(self):
+        return self._conventionSupporters
 
     def capabilities_have_changed(self, new_capabilities):
         self._capabilities = new_capabilities
@@ -191,6 +203,7 @@ class LocalConventionState(object):
                                onSuccess = self._setupConventionCBGood,
                                onError = self._setupConventionCBError))
             rmsgs.append(LogAggregator(self.conventionLeaderAddr))
+        thesplog('  *** rmsgs: %s', str(rmsgs), level=logging.DEBUG)
         self._conventionRegistration = ExpirationTimer(CONVENTION_REREGISTRATION_PERIOD)
         return rmsgs
 
@@ -227,12 +240,12 @@ class LocalConventionState(object):
         registrant = regmsg.adminAddress
         prereg = getattr(regmsg, 'preRegister', False)  # getattr used; see definition
         existing = self._conventionMembers.find(registrant)
-        thesplog('Got Convention %sregistration from %s (%s) (new? %s)',
+        thesplog('*** Got Convention %sregistration from %s (%s) (new? %s)',
                  'pre-' if prereg else '',
                  registrant,
                  'first time' if regmsg.firstTime else 're-registering',
                  not existing,
-                 level=logging.INFO)
+                 level=logging.DEBUG)
         if registrant == self.myAddress:
             # Either remote failed getting an external address and is
             # using 127.0.0.1 or else this is a malicious attempt to
@@ -390,7 +403,7 @@ class LocalConventionState(object):
                  level=logging.WARNING, primary=True)
         return self._remote_system_cleanup(remote_member.remoteAddress)
 
-
+    #TODO - This is where we need to put re-elect leader logic
     def _convention_member_checks(self, ct):
         rmsgs = []
         # Re-register with the Convention if it's time
@@ -403,10 +416,26 @@ class LocalConventionState(object):
                          self._conventionLeaderMissCount,
                          level=logging.WARNING, primary=True)
                 rmsgs.extend(self._remote_system_cleanup(self.conventionLeaderAddr))
+                #TODO - This is where we need to put re-elect leader logic
+                thesplog('  %s: Lost', \
+                    self.conventionLeaderAddr, \
+                    level=logging.DEBUG)
+                self._initiate_re_election()
+                rmsgs.append(TransmitIntent(self.myAddress, ConventionRegister(self.myAddress, self.capabilities)))
                 self._conventionLeaderMissCount = 0
             else:
                 rmsgs.extend(self.setup_convention())
         return rmsgs
+
+    def _initiate_re_election(self):
+        curr_counter = self.capabilities[CURR_CONV_ADDR_MARKER]
+        new_counter = (curr_counter+1) \
+                        if len(self.capabilities[CURR_CONV_ADDR_IPV4]) > (curr_counter+1) \
+                        else (curr_counter+1)%len(self.capabilities[CURR_CONV_ADDR_IPV4])
+        thesplog('  %s: Coming up', \
+                    str(self.capabilities[CURR_CONV_ADDR_IPV4][new_counter]), \
+                    level=logging.DEBUG)
+        self.capabilities[CURR_CONV_ADDR_MARKER] = new_counter
 
     def _check_preregistered_ping(self, ct, member):
         if member.preRegistered and \
@@ -441,10 +470,20 @@ class LocalConventionState(object):
            previous connection information.
 
         """
-        thesplog('Convention cleanup or deregistration for %s (known? %s)',
+        # fork 1 (leader)
+        ### Convention cleanup or deregistration for ActorAddr-(T|172.26.0.3:1900~172.26.0.3:1900) (known? True)
+        ### Convention leader address: ActorAddr-(T|:1900) (known? False)
+        # fork 2
+        ### Convention cleanup or deregistration for ActorAddr-(T|172.26.0.2:1900~172.26.0.2:1900) (known? True)
+        ### Convention leader address: ActorAddr-(T|172.26.0.2:1900) (known? True)
+        thesplog('  ### Convention cleanup or deregistration for %s (known? %s)',
                  registrant,
                  bool(self._conventionMembers.find(registrant)),
-                 level=logging.INFO)
+                 level=logging.DEBUG)
+        thesplog('  ### Convention leader address: %s (known? %s)',
+                 self._conventionAddress,
+                 bool(self._conventionMembers.find(self._conventionAddress)),
+                 level=logging.DEBUG)
         rmsgs = [LostRemote(registrant)]
         cmr = self._conventionMembers.find(registrant)
         if not cmr or cmr.preRegOnly:
@@ -566,12 +605,14 @@ class ConventioneerAdmin(GlobalNamesAdmin):
        functionality to support multi-host configurations.
     """
     def __init__(self, *args, **kw):
+        thesplog('*** In ConventioneerAdmin init ***', level=logging.DEBUG)
         super(ConventioneerAdmin, self).__init__(*args, **kw)
         self._cstate = LocalConventionState(
             self.myAddress,
             self.capabilities,
             self._sCBStats,
-            getattr(self.transport, 'getConventionAddress', lambda c: None))
+            getattr(self.transport, 'getConventionAddress', lambda c: None),
+            getattr(self.transport, 'getConventionSupporters', lambda c: None))
         self._hysteresisSender = HysteresisDelaySender(self._send_intent)
 
     def _updateStatusResponse(self, resp):
@@ -587,17 +628,26 @@ class ConventioneerAdmin(GlobalNamesAdmin):
         self._performIO(self._cstate.setup_convention(True))
 
     def h_ConventionInvite(self, envelope):
+        thesplog('*** In h_ConventionInvite with envelope %s', str(envelope), level=logging.DEBUG)
         if self.isShuttingDown(): return
         self._performIO(self._cstate.got_convention_invite(envelope.sender))
         return True
 
+    def h_ConventionUpdateLeader(self, envelope):
+        thesplog('*** In h_ConventionUpdateLeader ***', level=logging.DEBUG)
+        #if self.isShuttingDown(): return
+        #self._performIO(self._cstate.got_convention_update_leader(envelope.message))
+        return True
+
     def h_ConventionRegister(self, envelope):
+        thesplog('*** In h_ConventionRegister with envelope %s', str(envelope), level=logging.DEBUG)
         if self.isShuttingDown(): return
         self._performIO(self._cstate.got_convention_register(envelope.message))
         return True
 
 
     def h_ConventionDeRegister(self, envelope):
+        thesplog('*** In h_ConventionDeRegister with envelope %s', str(envelope), level=logging.DEBUG)
         self._performIO(self._cstate.got_convention_deregister(envelope.message))
         return True
 
@@ -640,6 +690,8 @@ class ConventioneerAdmin(GlobalNamesAdmin):
                 # pingValids, but since delay will not be longer than
                 # a CONVENTION_REREGISTRATION_PERIOD, the worst case
                 # is a doubling of a pingValid period (which should be fine).
+                thesplog('<<<<<<', level=logging.DEBUG)
+                thesplog('  *** Running ***', level=logging.DEBUG)
                 transport_continue = self.transport.run(self.handleIncoming,
                                                         delay.remaining())
 
@@ -648,7 +700,7 @@ class ConventioneerAdmin(GlobalNamesAdmin):
 
                 self._hysteresisSender.checkSends()
                 self._remove_expired_sources()
-
+                thesplog('>>>>>>', level=logging.DEBUG)
         except Exception as ex:
             import traceback
             thesplog('ActorAdmin uncaught exception: %s', traceback.format_exc(),
