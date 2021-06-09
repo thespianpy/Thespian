@@ -2,6 +2,12 @@
 
 from thespian.actors import ActorSystemMessage
 
+import logging
+from thespian.system.utilis import thesplog
+import os
+from datetime import datetime
+import socket
+
 # ----------------------------------------------------------------------
 # ActorSystem interaction
 #
@@ -19,6 +25,7 @@ class ConventionRegister(ActorSystemMessage):
         self.capabilities = capabilities
         self.firstTime = firstTime
         self.preRegister = preRegister  # n.b. added in 2.5.0; use getattr
+
 
     def __str__(self):
         return 'ConventionRegister(adminAddress=%(adminAddress)s' \
@@ -66,6 +73,19 @@ class ConventionInvite(ActorSystemMessage):
     """Message sent periodically to preRegistered remote systems inviting
        them to send a ConventionRegister message back."""
     pass
+
+class NewLeaderAvailable(ActorSystemMessage):
+    def __init__(self, adminAddress, conventionAlias):
+        self.adminAddress = adminAddress
+        self.conventionAlias = conventionAlias
+        self.lastKnownTS = int(datetime.utcnow().strftime('%Y%m%d%H%M%S%f')[:-3])
+
+    def __str__(self):
+        return 'NewLeaderAvailable(adminAddress=%(adminAddress)s' \
+            ', conventionAlias=%(conventionAlias)s' \
+            ', lastKnownTS=%(lastKnownTS)s' \
+            ')' % self.__dict__
+    #TODO - we need to have an __eq__ and __ne__ function as well
 
 class NotifyOnSystemRegistration(ActorSystemMessage):
     """Message sent to the Admin to register or de-register the specified

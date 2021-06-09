@@ -25,7 +25,7 @@ _name_to_level = {
 _thesplog_control_settings = (
     _name_to_level.get(os.getenv('THESPLOG_THRESHOLD') or 'WARNING', logging.WARNING),
     False,
-    os.getenv('THESPLOG_FILE_MAXSIZE', 50 * 1024) # 50KB by default
+    os.getenv('THESPLOG_FILE_MAXSIZE', 1024 * 1024) # 50KB by default
 )
 
 # Usually logging would be directed to /var/log, but that is often not

@@ -255,7 +255,7 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
     "A transport using TCP IPv4 sockets for communications."
 
     def __init__(self, initType, *args):
-        thesplog('*** TCPTransport initialization started ***', level=logging.DEBUG)
+        thesplog('*** TCPTransport initialization started. initType: %s ***', str(initType), level=logging.DEBUG)
         super(TCPTransport, self).__init__()
 
         if isinstance(initType, ExternalInterfaceTransportInit):
@@ -272,16 +272,22 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
                 #TODO - needed?
             else:
                 convAddr = capabilities.get(CURR_CONV_ADDR_IPV4, '')
-
+            thesplog('*** convAddr: %s ***', str(convAddr), level=logging.DEBUG)
             if convAddr and type(convAddr) == type( (1,2) ):
+                thesplog('*** 1st block', level=logging.DEBUG)
                 externalAddr = convAddr
             elif type(convAddr) == type("") and ':' in convAddr:
+                thesplog('*** 2nd block', level=logging.DEBUG)
                 externalAddr = convAddr.split(':')
                 externalAddr      = externalAddr[0], int(externalAddr[1])
             else:
+                thesplog('*** 3rd block', level=logging.DEBUG)
                 externalAddr = (convAddr, capabilities.get('Admin Port', DEFAULT_ADMIN_PORT))
+            thesplog('*** externalAddr: %s ***', str(externalAddr), level=logging.DEBUG)
             templateAddr     = ActorAddress(TCPv4ActorAddress(None, 0, external = externalAddr))
+            thesplog('*** templateAddr: %s ***', str(templateAddr), level=logging.DEBUG)
             self._adminAddr  = self.getAdminAddr(capabilities)
+            thesplog('*** _adminAddr: %s ***', str(self._adminAddr), level=logging.DEBUG)
             self._parentAddr = None
             isAdmin = False
         elif isinstance(initType, TCPEndpoint):
@@ -427,9 +433,10 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
     #TODO - We need to gracefully handle the scenario when host suffers catastrophic failure
     @staticmethod
     def getConventionAddress(capabilities):
+        thesplog('  ### getConventionAddress: entry ###', level=logging.DEBUG)
         if isinstance(capabilities.get(CURR_CONV_ADDR_IPV4), list):
             curr_marker = capabilities[CURR_CONV_ADDR_MARKER]
-            convAddr = capabilities.get(CURR_CONV_ADDR_IPV4, '')[curr_marker]
+            convAddr = capabilities.get(CURR_CONV_ADDR_IPV4, '')[0]
         else:
             convAddr = capabilities.get(CURR_CONV_ADDR_IPV4, '')
         if not convAddr:

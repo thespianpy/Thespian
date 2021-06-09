@@ -110,7 +110,7 @@ class AdminCore(systemCommonBase):
             return result
         if isinstance(envelope.message, (ActorSystemMessage,
                                          logging.LogRecord)):
-            thesplog('Admin of %s', envelope.identify(), level=logging.DEBUG)
+            thesplog('  {Incoming : %s}', envelope.identify(), level=logging.DEBUG)
             return getattr(self,
                            'h_' + envelope.message.__class__.__name__,
                            self.unrecognized)(envelope)
