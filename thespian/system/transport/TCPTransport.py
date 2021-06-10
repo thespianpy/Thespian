@@ -108,7 +108,6 @@ from contextlib import closing
 DEFAULT_ADMIN_PORT = 1900
 
 CURR_CONV_ADDR_IPV4 = 'Convention Address.IPv4'
-CURR_CONV_ADDR_MARKER = 'Convention Address.IPv4.Current Marker'
 
 serializer = pickle
 # json cannot be used because Messages are often structures, which
@@ -257,18 +256,16 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
     def __init__(self, initType, *args):
         thesplog('*** TCPTransport initialization started. initType: %s ***', str(initType), level=logging.DEBUG)
         super(TCPTransport, self).__init__()
-
+        self._convntn_ipv4_marker = 0
         if isinstance(initType, ExternalInterfaceTransportInit):
             # External process that is going to talk "in".  There is
             # no parent, and the child is the systemAdmin.
             capabilities, logDefs, concurrency_context = args
             adminRouting     = False
             self.txOnly      = False  # communications from outside-in are always local and therefore not restricted.
-            self._convntn_ipv4_marker = 0
             if isinstance(capabilities.get(CURR_CONV_ADDR_IPV4), list):
-                curr_marker = self.getCurrentCounter(capabilities)
-                thesplog('Convention Addresses Current Marker: %s', str(curr_marker), level=logging.DEBUG)
-                convAddr = capabilities.get(CURR_CONV_ADDR_IPV4, '')[curr_marker]
+                thesplog('Convention Addresses Current Marker: %i', self._convntn_ipv4_marker, level=logging.DEBUG)
+                convAddr = capabilities.get(CURR_CONV_ADDR_IPV4, '')[self._convntn_ipv4_marker]
                 #TODO - needed?
             else:
                 convAddr = capabilities.get(CURR_CONV_ADDR_IPV4, '')
@@ -405,14 +402,14 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
         return self.protectedFileNumList() + \
             [self._openSockets[S].socket.fileno() for S in getattr(self, '_openSockets', [])]
 
-    @staticmethod
-    def getAdminAddr(capabilities):
+    #@staticmethod
+    def getAdminAddr(self, capabilities):
         return ActorAddress(
             (TXOnlyAdminTCPv4ActorAddress
              if capabilities.get('Outbound Only', False) else
              TCPv4ActorAddress)
             (None, capabilities.get('Admin Port', DEFAULT_ADMIN_PORT),
-             external=(TCPTransport.getConventionAddress(capabilities) or
+             external=(self.getConventionAddress(capabilities) or
                        ('', capabilities.get('Admin Port',
                                              DEFAULT_ADMIN_PORT)) or
                        True)))
@@ -431,12 +428,12 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
                      external=True))
 
     #TODO - We need to gracefully handle the scenario when host suffers catastrophic failure
-    @staticmethod
-    def getConventionAddress(capabilities):
+    #@staticmethod
+    def getConventionAddress(self, capabilities):
         thesplog('  ### getConventionAddress: entry ###', level=logging.DEBUG)
         if isinstance(capabilities.get(CURR_CONV_ADDR_IPV4), list):
-            curr_marker = capabilities[CURR_CONV_ADDR_MARKER]
-            convAddr = capabilities.get(CURR_CONV_ADDR_IPV4, '')[0]
+            thesplog('  ### getConventionAddress: curr_marker: %i', self.getConventionAddressMarker(), level=logging.DEBUG)
+            convAddr = capabilities.get(CURR_CONV_ADDR_IPV4, '')[self.getConventionAddressMarker()]
         else:
             convAddr = capabilities.get(CURR_CONV_ADDR_IPV4, '')
         if not convAddr:
@@ -447,12 +444,6 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
             thesplog('Invalid TCP convention address "%s": %s', convAddr, ex,
                      level=logging.ERROR)
             raise InvalidActorAddress(convAddr, str(ex))
-
-    def getCurrentCounter(self, capabilities):
-        if not hasattr(capabilities,CURR_CONV_ADDR_MARKER):
-            capabilities[CURR_CONV_ADDR_MARKER] = self._convntn_ipv4_marker
-        thesplog('  Current convention address marker: %s', capabilities.get(CURR_CONV_ADDR_MARKER), level=logging.DEBUG)
-        return capabilities.get(CURR_CONV_ADDR_MARKER)
         
     def external_transport_clone(self):
         # An external process wants a unique context for communicating
@@ -463,6 +454,12 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
                             isinstance(self.myAddress.addressDetails,
                                        RoutedTCPv4ActorAddress))
 
+    def getConventionAddressMarker(self):
+        return self._convntn_ipv4_marker
+
+    def resetConventionAddressMarker(self, new_marker):
+        thesplog('  Resetting ConventionAddressMarker to: %i', new_marker, level=logging.DEBUG)
+        self._convntn_ipv4_marker = new_marker
 
     def _updateStatusResponse(self, resp):
         """Called to update a Thespian_SystemStatus or Thespian_ActorStatus

@@ -28,7 +28,6 @@ CONVENTION_REGISTRATION_MISS_MAX  = 1  # # of missing convention registrations b
 CONVENTION_REINVITE_ADJUSTMENT    = 1.1  # multiply by remote checkin expected time for new invite timeout period
 
 CURR_CONV_ADDR_IPV4 = 'Convention Address.IPv4'
-CURR_CONV_ADDR_MARKER = 'Convention Address.IPv4.Current Marker'
 
 def convention_reinvite_adjustment(t):
     try:
@@ -127,13 +126,14 @@ class LostRemote(object):
 
 class LocalConventionState(object):
     def __init__(self, myAddress, capabilities, sCBStats,
-                 getConventionAddressFunc):
+                 getConventionAddressFunc, resetConventionAddressMarkerFunc):
         self._myAddress = myAddress
         self._capabilities = capabilities
         self._sCBStats = sCBStats
         self._conventionMembers = AssocList() # key=Remote Admin Addr, value=ConventionMemberData
         self._conventionNotificationHandlers = []
         self._getConventionAddr = getConventionAddressFunc
+        self._resetConventionAddrMarker = resetConventionAddressMarkerFunc
         self._conventionAddress = getConventionAddressFunc(capabilities)
         self._conventionRegistration = ExpirationTimer(CONVENTION_REREGISTRATION_PERIOD)
         self._has_been_activated = False
@@ -453,8 +453,6 @@ class LocalConventionState(object):
         return rmsgs
 
     def _initiate_re_election(self):
-        #opt = srcs[0].split(':')[0]
-        #ActorAddr-(T|172.26.0.4:1902)
         curr_ldr_ip = str(self.conventionLeaderAddr).split('|')[1].split(':')[0]
         thesplog('  Current admin: %s', curr_ldr_ip, level=logging.DEBUG)
         for each in self._current_avlbl_leaders:
@@ -466,11 +464,17 @@ class LocalConventionState(object):
         thesplog('  Current leader stats after re-election', level=logging.DEBUG)
         for each in self._current_avlbl_leaders:
             thesplog('      %s', each, level=logging.DEBUG)
-
-        for curr_ldr in self._current_avlbl_leaders:
+        thesplog('  Current leader for conv state: %s', self._getConventionAddr(self.capabilities), level=logging.DEBUG)
+        for idx, curr_ldr in enumerate(self._current_avlbl_leaders):
             if curr_ldr['status'] == 'UP':
                 self._conventionAddress = curr_ldr['convention_alias']
+                thesplog('  New ConventionAddress marker: %i', idx, level=logging.DEBUG)
+                self._resetConventionAddrMarker(idx)
                 break
+        #for curr_ldr in self._current_avlbl_leaders:
+        #    if curr_ldr['status'] == 'UP':
+        #        self._conventionAddress = curr_ldr['convention_alias']
+        #        break
 
     def _check_preregistered_ping(self, ct, member):
         if member.preRegistered and \
@@ -636,7 +640,8 @@ class ConventioneerAdmin(GlobalNamesAdmin):
             self.myAddress,
             self.capabilities,
             self._sCBStats,
-            getattr(self.transport, 'getConventionAddress', lambda c: None))
+            getattr(self.transport, 'getConventionAddress', lambda c: None),
+            getattr(self.transport, 'resetConventionAddressMarker', lambda c: None))
         self._hysteresisSender = HysteresisDelaySender(self._send_intent)
 
     def _updateStatusResponse(self, resp):
