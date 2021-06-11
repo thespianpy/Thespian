@@ -255,7 +255,6 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
 
     def __init__(self, initType, *args):
         super(TCPTransport, self).__init__()
-        self._convntn_ipv4_marker = 0
         if isinstance(initType, ExternalInterfaceTransportInit):
             # External process that is going to talk "in".  There is
             # no parent, and the child is the systemAdmin.
@@ -458,13 +457,6 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
                             self.txOnly,
                             isinstance(self.myAddress.addressDetails,
                                        RoutedTCPv4ActorAddress))
-
-    def getConventionAddressMarker(self):
-        return self._convntn_ipv4_marker
-
-    def resetConventionAddressMarker(self, new_marker):
-        thesplog('  Resetting ConventionAddressMarker to: %i', new_marker, level=logging.DEBUG)
-        self._convntn_ipv4_marker = new_marker
 
     def _updateStatusResponse(self, resp):
         """Called to update a Thespian_SystemStatus or Thespian_ActorStatus
