@@ -254,7 +254,6 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
     "A transport using TCP IPv4 sockets for communications."
 
     def __init__(self, initType, *args):
-        thesplog('*** TCPTransport initialization started. initType: %s ***', str(initType), level=logging.DEBUG)
         super(TCPTransport, self).__init__()
         self._convntn_ipv4_marker = 0
         if isinstance(initType, ExternalInterfaceTransportInit):
@@ -264,27 +263,18 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
             adminRouting     = False
             self.txOnly      = False  # communications from outside-in are always local and therefore not restricted.
             if isinstance(capabilities.get(CURR_CONV_ADDR_IPV4), list):
-                thesplog('Convention Addresses Current Marker: %i', self._convntn_ipv4_marker, level=logging.DEBUG)
-                convAddr = capabilities.get(CURR_CONV_ADDR_IPV4, '')[self._convntn_ipv4_marker]
-                #TODO - needed?
+                convAddr = capabilities.get(CURR_CONV_ADDR_IPV4, '')[0]
             else:
                 convAddr = capabilities.get(CURR_CONV_ADDR_IPV4, '')
-            thesplog('*** convAddr: %s ***', str(convAddr), level=logging.DEBUG)
             if convAddr and type(convAddr) == type( (1,2) ):
-                thesplog('*** 1st block', level=logging.DEBUG)
                 externalAddr = convAddr
             elif type(convAddr) == type("") and ':' in convAddr:
-                thesplog('*** 2nd block', level=logging.DEBUG)
                 externalAddr = convAddr.split(':')
                 externalAddr      = externalAddr[0], int(externalAddr[1])
             else:
-                thesplog('*** 3rd block', level=logging.DEBUG)
                 externalAddr = (convAddr, capabilities.get('Admin Port', DEFAULT_ADMIN_PORT))
-            thesplog('*** externalAddr: %s ***', str(externalAddr), level=logging.DEBUG)
             templateAddr     = ActorAddress(TCPv4ActorAddress(None, 0, external = externalAddr))
-            thesplog('*** templateAddr: %s ***', str(templateAddr), level=logging.DEBUG)
-            self._adminAddr  = self.getAdminAddr(capabilities)
-            thesplog('*** _adminAddr: %s ***', str(self._adminAddr), level=logging.DEBUG)
+            self._adminAddr  = TCPTransport.getAdminAddr(capabilities)
             self._parentAddr = None
             isAdmin = False
         elif isinstance(initType, TCPEndpoint):
@@ -402,14 +392,14 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
         return self.protectedFileNumList() + \
             [self._openSockets[S].socket.fileno() for S in getattr(self, '_openSockets', [])]
 
-    #@staticmethod
-    def getAdminAddr(self, capabilities):
+    @staticmethod
+    def getAdminAddr(capabilities):
         return ActorAddress(
             (TXOnlyAdminTCPv4ActorAddress
              if capabilities.get('Outbound Only', False) else
              TCPv4ActorAddress)
             (None, capabilities.get('Admin Port', DEFAULT_ADMIN_PORT),
-             external=(self.getConventionAddress(capabilities) or
+             external=(TCPTransport.getConventionAddress(capabilities) or
                        ('', capabilities.get('Admin Port',
                                              DEFAULT_ADMIN_PORT)) or
                        True)))
@@ -428,12 +418,10 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
                      external=True))
 
     #TODO - We need to gracefully handle the scenario when host suffers catastrophic failure
-    #@staticmethod
-    def getConventionAddress(self, capabilities):
-        thesplog('  ### getConventionAddress: entry ###', level=logging.DEBUG)
+    @staticmethod
+    def getConventionAddress(capabilities):
         if isinstance(capabilities.get(CURR_CONV_ADDR_IPV4), list):
-            thesplog('  ### getConventionAddress: curr_marker: %i', self.getConventionAddressMarker(), level=logging.DEBUG)
-            convAddr = capabilities.get(CURR_CONV_ADDR_IPV4, '')[self.getConventionAddressMarker()]
+            convAddr = (capabilities.get(CURR_CONV_ADDR_IPV4, ''))[0]
         else:
             convAddr = capabilities.get(CURR_CONV_ADDR_IPV4, '')
         if not convAddr:
@@ -444,7 +432,24 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
             thesplog('Invalid TCP convention address "%s": %s', convAddr, ex,
                      level=logging.ERROR)
             raise InvalidActorAddress(convAddr, str(ex))
-        
+
+    def getAllConventionAddresses(self, capabilities):
+        if isinstance(capabilities.get(CURR_CONV_ADDR_IPV4), list):
+            cnvtnAddresses = capabilities.get(CURR_CONV_ADDR_IPV4, '')
+        else:
+            cnvtnAddresses = list(capabilities.get(CURR_CONV_ADDR_IPV4, ''))
+        if not cnvtnAddresses:
+            return []
+        try:
+            cnvtn_addr_list = []
+            for each_addr in cnvtnAddresses:
+                cnvtn_addr_list.append(TCPTransport.getAddressFromString(each_addr))
+            return cnvtn_addr_list
+        except Exception as ex:
+            thesplog('Invalid TCP convention address(es) "%s": %s', cnvtnAddresses, ex,
+                     level=logging.ERROR)
+            raise InvalidActorAddress(cnvtnAddresses, str(ex))
+
     def external_transport_clone(self):
         # An external process wants a unique context for communicating
         # with Actors.

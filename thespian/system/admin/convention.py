@@ -17,12 +17,13 @@ from functools import partial
 from datetime import (timedelta, datetime)
 import os
 import socket
+from thespian.system.transport.IPBase import (TCPv4ActorAddress)
 
 #TODO - Perhaps this should be configurable?
 #CONVENTION_REREGISTRATION_PERIOD  = timedelta(minutes=7, seconds=22)
 #CONVENTION_RESTART_PERIOD         = timedelta(minutes=3, seconds=22)
-CONVENTION_REREGISTRATION_PERIOD  = timedelta(minutes=2, seconds=00)
-CONVENTION_RESTART_PERIOD         = timedelta(minutes=2, seconds=00)
+CONVENTION_REREGISTRATION_PERIOD  = timedelta(minutes=1, seconds=00)
+CONVENTION_RESTART_PERIOD         = timedelta(minutes=1, seconds=00)
 #TODO - Perhaps this should be configurable?
 CONVENTION_REGISTRATION_MISS_MAX  = 1  # # of missing convention registrations before death declared
 CONVENTION_REINVITE_ADJUSTMENT    = 1.1  # multiply by remote checkin expected time for new invite timeout period
@@ -125,16 +126,19 @@ class LostRemote(object):
 
 
 class LocalConventionState(object):
-    def __init__(self, myAddress, capabilities, sCBStats,
-                 getConventionAddressFunc, resetConventionAddressMarkerFunc):
+    def __init__(self, myAddress, capabilities, sCBStats, getAllConventionAddressesFunc):
         self._myAddress = myAddress
         self._capabilities = capabilities
         self._sCBStats = sCBStats
         self._conventionMembers = AssocList() # key=Remote Admin Addr, value=ConventionMemberData
         self._conventionNotificationHandlers = []
-        self._getConventionAddr = getConventionAddressFunc
-        self._resetConventionAddrMarker = resetConventionAddressMarkerFunc
-        self._conventionAddress = getConventionAddressFunc(capabilities)
+        self._convntn_ipv4_marker = 0
+        #Rename?
+        self._getConventionAddr = getAllConventionAddressesFunc
+        #self._getConventionAddr = getConventionAddressFunc
+        #self._resetConventionAddrMarker = resetConventionAddressMarkerFunc
+        #self._conventionAddress = getConventionAddressFunc(capabilities)
+        self._conventionAddress = getAllConventionAddressesFunc(capabilities)[self._convntn_ipv4_marker]
         self._conventionRegistration = ExpirationTimer(CONVENTION_REREGISTRATION_PERIOD)
         self._has_been_activated = False
         self._invited = False  # entered convention as a result of an explicit invite
@@ -197,7 +201,7 @@ class LocalConventionState(object):
         rmsgs = []
         # If not specified in capabilities, don't override any invites
         # that may have been received.
-        self._conventionAddress = self._getConventionAddr(self.capabilities) or \
+        self._conventionAddress = self._getConventionAddr(self.capabilities)[self._convntn_ipv4_marker] or \
                                   self._conventionAddress
         leader_is_gone = (self._conventionMembers.find(self.conventionLeaderAddr) is None) \
                          if self.conventionLeaderAddr else True
@@ -277,7 +281,7 @@ class LocalConventionState(object):
         if isinstance(self.capabilities.get(CURR_CONV_ADDR_IPV4), list):
             for curr_entry in self.capabilities.get(CURR_CONV_ADDR_IPV4):
                 if socket.gethostname() == socket.getfqdn(curr_entry[0]):
-                    thesplog('  Post convention_register, new leader %s identified', socket.gethostname(), level=logging.DEBUG)
+                    thesplog('  Post convention_register, new leader %s identified', curr_entry[0], level=logging.DEBUG)
                     rmsgs.append(TransmitIntent(self.myAddress, NewLeaderAvailable(self.myAddress, curr_entry)))
                     break
 
@@ -445,8 +449,11 @@ class LocalConventionState(object):
                          level=logging.WARNING, primary=True)
                 rmsgs.extend(self._remote_system_cleanup(self.conventionLeaderAddr))
                 #TODO - This is where we need to put re-elect leader logic
-                self._initiate_re_election()
-                #rmsgs.append(TransmitIntent(self.myAddress, ConventionRegister(self.myAddress, self.capabilities)))
+                new_leader_actr_addr = ActorAddress(TCPv4ActorAddress(
+                                            self._initiate_re_election(), 
+                                            1900, 
+                                            external=True))
+                rmsgs.append(TransmitIntent(new_leader_actr_addr, ConventionRegister(self.myAddress, self.capabilities, True)))
                 self._conventionLeaderMissCount = 0
             else:
                 rmsgs.extend(self.setup_convention())
@@ -454,27 +461,24 @@ class LocalConventionState(object):
 
     def _initiate_re_election(self):
         curr_ldr_ip = str(self.conventionLeaderAddr).split('|')[1].split(':')[0]
-        thesplog('  Current admin: %s', curr_ldr_ip, level=logging.DEBUG)
+        new_ldr = ''
         for each in self._current_avlbl_leaders:
             if curr_ldr_ip == socket.gethostbyname(socket.getfqdn(each['convention_alias'])):
-                thesplog('  Located current leader', level=logging.DEBUG)
+                thesplog('  Marked current leader %s as DOWN', curr_ldr_ip, level=logging.DEBUG)
                 each['status'] = 'DOWN'
                 each['last_known_ts'] = int(datetime.utcnow().strftime('%Y%m%d%H%M%S%f')[:-3])
                 break
-        thesplog('  Current leader stats after re-election', level=logging.DEBUG)
+        thesplog('  Current leader status :', level=logging.DEBUG)
         for each in self._current_avlbl_leaders:
             thesplog('      %s', each, level=logging.DEBUG)
-        thesplog('  Current leader for conv state: %s', self._getConventionAddr(self.capabilities), level=logging.DEBUG)
         for idx, curr_ldr in enumerate(self._current_avlbl_leaders):
             if curr_ldr['status'] == 'UP':
+                new_ldr = curr_ldr['convention_alias']
                 self._conventionAddress = curr_ldr['convention_alias']
-                thesplog('  New ConventionAddress marker: %i', idx, level=logging.DEBUG)
-                self._resetConventionAddrMarker(idx)
+                self._convntn_ipv4_marker = idx
+                thesplog('  Selected %s as next new leader', new_ldr, level=logging.DEBUG)
                 break
-        #for curr_ldr in self._current_avlbl_leaders:
-        #    if curr_ldr['status'] == 'UP':
-        #        self._conventionAddress = curr_ldr['convention_alias']
-        #        break
+        return socket.gethostbyname(socket.getfqdn(new_ldr))
 
     def _check_preregistered_ping(self, ct, member):
         if member.preRegistered and \
@@ -640,8 +644,8 @@ class ConventioneerAdmin(GlobalNamesAdmin):
             self.myAddress,
             self.capabilities,
             self._sCBStats,
-            getattr(self.transport, 'getConventionAddress', lambda c: None),
-            getattr(self.transport, 'resetConventionAddressMarker', lambda c: None))
+            getattr(self.transport, 'getAllConventionAddresses', lambda c: None))
+            #getattr(self.transport, 'resetConventionAddressMarker', lambda c: None))
         self._hysteresisSender = HysteresisDelaySender(self._send_intent)
 
     def _updateStatusResponse(self, resp):
