@@ -219,7 +219,7 @@ class LocalConventionState(object):
         if self.myAddress in self._conventionAddresses:
             thesplog('  New leader %s located', self.myAddress, level=logging.DEBUG)
             thesplog('  My address: %s', self.myAddress, level=logging.DEBUG)
-            rmsgs.append(TransmitIntent(self.myAddress, NewLeaderAvailable(self.myAddress, str(self.myAddress))))
+            rmsgs.append(TransmitIntent(self.myAddress, NewLeaderAvailable(self.myAddress)))
         self._conventionRegistration = ExpirationTimer(CONVENTION_REREGISTRATION_PERIOD)
         return rmsgs
 
@@ -275,7 +275,7 @@ class LocalConventionState(object):
 
         if self.myAddress in self._conventionAddresses:
             thesplog('  Identified self(%s) as a leader', self.myAddress, level=logging.DEBUG)
-            rmsgs.append(TransmitIntent(self.myAddress, NewLeaderAvailable(self.myAddress, str(self.myAddress))))
+            rmsgs.append(TransmitIntent(self.myAddress, NewLeaderAvailable(self.myAddress)))
 
         existingPreReg = (
             # existing.preRegOnly
@@ -445,14 +445,10 @@ class LocalConventionState(object):
                 rmsgs.extend(self.setup_convention())
         return rmsgs
 
-    def _re_elect_leader(self, last_leader_idx=-1):
-        # Update old leader
+    def _re_elect_leader(self):
+        # Update about the last known leader
         old_ldr_located = False
-        last_knwn_ldr = None
-        if last_leader_idx == -1:
-            last_knwn_ldr = self.conventionLeaderAddr
-        else:
-            last_knwn_ldr = self._conventionAddresses[last_leader_idx]
+        last_knwn_ldr = self.conventionLeaderAddr
 
         for each in self._current_avlbl_leaders:
             if last_knwn_ldr == each['actor_address']:
@@ -464,6 +460,7 @@ class LocalConventionState(object):
         if not old_ldr_located:
             thesplog('  Unable to mark %s as DOWN in convention leaders list', str(self.conventionLeaderAddr), level=logging.WARNING)
 
+        # Print the status, just for convenience
         self._current_leader_stats()
 
         # Mark new leader
@@ -708,8 +705,6 @@ class ConventioneerAdmin(GlobalNamesAdmin):
                 if idx < self._cstate._convntn_ipv4_marker:
                     last_leader_idx = self._cstate._convntn_ipv4_marker
                     self._cstate._convntn_ipv4_marker = idx
-                    #Not needed
-                    #new_leader_actr_addr = self._cstate._re_elect_leader()
                     thesplog('      Removing last leader (%s)', self._cstate._current_avlbl_leaders[last_leader_idx]['address'], level=logging.DEBUG)
                     thesplog('      Selecting current leader (%s)', self._cstate._current_avlbl_leaders[idx]['address'], level=logging.DEBUG)
                 else:

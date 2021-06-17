@@ -73,14 +73,12 @@ class ConventionInvite(ActorSystemMessage):
     pass
 
 class NewLeaderAvailable(ActorSystemMessage):
-    def __init__(self, adminAddress, prettyfiedAddress):
+    def __init__(self, adminAddress):
         self.adminAddress = adminAddress
-        self.prettyfiedAddress = prettyfiedAddress
         self.lastKnownTS = int(datetime.utcnow().strftime('%Y%m%d%H%M%S%f')[:-3])
 
     def __str__(self):
         return 'NewLeaderAvailable(adminAddress=%(adminAddress)s' \
-            ', prettyfiedAddress=%(prettyfiedAddress)s' \
             ', lastKnownTS=%(lastKnownTS)s' \
             ')' % self.__dict__
     #TODO - we need to have an __eq__ and __ne__ function as well
