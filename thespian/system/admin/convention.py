@@ -15,8 +15,6 @@ from thespian.system.sourceLoader import loadModuleFromHashSource
 from thespian.system.transport.hysteresis import HysteresisDelaySender
 from functools import partial
 from datetime import (timedelta, datetime)
-import os
-import socket
 from thespian.system.transport.IPBase import (TCPv4ActorAddress)
 
 #TODO - Perhaps this should be configurable?
@@ -218,12 +216,10 @@ class LocalConventionState(object):
                                onError = self._setupConventionCBError))
             rmsgs.append(LogAggregator(self.conventionLeaderAddr))
         # Check if this is part of convention leaders
-        for curr_addr in self._conventionAddresses:
-            if self.myAddress == curr_addr:
-                    thesplog('  New leader %s located', curr_addr, level=logging.DEBUG)
-                    thesplog('  My address: %s', self.myAddress, level=logging.DEBUG)
-                    rmsgs.append(TransmitIntent(self.myAddress, NewLeaderAvailable(curr_addr, str(curr_addr))))
-                    break
+        if self.myAddress in self._conventionAddresses:
+            thesplog('  New leader %s located', self.myAddress, level=logging.DEBUG)
+            thesplog('  My address: %s', self.myAddress, level=logging.DEBUG)
+            rmsgs.append(TransmitIntent(self.myAddress, NewLeaderAvailable(self.myAddress, str(self.myAddress))))
         self._conventionRegistration = ExpirationTimer(CONVENTION_REREGISTRATION_PERIOD)
         return rmsgs
 
@@ -277,11 +273,9 @@ class LocalConventionState(object):
                      level=logging.WARNING)
             return rmsgs
 
-        for curr_addr in self._conventionAddresses:
-            if self.myAddress == curr_addr:
-                thesplog('  Identified self(%s) as a leader', curr_addr, level=logging.DEBUG)
-                rmsgs.append(TransmitIntent(self.myAddress, NewLeaderAvailable(curr_addr, str(curr_addr))))
-                break
+        if self.myAddress in self._conventionAddresses:
+            thesplog('  Identified self(%s) as a leader', self.myAddress, level=logging.DEBUG)
+            rmsgs.append(TransmitIntent(self.myAddress, NewLeaderAvailable(self.myAddress, str(self.myAddress))))
 
         existingPreReg = (
             # existing.preRegOnly
@@ -734,7 +728,6 @@ class ConventioneerAdmin(GlobalNamesAdmin):
             # This is the regular scenario
             self._performIO(self._cstate.send_to_all_members(envelope.message, [envelope.sender]))
 
-        thesplog('  NewLeaderAvailable: exit', level=logging.DEBUG)
         return False
 
     def h_SystemShutdown(self, envelope):

@@ -4,9 +4,7 @@ from thespian.actors import ActorSystemMessage
 
 import logging
 from thespian.system.utilis import thesplog
-import os
 from datetime import datetime
-import socket
 
 # ----------------------------------------------------------------------
 # ActorSystem interaction
