@@ -689,7 +689,7 @@ class ConventioneerAdmin(GlobalNamesAdmin):
         # 1. It issued an availability message and caught it in the handler.
         #    At that time it needs to consume the message in the same sequence, and (monotonically) increase the timestamp.
         # 2. After it dissipated the leader available message across the system, the message bounced off other members and came back.
-        #    At that time it needs to "stop the buck", and stop the infinite loop/death-spiralling
+        #    At that time it needs to "stop the buck", i.e., prevent an infinite loop
         if self.myAddress == envelope.message.adminAddress:
             if envelope.message.lastKnownTS > self._cstate._avlbl_leader_last_knwn_ts:
                 thesplog('      Assigning new time stamp %s', str(envelope.message.lastKnownTS), level=logging.DEBUG)
