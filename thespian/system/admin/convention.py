@@ -191,7 +191,6 @@ class LocalConventionState(object):
         return self.setup_convention()
 
     def setup_convention(self, activation=False):
-        thesplog('  setup_convention:entry, activation: %s', activation, level=logging.DEBUG)
         self._has_been_activated |= activation
         rmsgs = []
         # If not specified in capabilities, don't override any invites
@@ -630,7 +629,7 @@ class LocalConventionState(object):
                 for M in self._conventionMembers.values()
                 if M.remoteAddress not in (exception_list or [])]
 
-    def send_to_all_leaders(self, message, exception_list=[]):
+    def send_to_leaders_only(self, message, exception_list=[]):
         thesplog('      Sending to %i leaders', len(self._conventionAddresses) - len(exception_list),level=logging.DEBUG)
         return [HysteresisSend(L, message) for L in self._conventionAddresses if L not in (exception_list)]
 
@@ -686,6 +685,11 @@ class ConventioneerAdmin(GlobalNamesAdmin):
             envelope.sender, str(envelope.message.adminAddress), envelope.message.lastKnownTS, \
             level=logging.DEBUG)
 
+        # There are two possibilities when a leader would receive its own message
+        # 1. It issued an availability message and caught it in the handler.
+        #    At that time it needs to consume the message in the same sequence, and (monotonically) increase the timestamp.
+        # 2. After it dissipated the leader available message across the system, the message bounced off other members and came back.
+        #    At that time it needs to "stop the buck", and stop the infinite loop/death-spiralling
         if self.myAddress == envelope.message.adminAddress:
             if envelope.message.lastKnownTS > self._cstate._avlbl_leader_last_knwn_ts:
                 thesplog('      Assigning new time stamp %s', str(envelope.message.lastKnownTS), level=logging.DEBUG)
@@ -718,7 +722,7 @@ class ConventioneerAdmin(GlobalNamesAdmin):
         if len(self._cstate._conventionMembers) == 0:
             # This means current member is secluded and should at least reach known leaders
             thesplog('      Trying to reach all (other) leaders', level=logging.DEBUG)
-            self._performIO(self._cstate.send_to_all_leaders(envelope.message, [envelope.sender]))
+            self._performIO(self._cstate.send_to_leaders_only(envelope.message, [envelope.sender]))
         else:
             # This is the regular scenario
             self._performIO(self._cstate.send_to_all_members(envelope.message, [envelope.sender]))

@@ -420,9 +420,9 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
     @staticmethod
     def getConventionAddress(capabilities):
         if isinstance(capabilities.get(CURR_CONV_ADDR_IPV4), list):
-            convAddr = (capabilities.get(CURR_CONV_ADDR_IPV4, ''))[0]
+            convAddr = (capabilities.get(CURR_CONV_ADDR_IPV4, []))[0]
         else:
-            convAddr = capabilities.get(CURR_CONV_ADDR_IPV4, '')
+            convAddr = capabilities.get(CURR_CONV_ADDR_IPV4, None)
         if not convAddr:
             return None
         try:
@@ -434,9 +434,9 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
 
     def getAllConventionAddresses(self, capabilities):
         if isinstance(capabilities.get(CURR_CONV_ADDR_IPV4), list):
-            cnvtnAddresses = capabilities.get(CURR_CONV_ADDR_IPV4, '')
+            cnvtnAddresses = capabilities.get(CURR_CONV_ADDR_IPV4, [])
         else:
-            cnvtnAddresses = list(capabilities.get(CURR_CONV_ADDR_IPV4, ''))
+            cnvtnAddresses = list(capabilities.get(CURR_CONV_ADDR_IPV4, None))
         if not cnvtnAddresses:
             return []
         try:
