@@ -16,14 +16,27 @@ from thespian.system.transport.hysteresis import HysteresisDelaySender
 from functools import partial
 from datetime import (timedelta, datetime)
 from thespian.system.transport.IPBase import (TCPv4ActorAddress)
+import os
 
-#TODO - Perhaps this should be configurable?
-#CONVENTION_REREGISTRATION_PERIOD  = timedelta(minutes=7, seconds=22)
-#CONVENTION_RESTART_PERIOD         = timedelta(minutes=3, seconds=22)
-CONVENTION_REREGISTRATION_PERIOD  = timedelta(minutes=1, seconds=00)
-CONVENTION_RESTART_PERIOD         = timedelta(minutes=1, seconds=00)
-#TODO - Perhaps this should be configurable?
-CONVENTION_REGISTRATION_MISS_MAX  = 1  # # of missing convention registrations before death declared
+if 'CONVENTION_REREGISTRATION_PERIOD' in os.environ:
+    rgsrtn_prd_mnt = int(os.environ['CONVENTION_REREGISTRATION_PERIOD'].split(':')[0])
+    rgsrtn_prd_sec = int(os.environ['CONVENTION_REREGISTRATION_PERIOD'].split(':')[1])
+    CONVENTION_REREGISTRATION_PERIOD  = timedelta(minutes=rgsrtn_prd_mnt, seconds=rgsrtn_prd_sec)
+else:
+    CONVENTION_REREGISTRATION_PERIOD  = timedelta(minutes=7, seconds=22)
+
+if 'CONVENTION_RESTART_PERIOD' in os.environ:
+    restart_prd_mnt = int(os.environ['CONVENTION_RESTART_PERIOD'].split(':')[0])
+    restart_prd_sec = int(os.environ['CONVENTION_RESTART_PERIOD'].split(':')[1])
+    CONVENTION_RESTART_PERIOD = timedelta(minutes=restart_prd_mnt, seconds=restart_prd_sec)
+else:
+    CONVENTION_RESTART_PERIOD = timedelta(minutes=3, seconds=22)
+
+if 'CONVENTION_REGISTRATION_MISS_MAX' in os.environ:
+    CONVENTION_REGISTRATION_MISS_MAX = int(os.environ['CONVENTION_REGISTRATION_MISS_MAX'])
+else:
+    CONVENTION_REGISTRATION_MISS_MAX  = 3  # # of missing convention registrations before death declared
+
 CONVENTION_REINVITE_ADJUSTMENT    = 1.1  # multiply by remote checkin expected time for new invite timeout period
 
 CURR_CONV_ADDR_IPV4 = 'Convention Address.IPv4'
@@ -151,7 +164,6 @@ class LocalConventionState(object):
 
     def updateStatusResponse(self, resp):
         resp.setConventionLeaderAddress(self.conventionLeaderAddr)
-        #TODO - set convention supporters here
         resp.setConventionRegisterTime(self._conventionRegistration)
         for each in self._conventionMembers.values():
             resp.addConventioneer(each.remoteAddress, each.registryValid)
@@ -195,9 +207,6 @@ class LocalConventionState(object):
         rmsgs = []
         # If not specified in capabilities, don't override any invites
         # that may have been received.
-        #TODO - (AC) Not sure if this is needed anymore
-        #self._conventionAddress = self._conventionAddresses[self._convntn_ipv4_marker] or \
-        #                          self._conventionAddress
         leader_is_gone = (self._conventionMembers.find(self.conventionLeaderAddr) is None) \
                          if self.conventionLeaderAddr else True
         thesplog('  isConventionLeader:%s, conventionLeaderAddr: %s', self.isConventionLeader(), self.conventionLeaderAddr, level=logging.DEBUG)
@@ -240,7 +249,7 @@ class LocalConventionState(object):
 
     def got_convention_invite(self, sender):
         thesplog('Got Convention invite from %s', sender, level=logging.DEBUG)
-        #TODO - (AC) What should be done here? Append sender to list?
+        #TODO - Append sender to list?
         self._conventionAddress = sender
         self._invited = True
         return self.setup_convention()
@@ -544,7 +553,7 @@ class LocalConventionState(object):
         # Remove remote system from conventionMembers
         if not cmr.preRegistered:
             if registrant == self.conventionLeaderAddr and self._invited:
-                #TODO - what needs to be done here?
+                #TODO - What needs to be done here?
                 self._conventionAddress = None
                 # Don't clear invited: once invited, that
                 # perpetually indicates this should be only a

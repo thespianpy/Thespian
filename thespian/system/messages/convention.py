@@ -81,7 +81,12 @@ class NewLeaderAvailable(ActorSystemMessage):
         return 'NewLeaderAvailable(adminAddress=%(adminAddress)s' \
             ', lastKnownTS=%(lastKnownTS)s' \
             ')' % self.__dict__
-    #TODO - we need to have an __eq__ and __ne__ function as well
+
+    def __eq__(self, o):
+        try:
+            return self.adminAddress == o.adminAddress and self.lastKnownTS == o.lastKnownTS
+        except Exception:
+            return False
 
 class NotifyOnSystemRegistration(ActorSystemMessage):
     """Message sent to the Admin to register or de-register the specified

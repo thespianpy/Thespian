@@ -416,7 +416,7 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
                      addrparts[1] if addrparts[1:] else DEFAULT_ADMIN_PORT,
                      external=True))
 
-    #TODO - We need to gracefully handle the scenario when host suffers catastrophic failure
+    #TODO - Need to gracefully handle the scenario when host suffers catastrophic failure
     @staticmethod
     def getConventionAddress(capabilities):
         if isinstance(capabilities.get(CURR_CONV_ADDR_IPV4), list):
