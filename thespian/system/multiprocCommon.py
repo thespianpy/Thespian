@@ -214,7 +214,12 @@ def _startLogger(transportClass, transport, admin, capabilities, logDefs,
     # a normal child.
     loggerAddr = ActorAddress(ActorLocalAddress(transport.myAddress, -1, None))
     admin.asLogger = None
-    logAggregator = capabilities.get('Convention Address.IPv4', None)
+
+    if isinstance(capabilities.get('Convention Address.IPv4'), list):
+        logAggregator = (capabilities.get('Convention Address.IPv4', []))[0]
+    else:
+        logAggregator = capabilities.get('Convention Address.IPv4', None)
+
     if logAggregator:
         try:
             logAggregator = transportClass.getAddressFromString(logAggregator)
