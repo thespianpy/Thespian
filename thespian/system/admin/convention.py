@@ -18,23 +18,32 @@ from datetime import (timedelta, datetime)
 from thespian.system.transport.IPBase import (TCPv4ActorAddress)
 import os
 
-if 'CONVENTION_REREGISTRATION_PERIOD' in os.environ:
-    rgsrtn_prd_mnt = int(os.environ['CONVENTION_REREGISTRATION_PERIOD'].split(':')[0])
-    rgsrtn_prd_sec = int(os.environ['CONVENTION_REREGISTRATION_PERIOD'].split(':')[1])
+try:
+    registration_period = os.environ['CONVENTION_REREGISTRATION_PERIOD']
+    rgsrtn_prd_mnt = int(registration_period.split(':')[0])
+    rgsrtn_prd_sec = int(registration_period.split(':')[1])
     CONVENTION_REREGISTRATION_PERIOD  = timedelta(minutes=rgsrtn_prd_mnt, seconds=rgsrtn_prd_sec)
-else:
+except Exception as ex:
+    thesplog('Cannot process CONVENTION_REREGISTRATION_PERIOD from environment variables. Assigning default (7 min 22 secs). Exception: %s %s', \
+        ex, type(ex), level=logging.WARNING)
     CONVENTION_REREGISTRATION_PERIOD  = timedelta(minutes=7, seconds=22)
 
-if 'CONVENTION_RESTART_PERIOD' in os.environ:
-    restart_prd_mnt = int(os.environ['CONVENTION_RESTART_PERIOD'].split(':')[0])
-    restart_prd_sec = int(os.environ['CONVENTION_RESTART_PERIOD'].split(':')[1])
+try:
+    restart_period = os.environ['CONVENTION_RESTART_PERIOD']
+    restart_prd_mnt = int(restart_period.split(':')[0])
+    restart_prd_sec = int(restart_period.split(':')[1])
     CONVENTION_RESTART_PERIOD = timedelta(minutes=restart_prd_mnt, seconds=restart_prd_sec)
-else:
+except Exception as ex:
+    thesplog('Cannot process CONVENTION_RESTART_PERIOD from environment variables. Assigning default (3 min 22 secs). Exception: %s %s', \
+        ex, type(ex), level=logging.WARNING)
     CONVENTION_RESTART_PERIOD = timedelta(minutes=3, seconds=22)
 
-if 'CONVENTION_REGISTRATION_MISS_MAX' in os.environ:
-    CONVENTION_REGISTRATION_MISS_MAX = int(os.environ['CONVENTION_REGISTRATION_MISS_MAX'])
-else:
+try:
+    convention_regstrn = os.environ['CONVENTION_REGISTRATION_MISS_MAX']
+    CONVENTION_REGISTRATION_MISS_MAX = int(convention_regstrn)
+except Exception as ex:
+    thesplog('Cannot process CONVENTION_REGISTRATION_MISS_MAX from environment variables. Assigning default (3). Exception: %s %s', \
+        ex, type(ex), level=logging.WARNING)
     CONVENTION_REGISTRATION_MISS_MAX  = 3  # # of missing convention registrations before death declared
 
 CONVENTION_REINVITE_ADJUSTMENT    = 1.1  # multiply by remote checkin expected time for new invite timeout period
