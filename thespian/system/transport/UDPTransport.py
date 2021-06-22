@@ -38,6 +38,7 @@ from thespian.system.transport.errmgmt import err_select_retry
 
 DEAD_ADDRESS_TIMEOUT = timedelta(seconds=15)
 INTERRUPT_SUPPRESSION_TIME = timedelta(seconds=1)
+CURR_CONV_ADDR_IPV4 = 'Convention Address.IPv4'
 
 serializer = pickle
 # json cannot be used because Messages are often structures, which cannot be converted to JSON.
@@ -137,7 +138,10 @@ class UDPTransport(asyncTransportBase, wakeupTransportBase):
 
     @staticmethod
     def getConventionAddress(capabilities):
-        convAddr = capabilities.get('Convention Address.IPv4', None)
+        if isinstance(capabilities.get(CURR_CONV_ADDR_IPV4), list):
+            convAddr = (capabilities.get(CURR_CONV_ADDR_IPV4, []))[0]
+        else:
+            convAddr = capabilities.get(CURR_CONV_ADDR_IPV4, None)
         if not convAddr:
             return None
         try:
@@ -147,6 +151,22 @@ class UDPTransport(asyncTransportBase, wakeupTransportBase):
                      level=logging.ERROR)
             raise InvalidActorAddress(convAddr, str(ex))
 
+    def getAllConventionAddresses(self, capabilities):
+        if isinstance(capabilities.get(CURR_CONV_ADDR_IPV4), list):
+            cnvtnAddresses = capabilities.get(CURR_CONV_ADDR_IPV4, [])
+        else:
+            cnvtnAddresses = list(capabilities.get(CURR_CONV_ADDR_IPV4, None))
+        if not cnvtnAddresses:
+            return []
+        try:
+            cnvtn_addr_list = []
+            for each_addr in cnvtnAddresses:
+                cnvtn_addr_list.append(UDPTransport.getAddressFromString(each_addr))
+            return cnvtn_addr_list
+        except Exception as ex:
+            thesplog('Invalid UCP convention address(es) "%s": %s', cnvtnAddresses, ex,
+                     level=logging.ERROR)
+            raise InvalidActorAddress(cnvtnAddresses, str(ex))
 
     def _updateStatusResponse(self, resp):
         "Called to update a Thespian_SystemStatus or Thespian_ActorStatus with common information"
