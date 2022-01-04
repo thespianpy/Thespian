@@ -8,6 +8,34 @@ import warnings
 
 
 ###
+### Configuration
+###
+
+
+def str_to_timedelta(strval):
+    "timedelta"
+    [mins, secs] = list(map(int, strval.split(':')))
+    return timedelta(minutes=mins, seconds=secs)
+
+
+def getenvdef(env_name, converter, defval):
+    """Returns the integer representation of the specified environment
+       variable or the default value if the environment variable is
+       not set or is not convertible to an integer value.
+    """
+    strval = os.getenv(env_name)
+    if strval:
+        try:
+            return converter(strval)
+        except Exception:
+            thesplog("Invalid '%s' %s value, using %s", env_name,
+                     (converter.__doc__ or "generic").split('\n')[0],
+                     defval,
+                     level=logging.WARNING);
+    return defval
+
+
+###
 ### Logging
 ###
 
@@ -21,11 +49,15 @@ _name_to_level = {
     "NOTSET": logging.NOTSET
 }
 
+def str_to_loglevel(strval):
+    "logging level"
+    return _name_to_level.get(strval)
+
 # Default/current logging controls
 _thesplog_control_settings = (
-    _name_to_level.get(os.getenv('THESPLOG_THRESHOLD') or 'WARNING', logging.WARNING),
-    False,
-    os.getenv('THESPLOG_FILE_MAXSIZE', 50 * 1024) # 50KB by default
+    getenvdef('THESPLOG_THRESHOLD', str_to_loglevel, logging.WARNING),
+    False,  # is primary=True on thesplog directed to standard logging [dangerous]?
+    getenvdef('THESPLOG_FILE_MAXSIZE', int, 50 * 1024) # 50KB by default
 )
 
 # Usually logging would be directed to /var/log, but that is often not
@@ -66,7 +98,7 @@ def thesplog_control(baseLevel=logging.DEBUG, useLogging=True, tmpFileMaxSize=0)
 def thesplog(msg, *args, **kw):
     global _thesplog_control_settings
     if kw.get('level', logging.INFO) >= _thesplog_control_settings[0]:
-        if int(_thesplog_control_settings[2]) >= 10 * 1024:
+        if _thesplog_control_settings[2] >= 10 * 1024:
             levelstr = lambda l: { logging.DEBUG: 'dbg',
                                    logging.INFO:  'I',
                                    logging.WARNING: 'Warn',
@@ -80,7 +112,7 @@ def thesplog(msg, *args, **kw):
                                                         'thespian.log'))
                 _thesplog_old_file = _thesplog_file + '.old'
             try:
-                if os.stat(_thesplog_file).st_size > int(_thesplog_control_settings[2]):
+                if os.stat(_thesplog_file).st_size > _thesplog_control_settings[2]:
                     # Tricky: a multiprocess system might enter here
                     # with multiple processes.  The single line append
                     # write below is atomic. Rename should be as well,
