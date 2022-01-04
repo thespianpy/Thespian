@@ -22,6 +22,7 @@ from thespian.system.transport import *
 from thespian.system.transport.IPBase import *
 from thespian.system.timing import ExpirationTimer, currentTime
 from thespian.system.utilis import partition
+from thespian.system.messages.convention import CONV_ADDR_IPV4_CAPABILITY
 from thespian.system.messages.multiproc import ChildMayHaveDied
 from thespian.system.addressManager import ActorLocalAddress
 import socket
@@ -138,10 +139,9 @@ class UDPTransport(asyncTransportBase, wakeupTransportBase):
 
     @staticmethod
     def getConventionAddress(capabilities):
-        if isinstance(capabilities.get(CURR_CONV_ADDR_IPV4), list):
-            convAddr = (capabilities.get(CURR_CONV_ADDR_IPV4, []))[0]
-        else:
-            convAddr = capabilities.get(CURR_CONV_ADDR_IPV4, None)
+        convAddr = capabilities.get(CONV_ADDR_IPV4_CAPABILITY, None)
+        if isinstance(convAddr, list):
+            convAddr = convAddr[0]
         if not convAddr:
             return None
         try:

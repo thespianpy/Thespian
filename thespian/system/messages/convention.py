@@ -1,10 +1,12 @@
 "Messages exchanged between ActorSystems that are part of a Convention"
 
 from thespian.actors import ActorSystemMessage
-
-import logging
-from thespian.system.utilis import thesplog
 from datetime import datetime
+
+# Common capability used to specify the convention address(es) for an
+# IPv4 transport (TCPTransport, UDPTransport).
+CONV_ADDR_IPV4_CAPABILITY = 'Convention Address.IPv4'
+
 
 # ----------------------------------------------------------------------
 # ActorSystem interaction

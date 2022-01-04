@@ -9,6 +9,7 @@ from functools import partial
 from thespian.actors import *
 from thespian.system.addressManager import ActorLocalAddress, CannotPickleAddress
 from thespian.system.logdirector import *
+from thespian.system.messages.convention import CONV_ADDR_IPV4_CAPABILITY
 from thespian.system.messages.multiproc import *
 from thespian.system.sourceLoader import loadModuleFromHashSource
 from thespian.system.systemBase import systemBase
@@ -214,12 +215,9 @@ def _startLogger(transportClass, transport, admin, capabilities, logDefs,
     # a normal child.
     loggerAddr = ActorAddress(ActorLocalAddress(transport.myAddress, -1, None))
     admin.asLogger = None
-
-    if isinstance(capabilities.get('Convention Address.IPv4'), list):
-        logAggregator = (capabilities.get('Convention Address.IPv4', []))[0]
-    else:
-        logAggregator = capabilities.get('Convention Address.IPv4', None)
-
+    logAggregator = capabilities.get(CONV_ADDR_IPV4_CAPABILITY, None)
+    if isinstance(logAggregator, list):
+        logAggregator = logAggregator[0]
     if logAggregator:
         try:
             logAggregator = transportClass.getAddressFromString(logAggregator)

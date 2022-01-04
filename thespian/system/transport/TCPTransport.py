@@ -93,6 +93,7 @@ from thespian.system.transport.asyncTransportBase import (asyncTransportBase,
                                                           exclusive_processing)
 from thespian.system.transport.wakeupTransportBase import wakeupTransportBase
 from thespian.system.transport.errmgmt import *
+from thespian.system.messages.convention import CONV_ADDR_IPV4_CAPABILITY
 from thespian.system.messages.multiproc import ChildMayHaveDied
 from thespian.system.addressManager import ActorLocalAddress
 import socket
@@ -261,15 +262,14 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
             capabilities, logDefs, concurrency_context = args
             adminRouting     = False
             self.txOnly      = False  # communications from outside-in are always local and therefore not restricted.
-            if isinstance(capabilities.get(CURR_CONV_ADDR_IPV4), list):
-                convAddr = capabilities.get(CURR_CONV_ADDR_IPV4, '')[0]
-            else:
-                convAddr = capabilities.get(CURR_CONV_ADDR_IPV4, '')
+            convAddr = capabilities.get(CONV_ADDR_IPV4_CAPABILITY, '')
+            if isinstance(convAddr, list):
+                convAddr = convAddr[0]
             if convAddr and type(convAddr) == type( (1,2) ):
                 externalAddr = convAddr
             elif type(convAddr) == type("") and ':' in convAddr:
                 externalAddr = convAddr.split(':')
-                externalAddr      = externalAddr[0], int(externalAddr[1])
+                externalAddr = externalAddr[0], int(externalAddr[1])
             else:
                 externalAddr = (convAddr, capabilities.get('Admin Port', DEFAULT_ADMIN_PORT))
             templateAddr     = ActorAddress(TCPv4ActorAddress(None, 0, external = externalAddr))
@@ -419,10 +419,9 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
     #TODO - Need to gracefully handle the scenario when host suffers catastrophic failure
     @staticmethod
     def getConventionAddress(capabilities):
-        if isinstance(capabilities.get(CURR_CONV_ADDR_IPV4), list):
-            convAddr = (capabilities.get(CURR_CONV_ADDR_IPV4, []))[0]
-        else:
-            convAddr = capabilities.get(CURR_CONV_ADDR_IPV4, None)
+        convAddr = capabilities.get(CONV_ADDR_IPV4_CAPABILITY, None)
+        if isinstance(convAddr, list):
+            convAddr = convAddr[0]
         if not convAddr:
             return None
         try:
