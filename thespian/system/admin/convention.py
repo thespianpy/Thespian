@@ -195,6 +195,12 @@ class LocalConventionState(object):
         return self.setup_convention()
 
     def setup_convention(self, activation=False):
+        """Called to perform the initial registration with the convention
+           leader (unless this *is* the leader) and also whenever
+           connectivity to the convention leader is restored.
+           Performs some administration and then attempts to register
+           with the convention leader.
+        """
         self._has_been_activated |= activation
         rmsgs = []
         # If not specified in capabilities, don't override any invites
@@ -253,7 +259,7 @@ class LocalConventionState(object):
             # Lost connection to an invitation-only convention.
             # Cannot join again until another invitation is received.
             return []
-        # Registrant may re-register if changing capabilities
+        # Remote member may re-register if changing capabilities
         rmsgs = []
         registrant = regmsg.adminAddress
         prereg = getattr(regmsg, 'preRegister', False)  # getattr used; see definition
@@ -305,13 +311,14 @@ class LocalConventionState(object):
 
         # Convention Members normally periodically initiate a
         # membership message, to which the leader confirms by
-        # responding; if this was a pre-registration, that identifies
-        # this system as the "leader" for that remote.  Also, if the
-        # remote sent this because it was a pre-registration leader,
-        # it doesn't yet have all the member information so the member
-        # should respond.
+        # responding.
         #if self.isConventionLeader() or prereg or regmsg.firstTime:
         if prereg:
+            # If this was a pre-registration, that identifies this
+            # system as the "leader" for that remote.  Also, if the
+            # remote sent this because it was a pre-registration
+            # leader, it doesn't yet have all the member information
+            # so the member should respond.
             rmsgs.append(HysteresisCancel(registrant))
             rmsgs.append(TransmitIntent(registrant, ConventionInvite()))
         elif (self.isConventionLeader() or prereg or regmsg.firstTime or \
