@@ -115,22 +115,19 @@ class HysteresisDelaySender(object):
             return False
 
     def sendWithHysteresis(self, intent):
-        if self._hysteresis_until.view().expired():
-            self._current_hysteresis = self._hysteresis_min_period
-            self._sender(intent)
-        else:
-            dups = self._keepIf(lambda M:
-                                (M.targetAddr != intent.targetAddr or
-                                 not HysteresisDelaySender
-                                 .safe_cmp(M.message, intent.message)))
-            # The dups are duplicate sends to the new intent's target;
-            # complete them when the actual message is finally sent
-            # with the same result
-            if dups:
-                intent.addCallback(self._dupSentGood(dups),
-                                   self._dupSentFail(dups))
-            self._hysteresis_queue.append(intent)
-            self._increase_hysteresis()
+        dups = self._keepIf(lambda M:
+                            (M.targetAddr != intent.targetAddr or
+                             not HysteresisDelaySender
+                             .safe_cmp(M.message, intent.message)))
+        # The dups are duplicate sends to the new intent's target;
+        # complete them when the actual message is finally sent
+        # with the same result
+        if dups:
+            intent.addCallback(self._dupSentGood(dups),
+                               self._dupSentFail(dups))
+        self._hysteresis_queue.append(intent)
+        self._increase_hysteresis()
+        self.checkSends()
         self._update_remaining_hysteresis_period()
 
     def cancelSends(self, remoteAddr):
