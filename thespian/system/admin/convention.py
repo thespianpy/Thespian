@@ -129,7 +129,59 @@ class LostRemote(object):
 
 
 class LocalConventionState(object):
-    def __init__(self, myAddress, capabilities, sCBStats, getConventionAddressFunc):
+    # The general process of leader management in an HA configuration
+    # where there are multiple potential leaders is currently:
+    #
+    # 1. The self._conventionAddress is a list of potential leader
+    #    addresses.  This is set from the capabilities (with an assist
+    #    from the transport to map the addresses to a
+    #    transport-specific address).  At present, it is assumed that
+    #    all convention members are initialized with the same list,
+    #    and in the same order (excluding invite-only members).
+    #
+    # 2. The current active leader is the "highest" leader: the one
+    #    with the lowest index in the list (appears first) that is
+    #    also currently active (as provided by the
+    #    self._conventionMembers list that is already updated by
+    #    active registrations and either active deregistrations or
+    #    timeouts.  The self._conventionLeaderIdx is a helper to
+    #    indicate the current active leader without searching the
+    #    self._conventionMembers array.
+    #
+    # 3. The standard operational mode of a convention is that the
+    #    leader is largely passive in terms of membership: members
+    #    initially join and subsequently periodically check-in by
+    #    sending a registration request (eliciting a corresponding
+    #    response from the leader).  The leader removes them from the
+    #    convention if they don't check-in within a specified period
+    #    of time, but does not actively probe the member.  The
+    #    principle behind this is that traffic should only be
+    #    generated for active members and not inactive members.
+    #
+    # 4. With the addition of HA support, the member registration and
+    #    check-in is always sent to *all* potential leaders,
+    #    regardless of which is thought to be the current active
+    #    leader by that member.  This includes all potential leaders,
+    #    which send a registration to potential leaders higher than
+    #    themselves.
+    #
+    # 5. When a potential leader receives a check-in registration, it
+    #    will check to see if it believes itself to be the
+    #    highest-priority active leader.  If so, it will respond and
+    #    the remote will see that it is the current leader (including
+    #    any other potential leaders, active or not).  Potential
+    #    leaders that see a higher-priority leader will not respond to
+    #    a check-in request, but will have updated their internal
+    #    member information list.
+    #
+    # Based on the above, a leadership transition occurs naturally
+    # (albeit slowly) through the passive combination of #2, #4, and
+    # #5.  At present, there is no exchange of state information
+    # between leaders, so any context maintained by one leader will be
+    # lost in moving to a new leader [this is an area that should be
+    # improved in future work]
+    def __init__(self, myAddress, capabilities, sCBStats,
+                 getConventionAddressFunc):
         self._myAddress = myAddress
         self._capabilities = capabilities
         self._sCBStats = sCBStats
@@ -178,8 +230,26 @@ class LocalConventionState(object):
         return self._conventionAddress[self._conventionLeaderIdx]
 
     def isConventionLeader(self):
-        # Might also be the leader if self.conventionLeaderAddr is None
-        return self.conventionLeaderAddr == self.myAddress
+        "Return true if this is the current leader of this convention"
+        # This checks to see if the current system is the convention
+        # leader.  This check is dynamic and may have the effect of
+        # changing the determination of which is the actual convention
+        # leader.
+        if self._conventionAddress == [None]:
+            return True
+        for (idx,myLeader) in enumerate(self._conventionAddress):
+            if myLeader == self.myAddress:
+                # I am the highest active leader, therefore I am the
+                # current actual leader.
+                self._conventionLeaderIdx = idx
+                return True
+            if self._conventionMembers.find(myLeader):
+                # A leader higher priority than myself exists (this is
+                # actually the highest active due to the processing
+                # order), so it's the leader, not me.
+                self._conventionLeaderIdx = idx
+                return False
+        return False
 
     @staticmethod
     def _populate_initial_leaders(leader_address):
@@ -216,25 +286,29 @@ class LocalConventionState(object):
             self._conventionLeaderIdx = 0
         leader_is_gone = (self._conventionMembers.find(self.conventionLeaderAddr) is None) \
                          if self.conventionLeaderAddr else True
-        thesplog('  isConventionLeader:%s, conventionLeaderAddr: %s', self.isConventionLeader(), self.conventionLeaderAddr, level=logging.DEBUG)
-        if not self.isConventionLeader() and self.conventionLeaderAddr:
-            thesplog('Admin registering with Convention @ %s (%s)',
-                     self.conventionLeaderAddr,
-                     'first time' if leader_is_gone else 're-registering',
-                     level=logging.INFO, primary=True)
-            rmsgs.append(
-                HysteresisSend(self.conventionLeaderAddr,
-                               ConventionRegister(self.myAddress,
-                                                  self.capabilities,
-                                                  leader_is_gone),
-                               onSuccess = self._setupConventionCBGood,
-                               onError = self._setupConventionCBError))
-            rmsgs.append(LogAggregator(self.conventionLeaderAddr))
-        # Check if this is part of convention leaders
-        if self.myAddress in self._conventionAddresses:
-            thesplog('  New leader %s located', self.myAddress, level=logging.DEBUG)
-            thesplog('  My address: %s', self.myAddress, level=logging.DEBUG)
-            rmsgs.append(TransmitIntent(self.myAddress, NewLeaderAvailable(self.myAddress)))
+        # Register with all leaders higher than myself (which is all
+        # if this is just a member and not a possible leader).
+        if self._conventionAddress and \
+           self._conventionAddress[0] != None and \
+           self._conventionAddress[0] != self.myAddress:
+            for possibleLeader in self._conventionAddress:
+                if possibleLeader == self.myAddress:
+                    # Don't register with leaders of lower priority than myself
+                    break
+                re_registering = not leader_is_gone and \
+                    (possibleLeader == self.conventionLeaderAddr)
+                thesplog('Admin registering with Convention @ %s (%s)',
+                         possibleLeader,
+                         'first time' if not re_registering else 're-registering',
+                         level=logging.INFO, primary=True)
+                rmsgs.append(
+                    HysteresisSend(possibleLeader,
+                                   ConventionRegister(self.myAddress,
+                                                      self.capabilities,
+                                                      not re_registering),
+                                   onSuccess = self._setupConventionCBGood,
+                                   onError = self._setupConventionCBError))
+            rmsgs.append(LogAggregator(self.conventionLeaderAddr))  # KWQ: don't know this yet, defer to confirmation
         self._conventionRegistration = ExpirationTimer(CONVENTION_REREGISTRATION_PERIOD)
         return rmsgs
 
@@ -261,7 +335,13 @@ class LocalConventionState(object):
         return self.setup_convention()
 
     def got_convention_register(self, regmsg):
-        # Called when remote convention member has sent a ConventionRegister message
+        # Called when remote convention member has sent a
+        # ConventionRegister message.  This is first called the leader
+        # when the member registers with the leader, and then on the
+        # member when the leader responds with same.  Thus the current
+        # node could be a member, a potential leader, the current
+        # leader, or a potential leader with higher potential than the
+        # current leader and which should become the new leader.
         self._sCBStats.inc('Admin Handle Convention Registration')
         if self._invited and not self.conventionLeaderAddr:
             # Lost connection to an invitation-only convention.
