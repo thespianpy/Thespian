@@ -764,18 +764,15 @@ class ConventioneerAdmin(GlobalNamesAdmin):
 
     def h_ConventionInvite(self, envelope):
         if self.isShuttingDown(): return
-        self._performIO(self._cstate.got_convention_invite(envelope.sender))
-        return True
+        return self._performIO(self._cstate.got_convention_invite(envelope.sender))
 
     def h_ConventionRegister(self, envelope):
         if self.isShuttingDown(): return
-        self._performIO(self._cstate.got_convention_register(envelope.message))
-        return True
+        return self._performIO(self._cstate.got_convention_register(envelope.message))
 
 
     def h_ConventionDeRegister(self, envelope):
-        self._performIO(self._cstate.got_convention_deregister(envelope.message))
-        return True
+        return self._performIO(self._cstate.got_convention_deregister(envelope.message))
 
     def h_NewLeaderAvailable(self, envelope):
         thesplog('  New leader available, sender: %s, leader: %s, last known time stamp: %i', \
@@ -832,12 +829,15 @@ class ConventioneerAdmin(GlobalNamesAdmin):
         return True
 
     def _performIO(self, iolist):
+        rval = True
         for msg in iolist:
             if isinstance(msg, HysteresisCancel):
                 self._hysteresisSender.cancelSends(msg.cancel_addr)
+                rval = False
             elif isinstance(msg, HysteresisSend):
                 #self._send_intent(msg)
                 self._hysteresisSender.sendWithHysteresis(msg)
+                rval = False
             elif isinstance(msg, LogAggregator):
                 if getattr(self, 'asLogger', None):
                     thesplog('Setting log aggregator of %s to %s', self.asLogger, msg.aggregatorAddress)
@@ -847,6 +847,7 @@ class ConventioneerAdmin(GlobalNamesAdmin):
                     self.transport.lostRemote(msg.lost_addr)
             else:
                 self._send_intent(msg)
+        return rval
 
     def run(self):
         # Main loop for convention management.  Wraps the lower-level
@@ -934,10 +935,11 @@ class ConventioneerAdmin(GlobalNamesAdmin):
 
 
     def h_ValidateSource(self, envelope):
+        rval = True
         if not envelope.message.sourceData and \
            envelope.sender != self._cstate.conventionLeaderAddr:
             # Propagate source unload requests to all convention members
-            self._performIO(
+            rval = self._performIO(
                 self._cstate.send_to_all_members(
                     envelope.message,
                     # Do not propagate if this is where the
@@ -946,7 +948,7 @@ class ConventioneerAdmin(GlobalNamesAdmin):
                     # convention structure is a DAG.
                     [envelope.sender]))
         super(ConventioneerAdmin, self).h_ValidateSource(envelope)
-        return False  # might have sent with hysteresis, so break out to local _run
+        return rval
 
 
     def _acceptsRemoteLoadedSourcesFrom(self, pendingActorEnvelope):
@@ -986,14 +988,12 @@ class ConventioneerAdmin(GlobalNamesAdmin):
                 # remote can be tried.
                 each.addCallback(onFailure=self._pending_send_failed)
                 each.orig_create_envelope = createActorEnvelope
-            self._performIO(iolist)
-        else:
-            self._sendPendingActorResponse(
-                createActorEnvelope, None,
-                errorCode = PendingActorResponse.ERROR_No_Compatible_ActorSystem,
-                errorStr="")
-            # self._retryPendingChildOperations(childInstance, None)
-
+            return self._performIO(iolist)
+        self._sendPendingActorResponse(
+            createActorEnvelope, None,
+            errorCode = PendingActorResponse.ERROR_No_Compatible_ActorSystem,
+            errorStr="")
+        # self._retryPendingChildOperations(childInstance, None)
         return True
 
 
@@ -1025,10 +1025,9 @@ class ConventioneerAdmin(GlobalNamesAdmin):
 
     def h_NotifyOnSystemRegistration(self, envelope):
         if envelope.message.enableNotification:
-            self._performIO(
+            return self._performIO(
                 self._cstate.add_notification_handler(envelope.sender))
-        else:
-            self._cstate.remove_notification_handler(envelope.sender)
+        self._cstate.remove_notification_handler(envelope.sender)
         return True
 
 
@@ -1045,9 +1044,10 @@ class ConventioneerAdmin(GlobalNamesAdmin):
         msg = envelope.message
         updateLocals = self._updSystemCapabilities(msg.capabilityName,
                                                    msg.capabilityValue)
+        rval = True
         if not self.isShuttingDown():
-            self._performIO(
+            rval = self._performIO(
                 self._cstate.capabilities_have_changed(self.capabilities))
         if updateLocals:
             self._capUpdateLocalActors()
-        return False  # might have sent with Hysteresis, so return to _run loop here
+        return rval
