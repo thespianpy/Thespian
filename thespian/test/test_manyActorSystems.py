@@ -306,7 +306,29 @@ class TestFuncManyActorSystem(object):
 
     def test06_primaryActorRequirements(self, testsystems):
         asys, dagobah, hoth, endor, naboo = testsystems
-        actor_system_unsupported(asys, 'simpleSystemBase', 'multiprocQueueBase')
+        actor_system_unsupported(asys, 'simpleSystemBase', 'multiprocQueueBase'
+                                 )
+
+        # This test does not work well for an AdminRoutingTXOnly
+        # configuration.  The reason is that the apparent loss of the
+        # convention leader now causes an active attempt to reconnect
+        # to a leader (this is to support leader failover to an
+        # alternate leader, where it's up to the member to
+        # re-establish that connection).  However, in the
+        # AdminRoutingTXOnly, this reconnect attempt just sits in the
+        # queue (until it times out... usually in about 5 minutes)
+        # because the gone leader never actually connects to initiate
+        # message transfer.  Practically speaking, a member of an
+        # AdminRoutingTXOnly configuration can do nothing when the
+        # leader isn't present, so this is not something that can or
+        # should be "fixed".
+        #
+        # The symptom of this is that the attempt to create JarJar
+        # below after naboo is shutdown will just timeout on the
+        # asys.ask instead of getting the active ActorSystemFailure.
+        if asys.txonly:
+            pytest.skip("Functionality not appropriate for an AdminRoutingTXOnly configuration")
+
         jarjar = asys.createActor(JarJar)  # on Naboo
         r = asys.ask(jarjar, 'hi', 0.25)
         assert r == 'hi?  How rude!'
@@ -359,6 +381,9 @@ class TestFuncManyActorSystem(object):
         # JarJar's home world is taken by the Empire
         asys, dagobah, hoth, endor, naboo = testsystems
         actor_system_unsupported(asys, 'simpleSystemBase', 'multiprocQueueBase')
+        # See note for test06_primaryActorRequirements above.
+        if asys.txonly:
+            pytest.skip("Functionality not appropriate for an AdminRoutingTXOnly configuration")
         naboo.shutdown()
         sleep(0.15)
 
