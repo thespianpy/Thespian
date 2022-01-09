@@ -674,6 +674,10 @@ class LocalConventionState(object):
     def forward_pending_to_remote_system(self, childClass, envelope, sourceHash, acceptsCaps):
         alreadyTried = getattr(envelope.message, 'alreadyTried', [])
         ct = currentTime()
+        if self.myAddress not in alreadyTried:
+            # Don't send request back to this actor system: it cannot
+            # handle it
+            alreadyTried.append(self.myAddress)
 
         remoteCandidates = [
             K
@@ -702,18 +706,16 @@ class LocalConventionState(object):
                      envelope.message.actorClassName,
                      ' (%s)'%sourceHash if sourceHash else '',
                      bestC)
-        if bestC not in alreadyTried:
-            # Don't send request to this remote again, it has already
-            # been tried.  This would also be indicated by that system
-            # performing the add of self.myAddress as below, but if
-            # there is disagreement between the local and remote
-            # addresses, this addition will prevent continual
-            # bounceback.
-            alreadyTried.append(bestC)
-        if self.myAddress not in alreadyTried:
-            # Don't send request back to this actor system: it cannot
-            # handle it
-            alreadyTried.append(self.myAddress)
+        if bestC in alreadyTried:
+            return []  # Have to give up, no-one can handle this
+
+        # Don't send request to this remote again, it has already
+        # been tried.  This would also be indicated by that system
+        # performing the add of self.myAddress as below, but if
+        # there is disagreement between the local and remote
+        # addresses, this addition will prevent continual
+        # bounceback.
+        alreadyTried.append(bestC)
         envelope.message.alreadyTried = alreadyTried
         return [TransmitIntent(bestC, envelope.message)]
 
@@ -977,12 +979,21 @@ class ConventioneerAdmin(GlobalNamesAdmin):
             createActorEnvelope.message.forActor = createActorEnvelope.sender
         iolist = self._cstate.forward_pending_to_remote_system(
             childClass, createActorEnvelope, sourceHash, acceptsCaps)
-        for each in iolist:
-            # Expected to be only one; if the transmit fails,
-            # route it back here so that the next possible
-            # remote can be tried.
-            each.addCallback(onFailure=self._pending_send_failed)
-        self._performIO(iolist)
+        if iolist:
+            for each in iolist:
+                # Expected to be only one; if the transmit fails,
+                # route it back here so that the next possible
+                # remote can be tried.
+                each.addCallback(onFailure=self._pending_send_failed)
+                each.orig_create_envelope = createActorEnvelope
+            self._performIO(iolist)
+        else:
+            self._sendPendingActorResponse(
+                createActorEnvelope, None,
+                errorCode = PendingActorResponse.ERROR_No_Compatible_ActorSystem,
+                errorStr="")
+            # self._retryPendingChildOperations(childInstance, None)
+
         return True
 
 
@@ -1009,7 +1020,7 @@ class ConventioneerAdmin(GlobalNamesAdmin):
 
 
     def _pending_send_failed(self, result, intent):
-        self.h_PendingActor(ReceiveEnvelope(msg=intent.message, sender=self.myAddress))
+        self._not_compatible(intent.orig_create_envelope)
 
 
     def h_NotifyOnSystemRegistration(self, envelope):
