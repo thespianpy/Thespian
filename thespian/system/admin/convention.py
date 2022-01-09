@@ -129,16 +129,19 @@ class LostRemote(object):
 
 
 class LocalConventionState(object):
-    def __init__(self, myAddress, capabilities, sCBStats, getAllConventionAddressesFunc):
+    def __init__(self, myAddress, capabilities, sCBStats, getConventionAddressFunc):
         self._myAddress = myAddress
         self._capabilities = capabilities
         self._sCBStats = sCBStats
         self._conventionMembers = AssocList() # key=Remote Admin Addr, value=ConventionMemberData
         self._conventionNotificationHandlers = []
         self._convntn_ipv4_marker = 0
-        self._conventionAddresses = getAllConventionAddressesFunc(capabilities)
-        # This is mostly needed for backward compatibility at this time
-        self._conventionAddress = self._conventionAddresses[self._convntn_ipv4_marker]
+        self._conventionAddresses = getConventionAddressFunc(capabilities)
+        self._getConventionAddr = getConventionAddressFunc
+        self._conventionLeaderIdx = 0
+        self._conventionAddress = getConventionAddressFunc(capabilities)
+        if not isinstance(self._conventionAddress, list):
+            self._conventionAddress = [ self._conventionAddress ]
         self._conventionRegistration = ExpirationTimer(CONVENTION_REREGISTRATION_PERIOD)
         self._has_been_activated = False
         self._invited = False  # entered convention as a result of an explicit invite
@@ -172,9 +175,7 @@ class LocalConventionState(object):
 
     @property
     def conventionLeaderAddr(self):
-        if isinstance(self._conventionAddress, list):
-            return self._conventionAddress[self._convntn_ipv4_marker]
-        return self._conventionAddress
+        return self._conventionAddress[self._conventionLeaderIdx]
 
     def isConventionLeader(self):
         # Might also be the leader if self.conventionLeaderAddr is None
@@ -207,6 +208,12 @@ class LocalConventionState(object):
         rmsgs = []
         # If not specified in capabilities, don't override any invites
         # that may have been received.
+        self._conventionAddress = self._getConventionAddr(self.capabilities) or \
+                                  self._conventionAddress
+        if not isinstance(self._conventionAddress, list):
+            self._conventionAddress = [ self._conventionAddress ]
+        if self._conventionLeaderIdx >= len(self._conventionAddress):
+            self._conventionLeaderIdx = 0
         leader_is_gone = (self._conventionMembers.find(self.conventionLeaderAddr) is None) \
                          if self.conventionLeaderAddr else True
         thesplog('  isConventionLeader:%s, conventionLeaderAddr: %s', self.isConventionLeader(), self.conventionLeaderAddr, level=logging.DEBUG)
@@ -248,9 +255,8 @@ class LocalConventionState(object):
                  result, level=logging.WARNING, primary=True)
 
     def got_convention_invite(self, sender):
-        thesplog('Got Convention invite from %s', sender, level=logging.DEBUG)
-        #TODO - Append sender to list?
-        self._conventionAddress = sender
+        self._conventionAddress = [sender]
+        self._conventionLeaderIdx = 0
         self._invited = True
         return self.setup_convention()
 
@@ -554,8 +560,7 @@ class LocalConventionState(object):
         # Remove remote system from conventionMembers
         if not cmr.preRegistered:
             if registrant == self.conventionLeaderAddr and self._invited:
-                #TODO - What needs to be done here?
-                self._conventionAddress = None
+                self._conventionAddress = [None]
                 # Don't clear invited: once invited, that
                 # perpetually indicates this should be only a
                 # member and never a leader.
