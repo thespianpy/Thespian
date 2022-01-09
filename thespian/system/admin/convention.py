@@ -286,15 +286,13 @@ class LocalConventionState(object):
             self._conventionLeaderIdx = 0
         leader_is_gone = (self._conventionMembers.find(self.conventionLeaderAddr) is None) \
                          if self.conventionLeaderAddr else True
-        # Register with all leaders higher than myself (which is all
-        # if this is just a member and not a possible leader).
+        # Register with all other leaders to notify them that this potential leader is online
         if self._conventionAddress and \
-           self._conventionAddress[0] != None and \
-           self._conventionAddress[0] != self.myAddress:
+           self._conventionAddress[0] != None:
             for possibleLeader in self._conventionAddress:
                 if possibleLeader == self.myAddress:
-                    # Don't register with leaders of lower priority than myself
-                    break
+                    # Don't register with myself
+                    continue
                 re_registering = not leader_is_gone and \
                     (possibleLeader == self.conventionLeaderAddr)
                 thesplog('Admin registering with Convention @ %s (%s)',
@@ -639,12 +637,16 @@ class LocalConventionState(object):
 
         # Remove remote system from conventionMembers
         if not cmr.preRegistered:
-            if registrant == self.conventionLeaderAddr and self._invited:
-                self._conventionAddress = [None]
-                # Don't clear invited: once invited, that
-                # perpetually indicates this should be only a
-                # member and never a leader.
+            cla = self.conventionLeaderAddr
             self._conventionMembers.rmv(registrant)
+            if registrant == cla:
+                if self._invited:
+                    # Don't clear invited: once invited, that
+                    # perpetually indicates this should be only a
+                    # member and never a leader.
+                    self._conventionAddress = [None]
+                else:
+                    rmsgs.extend(self.setup_convention())
         else:
             # This conventionMember needs to stay because the
             # current system needs to continue issuing
