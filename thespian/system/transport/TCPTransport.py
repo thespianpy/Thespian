@@ -425,9 +425,12 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
         if not convAddr:
             return None
         try:
-            return TCPTransport.getAddressFromString(convAddr)
+            if isinstance(convAddr, list):
+                return [TCPTransport.getAddressFromString(a) for a in convAddr]
+            return [TCPTransport.getAddressFromString(convAddr)]
         except Exception as ex:
-            thesplog('Invalid TCP convention address "%s": %s', convAddr, ex,
+            thesplog('Invalid TCP convention address entry "%s": %s',
+                     convAddr, ex,
                      level=logging.ERROR)
             raise InvalidActorAddress(convAddr, str(ex))
 

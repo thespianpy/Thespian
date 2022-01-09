@@ -145,9 +145,12 @@ class UDPTransport(asyncTransportBase, wakeupTransportBase):
         if not convAddr:
             return None
         try:
-            return UDPTransport.getAddressFromString(convAddr)
+            if isinstance(convAddr, list):
+                return [UDPTransport.getAddressFromString(a) for a in convAddr]
+            return [UDPTransport.getAddressFromString(convAddr)]
         except Exception as ex:
-            thesplog('Invalid UCP convention address "%s": %s', convAddr, ex,
+            thesplog('Invalid UCP convention address entry "%s": %s',
+                     convAddr, ex,
                      level=logging.ERROR)
             raise InvalidActorAddress(convAddr, str(ex))
 

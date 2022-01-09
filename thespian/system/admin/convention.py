@@ -172,7 +172,9 @@ class LocalConventionState(object):
 
     @property
     def conventionLeaderAddr(self):
-        return self._conventionAddresses[self._convntn_ipv4_marker]
+        if isinstance(self._conventionAddress, list):
+            return self._conventionAddress[self._convntn_ipv4_marker]
+        return self._conventionAddress
 
     def isConventionLeader(self):
         # Might also be the leader if self.conventionLeaderAddr is None

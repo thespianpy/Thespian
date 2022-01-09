@@ -220,6 +220,8 @@ def _startLogger(transportClass, transport, admin, capabilities, logDefs,
         logAggregator = logAggregator[0]
     if logAggregator:
         try:
+            if isinstance(logAggregator, list):
+                logAggregator = logAggregator[0]
             logAggregator = transportClass.getAddressFromString(logAggregator)
         except Exception as ex:
             thesplog('Unable to adapt log aggregator address "%s" to a transport address: %s',
