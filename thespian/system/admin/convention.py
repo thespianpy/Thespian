@@ -308,7 +308,6 @@ class LocalConventionState(object):
                                                       not re_registering),
                                    onSuccess = self._setupConventionCBGood,
                                    onError = self._setupConventionCBError))
-            rmsgs.append(LogAggregator(self.conventionLeaderAddr))  # KWQ: don't know this yet, defer to confirmation
         self._conventionRegistration = ExpirationTimer(CONVENTION_REREGISTRATION_PERIOD)
         return rmsgs
 
@@ -396,6 +395,7 @@ class LocalConventionState(object):
 
         if not self.isConventionLeader():
             self._conventionRegistration = ExpirationTimer(CONVENTION_REREGISTRATION_PERIOD)
+            rmsgs.append(LogAggregator(self.conventionLeaderAddr))
 
         # Convention Members normally periodically initiate a
         # membership message, to which the leader confirms by

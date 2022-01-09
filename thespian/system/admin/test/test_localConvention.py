@@ -87,7 +87,6 @@ def lcs2():
     # Activate the system
     verify_io(ret.setup_convention(activation=True),
               [ (ConventionRegister, Sends(ret._expected_setup_convreg) >= ActorAddress(1)),
-                (LogAggregator, None),
               ])
     return ret
 
@@ -274,7 +273,6 @@ def test_prereg_reg(solo_lcs1, solo_lcs2,
 
     verify_io(lcs2.got_convention_invite(lcs1.myAddress),
               [ (ConventionRegister, Sends(convreg2_first_noadmin) >= lcs1.myAddress),
-                (LogAggregator, None),
               ])
 
     # lcs1 gets full ConventionRegister from lcs2.  This should also
@@ -283,7 +281,9 @@ def test_prereg_reg(solo_lcs1, solo_lcs2,
               [ Sends(convreg1_noadmin) >= lcs2.myAddress,
               ])
 
-    verify_io(lcs2.got_convention_register(convreg1_noadmin), [])
+    verify_io(lcs2.got_convention_register(convreg1_noadmin),
+              [ (LogAggregator, None),
+               ])
 
     verify_normal_notification_updates(lcs1, lcs2, convreg1_noadmin, convreg2_noadmin)
 
@@ -401,7 +401,6 @@ def test_prereg_reg_with_notifications(solo_lcs1, solo_lcs2,
 
     verify_io(lcs2.got_convention_invite(lcs1.myAddress),
               [ Sends(convreg2_first_noadmin) >= lcs1.myAddress,
-                (LogAggregator, None),
               ])
 
     # lcs1 gets full ConventionRegister from lcs2.  This should also
@@ -411,7 +410,9 @@ def test_prereg_reg_with_notifications(solo_lcs1, solo_lcs2,
                 Sends(update_lcs2_added_noadmin) >= notifyAddr,
               ])
 
-    verify_io(lcs2.got_convention_register(convreg1_noadmin), [])
+    verify_io(lcs2.got_convention_register(convreg1_noadmin),
+              [ (LogAggregator, None),
+               ])
 
     verify_normal_notification_updates(lcs1, lcs2, convreg1_noadmin, convreg2_noadmin)
 
@@ -450,7 +451,6 @@ def test_multi_prereg_reg_with_notifications(solo_lcs1, solo_lcs2,
 
     verify_io(lcs2.got_convention_invite(lcs1.myAddress),
               [ Sends(convreg2_first_noadmin) >= lcs1.myAddress,
-                (LogAggregator, None),
               ])
 
     # lcs1 gets full ConventionRegister from lcs2.  This should also
@@ -459,7 +459,9 @@ def test_multi_prereg_reg_with_notifications(solo_lcs1, solo_lcs2,
               [ Sends(convreg1_noadmin) >= lcs2.myAddress,
               ])
 
-    verify_io(lcs2.got_convention_register(convreg1_noadmin), [])
+    verify_io(lcs2.got_convention_register(convreg1_noadmin),
+              [ (LogAggregator, None),
+               ])
 
     verify_normal_notification_updates(lcs1, lcs2, convreg1_noadmin, convreg2_noadmin)
 
@@ -493,7 +495,6 @@ def test_prereg_reg_prereg_with_notifications(solo_lcs1, solo_lcs2,
 
     verify_io(lcs2.got_convention_invite(lcs1.myAddress),
               [ Sends(convreg2_first_noadmin) >= lcs1.myAddress,
-                (LogAggregator, None),
               ])
 
     # lcs1 gets full ConventionRegister from lcs2.  lcs1 as
@@ -505,7 +506,9 @@ def test_prereg_reg_prereg_with_notifications(solo_lcs1, solo_lcs2,
                 Sends(update_lcs2_added_noadmin) >= notifyAddr,
               ])
 
-    verify_io(lcs2.got_convention_register(convreg1_noadmin), [])
+    verify_io(lcs2.got_convention_register(convreg1_noadmin),
+              [ (LogAggregator, None),
+               ])
 
     verify_normal_notification_updates(lcs1, lcs2, convreg1_noadmin, convreg2_noadmin)
 
@@ -550,7 +553,9 @@ def test_reg_with_notifications(lcs1, lcs2, convreg1, convreg2, convreg2_first,
 
         verify_io(lcs1.got_convention_register(convreg2_first), expected_messages)
 
-        verify_io(lcs2.got_convention_register(convreg1), [])
+        verify_io(lcs2.got_convention_register(convreg1), [
+            (LogAggregator, None),
+        ])
 
         # Non-convention leader generates periodic registrations to the
         # leader (i.e. keepalive) and the leader responds accordingly.
@@ -597,7 +602,6 @@ def test_check_before_activate_with_notifications(lcs1, lcs2, convreg2_first):
     # Activate the system
     verify_io(ret.setup_convention(),
               [ Sends(ret._expected_setup_convreg) >=ActorAddress(1),
-                (LogAggregator, None),
               ])
 
 
@@ -650,6 +654,10 @@ def test_reg_dereg_rereg_with_notifications(lcs1, lcs2,
 
     verify_io(lcs2.got_convention_deregister(convdereg_lcs1),
               [ (LostRemote, None),
+                Sends(ConventionRegister(adminAddress=lcs2.myAddress,
+                                    firstTime=True,
+                                    preRegister=False,
+                                          capabilities=lcs2.capabilities)) >= lcs1.myAddress,
                 (HysteresisCancel, None),
               ])
 
@@ -680,7 +688,9 @@ def test_reg_with_multiple_notifications(lcs1, lcs2,
                 Sends(update_lcs2_added) >= notifyAddr3,
               ])
 
-    verify_io(lcs2.got_convention_register(convreg1), [])
+    verify_io(lcs2.got_convention_register(convreg1),
+              [ (LogAggregator, None),
+               ])
 
     # Non-convention leader generates periodic registrations to the
     # leader (i.e. keepalive) and the leader responds accordingly.
@@ -688,11 +698,15 @@ def test_reg_with_multiple_notifications(lcs1, lcs2,
     verify_io(lcs1.got_convention_register(convreg2),
               [ Sends(convreg1) >= lcs2.myAddress,
               ])
-    verify_io(lcs2.got_convention_register(convreg1), [])
+    verify_io(lcs2.got_convention_register(convreg1),
+              [  (LogAggregator, None),
+               ])
     verify_io(lcs1.got_convention_register(convreg2),
               [ Sends(convreg1) >= lcs2.myAddress,
               ])
-    verify_io(lcs2.got_convention_register(convreg1), [])
+    verify_io(lcs2.got_convention_register(convreg1),
+              [ (LogAggregator, None),
+               ])
 
     # De-registration
 
@@ -736,7 +750,6 @@ def test_S1A(lcs1, lcs2,
         # But convention member should re-up their membership
         verify_io(lcs2.check_convention(),
                   [ Sends(convreg2) >= lcs1.myAddress,
-                    (LogAggregator, None),
                   ], echo=True)
 
         assert lcs2.active_in_convention()
@@ -747,7 +760,8 @@ def test_S1A(lcs1, lcs2,
                   ])
         # But convention member ends the conversation
         verify_io(lcs2.got_convention_register(convreg1),
-                  [])
+                  [ (LogAggregator, None),
+                  ])
 
     return time_base
 
@@ -775,7 +789,6 @@ def test_S1C(lcs1, lcs2, convreg1, convreg2, convreg2_first,
             ops = lcs2.check_convention()
             verify_io(ops,
                       [ Sends(convreg2) >= lcs1.myAddress,
-                        (LogAggregator, None),
                       ])
             ops[0].tx_done(SendStatus.Failed)  # indicate failure
 
@@ -787,8 +800,12 @@ def test_S1C(lcs1, lcs2, convreg1, convreg2, convreg2_first,
         ops = lcs2.check_convention()
         verify_io(ops,
                   [ (LostRemote, None),
+                    Sends(ConventionRegister(adminAddress=lcs2.myAddress,
+                                             firstTime=True,
+                                             preRegister=False,
+                                             capabilities=lcs2.capabilities)) >= lcs1.myAddress,
                     (HysteresisCancel, None),
-                  ])
+                   ])
 
     assert not lcs2.active_in_convention()
 
@@ -834,7 +851,6 @@ def test_S1D(lcs1, lcs2,
         # But convention member should re-up their membership
         verify_io(lcs2.check_convention(),
                   [Sends(convreg2) >= lcs1.myAddress,
-                   (LogAggregator, None),
                   ])
 
     test_reg_with_notifications(lcs1, lcs2,
@@ -915,7 +931,6 @@ def S2A_1(lcs1, lcs2,
     with update_elapsed_time(0, time_offset) as the_time:
         verify_io(lcs2.got_convention_invite(lcs1.myAddress),
                   [ Sends(convreg2_first_noadmin) >= lcs1.myAddress,
-                    (LogAggregator, None),
                   ])
 
     return S2A_2(lcs1, lcs2,
@@ -947,7 +962,9 @@ def S2A_2(lcs1, lcs2,
                     Sends(update_lcs2_added) >= notifyAddr,
                   ], echo=True)
 
-        verify_io(lcs2.got_convention_register(convreg1_noadmin), [])
+        verify_io(lcs2.got_convention_register(convreg1_noadmin),
+                  [ (LogAggregator, None),
+                   ])
 
         verify_normal_notification_updates(lcs1, lcs2,
                                            convreg1_noadmin, convreg2_noadmin)
@@ -965,7 +982,6 @@ def S2A_2(lcs1, lcs2,
         ops[0].tx_done(SendStatus.Sent)  # indicate failure
         verify_io(lcs2.got_convention_invite(lcs1.myAddress),
                   [ Sends(convreg2_noadmin) >= lcs1.myAddress,
-                    (LogAggregator, None),
                   ])
         verify_io(lcs2.check_convention(),
                   [
@@ -977,7 +993,8 @@ def S2A_2(lcs1, lcs2,
                   ])
         # But convention member ends the conversation
         verify_io(lcs2.got_convention_register(convreg1_noadmin),
-                  [])
+                  [ (LogAggregator, None),
+                   ])
 
     return time_offset + CONVENTION_REREGISTRATION_PERIOD + timedelta(seconds=1)
 
@@ -1060,7 +1077,6 @@ def test_S2C(solo_lcs1, solo_lcs2, convreg1_noadmin, convreg2_noadmin,
             ops = lcs2.check_convention()
             verify_io(ops,
                       [ Sends(convreg2_noadmin) >= lcs1.myAddress,
-                        (LogAggregator, None),
                       ])
             ops[0].tx_done(SendStatus.Failed)  # indicate failure
 
@@ -1363,11 +1379,15 @@ def verify_normal_notification_updates(lcs1, lcs2, convreg1, convreg2):
     # (i.e. keepalive) and the leader responds accordingly.
 
     verify_io(lcs1.got_convention_register(convreg2), [Sends(convreg1) >= lcs2.myAddress])
-    verify_io(lcs2.got_convention_register(convreg1), [])
+    verify_io(lcs2.got_convention_register(convreg1),
+              [ (LogAggregator, None),
+               ])
 
     # Twice, just to make sure it responds the same way each time
     verify_io(lcs1.got_convention_register(convreg2), [Sends(convreg1) >= lcs2.myAddress])
-    verify_io(lcs2.got_convention_register(convreg1), [])
+    verify_io(lcs2.got_convention_register(convreg1),
+              [ (LogAggregator, None),
+               ])
 
     
 def verify_io(iolist, expected, any_order=False, echo=False):
