@@ -326,13 +326,13 @@ class AdminCore(systemCommonBase):
             # child is initialized and connected to this parent.
             return True
         except NoCompatibleSystemForActor as ex:
-            thesplog(str(ex), level=logging.WARNING, primary=True)
             try:
                 ret = self._not_compatible(envelope)
                 if ret:
                     return ret
             except NoCompatibleSystemForActor:
                 pass
+            thesplog(str(ex), level=logging.WARNING, primary=True)
             errcode = PendingActorResponse.ERROR_No_Compatible_ActorSystem
             errstr = ""
         except InvalidActorSourceHash:
