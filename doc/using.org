@@ -952,6 +952,15 @@ class ActorB(Actor):
   register for these updates using the
   [[#hH-b9f7a2f0-7d2a-4cc0-8241-1fee7c62c44e][notifyOnSystemRegistrationChanges]] API call.
 
+  An Actor System Convention is managed by one or more convention
+  leaders, whose job is to help route actor creation and actor
+  messages between different systems with potentially different
+  capabilities.  There is currently Beta support for having multiple
+  convention leaders to provide a measure of fault-tolerance in case a
+  convention leader fails or exits the convention; this support is
+  currently in Beta status and should not be used in a production
+  environment.
+
   Not all ActorSystems support multi-system communications, and those
   that do are normally of the multi-process variety.
 
@@ -1139,6 +1148,9 @@ captured in an auxiliary file and is only needed for passing to the
 ~ActorSystem()~ instantiation.
 
 *** Logging Level Management
+    :PROPERTIES:
+    :CUSTOM_ID: h:3ef538e8-a989-481b-992d-a9d165a2ce26
+    :END:
 
 When each Actor is started, the base level of messages forwarded to
 the Logging Actor for that started Actor is based on the *minimum*
@@ -1179,6 +1191,9 @@ retrieved from the Logging framework, so it is not possible for the
 Actor to modify the logging threshold level of the Handler.
 
 *** Logging Transmit Overruns
+    :PROPERTIES:
+    :CUSTOM_ID: h:46850001-c8cf-42e6-90cf-dd7236ae9436
+    :END:
 
 Some libraries or python code will perform significant amounts of
 logging, especially at the ~DEBUG~ level, since normally these are not
@@ -3785,6 +3800,9 @@ The multiprocQueueBase uses the following [[#hH-a17e6c70-5592-4d06-b818-bd25350c
                      does not support the "forkserver" method.
 
 *** Potential issues
+    :PROPERTIES:
+    :CUSTOM_ID: h:815365aa-17f0-46a0-a6c9-def03eb7c5e3
+    :END:
 
  * The multiprocessQueueBase is not efficient for non-adjacent actor messaging
  * There is a unexplained, core-level concern about dropped
@@ -3836,7 +3854,7 @@ The multiprocTCPBase uses the following [[#hH-a17e6c70-5592-4d06-b818-bd25350c4c
                      multiprocTCPBase ActorSystem will be started up.
 
 
-  * *Convention Address.IPv4* :: tuple or string
+  * *Convention Address.IPv4* :: tuple or string or array of tuples/strings
 
     * usage :: /optional settable/
     * examples :: ~('123.45.6.78', 1923)~, ~123.45.6.78:1923~, ~host-a:1923~, or ~123.45.6.78~
@@ -3855,6 +3873,18 @@ The multiprocTCPBase uses the following [[#hH-a17e6c70-5592-4d06-b818-bd25350c4c
                      If not specified, then this ActorSystem operates
                      in isolation and cannot interact with other Actor
                      Systems.
+
+                     * BETA :: This can be specified as a list of
+                       convention leader addresses.  In this mode, if
+                       a leader is shutdown, the remaining convention
+                       will shift to using one of the other leaders in
+                       the list (providing a measure of
+                       fault-tolerance/high-availability for the
+                       convention).  This is currently BETA
+                       functionality and should not be used in
+                       production, as there are likely future code
+                       updates needed to handle any subtle issues that
+                       arise from this functionality.
 
   * *Admin Routing* :: boolean
 
@@ -4008,7 +4038,7 @@ The multiprocUDPBase uses the following [[#hH-a17e6c70-5592-4d06-b818-bd25350c4c
                      will be utilized; otherwise a new
                      multiprocUDPBase ActorSystem will be started up.
 
-  * *Convention Address.IPv4* :: tuple or string
+  * *Convention Address.IPv4* :: tuple or string or list of tuples/strings
 
     * usage :: /optional settable/
     * description :: the IPv4 address of the convention leader's
