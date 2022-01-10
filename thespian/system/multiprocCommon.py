@@ -216,8 +216,6 @@ def _startLogger(transportClass, transport, admin, capabilities, logDefs,
     loggerAddr = ActorAddress(ActorLocalAddress(transport.myAddress, -1, None))
     admin.asLogger = None
     logAggregator = capabilities.get(CONV_ADDR_IPV4_CAPABILITY, None)
-    if isinstance(logAggregator, list):
-        logAggregator = logAggregator[0]
     if logAggregator:
         try:
             if isinstance(logAggregator, list):

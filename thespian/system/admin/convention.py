@@ -31,7 +31,6 @@ CONVENTION_REGISTRATION_MISS_MAX  = getenvdef('CONVENTION_REGISTRATION_MISS_MAX'
 
 CONVENTION_REINVITE_ADJUSTMENT    = 1.1  # multiply by remote checkin expected time for new invite timeout period
 
-CURR_CONV_ADDR_IPV4 = 'Convention Address.IPv4'
 
 def convention_reinvite_adjustment(t):
     try:
@@ -187,8 +186,6 @@ class LocalConventionState(object):
         self._sCBStats = sCBStats
         self._conventionMembers = AssocList() # key=Remote Admin Addr, value=ConventionMemberData
         self._conventionNotificationHandlers = []
-        self._convntn_ipv4_marker = 0
-        self._conventionAddresses = getConventionAddressFunc(capabilities)
         self._getConventionAddr = getConventionAddressFunc
         self._conventionLeaderIdx = 0
         self._conventionAddress = getConventionAddressFunc(capabilities)
@@ -197,8 +194,6 @@ class LocalConventionState(object):
         self._conventionRegistration = ExpirationTimer(CONVENTION_REREGISTRATION_PERIOD)
         self._has_been_activated = False
         self._invited = False  # entered convention as a result of an explicit invite
-        self._current_avlbl_leaders = list(map(LocalConventionState._populate_initial_leaders, self._conventionAddresses))        
-        self._avlbl_leader_last_knwn_ts = int(datetime.utcnow().strftime('%Y%m%d%H%M%S%f')[:-3])
 
 
     @property
@@ -250,18 +245,6 @@ class LocalConventionState(object):
                 self._conventionLeaderIdx = idx
                 return False
         return False
-
-    @staticmethod
-    def _populate_initial_leaders(leader_address):
-        thesplog('  _populate_initial_leaders: %s', leader_address, level=logging.DEBUG)
-        curr_leader = {}
-        curr_leader['actor_address'] = leader_address
-        curr_leader['address'] = str(leader_address)
-        # Status is UNKNOWN unless confirmed otherwise
-        curr_leader['status'] = 'UNKNOWN'
-        # Defaulted to current system up (UTC)
-        curr_leader['last_known_ts'] = int(datetime.utcnow().strftime('%Y%m%d%H%M%S%f')[:-3])
-        return curr_leader
 
     def capabilities_have_changed(self, new_capabilities):
         self._capabilities = new_capabilities
@@ -359,14 +342,10 @@ class LocalConventionState(object):
             # Either remote failed getting an external address and is
             # using 127.0.0.1 or else this is a malicious attempt to
             # make us talk to ourselves.  Ignore it.
-            thesplog('Convention registration from %s is an invalid address, ignoring.',
+            thesplog('Convention registration from %s is an invalid address; ignoring.',
                      registrant,
                      level=logging.WARNING)
             return rmsgs
-
-        if self.myAddress in self._conventionAddresses:
-            thesplog('  Identified self(%s) as a leader', self.myAddress, level=logging.DEBUG)
-            rmsgs.append(TransmitIntent(self.myAddress, NewLeaderAvailable(self.myAddress)))
 
         existingPreReg = (
             # existing.preRegOnly
@@ -518,6 +497,7 @@ class LocalConventionState(object):
                  level=logging.WARNING, primary=True)
         return self._remote_system_cleanup(remote_member.remoteAddress)
 
+
     def _convention_member_checks(self, ct):
         rmsgs = []
         # Re-register with the Convention if it's time
@@ -530,45 +510,10 @@ class LocalConventionState(object):
                          self._conventionLeaderMissCount,
                          level=logging.WARNING, primary=True)
                 rmsgs.extend(self._remote_system_cleanup(self.conventionLeaderAddr))
-                #Re-elect leader since convention registration seems to be lost
-                new_leader_actr_addr = self._re_elect_leader()
-                rmsgs.append(TransmitIntent(new_leader_actr_addr, ConventionRegister(self.myAddress, self.capabilities, True)))
                 self._conventionLeaderMissCount = 0
             else:
                 rmsgs.extend(self.setup_convention())
         return rmsgs
-
-    def _re_elect_leader(self):
-        # Update about the last known leader
-        old_ldr_located = False
-        last_knwn_ldr = self.conventionLeaderAddr
-
-        for each in self._current_avlbl_leaders:
-            if last_knwn_ldr == each['actor_address']:
-                each['status'] = 'DOWN'
-                each['last_known_ts'] = int(datetime.utcnow().strftime('%Y%m%d%H%M%S%f')[:-3])
-                old_ldr_located = True
-                thesplog('  Marked current leader %s as DOWN', last_knwn_ldr, level=logging.DEBUG)
-                break
-        if not old_ldr_located:
-            thesplog('  Unable to mark %s as DOWN in convention leaders list', str(self.conventionLeaderAddr), level=logging.WARNING)
-
-        # Print the status, just for convenience
-        self._current_leader_stats()
-
-        # Mark new leader
-        new_ldr_located = False
-        new_ldr_addr = None
-        for idx, curr_ldr in enumerate(self._current_avlbl_leaders):
-            if curr_ldr['status'] == 'UP':
-                new_ldr_addr = curr_ldr['actor_address']
-                self._convntn_ipv4_marker = idx
-                new_ldr_located = True
-                thesplog('  Selected %s as next new leader', new_ldr_addr, level=logging.DEBUG)
-                break
-        if not new_ldr_located:
-            thesplog('  No convention leader is UP at this time', level=logging.WARNING)
-        return new_ldr_addr
 
     def _check_preregistered_ping(self, ct, member):
         if member.preRegistered and \
@@ -723,22 +668,11 @@ class LocalConventionState(object):
 
 
     def send_to_all_members(self, message, exception_list=None):
-        thesplog('      Sending to %i members', len(self._conventionMembers),level=logging.DEBUG)
         return [HysteresisSend(M.remoteAddress, message)
                 for M in self._conventionMembers.values()
                 if M.remoteAddress not in (exception_list or [])]
 
-    def send_to_leaders_only(self, message, exception_list=[]):
-        thesplog('      Sending to %i leaders', len(self._conventionAddresses) - len(exception_list),level=logging.DEBUG)
-        return [HysteresisSend(L, message) for L in self._conventionAddresses if L not in (exception_list)]
 
-    def _current_leader_stats(self):
-        thesplog('  Current leader stats', level=logging.DEBUG)
-        for each in self._current_avlbl_leaders:
-            prettyfied_data = {k: each[k] for k in each.keys() if k != 'actor_address'}
-            thesplog('      %s', prettyfied_data, level=logging.DEBUG)
-        #Last known TS is only relevant for convention leaders
-        thesplog('  Last known TS: %s', str(self._avlbl_leader_last_knwn_ts), level=logging.DEBUG)
 
 class ConventioneerAdmin(GlobalNamesAdmin):
     """Extends the AdminCore+GlobalNamesAdmin with ActorSystem Convention
@@ -750,12 +684,13 @@ class ConventioneerAdmin(GlobalNamesAdmin):
             self.myAddress,
             self.capabilities,
             self._sCBStats,
-            getattr(self.transport, 'getAllConventionAddresses', lambda c: None))
+            getattr(self.transport, 'getConventionAddress', lambda c: None))
         self._hysteresisSender = HysteresisDelaySender(self._send_intent)
 
     def _updateStatusResponse(self, resp):
         self._cstate.updateStatusResponse(resp)
         super(ConventioneerAdmin, self)._updateStatusResponse(resp)
+
 
     def _activate(self):
         # Called internally when this ActorSystem has been initialized
@@ -775,55 +710,6 @@ class ConventioneerAdmin(GlobalNamesAdmin):
 
     def h_ConventionDeRegister(self, envelope):
         return self._performIO(self._cstate.got_convention_deregister(envelope.message))
-
-    def h_NewLeaderAvailable(self, envelope):
-        thesplog('  New leader available, sender: %s, leader: %s, last known time stamp: %i', \
-            envelope.sender, str(envelope.message.adminAddress), envelope.message.lastKnownTS, \
-            level=logging.DEBUG)
-
-        # There are two possibilities when a leader would receive its own message
-        # 1. It issued an availability message and caught it in the handler.
-        #    At that time it needs to consume the message in the same sequence, and (monotonically) increase the timestamp.
-        # 2. After it dissipated the leader available message across the system, the message bounced off other members and came back.
-        #    At that time it needs to "stop the buck", i.e., prevent an infinite loop
-        if self.myAddress == envelope.message.adminAddress:
-            if envelope.message.lastKnownTS > self._cstate._avlbl_leader_last_knwn_ts:
-                thesplog('      Assigning new time stamp %s', str(envelope.message.lastKnownTS), level=logging.DEBUG)
-                self._cstate._avlbl_leader_last_knwn_ts = envelope.message.lastKnownTS
-            else:
-                thesplog('      This is a self-message (timestamp= %s), skipping', str(envelope.message.lastKnownTS), level=logging.DEBUG)
-                self._cstate._current_leader_stats()
-                return False
-
-        for idx, curr_leader in enumerate(self._cstate._current_avlbl_leaders):
-            if curr_leader['actor_address'] == envelope.message.adminAddress:
-                curr_leader['status'] = 'UP'
-                curr_leader['last_known_ts'] = envelope.message.lastKnownTS
-                thesplog('      Updated status and timestamp for %s', str(envelope.message.adminAddress), level=logging.DEBUG)
-                thesplog('      Current marker: %i', self._cstate._convntn_ipv4_marker, level=logging.DEBUG)
-
-                if idx < self._cstate._convntn_ipv4_marker:
-                    last_leader_idx = self._cstate._convntn_ipv4_marker
-                    self._cstate._convntn_ipv4_marker = idx
-                    thesplog('      Removing last leader (%s)', self._cstate._current_avlbl_leaders[last_leader_idx]['address'], level=logging.DEBUG)
-                    thesplog('      Selecting current leader (%s)', self._cstate._current_avlbl_leaders[idx]['address'], level=logging.DEBUG)
-                else:
-                    #do nothing
-                    thesplog('      Current leader (%s) gets to stay', self._cstate._current_avlbl_leaders[self._cstate._convntn_ipv4_marker]['address'], level=logging.DEBUG)
-
-                break
-
-        self._cstate._current_leader_stats()
-
-        if len(self._cstate._conventionMembers) == 0:
-            # This means current member is secluded and should at least reach known leaders
-            thesplog('      Trying to reach all (other) leaders', level=logging.DEBUG)
-            self._performIO(self._cstate.send_to_leaders_only(envelope.message, [envelope.sender]))
-        else:
-            # This is the regular scenario
-            self._performIO(self._cstate.send_to_all_members(envelope.message, [envelope.sender]))
-
-        return False
 
     def h_SystemShutdown(self, envelope):
         self._performIO(self._cstate.got_system_shutdown())
@@ -876,6 +762,7 @@ class ConventioneerAdmin(GlobalNamesAdmin):
 
                 self._hysteresisSender.checkSends()
                 self._remove_expired_sources()
+
         except Exception as ex:
             import traceback
             thesplog('ActorAdmin uncaught exception: %s', traceback.format_exc(),

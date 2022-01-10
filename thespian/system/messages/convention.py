@@ -1,7 +1,6 @@
 "Messages exchanged between ActorSystems that are part of a Convention"
 
 from thespian.actors import ActorSystemMessage
-from datetime import datetime
 
 # Common capability used to specify the convention address(es) for an
 # IPv4 transport (TCPTransport, UDPTransport).
@@ -25,7 +24,6 @@ class ConventionRegister(ActorSystemMessage):
         self.capabilities = capabilities
         self.firstTime = firstTime
         self.preRegister = preRegister  # n.b. added in 2.5.0; use getattr
-
 
     def __str__(self):
         return 'ConventionRegister(adminAddress=%(adminAddress)s' \
@@ -73,22 +71,6 @@ class ConventionInvite(ActorSystemMessage):
     """Message sent periodically to preRegistered remote systems inviting
        them to send a ConventionRegister message back."""
     pass
-
-class NewLeaderAvailable(ActorSystemMessage):
-    def __init__(self, adminAddress):
-        self.adminAddress = adminAddress
-        self.lastKnownTS = int(datetime.utcnow().strftime('%Y%m%d%H%M%S%f')[:-3])
-
-    def __str__(self):
-        return 'NewLeaderAvailable(adminAddress=%(adminAddress)s' \
-            ', lastKnownTS=%(lastKnownTS)s' \
-            ')' % self.__dict__
-
-    def __eq__(self, o):
-        try:
-            return self.adminAddress == o.adminAddress and self.lastKnownTS == o.lastKnownTS
-        except Exception:
-            return False
 
 class NotifyOnSystemRegistration(ActorSystemMessage):
     """Message sent to the Admin to register or de-register the specified
