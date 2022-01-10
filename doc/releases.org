@@ -10,7 +10,7 @@
 #+LATEX_HEADER: \product{Thespian}
 #+LATEX_HEADER: \component{Python Actor System}
 #+LATEX_HEADER: \doctype{Release Notes}
-#+LATEX_HEADER: \docrev{3.10.5}{2021 May 26}
+#+LATEX_HEADER: \docrev{3.10.6}{2022 Jan 09}
 #+LATEX_HEADER: \docid{TheDoc-06}
 #+OPTIONS: ^:nil num:nil
 
@@ -20,6 +20,12 @@ added functionality that is backwards compatible, and bugfix changes
 do not change the API.
 
 * Summary
+** 2022
+
+ | Release |       Date | Significant Bugfixes | Significant Features                         |
+ |---------+------------+----------------------+----------------------------------------------|
+ |  3.10.6 | 2022-01-09 |                      | Beta support for multiple convention leaders |
+
 ** 2021
 
  | Release |       Date | Significant Bugfixes                                       | Significant Features |
@@ -180,7 +186,17 @@ do not change the API.
 
 ** 3.10
 
-*** 3.10.4 <2021-05-26 Wed>
+*** 3.10.6 <2022-01-09 Sun>
+
+    * Adds Beta support for convention fault tolerance by allowing the
+      specification of a list of convention leaders.  Failure of a
+      convention leader will no longer disable the entire convention:
+      management of the convention will shift to one of the other
+      leaders specified in the list.  This is currently Beta
+      functionality and should not be used in production environments.
+      Contributed by Arnab Chanda.
+
+*** 3.10.5 <2021-05-26 Wed>
 
     * Simultaneous create actor requests for a globalName actor could
       result in duplicates if processing overlapped in the Admin.
