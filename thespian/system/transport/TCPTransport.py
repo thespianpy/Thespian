@@ -856,8 +856,14 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
         intent.socket.setblocking(0)
         # Disable Nagle to transmit headers and acks asap; our sends
         # are usually small
-        intent.socket.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
-
+        try:
+            intent.socket.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
+        except OSError as e:
+            if e.errno == errno.EINVAL:
+                # See note elsewhere regarding Issue#70.
+                pass
+            else:
+                raise
         try:
             intent.socket.connect(*intent.targetAddr
                                          .addressDetails.connectArgs)
@@ -1354,7 +1360,21 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
             return
         lsock.setblocking(0)
         # Disable Nagle to transmit headers and acks asap
-        lsock.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
+        try:
+            lsock.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
+        except OSError as e:
+            if e.errno == errno.EINVAL:
+                # Issue#70: Some system socket code (e.g. MacOS) does not allow
+                # this socket option to be set if the socket is not fully setup
+                # or is being torn down.  Not applying this setting can degrade
+                # performance due to Nagle-algorithm delays since Thespian
+                # operation usually consists of small packets exchanged in
+                # handshake manner rather than longer streams of larger data. See
+                # https://github.com/envoy/proxy/envoy/issues/1446 for additional
+                # information.
+                pass
+            else:
+                raise
         # Note that the TCPIncoming is initially None.
         # Due to the way sockets work, the transmit comes from a
         # system-selected port that is different from the port that
