@@ -2350,7 +2350,7 @@ actorSys = ActorSystem(systemBase = None,
           def start_system():
               cfg = read_config_file()
               ActorSystem(systemBase=cfg.system_base,
-                          capabilities = { 'foo'=cfg.foo_capability, ...},
+                          capabilities = { 'foo': cfg.foo_capability, ...},
                           ...)
 
           def do_something():
@@ -2371,7 +2371,7 @@ actorSys = ActorSystem(systemBase = None,
           def start_system():
               cfg = read_config_file()
               asys = ActorSystem(systemBase=cfg.system_base,
-                                 capabilities = { 'foo'=cfg.foo_capability, ...},
+                                 capabilities = { 'foo': cfg.foo_capability, ...},
                                  ...)
               return asys
 
