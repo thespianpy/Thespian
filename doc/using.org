@@ -10,7 +10,7 @@
 #+LATEX_HEADER: \product{Thespian}
 #+LATEX_HEADER: \component{Python Actor System}
 #+LATEX_HEADER: \doctype{Usage}
-#+LATEX_HEADER: \docrev{2.24}{2022 Jan 18}
+#+LATEX_HEADER: \docrev{2.25}{2022 Feb 06}
 #+LATEX_HEADER: \docid{TheDoc-02}
 #+OPTIONS: ^:nil auto-id:t
 
@@ -459,11 +459,23 @@ Letter Handling]].
     :CUSTOM_ID: hH-fb0eba5e-9d12-4cfe-8e8c-fe77b6658065
     :END:
 
-   If the Actor code handling a message fails, the ActorSystem will
-   automatically handle that failure and restart the Actor.  For this
-   reason, Actor-based code is typically much simpler than
+   If the Actor code handling a message fails by throwing an
+   exception, the ActorSystem will automatically catch that exception.
+   The message is automatically re-issued to the Actor to give it a
+   second chance to handle the message.  If the second attempt also
+   throws an exception, the message is returned via a ~PoisonMessage~
+   to the caller and that Actor continues with the next message.  For
+   this reason, Actor-based code is typically much simpler than
    conventional code because it does not have the overhead of lots of
    exception checking and error condition handling.
+
+   If a process-based Actor process exits (e.g. via a signal or
+   un-catcheable exception) then the Thespian Actor System will
+   (eventually) detect the exited process and deliver a
+   ~ChildActorExited~ message to the parent Actor.  It is up to the
+   parent Actor to determine what to do in this situation, but a
+   common response is to simply create another instance of that exited
+   child Actor.
 
    When writing Actor code, the general philosophy is "fail early";
    the ActorSystem itself will restart the Actor in the event of a
