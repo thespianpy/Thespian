@@ -10,7 +10,7 @@
 #+LATEX_HEADER: \product{Thespian}
 #+LATEX_HEADER: \component{Python Actor System}
 #+LATEX_HEADER: \doctype{Usage}
-#+LATEX_HEADER: \docrev{2.23}{2021 May 26}
+#+LATEX_HEADER: \docrev{2.24}{2022 Jan 18}
 #+LATEX_HEADER: \docid{TheDoc-02}
 #+OPTIONS: ^:nil auto-id:t
 
@@ -2545,6 +2545,16 @@ responseMessage = actorSys.ask(targetAddr, message[, timeout])
     discarded as failed message sends if this endpoint does not issue
     an ~ask()~ in a reasonable time period.
 
+  * If using the ~simpleSystemBase~ (currently the default if no base
+    is specified on the initial ~ActorSystem()~ call) then timeouts
+    are unlikely to work as expected.  For example, an actor call that
+    sleeps for 5 seconds and then sends a response will block all
+    processing and the response will be delivered, even if the ~ask()~
+    specified a timeout shorter than the 5 seconds.  Furthermore, if
+    there are no actor messages to be propagated and handled, the
+    ~simpleSystemBase~ call to ~ask()~ will return immediately and
+    without waiting for any requested time period.
+
   These concerns can obviously make using ~ask()~ tricky if there are
   ~tell()~ calls that cause responses or multiple responses to an ask;
   the application must be prepared to use techniques like no-response
@@ -2574,6 +2584,12 @@ responseMessage = actorSys.listen([timeout])
    of the ~datetime.timedelta~ class, although an integer or floating
    point value will be accepted as a specification of a number of
    seconds.
+
+   Just as with the ~ask()~ timeout, the ~listen~ timeout is not
+   generally useful when using a ~simpleSystemBase~ actor base.  The
+   timeout will typically either be ignored while there is active work
+   to be done, or the call will return immediately if the actor system
+   is quiescent with no messages to be delivered.
 
 ** private
    :PROPERTIES:
@@ -4071,6 +4087,9 @@ The multiprocUDPBase uses the following [[#hH-a17e6c70-5592-4d06-b818-bd25350c4c
   multiprocTCPBase above.
 
 * Potential Concerns
+  :PROPERTIES:
+  :CUSTOM_ID: h:51179a65-61b1-45b2-80df-eddd62e16330
+  :END:
 
  * Dropped messages
  * Message size limitations
