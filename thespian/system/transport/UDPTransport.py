@@ -36,6 +36,7 @@ from thespian.system.transport.asyncTransportBase import asyncTransportBase
 from thespian.system.transport.wakeupTransportBase import wakeupTransportBase
 from thespian.system.transport.errmgmt import err_select_retry
 
+DEFAULT_ADMIN_PORT = 1029
 
 DEAD_ADDRESS_TIMEOUT = timedelta(seconds=15)
 INTERRUPT_SUPPRESSION_TIME = timedelta(seconds=1)
@@ -125,8 +126,10 @@ class UDPTransport(asyncTransportBase, wakeupTransportBase):
 
     @staticmethod
     def getAdminAddr(capabilities):
-        return ActorAddress(UDPv4ActorAddress(None, capabilities.get('Admin Port', 1029),
-                                              external=UDPTransport.getConventionAddress(capabilities) or True))
+        return ActorAddress(
+            UDPv4ActorAddress(None,
+                              capabilities.get('Admin Port', DEFAULT_ADMIN_PORT),
+                              external=UDPTransport.getConventionAddress(capabilities) or True))
 
     @staticmethod
     def getAddressFromString(addrspec):
