@@ -4098,13 +4098,46 @@ The multiprocUDPBase uses the following [[#hH-a17e6c70-5592-4d06-b818-bd25350c4c
   for Actor Addresses in the same manner as described for the
   multiprocTCPBase above.
 
-* Potential Concerns
+* Potential Concerns and FAQ
   :PROPERTIES:
-  :CUSTOM_ID: h:51179a65-61b1-45b2-80df-eddd62e16330
+  :CUSTOM_ID: h:f3cb3837-435b-4551-91bc-1913af405a67
   :END:
 
- * Dropped messages
- * Message size limitations
+ Some items of potential concern when working with Thespian and actor
+ systems in general:
+
+ * Dropped messages ::  While Thespian does its best to ensure that
+   messages are delivered, this is fundamentally a distributed model
+   relying on varying levels of network connectivity.  Thespian will
+   retransmit where it is possible to detect a delivery error (this is
+   generally not possible with the UDP-based transports but is
+   provided by the TCP-based transports).  An actor-based application
+   wanting to address this concern may want to add identification
+   information to messages that allow a receipient to detect the
+   absence of expected messages and explicitly re-request them from
+   the originating actor.
+
+ * Message size limitations :: Thespian itself does not impose message
+   size limitations.  Some transports may have limitations (e.g. UDP)
+   that will be encountered.  Extremely large messages may overflow
+   buffers in the network equipment or in the network stack of the
+   local or remote system.  Thespian has been successfully used to
+   exchange messages that are tens or hundreds of kilobytes, but it's
+   recommended that extremely huge messages are split into smaller
+   messages or handled via some other mechanism.
+
+ * Use of Thespian in conjunction with some other scheduling system
+   (e.g. rabbit-mq, etc.).  Because the scheduling of an actor's receiveMessage
+   handler is one of the primary goals of the Thespian actor system (or any actor
+   system), this is usually incompatible with any *other* scheduling system
+   expecting to determine when portions of the code are run, which frequently
+   includes other message passing frameworks that include schedule handling.
+   Thespian expects to have the CPU context available for servicing
+   sockets/queues/etc. and to determine when the Actor is called with a message;
+   conversely the Actor may choose to block for as long as it desires within its
+   own receiveMessage handler.  There is no commonly viable mechanism for
+   Thespian to share this management of the CPU context with Other libraries and
+   frameworks that also expecting to manage that context.
 
 * Deploying Actor-based Projects
   :PROPERTIES:
