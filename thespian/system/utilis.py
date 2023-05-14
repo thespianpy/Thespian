@@ -197,7 +197,7 @@ def actualActorClass(actorClass, sourceHashLoader=None):
             try:
                 import importlib
             except ImportError:
-                import thespian.importlib as importlib # KWQ?
+                import thespian.local_importlib as importlib
             if sourceHashLoader:
                 actorClass = sourceHashLoader(classModule, className)
             else:

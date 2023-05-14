@@ -72,7 +72,7 @@ from thespian.system.utilis import thesplog
 HashModuleName = lambda h,s: s
 
 if sys.version_info < (2,7):
-    import thespian.importlib as importlib
+    import thespian.local_importlib as importlib
 else:
     import importlib
 if sys.version_info >= (3,1):

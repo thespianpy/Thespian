@@ -666,7 +666,7 @@ class ActorSystem(object):
         elif isinstance(systemBase, str):
             import sys
             if sys.version_info < (2, 7):
-                import thespian.importlib as importlib
+                import thespian.local_importlib as importlib
             else:
                 import importlib
             # n.b. standard import exception indicates a missing/unknown systemBase
