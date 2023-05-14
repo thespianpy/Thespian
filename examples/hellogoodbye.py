@@ -31,12 +31,14 @@ class Goodbye(Actor):
 
 def run_example(systembase=None):
     asys = ActorSystem(systembase, logDefs=logcfg)
-    hello = ActorSystem().createActor(Hello)
-    goodbye = ActorSystem().createActor(Goodbye)
-    greeting = ActorSystem().ask(hello, 'are you there?', timedelta(seconds=1.5))
-    print(greeting + '\n' + ActorSystem().ask(goodbye, None,
-                                              timedelta(milliseconds=100)))
-    ActorSystem().shutdown()
+    try:
+        hello = ActorSystem().createActor(Hello)
+        goodbye = ActorSystem().createActor(Goodbye)
+        greeting = ActorSystem().ask(hello, 'are you there?', timedelta(seconds=1.5))
+        print(greeting + '\n' + ActorSystem().ask(goodbye, None,
+                                                  timedelta(milliseconds=100)))
+    finally:
+        ActorSystem().shutdown()
 
 if __name__ == "__main__":
     import sys
