@@ -308,11 +308,11 @@ class Diagnoser:
         assert o == b'Hello, world!\nGoodbye\n'
         assert e == b''
 
-    @_check()
-    def check_simpleSystemBase_actors(self):
-        self._run_hello_actors()
-
-    def _run_hello_actors(self, base=None):
+    @_check('base')
+    def check_simple_actors(self, can_run, base):
+        if not can_run:
+            raise Skipped('due to prevously noted issues with %s actor systems'
+                          % base)
         from subprocess import Popen, PIPE
         myfile = sys.modules['__main__'].__file__
         hello = os.path.join(os.getcwd(),
@@ -330,23 +330,6 @@ class Diagnoser:
         assert o == exp_o
         assert e == exp_e
 
-    @_check()
-    def check_multiprocQueueBase_actors(self, can_run):
-        if not can_run:
-            raise Skipped('due to prevously noted issues with Queue actor systems')
-        self._run_hello_actors('multiprocQueueBase')
-
-    @_check()
-    def check_multiprocUDPBase_actors(self, can_run):
-        if not can_run:
-            raise Skipped('due to prevously noted issues with UDP actor systems')
-        self._run_hello_actors('multiprocUDPBase')
-
-    @_check()
-    def check_multiprocTCPBase_actors(self, can_run):
-        if not can_run:
-            raise Skipped('due to prevously noted issues with TCP actor systems')
-        self._run_hello_actors('multiprocTCPBase')
 
 class SockTest(threading.Thread):
     def __init__(self, proto, port, report, flag, *args, **kw):
@@ -449,8 +432,8 @@ if __name__ == "__main__":
     tcp_ok = d.check_multiprocTCPBase_port_available()
     d.check_UDP_sockets(udp_ok)
     d.check_TCP_sockets(tcp_ok)
-    d.check_simpleSystemBase_actors()
-    d.check_multiprocQueueBase_actors(package_ok)
-    d.check_multiprocUDPBase_actors(package_ok and udp_ok)
-    d.check_multiprocTCPBase_actors(package_ok and tcp_ok)
+    d.check_simple_actors(True, 'simpleSystemBase')
+    d.check_simple_actors(package_ok, 'multiprocQueueBase')
+    d.check_simple_actors(package_ok and udp_ok, 'multiprocUDPBase')
+    d.check_simple_actors(package_ok and tcp_ok, 'multiprocTCPBase')
     d.report('Diagnostics completed.')
