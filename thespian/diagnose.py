@@ -367,12 +367,16 @@ class SockServer(SockTest):
         print('Server got "%s" from %s' % (m, a), file=self.report)
         if proto == socket.SOCK_STREAM:
             r.send(b'Goodbye')
-            print('Server shutting down', file=self.report)
+            print('Server shutting down: %s' % r, file=self.report)
             r.close()
+            print('Server closed client socket %s' % s, file=self.report)
             s.shutdown(socket.SHUT_RDWR)
+            print('Server shutdown listening socket %s' % s, file=self.report)
         else:
             s.sendto(b'Goodbye', a)
+        print('Server closing listening socket %s' % s, file=self.report)
         s.close()
+        print('Server closed listening socket %s' % s, file=self.report)
         del s
         print('server done', file=self.report)
 
