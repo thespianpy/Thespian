@@ -305,7 +305,11 @@ class Diagnoser:
                          'examples', 'hellogoodbye.py')
         p = Popen([sys.executable, hello], stdout=PIPE, stderr=PIPE)
         o, e = p.communicate()
-        assert o == b'Hello, world!\nGoodbye\n'
+        import platform
+        if platform.system() == "Windows":
+            assert o == b'Hello, world!\r\nGoodbye\r\n'
+        else:
+            assert o == b'Hello, world!\nGoodbye\n'
         assert e == b''
 
     @_check('base')
@@ -321,7 +325,10 @@ class Diagnoser:
         args = [sys.executable, hello, base] if base else [sys.executable, hello]
         p = Popen(args, stdout=PIPE, stderr=PIPE)
         o, e = p.communicate()
-        exp_o = b'Hello, world!\nGoodbye\n'
+        import platform
+        exp_o = (b'Hello, world!\r\nGoodbye\r\n'
+                 if platform.system() == "Windows" else
+                 b'Hello, world!\nGoodbye\n')
         exp_e = b''
         if exp_o != o:
             self.info('Unexpected output', o)
