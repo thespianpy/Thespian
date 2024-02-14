@@ -26,7 +26,7 @@ class Diagnoser:
         if platform.system() == "Windows":
             # set Windows console to VT mode
             kernel32 = __import__("ctypes").windll.kernel32
-            kernel32.SetconsoleMode(kernel32.GetStdHandle(-11), 7)
+            kernel32.SetConsoleMode(kernel32.GetStdHandle(-11), 7)
             del kernel32
     def __del__(self):
         print('--> Wrote',self._diaglog.name)
