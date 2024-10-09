@@ -2,7 +2,7 @@
 asynchronous (non-blocking) transmit and receive functionality.
 """
 
-
+import os
 from thespian.system.transport import (TransmitOnly, SendStatus,
                                        Thespian__UpdateWork)
 from thespian.system.utilis import thesplog, partition
@@ -35,9 +35,9 @@ else:
 # transmits are immediately failed instead of being queued.
 
 MAX_PENDING_TRANSMITS = 20
-MAX_QUEUED_TRANSMITS = 950
-QUEUE_TRANSMIT_UNBLOCK_THRESHOLD = 780
-DROP_TRANSMITS_LEVEL = MAX_QUEUED_TRANSMITS + 100
+MAX_QUEUED_TRANSMITS = int(os.environ.get("THESPIAN_MAX_QUEUED_TRANSMITS", 950))
+QUEUE_TRANSMIT_UNBLOCK_THRESHOLD = int(os.environ.get("THESPIAN_QUEUED_TRANSMIT_UNBLOCK_THRESHOLD", 780))
+DROP_TRANSMITS_LEVEL = MAX_QUEUED_TRANSMITS + int(os.environ.get("THESPIAN_DROP_TRANSMITS_LEVEL", 100))
 
 
 @contextmanager
