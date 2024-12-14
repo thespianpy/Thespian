@@ -32,9 +32,12 @@ nosetests.xml
 *.mo
 
 # Mr Developer
+.envrc
 .mr.developer.cfg
 .project
 .pydevproject
+.python-version
+.venv
 
 _darcs
 .boring
