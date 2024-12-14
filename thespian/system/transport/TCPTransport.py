@@ -1350,12 +1350,6 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
         accepted = False
         try:
             lsock, rmtTxAddr = self.new_socket(self.socket.accept)
-            if (lsock.proto != socket.IPPROTO_TCP
-                or lsock.family != socket.AF_INET
-                or lsock.type != socket.SOCK_STREAM):
-                # Spurious connection attempt: ignore
-                lsock.close()
-                return
             accepted = True
         except (OSError, socket.error) as ex:
             thesplog('Error accepting incoming: %s', ex)
