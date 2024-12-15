@@ -97,7 +97,7 @@ from thespian.system.messages.convention import CONV_ADDR_IPV4_CAPABILITY
 from thespian.system.messages.multiproc import ChildMayHaveDied
 from thespian.system.addressManager import ActorLocalAddress
 import socket
-import select
+import selectors
 from datetime import timedelta
 try:
     import cPickle as pickle
@@ -1072,6 +1072,13 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
     def set_watch(self, watchlist):
         self._watches = watchlist
 
+    @staticmethod
+    def _check_fd(fd):
+        sel = selectors.DefaultSelector()
+        sel.register(fd, selectors.EVENT_READ)
+        _ = sel.select(0)
+        sel.close()
+
     def _runWithExpiry(self, incomingHandler):
         xmitOnly = incomingHandler == TransmitOnly or \
                    isinstance(incomingHandler, TransmitOnly)
@@ -1136,27 +1143,27 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
 
                 if not xmitOnly:
                     wrecv.extend([self.socket.fileno()])
-                else:
-                    # Windows does not support calling select with three
-                    # empty lists, so as a workaround, supply the main
-                    # listener if everything else is pending delays (or
-                    # completed but unrealized) here, and ensure the main
-                    # listener does not accept any listens below.
-                    if not wrecv and not wsend:
-                        if not hasattr(self, 'dummySock'):
-                            self.dummySock = socket.socket(socket.AF_INET,
-                                                           socket.SOCK_DGRAM,
-                                                           socket.IPPROTO_UDP)
-                        wrecv.extend([self.dummySock.fileno()])
 
                 if self._watches:
                     wrecv.extend(self._watches)
 
             rrecv, rsend, rerr = [], [], []
             try:
-                rrecv, rsend, rerr = select.select(wrecv, wsend,
-                                                   set(wsend+wrecv), delay)
-            except (OSError, select.error, ValueError) as ex:
+                # creates selector on each loop, most likely slow
+                sel = selectors.DefaultSelector()
+                for each in wrecv:
+                    sel.register(each, selectors.EVENT_READ)
+                for each in wsend:
+                    sel.register(each, selectors.EVENT_WRITE)
+                events = sel.select(delay)
+                for key, event in events:
+                    if event & selectors.EVENT_READ:
+                        rrecv.append(key.fd)
+                    if event & selectors.EVENT_WRITE:
+                        rsend.append(key.fd)
+                sel.close()
+            except (OSError, ValueError) as ex:
+                thesplog('selector exception: %s', ex, level=logging.DEBUG)
                 errnum = errno.EBADF if isinstance(ex, ValueError) \
                     else getattr(ex, 'errno', ex.args[0])
                 if err_select_retry(errnum):
@@ -1175,25 +1182,26 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
                         bad = []
                         for each in self._watches:
                             try:
-                                _ = select.select([each], [], [], 0)
-                            except Exception:
+                                TCPTransport._check_fd(each)
+                            except Exception as ex:
+                                thesplog('watcher %s is bad: %', each, ex)
                                 bad.append(each)
                         if not bad:
                             thesplog('bad internal file descriptor!')
                             try:
-                                _ = select.select([self.socket.fileno()], [], [], 0)
-                            except Exception:
-                                thesplog('listen %s is bad', self.socket.fileno)
+                                TCPTransport._check_fd(self.socket.fileno())
+                            except Exception as ex:
+                                thesplog('listen %s is bad: %s', self.socket.fileno, ex)
                                 rerr.append(self.socket.fileno)
                             for each in wrecv:
                                 try:
-                                    _ = select.select([each], [], [], 0)
-                                except Exception:
-                                    thesplog('wrecv %s is bad', each)
+                                    TCPTransport._check_fd(each)
+                                except Exception as ex:
+                                    thesplog('wrecv %s is bad: %s', each, ex)
                                     rerr.append(each)
                             for each in wsend:
                                 try:
-                                    select.select([each], [], [], 0)
+                                    TCPTransport._check_fd(each)
                                 except Exception:
                                     thesplog('wsend %s is bad', each)
                                     rerr.append(each)
