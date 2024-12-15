@@ -9,8 +9,8 @@ class notActorLogFilter(logging.Filter):
 
 logcfg = { 'version': 1,
            'formatters': {
-               'normal': {'format': '%(levelname)-8s %(message)s'},
-               'actor': {'format': '%(levelname)-8s %(actorAddress)s => %(message)s'}},
+               'normal': {'format': '%(asctime)s %(levelname)-8s %(message)s'},
+               'actor': {'format': '%(asctime)s %(levelname)-8s %(actorAddress)s => %(message)s'}},
            'filters': { 'isActorLog': { '()': actorLogFilter},
                         'notActorLog': { '()': notActorLogFilter}},
            'handlers': { 'h1': {'class': 'logging.FileHandler',

@@ -20,6 +20,9 @@ lib64
 include
 .Python
 
+# Example log
+example.log
+
 # Installer logs
 pip-log.txt
 
