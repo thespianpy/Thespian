@@ -69,7 +69,7 @@ class Worker(ActorTypeDispatcher):
 def run_example(num_workers):
     try:
         num_workers = int(num_workers)
-    except TypeError:
+    except ValueError:
         print('please specify the number of workers')
         sys.exit(1)
     asys = ActorSystem("multiprocTCPBase", logDefs=logcfg)
