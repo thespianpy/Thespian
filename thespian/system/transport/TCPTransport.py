@@ -1149,7 +1149,7 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
 
             rrecv, rsend, rerr = [], [], []
             try:
-                # creates selector on each loop, most likely slow
+                # creates selector on each loop, perhaps this could be optimized
                 sel = selectors.DefaultSelector()
                 for each in wrecv:
                     sel.register(each, selectors.EVENT_READ)
