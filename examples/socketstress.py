@@ -4,7 +4,7 @@
 # methods.
 #
 # Run this from the top level as:
-#    $ python examples/socketstress.py [number-of-workers]
+#    $ python examples/socketstress.py [<number-of-workers>] [<number-of-repetitions>]
 
 
 import logging
