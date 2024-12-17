@@ -28,8 +28,9 @@ class Run(BaseMsg): pass
 
 
 class Start(BaseMsg):
-    def __init__(self, num_workers):
+    def __init__(self, num_workers, num_repetitions):
         self.num_workers = num_workers
+        self.num_repetitions = num_repetitions
 
 ### actors
 
@@ -42,6 +43,7 @@ class Dispatcher(ActorTypeDispatcher):
 
     def receiveMsg_Start(self, message, sender):
         self.num_workers = message.num_workers
+        self.num_repetitions = message.num_repetitions
         logging.info('receiveMsg_Start(): creating %s workers...', self.num_workers)
         for _ in range(self.num_workers):
             self.workers.append(self.createActor(Worker))
@@ -58,7 +60,7 @@ class Dispatcher(ActorTypeDispatcher):
     def receiveMsg_Pong(self, message, sender):
         self.pong_count += 1
         self.send(sender, Ping())
-        if self.pong_count >= self.num_workers * 100:
+        if self.pong_count >= self.num_workers * self.num_repetitions:
             self.send(self.run_sender, "done")
 
 
@@ -67,18 +69,20 @@ class Worker(ActorTypeDispatcher):
         self.send(sender, Pong())
 
 
-def run_example(num_workers):
+def run_example(num_workers, num_repetitions):
     try:
         num_workers = int(num_workers)
+        num_repetitions = int(num_repetitions)
     except ValueError:
-        print('please specify the number of workers')
+        print('usage: socketstress.py [<num-workers>] [<num-repetitions>]')
         sys.exit(1)
     asys = ActorSystem("multiprocTCPBase", logDefs=logcfg)
     try:
+        print(f'socketstress with {num_workers} worker(s) and {num_repetitions} repetition(s)')
         print('creating dispatcher...')
         dispatcher = ActorSystem().createActor(Dispatcher)
         print('initiating workers start...')
-        ActorSystem().ask(dispatcher, Start(num_workers))
+        ActorSystem().ask(dispatcher, Start(num_workers, num_repetitions))
         seconds = 3
         print(f'waiting {seconds} seconds...')
         time.sleep(seconds)
@@ -92,4 +96,7 @@ def run_example(num_workers):
 
 if __name__ == "__main__":
     import sys
-    run_example(sys.argv[1] if len(sys.argv) > 1 else "3")
+    run_example(
+        sys.argv[1] if len(sys.argv) > 1 else "3",
+        sys.argv[2] if len(sys.argv) > 2 else "1"
+    )
