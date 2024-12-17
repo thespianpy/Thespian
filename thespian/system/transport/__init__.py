@@ -4,9 +4,10 @@ from datetime import timedelta
 from thespian.system.timing import ExpirationTimer, currentTime
 from thespian.system.utilis import thesplog
 import logging
+import os
 
 
-DEFAULT_MAX_TRANSMIT_PERIOD = timedelta(minutes=5)
+DEFAULT_MAX_TRANSMIT_PERIOD = timedelta(minutes=int(os.environ.get("THESPIAN_TRANSMIT_TIMEOUT_MINUTES", 5)))
 TRANSMIT_RETRY_PERIOD       = timedelta(seconds=35)
 MAX_TRANSMIT_RETRIES        = 20
 MAX_SHOWLEN                 = 150
