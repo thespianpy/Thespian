@@ -335,9 +335,6 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
             self._openSockets = {}
         self._checkChildren = False
         self._shutdownSignalled = False
-        self.selector = selectors.DefaultSelector()
-        self.wsend = set()
-        self.wrecv = set()
 
     def close(self):
         """Releases all resources and terminates functionality.  This is
@@ -363,7 +360,6 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
         if hasattr(self, 'socket'):
             self._safeSocketShutdown(getattr(self, 'socket', None))
             delattr(self, 'socket')
-        self.selector.close()
 
     def __del__(self):
         self.close()
@@ -1124,14 +1120,14 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
                               filter(lambda T: not T.backoffPause(),
                                      self._transmitIntents.values())))
 
-                wrecv = set(filter(None, wrecv))
-                wsend = set(filter(None, wsend))
-                wrecv.update(list(
+                wrecv = list(filter(None, wrecv))
+                wsend = list(filter(None, wsend))
+                wrecv.extend(list(
                     filter(lambda I: not self._incomingSockets[I].backoffPause(),
                            filter(None, self._incomingSockets))))
 
                 if hasattr(self, '_openSockets'):
-                    wrecv.update(list(map(lambda s: s.socket.fileno(),
+                    wrecv.extend(list(map(lambda s: s.socket.fileno(),
                                           self._openSockets.values())))
 
                 delays = list(filter(None,
@@ -1146,36 +1142,26 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
                 delay = max(0, timePeriodSeconds(min(delays))) if delays else None
 
                 if not xmitOnly:
-                    wrecv.add(self.socket.fileno())
+                    wrecv.extend([self.socket.fileno()])
 
                 if self._watches:
-                    wrecv.update(self._watches)
+                    wrecv.extend(self._watches)
 
             rrecv, rsend, rerr = [], [], []
             try:
-                wrecv_wsend = self.wrecv | self.wsend
-                for each in wrecv_wsend - (wrecv | wsend):
-                    self.selector.unregister(each)
-                for each in wrecv & self.wsend:
-                    self.selector.modify(each, selectors.EVENT_READ)
-                for each in wsend & self.wrecv:
-                    self.selector.modify(each, selectors.EVENT_WRITE)
-                for each in wrecv - wrecv_wsend:
-                    self.selector.register(each, selectors.EVENT_READ)
-                for each in wsend - wrecv_wsend:
-                    self.selector.register(each, selectors.EVENT_WRITE)
-                self.wrecv = wrecv
-                self.wsend = wsend
-                events = self.selector.select(delay)
+                # creates selector on each loop, most likely slow
+                sel = selectors.DefaultSelector()
+                for each in wrecv:
+                    sel.register(each, selectors.EVENT_READ)
+                for each in wsend:
+                    sel.register(each, selectors.EVENT_WRITE)
+                events = sel.select(delay)
                 for key, event in events:
                     if event & selectors.EVENT_READ:
                         rrecv.append(key.fd)
                     if event & selectors.EVENT_WRITE:
                         rsend.append(key.fd)
-            except KeyError as ex:
-                # this should never happen
-                thesplog('already registered or unknown file descriptor!: %s', ex,
-                         level=logging.ERROR)
+                sel.close()
             except (OSError, ValueError) as ex:
                 thesplog('selector exception: %s', ex, level=logging.DEBUG)
                 errnum = errno.EBADF if isinstance(ex, ValueError) \
