@@ -32,6 +32,12 @@ class Start(BaseMsg):
         self.num_workers = num_workers
         self.num_repetitions = num_repetitions
 
+
+class WorkerStart(BaseMsg): pass
+
+
+class WorkerStarted(BaseMsg): pass
+
 ### actors
 
 class Dispatcher(ActorTypeDispatcher):
@@ -39,21 +45,24 @@ class Dispatcher(ActorTypeDispatcher):
         self.num_workers = 0
         self.workers = []
         self.pong_count = 0
-        self.run_sender = None
+        self.worker_started_count = 0
+        self.sender = None
         self.has_completed = False
 
     def receiveMsg_Start(self, message, sender):
         self.num_workers = message.num_workers
         self.num_repetitions = message.num_repetitions
+        self.sender = sender
         logging.info('receiveMsg_Start(): creating %s workers...', self.num_workers)
         for _ in range(self.num_workers):
-            self.workers.append(self.createActor(Worker))
-        self.send(sender, "done")
+            worker = self.createActor(Worker)
+            self.workers.append(worker)
+            self.send(worker, WorkerStart())
         logging.info('receiveMsg_Start(): done', self.num_workers)
 
     def receiveMsg_Run(self, message, sender):
         logging.info('receiveMsg_Run(): sending pings...')
-        self.run_sender = sender
+        self.sender = sender
         for each in self.workers:
             self.send(each, Ping())
         logging.info('receiveMsg_Run(): done')
@@ -62,14 +71,23 @@ class Dispatcher(ActorTypeDispatcher):
         self.pong_count += 1
         if self.pong_count >= self.num_workers * self.num_repetitions and not self.has_completed:
             self.has_completed = True
-            self.send(self.run_sender, "done")
+            self.send(self.sender, "done")
         if self.num_repetitions > 1:
             self.send(sender, Ping())
+
+    def receiveMsg_WorkerStarted(self, message, sender):
+        self.worker_started_count += 1
+        if self.worker_started_count == self.num_workers:
+            logging.info('receiveMsg_WorkerStarted(): %s workers started', self.worker_started_count)
+            self.send(self.sender, "started")
 
 
 class Worker(ActorTypeDispatcher):
     def receiveMsg_Ping(self, message, sender):
         self.send(sender, Pong())
+
+    def receiveMsg_WorkerStart(self, message, sender):
+        self.send(sender, WorkerStarted())
 
 
 def run_example(num_workers, num_repetitions):
@@ -84,11 +102,8 @@ def run_example(num_workers, num_repetitions):
         print(f'socketstress with {num_workers} worker(s) and {num_repetitions} repetition(s)')
         print('creating dispatcher...')
         dispatcher = ActorSystem().createActor(Dispatcher)
-        print('initiating workers start...')
+        print('starting workers...')
         ActorSystem().ask(dispatcher, Start(num_workers, num_repetitions))
-        seconds = 3
-        print(f'waiting {seconds} seconds...')
-        time.sleep(seconds)
         print('run!')
         start = time.perf_counter()
         ActorSystem().ask(dispatcher, Run())
