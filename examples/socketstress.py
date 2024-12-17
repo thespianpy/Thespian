@@ -40,6 +40,7 @@ class Dispatcher(ActorTypeDispatcher):
         self.workers = []
         self.pong_count = 0
         self.run_sender = None
+        self.has_completed = False
 
     def receiveMsg_Start(self, message, sender):
         self.num_workers = message.num_workers
@@ -59,9 +60,11 @@ class Dispatcher(ActorTypeDispatcher):
 
     def receiveMsg_Pong(self, message, sender):
         self.pong_count += 1
-        self.send(sender, Ping())
-        if self.pong_count >= self.num_workers * self.num_repetitions:
+        if self.pong_count >= self.num_workers * self.num_repetitions and not self.has_completed:
+            self.has_completed = True
             self.send(self.run_sender, "done")
+        if self.num_repetitions > 1:
+            self.send(sender, Ping())
 
 
 class Worker(ActorTypeDispatcher):
