@@ -57,7 +57,8 @@ class Dispatcher(ActorTypeDispatcher):
 
     def receiveMsg_Pong(self, message, sender):
         self.pong_count += 1
-        if self.pong_count == self.num_workers:
+        self.send(sender, Ping())
+        if self.pong_count >= self.num_workers * 100:
             self.send(self.run_sender, "done")
 
 
