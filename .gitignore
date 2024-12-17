@@ -20,6 +20,9 @@ lib64
 include
 .Python
 
+# Example log
+example.log
+
 # Installer logs
 pip-log.txt
 
@@ -32,9 +35,12 @@ nosetests.xml
 *.mo
 
 # Mr Developer
+.envrc
 .mr.developer.cfg
 .project
 .pydevproject
+.python-version
+.venv
 
 _darcs
 .boring
