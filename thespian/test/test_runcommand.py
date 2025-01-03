@@ -1,3 +1,4 @@
+import os
 import sys
 import datetime
 from thespian.test import *
@@ -18,7 +19,7 @@ class TestRunCommand(object):
                        ask_timeout)
         print(res)
         assert res
-        assert res.stdout == 'hello\n'
+        assert res.stdout == f'hello{os.linesep}'
 
 
     def testSimpleTaggedCommand(self, asys):
@@ -28,7 +29,7 @@ class TestRunCommand(object):
                        ask_timeout)
         print(res)
         assert res
-        assert res.stdout == 'hello\n'
+        assert res.stdout == f'hello{os.linesep}'
 
 
     def testNonExistentCommand(self, asys):
@@ -60,7 +61,7 @@ class TestRunCommand(object):
         assert res.command.logtag == 'hi'
         res = asys.listen(ask_timeout)
         assert res
-        assert res.stdout == 'hello\nworld\n'
+        assert res.stdout == f'hello{os.linesep}world{os.linesep}'
 
     def testSlowCommandTimeout(self, asys):
         #actor_system_unsupported(asys, 'simpleSystemBase') #, 'multiprocQueueBase')
@@ -110,7 +111,7 @@ class TestRunCommand(object):
                        ask_timeout)
         print(res)
         assert res
-        assert res.stdout == 'hello\nWho are you? \nhello \n'
+        assert res.stdout == f'hello{os.linesep}Who are you? {os.linesep}hello {os.linesep}'
 
     def testSlowCommandWantingInputAvailable(self, asys):
         cmd = asys.createActor(thespian.runcommand.RunCommand)
@@ -150,7 +151,7 @@ class TestRunCommand(object):
                        ask_timeout)
         print(res)
         assert res
-        assert res.stdout == 'howdy\nWho are you?\nhello Harry\n'
+        assert res.stdout == f'howdy{os.linesep}Who are you?{os.linesep}hello Harry{os.linesep}'
 
     def testWatchedSlowCommandWantingInputAvailable(self, asys):
         cmd = asys.createActor(thespian.runcommand.RunCommand)
@@ -176,8 +177,8 @@ class TestRunCommand(object):
         print(res)
         assert res
         print(res.stdout)
-        assert res.stdout == 'hello\nWho are you? \nhello Harry\n\n'
-        assert res.stderr == 'All done\n'
+        assert res.stdout == f'hello{os.linesep}Who are you? {os.linesep}hello Harry{os.linesep * 2}'
+        assert res.stderr == f'All done{os.linesep}'
         watched = asys.ask(watcher, 1, ask_timeout)
         print(res.stdout)
         print('--')
@@ -214,8 +215,8 @@ class TestRunCommand(object):
                        ask_timeout)
         print(res)
         assert res
-        assert res.stdout == 'howdy\nWho are you?\nhello Harry\n'
-        assert res.stderr == 'all done\n'
+        assert res.stdout == f'howdy{os.linesep}Who are you?{os.linesep}hello Harry{os.linesep}'
+        assert res.stderr == f'all done{os.linesep}'
         watched = asys.ask(watcher, 1, ask_timeout)
         print(res.stdout)
         print('--')
