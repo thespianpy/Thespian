@@ -152,12 +152,12 @@ class TestFuncHAConvention():
         r = victoria.ask(roger, "zorin", 0.25)
         assert r == "Don't count on it, zorin"
 
-        bond1 = leicester.ask(m, "Sean", 0.25)
+        bond1 = leicester.ask(m, "Sean", 0.5)
         assert bond1
         r = leicester.ask(bond1, "forever", 0.25)
         assert r == "forever is not enough"
 
-        bond2 = leicester.ask(m, "Roger", 0.25)
+        bond2 = leicester.ask(m, "Roger", 0.5)
         assert bond2
         r = leicester.ask(bond2, "jaws", 0.25)
         assert r == "Don't count on it, jaws"
@@ -171,12 +171,12 @@ class TestFuncHAConvention():
         m = picadilly.createActor(M)
         sleep(1)  # wait for things to settle
 
-        bond1 = leicester.ask(m, "Sean", 0.25)
+        bond1 = leicester.ask(m, "Sean", 0.5)
         assert bond1
         r = leicester.ask(bond1, "forever", 0.25)
         assert r == "forever is not enough"
 
-        bond2 = leicester.ask(m, "Roger", 0.25)
+        bond2 = leicester.ask(m, "Roger", 0.5)
         assert bond2
         r = leicester.ask(bond2, "jaws", 0.25)
         assert r == "Don't count on it, jaws"
@@ -184,12 +184,12 @@ class TestFuncHAConvention():
         victoria.shutdown()
         sleep(2)
 
-        bond3 = leicester.ask(m, "Sean", 0.25)
+        bond3 = leicester.ask(m, "Sean", 0.5)
         assert bond3
         r = leicester.ask(bond3, "forever", 0.25)
         assert r == "forever is not enough"
 
-        bond4 = leicester.ask(m, "Roger", 0.25)
+        bond4 = leicester.ask(m, "Roger", 0.5)
         assert (bond4 is None)
 
     def test04_actor_create_on_leader_re_enter(self, testsystems):
@@ -201,12 +201,12 @@ class TestFuncHAConvention():
         m = picadilly.createActor(M)
         sleep(1)  # wait for things to settle
 
-        bond1 = leicester.ask(m, "Sean", 0.25)
+        bond1 = leicester.ask(m, "Sean", 0.5)
         assert bond1
         r = leicester.ask(bond1, "forever", 0.25)
         assert r == "forever is not enough"
 
-        bond2 = leicester.ask(m, "Roger", 0.25)
+        bond2 = leicester.ask(m, "Roger", 0.5)
         assert bond2
         r = leicester.ask(bond2, "jaws", 0.25)
         assert r == "Don't count on it, jaws"
@@ -214,12 +214,12 @@ class TestFuncHAConvention():
         victoria.shutdown()
         sleep(2)
 
-        bond3 = leicester.ask(m, "Sean", 0.25)
+        bond3 = leicester.ask(m, "Sean", 0.5)
         assert bond3
         r = leicester.ask(bond3, "forever", 0.25)
         assert r == "forever is not enough"
 
-        bond4 = leicester.ask(m, "Roger", 0.25)
+        bond4 = leicester.ask(m, "Roger", 0.5)
         assert (bond4 is None)
 
         # --- same as test03 up to this point ---
@@ -237,12 +237,12 @@ class TestFuncHAConvention():
 
         try:
 
-            bond5 = leicester.ask(m, "Sean", 0.25)
+            bond5 = leicester.ask(m, "Sean", 0.5)
             assert bond5
             r = leicester.ask(bond5, "money", 0.25)
             assert r == "money is not enough"
 
-            bond6 = leicester.ask(m, "Roger", 0.25)
+            bond6 = leicester.ask(m, "Roger", 0.5)
             assert bond6
             r = leicester.ask(bond6, "sharks", 0.25)
             assert r == "Don't count on it, sharks"
