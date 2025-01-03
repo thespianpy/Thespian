@@ -7,7 +7,7 @@ import logging
 
 
 DEFAULT_MAX_TRANSMIT_PERIOD = timedelta(minutes=5)
-TRANSMIT_RETRY_PERIOD       = timedelta(seconds=35)
+TRANSMIT_RETRY_PERIOD       = timedelta(seconds=5)
 MAX_TRANSMIT_RETRIES        = 20
 MAX_SHOWLEN                 = 150
 MAX_BACKOFF_DELAY = timedelta(seconds=7, milliseconds=329)

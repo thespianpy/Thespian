@@ -14,7 +14,7 @@ def err_conn_refused(errex):
 
 
 def err_send_inprogress(err):
-    return err in [errno.EINPROGRESS, errno.EAGAIN, errno.ENOTCONN]
+    return err in [errno.EINPROGRESS, errno.EAGAIN]
 
 
 def err_send_connrefused(errex):
