@@ -132,9 +132,11 @@ class TestRunCommand(object):
                        ask_timeout)
         print(res)
         assert res
-        assert res.stdout == 'hello\nWho are you? \nhello Harry\n\n'
+        assert res.stdout == f'hello{os.linesep}Who are you? {os.linesep}hello Harry{os.linesep * 2}'
 
     def testSlowShellCommandWantingInputAvailable(self, asys):
+        if sys.platform == 'win32':
+            pytest.skip("Bash shell not available on Windows")
         cmd = asys.createActor(thespian.runcommand.RunCommand)
         program = ';'.join(['echo howdy',
                             'sleep 1',
@@ -151,7 +153,7 @@ class TestRunCommand(object):
                        ask_timeout)
         print(res)
         assert res
-        assert res.stdout == f'howdy{os.linesep}Who are you?{os.linesep}hello Harry{os.linesep}'
+        assert res.stdout == 'howdy\nWho are you?\nhello Harry\n'
 
     def testWatchedSlowCommandWantingInputAvailable(self, asys):
         cmd = asys.createActor(thespian.runcommand.RunCommand)
@@ -196,6 +198,8 @@ class TestRunCommand(object):
         assert (res.stdout, res.stderr) == (watched_out, watched_err)
 
     def testWatchedSlowShellCommandWantingInputAvailable(self, asys):
+        if sys.platform == 'win32':
+            pytest.skip("Bash shell not available on Windows")
         cmd = asys.createActor(thespian.runcommand.RunCommand)
         program = ';'.join(['echo howdy',
                             'sleep 1',
@@ -215,8 +219,8 @@ class TestRunCommand(object):
                        ask_timeout)
         print(res)
         assert res
-        assert res.stdout == f'howdy{os.linesep}Who are you?{os.linesep}hello Harry{os.linesep}'
-        assert res.stderr == f'all done{os.linesep}'
+        assert res.stdout == 'howdy\nWho are you?\nhello Harry\n'
+        assert res.stderr == 'all done\n'
         watched = asys.ask(watcher, 1, ask_timeout)
         print(res.stdout)
         print('--')
