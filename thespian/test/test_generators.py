@@ -37,5 +37,5 @@ class Controller(ActorTypeDispatcher):
 
 
 def test_generators(asys):
-    r = asys.ask(asys.createActor(Controller), 8, 11)
+    r = asys.ask(asys.createActor(Controller), 8, 3)
     assert r == 'done'

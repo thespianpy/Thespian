@@ -897,7 +897,7 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
             intent.amtSent += intent.socket.send(
                 intent.serMsg[intent.amtSent:])
         except socket.error as err:
-            if err_send_inprogress(err.errno):
+            if err_send_inprogress(err):
                 intent.backoffPause(True)
                 return True
             if err_send_connrefused(err):

@@ -13,8 +13,10 @@ def err_conn_refused(errex):
              errex.winerror == 10057))  # 10057 == WSAENOTCONN
 
 
-def err_send_inprogress(err):
-    return err in [errno.EINPROGRESS, errno.EAGAIN]
+def err_send_inprogress(errex):
+    return (errex.errno in [errno.EINPROGRESS, errno.EAGAIN] or
+            (not hasattr(errex, 'winerror') and
+             errex.errno == errno.ENOTCONN))
 
 
 def err_send_connrefused(errex):
