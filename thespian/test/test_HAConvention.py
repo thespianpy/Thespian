@@ -5,6 +5,10 @@ from thespian.actors import *
 from datetime import timedelta
 
 
+timeout = 0.25
+timeout_with_new_actor = 1.0
+
+
 class PreRegActor(ActorTypeDispatcher):
     def receiveMsg_str(self, regaddr, sender):
         self.preRegisterRemoteSystem(regaddr, {})
@@ -147,19 +151,19 @@ class TestFuncHAConvention():
         m = picadilly.createActor(M)
         sleep(1)  # wait for things to settle
 
-        r = victoria.ask(sean, "diamonds", 0.25)
+        r = victoria.ask(sean, "diamonds", timeout)
         assert r == "diamonds is not enough"
-        r = victoria.ask(roger, "zorin", 0.25)
+        r = victoria.ask(roger, "zorin", timeout)
         assert r == "Don't count on it, zorin"
 
-        bond1 = leicester.ask(m, "Sean", 1)
+        bond1 = leicester.ask(m, "Sean", timeout_with_new_actor)
         assert bond1
-        r = leicester.ask(bond1, "forever", 0.25)
+        r = leicester.ask(bond1, "forever", timeout)
         assert r == "forever is not enough"
 
-        bond2 = leicester.ask(m, "Roger", 1)
+        bond2 = leicester.ask(m, "Roger", timeout_with_new_actor)
         assert bond2
-        r = leicester.ask(bond2, "jaws", 0.25)
+        r = leicester.ask(bond2, "jaws", timeout)
         assert r == "Don't count on it, jaws"
 
     def test03_actor_create_failure_on_leader_exit(self, testsystems):
@@ -171,25 +175,25 @@ class TestFuncHAConvention():
         m = picadilly.createActor(M)
         sleep(1)  # wait for things to settle
 
-        bond1 = leicester.ask(m, "Sean", 1)
+        bond1 = leicester.ask(m, "Sean", timeout_with_new_actor)
         assert bond1
-        r = leicester.ask(bond1, "forever", 0.25)
+        r = leicester.ask(bond1, "forever", timeout)
         assert r == "forever is not enough"
 
-        bond2 = leicester.ask(m, "Roger", 1)
+        bond2 = leicester.ask(m, "Roger", timeout_with_new_actor)
         assert bond2
-        r = leicester.ask(bond2, "jaws", 0.25)
+        r = leicester.ask(bond2, "jaws", timeout)
         assert r == "Don't count on it, jaws"
 
         victoria.shutdown()
         sleep(2)
 
-        bond3 = leicester.ask(m, "Sean", 1)
+        bond3 = leicester.ask(m, "Sean", timeout_with_new_actor)
         assert bond3
-        r = leicester.ask(bond3, "forever", 0.25)
+        r = leicester.ask(bond3, "forever", timeout)
         assert r == "forever is not enough"
 
-        bond4 = leicester.ask(m, "Roger", 1)
+        bond4 = leicester.ask(m, "Roger", timeout_with_new_actor)
         assert (bond4 is None)
 
     def test04_actor_create_on_leader_re_enter(self, testsystems):
@@ -201,25 +205,25 @@ class TestFuncHAConvention():
         m = picadilly.createActor(M)
         sleep(1)  # wait for things to settle
 
-        bond1 = leicester.ask(m, "Sean", 1)
+        bond1 = leicester.ask(m, "Sean", timeout_with_new_actor)
         assert bond1
-        r = leicester.ask(bond1, "forever", 0.25)
+        r = leicester.ask(bond1, "forever", timeout)
         assert r == "forever is not enough"
 
-        bond2 = leicester.ask(m, "Roger", 1)
+        bond2 = leicester.ask(m, "Roger", timeout_with_new_actor)
         assert bond2
-        r = leicester.ask(bond2, "jaws", 0.25)
+        r = leicester.ask(bond2, "jaws", timeout)
         assert r == "Don't count on it, jaws"
 
         victoria.shutdown()
         sleep(2)
 
-        bond3 = leicester.ask(m, "Sean", 1)
+        bond3 = leicester.ask(m, "Sean", timeout_with_new_actor)
         assert bond3
-        r = leicester.ask(bond3, "forever", 0.25)
+        r = leicester.ask(bond3, "forever", timeout)
         assert r == "forever is not enough"
 
-        bond4 = leicester.ask(m, "Roger", 1)
+        bond4 = leicester.ask(m, "Roger", timeout_with_new_actor)
         assert (bond4 is None)
 
         # --- same as test03 up to this point ---
@@ -237,14 +241,14 @@ class TestFuncHAConvention():
 
         try:
 
-            bond5 = leicester.ask(m, "Sean", 1)
+            bond5 = leicester.ask(m, "Sean", timeout_with_new_actor)
             assert bond5
-            r = leicester.ask(bond5, "money", 0.25)
+            r = leicester.ask(bond5, "money", timeout)
             assert r == "money is not enough"
 
-            bond6 = leicester.ask(m, "Roger", 1)
+            bond6 = leicester.ask(m, "Roger", timeout_with_new_actor)
             assert bond6
-            r = leicester.ask(bond6, "sharks", 0.25)
+            r = leicester.ask(bond6, "sharks", timeout)
             assert r == "Don't count on it, sharks"
 
         finally:
