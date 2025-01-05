@@ -637,7 +637,7 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
         self._shutdownSignalled |= signal_shutdown
         self._checkChildren |= check_children
         # Now generate a spurious connection to break out of the
-        # select.select loop.  This is especially useful if a signal
+        # selector loop.  This is especially useful if a signal
         # handler caused a message to be sent to myself: get the
         # select loop to wakeup and process the message.
         with closing(self.new_socket(
@@ -1230,9 +1230,7 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
 
                 # Handle newly receivable data
                 for each in rrecv:
-                    # n.b. ignore this if trying to quiesce; may have had
-                    # to supply this fd to avoid calling select with three
-                    # empty lists.
+                    # n.b. ignore this if trying to quiesce
                     if each == self.socket.fileno() and not xmitOnly:
                         self._acceptNewIncoming()
                         continue
@@ -1452,7 +1450,7 @@ class TCPTransport(asyncTransportBase, wakeupTransportBase):
             inc.close()
             return None
         if not rdata:
-            # Since this point is only arrived at when select() says
+            # Since this point is only arrived at when selector says
             # the socket is readable, this is an indicator of a closed
             # socket.  Since previous calls didn't detect
             # receivedAllData(), this is an aborted/incomplete
