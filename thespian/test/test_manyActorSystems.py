@@ -400,7 +400,7 @@ class TestFuncManyActorSystem(object):
         assert r == 'We cook beans for dinner'
 
         # Ewok creates a JarJar actor in the same ActorSystem (Endor)
-        r = asys.ask(ewok, 'Greet JarJar', 0.35)
+        r = asys.ask(ewok, 'Greet JarJar', 1)
         assert r == 'Trees?  Huh?'
 
         # Ewok creats a JarJar actor but requires it to be in the Hoth ActorSystem
@@ -436,7 +436,7 @@ class TestFuncManyActorSystem(object):
         assert r == 'We cook beans for dinner'
 
         # Ewok creates a Guest actor in the same ActorSystem (Endor)
-        r = asys.ask(ewok, 'Greet Guest', 0.25)
+        r = asys.ask(ewok, 'Greet Guest', 1)
         assert r == 'Thanks for the Trees'
 
 

@@ -4,6 +4,11 @@ from thespian.actors import *
 from thespian.test import *
 import signal
 import os
+import sys
+
+
+if sys.platform == 'win32':
+    pytest.skip("Windows does not support POSIX signals", allow_module_level=True)
 
 
 class KillMeActor(Actor):
