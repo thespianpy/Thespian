@@ -5,7 +5,7 @@ asynchronous (non-blocking) transmit and receive functionality.
 
 from thespian.system.transport import (TransmitOnly, SendStatus,
                                        Thespian__UpdateWork)
-from thespian.system.utilis import thesplog, partition
+from thespian.system.utilis import thesplog, partition, getenvdef
 from thespian.system.timing import ExpirationTimer
 import logging
 from thespian.system.addressManager import CannotPickleAddress
@@ -34,10 +34,10 @@ else:
 # queued transmits exceeds the DROP_TRANSMITS_LEVEL then additional
 # transmits are immediately failed instead of being queued.
 
-MAX_PENDING_TRANSMITS = 20
-MAX_QUEUED_TRANSMITS = 950
-QUEUE_TRANSMIT_UNBLOCK_THRESHOLD = 780
-DROP_TRANSMITS_LEVEL = MAX_QUEUED_TRANSMITS + 100
+MAX_PENDING_TRANSMITS = getenvdef('THESPIAN_MAX_PENDING_TRANSMITS', int, 20)
+MAX_QUEUED_TRANSMITS = getenvdef('THESPIAN_MAX_QUEUED_TRANSMITS', int, 950)
+QUEUE_TRANSMIT_UNBLOCK_THRESHOLD = getenvdef('THESPIAN_QUEUED_TRANSMIT_UNBLOCK_THRESHOLD', int, 780)
+DROP_TRANSMITS_LEVEL = getenvdef('THESPIAN_DROP_TRANSMITS_LEVEL', int, MAX_QUEUED_TRANSMITS + 100)
 
 
 @contextmanager
