@@ -1,5 +1,5 @@
 #+TITLE: [[https://thespianpy.com][@@html:<img src="thesplogo2.png" alt="Thespian" width="50%" style="inline" />@@]] Actors User's Guide
-#+AUTHOR: Kevin Quick <quick@sparq.org>
+#+AUTHOR: Kevin Quick <kq1quick@gmail.com>
 #+SETUPFILE: theme.setup
 #+HTML_HEAD: <link href="https://fonts.googleapis.com/css?family=Actor" rel="stylesheet">
 #+HTML_HEAD: <link href="https://fonts.googleapis.com/css?family=Inconsolata" rel="stylesheet">
@@ -10,7 +10,7 @@
 #+LATEX_HEADER: \product{Thespian}
 #+LATEX_HEADER: \component{Python Actor System}
 #+LATEX_HEADER: \doctype{Usage}
-#+LATEX_HEADER: \docrev{2.25}{2022 Feb 06}
+#+LATEX_HEADER: \docrev{2.26}{2025 Feb 03}
 #+LATEX_HEADER: \docid{TheDoc-02}
 #+OPTIONS: ^:nil auto-id:t
 
@@ -3902,17 +3902,11 @@ The multiprocTCPBase uses the following [[#hH-a17e6c70-5592-4d06-b818-bd25350c4c
                      in isolation and cannot interact with other Actor
                      Systems.
 
-                     * BETA :: This can be specified as a list of
-                       convention leader addresses.  In this mode, if
-                       a leader is shutdown, the remaining convention
-                       will shift to using one of the other leaders in
-                       the list (providing a measure of
-                       fault-tolerance/high-availability for the
-                       convention).  This is currently BETA
-                       functionality and should not be used in
-                       production, as there are likely future code
-                       updates needed to handle any subtle issues that
-                       arise from this functionality.
+                     * This can be specified as a list of convention leader
+                       addresses.  In this mode, if a leader is shutdown, the
+                       remaining convention will shift to using one of the other
+                       leaders in the list (providing a measure of
+                       fault-tolerance/high-availability for the convention).
 
   * *Admin Routing* :: boolean
 
@@ -4013,6 +4007,103 @@ The multiprocTCPBase uses the following [[#hH-a17e6c70-5592-4d06-b818-bd25350c4c
   setting it to a network address that is not accessible from the
   local machine will result in the inability to run any Actors.
 
+*** Configuration Environment Variables
+:PROPERTIES:
+:ID:       4652776f-0aba-4564-8f50-2add516f6508
+:CUSTOM_ID: h:ca576db1-3923-4db4-aaad-e6c41730f552
+:END:
+
+  The multiprocTCPBase ActorSystem has various configuration parameters that
+  control the runtime behavior.  These parameters are defaulted to values which
+  are intended to support most standard uses of Thespian, but these values can be
+  adjusted for specific use cases using environment variables.  These environment
+  variables must be set *before* the ActorSystem is started for them to affect
+  the ActorSystem and any Actors started within that ActorSystem.
+
+  * ~THESPIAN_BASE_IPADDR~ :: specifies the local IP address to use for Actors on
+    this system.  This should be an IP address that is reachable by any other
+    ActorSystems that are part of a convention; if no convention is needed,
+    localhost or 0.0.0.0 is probably sufficient, but otherwise this needs to be
+    an address that is reachable from those remote systems.  Thespian will
+    automatically probe on startup and attempt to determine the address to use,
+    but in situations where this automated probing is insufficient or incorrect,
+    this environment variable can be used to override the address.
+
+    #+begin_example
+    $ export THESPIAN_BASE_IPADDR="1.2.3.4"
+    #+end_example
+
+    * default :: locally probed address
+
+  * ~THESPIAN_MAX_PENDING_TRANSMITS~ :: Specifies the number of transmit messages
+    that can actively be sent from an Actor.  The messages are not required to be
+    directed to the same target.  This threshold should be set to a level that
+    prevents overflowing the system's ~socket.send()~ limitations.
+
+    #+begin_example
+    $ export THESPIAN_MAX_PENDING_TRANSMITS=10
+    #+end_example
+
+    * default :: 20
+
+  * ~THESPIAN_MAX_QUEUED_TRANSMITS~ :: Actors can transmit messages faster than
+    they can be processed by recipients.  Thespian maintains a limit of the
+    number of pending/in-progress transmits that can be created by a single
+    Actor.  Normally, the ~.send()~ method is asynchronous, queueing the message
+    for transmit and returning immediately to the Actor's code, but when this
+    theshold is reached, a ~.send()~ will block (implementing "backoff" or "back
+    pressure"). This environment variable overrides the default threshold value.
+
+    If this value is changed, the ~THESPIAN_QUEUED_TRANSMIT_UNBLOCK_THRESHOLD~
+    value may need to be explicitly set as well.
+
+    #+begin_example
+    $ export THESPIAN_MAX_QUEUED_TRANSMITS=500
+    #+end_example
+
+    * default :: 950
+
+  * ~THESPIAN_QUEUED_TRANSMIT_UNBLOCK_THRESHOLD~ :: When an Actor's ~.send()~
+    method is blocked due to reaching the THESPIAN_MAX_QUEUED_TRANSMITS threshold
+    (either the explicit or default threshold), the ~.send()~ will not unblock
+    until the number of queued transmit messages falls below a lower threshold
+    value.  By having the resumption threshold set lower than the blocking
+    threshold, a hysteresis buffer is provided that allows an Actor to run more
+    smoothly overall instead of introducing jitter as it repeatedly moves above
+    and below a single threshold value.  This value can be explicitly set with
+    the ~THESPIAN_QUEUED_TRANSMIT_UNBLOCK_THRESHOLD~ environment variable.
+
+    This value *should always be less* than the ~THESPIAN_MAX_QUEUED_TRANSMITS~
+    value.
+
+    #+begin_example
+    $ export THESPIAN_QUEUED_TRANSMIT_UNBLOCK_THRESHOLD=100
+    #+end_example
+
+    * default :: 780
+
+  * ~THESPIAN_DROP_TRANSMITS_LEVEL~ :: It is possible to configure the Actor to
+    drop transmit requests if there are too many queued.  Message queueing can
+    occur via the Actor's intentional ~.send()~ call, or implicitly via Actor
+    management requests exchanged between Actors or the Actor and the
+    ActorSystem.  The drop threshold will affect both types of messages, and is a
+    protection against overloading the Actor's system memory.
+
+    If this value is set lower than the ~THESPIAN_MAX_QUEUED_TRANSMITS~ level
+    then the ~.send()~ method will never block (exerting back-pressure) but
+    instead drop messages.  Normally this value will be set higher than the
+    ~THESPIAN_MAX_QUEUED_TRANSMITS~.
+
+    #+begin_example
+    $ export THESPIAN_DROP_TRANSMITS_LEVEL=600
+    #+end_example
+
+    * default :: 100 plus the maximum queued transmits threshold (which can be
+      set via ~THESPIAN_MAX_QUEUED_TRANSMITS~).
+
+  In addition to the above, the logging environment variables described in
+  [[#hH-856a7ffe-676b-42a9-95eb-bd89a5810f53][Thespian Internals Logging]] may be set.
+  
 ** multiprocUDPBase
    :PROPERTIES:
    :CUSTOM_ID: hH-25cfa213-13a6-4265-8828-86ffffed0e12
