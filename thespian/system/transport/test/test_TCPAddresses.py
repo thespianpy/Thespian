@@ -211,3 +211,19 @@ class TestUnitTCPAddresses(object):
         raises(TypeError, hash, a3)
         raises(TypeError, hash, a4)
         raises(TypeError, hash, a5)
+
+    def testThespianBaseAddressOverride(self, monkeypatch):
+        monkeypatch.setenv('THESPIAN_BASE_IPADDR', '1.2.3.4')
+
+        a1 = ActorAddress(TCPv4ActorAddress('1.2.3.4', 1234, external=False))
+        loopback = ActorAddress(TCPv4ActorAddress('127.0.0.1', 1234, external=False))
+
+        # override base address when None
+        assert a1 == ActorAddress(TCPv4ActorAddress(None, 1234, external=False))
+        assert a1 == ActorAddress(TCPv4ActorAddress(None, 1234, external=True))
+        # override base address when empty string
+        assert loopback == ActorAddress(TCPv4ActorAddress('', 1234, external=False))
+        assert a1 == ActorAddress(TCPv4ActorAddress('', 1234, external=True))
+        # do not ovverride base address when not None or empty string
+        assert a1 != ActorAddress(TCPv4ActorAddress('4.3.2.1', 1234, external=False))
+        assert a1 != ActorAddress(TCPv4ActorAddress('4.3.2.1', 1234, external=True))

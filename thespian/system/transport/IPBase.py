@@ -103,9 +103,8 @@ class IPActorAddress(object):
            A "truthy" value of external can be an external address to
            try.  Using the address of the Convention Leader (if any)
            is recommended to ensure that the address chosen is
-           appropriate for the network supporting the Convention.  By
-           default, the address is Go Daddy's public webserver
-           address.
+           appropriate for the network supporting the Convention. By
+           default, the address is Google's public DNS server.
         """
         self.af = af
         self.socktype = socktype
@@ -114,13 +113,16 @@ class IPActorAddress(object):
             baseaddr = None
         if baseaddr == '':
             baseaddr = None if external else '127.0.0.1'
-        base2 = os.getenv('THESPIAN_BASE_IPADDR', None)
-        if base2:
+        if baseaddr is None and (base2 := os.getenv('THESPIAN_BASE_IPADDR', None)):
             baseaddr = base2
         if external and not baseaddr:
             # Trick to get the "public" IP address... doesn't work so
             # well if there are multiple routes, or if the public site
             # is not accessible.  (needs work)
+
+            # If external is a list, use just the first element
+            if isinstance(external, list):
+                external = external[0]
             remoteAddr = (
                 external
                 if isinstance(external, tuple)
