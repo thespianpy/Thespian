@@ -113,8 +113,8 @@ class IPActorAddress(object):
             baseaddr = None
         if baseaddr == '':
             baseaddr = None if external else '127.0.0.1'
-        if baseaddr is None and (base2 := os.getenv('THESPIAN_BASE_IPADDR', None)):
-            baseaddr = base2
+        if baseaddr is None:
+            baseaddr = os.getenv('THESPIAN_BASE_IPADDR', None)
         if external and not baseaddr:
             # Trick to get the "public" IP address... doesn't work so
             # well if there are multiple routes, or if the public site
