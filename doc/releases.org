@@ -10,7 +10,7 @@
 #+LATEX_HEADER: \product{Thespian}
 #+LATEX_HEADER: \component{Python Actor System}
 #+LATEX_HEADER: \doctype{Release Notes}
-#+LATEX_HEADER: \docrev{4.0.0}{2025 Feb 03}
+#+LATEX_HEADER: \docrev{4.0.1}{2025 Mar 11}
 #+LATEX_HEADER: \docid{TheDoc-06}
 #+OPTIONS: ^:nil num:nil
 
@@ -23,11 +23,12 @@ do not change the API.
 
 ** 2025
 
- | Release |       Date | Significant Bugfixes                     | Significant Features                        |   |
- |---------+------------+------------------------------------------+---------------------------------------------+---|
- |   4.0.0 | 2025-02-03 | Better fix for [[https://github.com/thespianpy/Thespian/issues/70][Issue #70]] (fixes Windows) | Use ~selectors~ for socket handling.        |   |
- |         |            | General fixes for socket handling.       | Configurable socket management thresholds.  |   |
- |         |            | Dropped support for Python 2.            | Multiple convention leaders no longer Beta. |   |
+ | Release |       Date | Significant Bugfixes                                                                       | Significant Features                        |   |
+ |---------+------------+--------------------------------------------------------------------------------------------+---------------------------------------------+---|
+ |   4.0.1 | 2025-03-11 | Fix  for [[https://github.com/thespianpy/Thespian/issues/86][Issue #86] (local IP address) |                                             |   |
+ |   4.0.0 | 2025-02-03 | Better fix for [[https://github.com/thespianpy/Thespian/issues/70][Issue #70]] (fixes Windows)                                                   | Use ~selectors~ for socket handling.        |   |
+ |         |            | General fixes for socket handling.                                                         | Configurable socket management thresholds.  |   |
+ |         |            | Dropped support for Python 2.                                                              | Multiple convention leaders no longer Beta. |   |
 
 
 ** 2023
@@ -203,6 +204,14 @@ do not change the API.
 * 4.x
 
 ** 4.0
+
+*** 4.0.1 <2025-03-11 Tue>
+
+   * Fixes issue 86.  This issue was probably introduced in version 3.10.6 with
+     support for multiple convention leaders.  The latter changes affected the
+     representation of addresses in a way that broke the determination of the
+     local IP address when not explicitly provided.  This diagnosis and fix was
+     kindly contributed by Grzegorz Banasiak.
 
 *** 4.0.0 <2025-02-03 Mon>
 :PROPERTIES:
